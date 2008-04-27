@@ -627,7 +627,6 @@ class Repl:
 		"""Redraw the screen."""
 		self.scr.erase()
 		for k, s in enumerate( self.s_hist ):
-			DEBUG(s)
 			if not s:
 				continue
 			self.iy, self.ix = self.scr.getyx()
