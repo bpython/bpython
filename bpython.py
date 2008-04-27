@@ -362,7 +362,8 @@ class Repl:
 		"""Display a list of options on the screen."""
 
 		y, x = self.scr.getyx()
-
+		items = [ i.rpartition('.')[-1] for i in items ]
+		
 		def calc_lsize(r):
 			"""Calculate the size required on screen to display the list.
 			Unfortunately Python 2.x doesn't allow assigning to the scope
