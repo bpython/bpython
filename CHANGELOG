@@ -1,0 +1,48 @@
+v0.2.4
+======
+Thanks a lot to Angus Gibson for submitting a patch to fix a problem
+I was having with initialising the keyboard stuff in curses properly.
+
+Also a big thanks to John Beisley for providing the patch that shows
+a class __init__ method's argspec on class instantiation.
+
+I've fixed up the argspec display so it handles really long argspecs
+(e.g. subprocess.Popen()) and doesn't crash if something horrible
+happens (rather, it avoids letting something horrible happen).
+
+I decided to add a key that will get rid of the autocomplete window,
+since it can get in the way. C-l seemed like a good choice, since
+it would work well as a side-effect of redrawing the screen (at 
+least that makes sense to me). In so doing I also cleaned up a lot
+of the reevaluating and resizing code so that a lot of the strange
+output seen on Rewind/resize seems to be gone.
+
+v0.2.3
+======
+The fix for the last bug broke the positioning of the autocomplete
+box, whoops.
+
+v0.2.2
+======
+That pesky bug keeps coming up. I think it's finally nailed but
+it's just a matter of testing and hoping. I hate numbers.
+
+v0.2.1
+======
+I'm having a bit of trouble with some integer division that's
+causing trouble when a certain set of circumstances arise,
+and I think I've taken care of that little bug, since it's
+a real pain in the ass and only creeps up when I'm actually
+doing something useful, so I'll test it for a bit and release
+it as hopefully a bug fixed version.
+
+v0.2.0
+======
+A little late in the day to start a changelog, but here goes...
+This version fixed another annoying little bug that was causing
+crashes given certain exact circumstances. I always find it's the
+way with curses and sizing of windows and things...
+
+I've also got bpython to try looking into pydoc if no matches
+are found for the argspec, which means the builtins have argspecs
+too now, hooray.
