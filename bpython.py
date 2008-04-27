@@ -280,6 +280,8 @@ class Repl:
 					return None
 				self.argspec = t
 				return True
+			except AttributeError: # no __init__
+				return None
 
 		def parse_parens( s ):
 			"""Run a string through the pyparsing pattern for paren
