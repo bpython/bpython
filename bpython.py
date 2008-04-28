@@ -1003,11 +1003,16 @@ class Repl:
 		idiot)."""
 
 		self.ts = ''
-		indent = self.s.endswith(':') or self.s.startswith('\t')
+		n_indent = re.split( '[^\t]', self.s, 1 )[0].count('\t')		
+		indent = self.s.endswith(':')
 		self.s = ''
 		self.iy, self.ix = self.scr.getyx()
 
-		if indent:#self.s_hist and self.s_hist[-1].rstrip().endswith(':'):
+		for i in range(n_indent):
+			self.c = '\t'
+			self.p_key()
+
+		if indent:
 			self.c = '\t'
 			self.p_key()
 
