@@ -1,3 +1,8 @@
+v0.3.1
+======
+Thanks to Klaus Alexander Seis for the expanduser() patch.
+Auto indent works on multiple levels now.
+
 v0.3.0
 ======
 Now with auto-indent. Let me know if it's annoying.
