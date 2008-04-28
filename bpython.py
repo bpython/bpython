@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# bpython 0.2.4::fancy curses interface to the Python repl::Bob Farrell 2008
+# bpython 0.3.0::fancy curses interface to the Python repl::Bob Farrell 2008
 #
 # The MIT License
 # 
@@ -197,6 +197,7 @@ class Repl:
 		self.f_string = ''
 		self.matches = []
 		self.argspec = None
+		self.s = ''
 		
 		if not OPTS.argspec:
 			return
@@ -1001,10 +1002,15 @@ class Repl:
 		which returns None if Enter is pressed (that means "Return",
 		idiot)."""
 
-
 		self.ts = ''
+		indent = self.s.endswith(':') or self.s.startswith('\t')
 		self.s = ''
 		self.iy, self.ix = self.scr.getyx()
+
+		if indent:#self.s_hist and self.s_hist[-1].rstrip().endswith(':'):
+			self.c = '\t'
+			self.p_key()
+
 		self.c = None
 		self.cpos = 0
 		while True:
