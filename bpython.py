@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# bpython 0.3.0::fancy curses interface to the Python repl::Bob Farrell 2008
+# bpython 0.3.1::fancy curses interface to the Python repl::Bob Farrell 2008
 #
 # The MIT License
 # 
@@ -510,7 +510,7 @@ class Repl:
 		fn = self.statusbar.prompt( 'Save to file: ' )
 
 		if '~' in fn:
-			fn = fn.replace( '~', os.path.expanduser('~') )
+			fn = os.path.expanduser( fn )
 
 		s = self.getstdout()
 		
