@@ -197,6 +197,7 @@ class Repl:
 		self.f_string = ''
 		self.matches = []
 		self.argspec = None
+		self.tablen = None
 		self.s = ''
 		
 		if not OPTS.argspec:
@@ -802,22 +803,30 @@ class Repl:
 
 	def bs( self ):
 		"""Process a backspace"""
-#TODO: All this curses code really ought to be somewhere else. :(
 
 		y, x = self.scr.getyx()
 
 		if x == self.ix and y == self.iy:
 			return
 
+		n = 1
+
 		if x == 0:
 			y -= 1
 			x = gethw()[1]
 
-		if not self.cpos:
+		if not self.cpos: # I know the nested if blocks look nasty. :(
+			if self.s[-1] == '\t':
+				n = self.tablen
+				if len(self.s) > 1:
+					n = n * 2
+
 			self.s = self.s[ : -1 ]
 		else:
 			self.s = self.s[ : -self.cpos-1 ] + self.s[ -self.cpos : ]
-		self.scr.delch( y, x - 1 )
+
+		for i in range(n):
+			self.scr.delch( y, x - n )
 		self.scr.refresh()
 
 	def clrtobol( self ):
@@ -837,6 +846,11 @@ class Repl:
 
 		if self.c is None:
 			return ''
+
+		if self.c == chr(8): # C-Backspace (on my computer anyway!)
+			self.clrtobol()
+			self.c = '\n'
+			# Don't return; let it get handled
 
 		if self.c in ( chr(127), 'KEY_BACKSPACE' ):
 			self.bs()
@@ -904,9 +918,15 @@ class Repl:
 		otherwise attempt to autocomplete to the best match of possible
 		choices in the match list."""
 		
+		if self.tablen is None:
+			x = self.scr.getyx()[1]
+
 		if self.atbol():
 			self.addc( self.c )
 			self.print_line( self.s )
+			if self.tablen is None:
+				self.tablen = self.scr.getyx()[1] - x
+				DEBUG( str(self.tablen) )
 			return True
 
 		cw = self.cw()
