@@ -510,7 +510,7 @@ class Repl:
 	
 		fn = self.statusbar.prompt( 'Save to file: ' )
 
-		if '~' in fn:
+		if fn.startswith('~'):
 			fn = os.path.expanduser( fn )
 
 		s = self.getstdout()
