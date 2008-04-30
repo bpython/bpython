@@ -364,6 +364,10 @@ class Repl:
 		"""Display a list of options on the screen."""
 
 		y, x = self.scr.getyx()
+		h, w = self.scr.getmaxyx()
+		down = ( y < h / 2 )
+		max_h = (h-y) if down else (y+1)
+
 		items = [ i.rpartition('.')[-1] for i in items ]
 		
 		def calc_lsize(r):
@@ -374,38 +378,37 @@ class Repl:
 			it from here but it doesn't seem like such a big deal. Hopefully
 			I can make this prettier when py3k shows up. :)"""
 
-			menu = self.make_list( items )
-			if menu:
+			if items:
 				wl = max( len( i ) for i in items ) + 1
 			else:
 				wl = 1
 			l = len( items )
-			h, w = self.scr.getmaxyx()
 			optw = int( w * r )
-			opth = ( l / ( optw / wl ) ) + 1 
-			return menu, wl, l, h, w, optw, opth # uuuurgh
+			#opth = ( l / ( optw / wl ) ) + 1 
+			opth = ( (l * wl) / (optw-3) ) + 1 
+			return wl, l, optw, opth # uuuurgh
 
-		menu, wl, l, h, w, optw, opth = calc_lsize( 0.6 ) # blllluuurgh
-		down = ( y < h / 2 )
+		wl, l, optw, opth = calc_lsize( 0.6 ) # blllluuurgh
 		
 		trunc = False
-		if down:
-			max_h = h - y
-		else:
-			max_h = y + 1
 	
 		if topline:
 			max_h -= 1
 
-		while opth + 3 >= max_h:
+		items_t = items[:]
+		items = items_t[:1]
+		while len(items) != len(items_t):
+			DEBUG( str(opth) + ':' + str(max_h) )
 			trunc = True
-			items = items[ : -1 ]
-			menu, wl, l, h, w, optw, opth = calc_lsize( 0.6 ) # bllllaaarrgghhh
+			wl, l, optw, opth = calc_lsize( 0.6 ) # bllllaaarrgghhh
+			items.append( items_t[ len(items) -1 ] )
+			if opth >= max_h -4:
+				break
 
-		if topline and menu: opth += 1
+		if topline and items: opth += 1
 		
 		if trunc:
-			menu.append('...')
+			items.append('...')
 			l += 1
 
 
@@ -426,12 +429,12 @@ class Repl:
 		if topline:
 			l -= cols * self.mkargspec( topline, down )
 
-		if menu:
+		if items:
 			self.list_win.addstr( '\n  ' )
 			for i in range( 0, l ):
 				if i+1 >= cols and not i % cols:
 					self.list_win.addstr( '\n  ' )
-				self.list_win.addstr( menu[ i ] + ( " " * (wl - len(menu[ i ]))), curses.color_pair( self._C["c"]+1 ) )
+				self.list_win.addstr( items[ i ] + ( " " * (wl - len(items[ i ]))), curses.color_pair( self._C["c"]+1 ) )
 		
 
 		self.list_win.border()
