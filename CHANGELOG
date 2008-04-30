@@ -1,3 +1,10 @@
+v0.3.2
+======
+Thanks to Aaron Gallagher for pointing out a case where the hugely
+inefficient list generation routines were actually making a significant
+issue; they're much more efficient now and should hopefully not cause
+any more problems.
+
 v0.3.1
 ======
 Thanks to Klaus Alexander Seis for the expanduser() patch.

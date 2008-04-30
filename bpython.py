@@ -398,7 +398,6 @@ class Repl:
 		items_t = items[:]
 		items = items_t[:1]
 		while len(items) != len(items_t):
-			DEBUG( str(opth) + ':' + str(max_h) )
 			trunc = True
 			wl, l, optw, opth = calc_lsize( 0.6 ) # bllllaaarrgghhh
 			items.append( items_t[ len(items) -1 ] )
