@@ -929,7 +929,6 @@ class Repl:
 			self.print_line( self.s )
 			if self.tablen is None:
 				self.tablen = self.scr.getyx()[1] - x
-				DEBUG( str(self.tablen) )
 			return True
 
 		cw = self.cw()
