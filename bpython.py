@@ -370,14 +370,14 @@ class Repl:
 		down = ( y < h / 2 )
 		max_h = (h-y-2) if down else (y-2)
 		optw = int(0.6 * w)
-
+		self.lastmax = 0
 		items = [ i.rpartition('.')[-1] for i in items ]
 		
 		def calc_lsize(r):
 			"""Calculate the size required on screen to display the list."""
 
 			if items:
-				wl = max( len( i ) for i in items ) + 2
+				wl = self.lastmax = max( (len( items[-1] ), self.lastmax) ) 
 			else:
 				wl = 1
 			l = len( items )
@@ -404,6 +404,7 @@ class Repl:
 
 		l = len(items)
 		if topline and items: opth += 1
+		if topline and not items: opth = 3
 		
 
 
