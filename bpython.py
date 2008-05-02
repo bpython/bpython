@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# bpython 0.3.1::fancy curses interface to the Python repl::Bob Farrell 2008
+# bpython 0.3.2::fancy curses interface to the Python repl::Bob Farrell 2008
 #
 # The MIT License
 # 
@@ -41,6 +41,7 @@ import signal
 import struct
 import termios
 import fcntl
+import ConfigParser
 from bpython.formatter import BPythonFormatter
 
 class Opts( object ):
@@ -360,69 +361,64 @@ class Repl:
 # restore order
 		self.show_list( self.matches, self.argspec )
 
+
 	def show_list( self, items, topline=None ):
 		"""Display a list of options on the screen."""
 
 		y, x = self.scr.getyx()
 		h, w = self.scr.getmaxyx()
 		down = ( y < h / 2 )
-		max_h = (h-y) if down else (y+1)
+		max_h = (h-y-2) if down else (y-2)
+		optw = int(0.6 * w)
 
 		items = [ i.rpartition('.')[-1] for i in items ]
 		
 		def calc_lsize(r):
-			"""Calculate the size required on screen to display the list.
-			Unfortunately Python 2.x doesn't allow assigning to the scope
-			one level up of a nested function, so the return list on this
-			function is horrible. I could have used an object and mutated
-			it from here but it doesn't seem like such a big deal. Hopefully
-			I can make this prettier when py3k shows up. :)"""
+			"""Calculate the size required on screen to display the list."""
 
 			if items:
-				wl = max( len( i ) for i in items ) + 1
+				wl = max( len( i ) for i in items ) + 2
 			else:
 				wl = 1
 			l = len( items )
-			optw = int( w * r )
-			#opth = ( l / ( optw / wl ) ) + 1 
-			opth = ( (l * wl) / (optw-3) ) + 1 
-			return wl, l, optw, opth # uuuurgh
+			cols = optw / wl
+			rows = l / cols
+			if l % cols:
+				rows += 1
+			opth = rows + 2
+			return wl, opth
 
-		wl, l, optw, opth = calc_lsize( 0.6 ) # blllluuurgh
+		wl, opth = calc_lsize( 0.6 )
 		
-		trunc = False
-	
 		if topline:
 			max_h -= 1
 
 		items_t = items[:]
 		items = items_t[:1]
+
 		while len(items) != len(items_t):
-			trunc = True
-			wl, l, optw, opth = calc_lsize( 0.6 ) # bllllaaarrgghhh
 			items.append( items_t[ len(items) -1 ] )
-			if opth >= max_h -4:
+			wl, opth = calc_lsize( 0.6 )
+			if opth >= max_h:
 				break
 
+		l = len(items)
 		if topline and items: opth += 1
 		
-		if trunc:
-			items.append('...')
-			l += 1
 
 
 		self.list_win.erase()
 		self.scr.touchwin()
 		self.scr.noutrefresh()
-		self.list_win.resize( opth+3, optw+3 )
+		self.list_win.resize( opth, optw+3 )
 
 
 		if down:
 			self.list_win.mvwin( y + 1, 1 )
 		else:
-			self.list_win.mvwin( y - opth - 3, 1 )
+			self.list_win.mvwin( y - opth, 1 )
 
-		rows = opth + 1
+		rows = opth-2# + 1
 		cols = optw / wl
 
 		if topline:
@@ -431,7 +427,7 @@ class Repl:
 		if items:
 			self.list_win.addstr( '\n  ' )
 			for i in range( 0, l ):
-				if i+1 >= cols and not i % cols:
+				if i+1 >= cols and not i % cols and i < l:
 					self.list_win.addstr( '\n  ' )
 				self.list_win.addstr( items[ i ] + ( " " * (wl - len(items[ i ]))), curses.color_pair( self._C["c"]+1 ) )
 		
@@ -1272,6 +1268,22 @@ def do_resize( caller ):
 	caller.statusbar.resize()
 	# The list win resizes itself every time it appears so no need to do it here.
 
+def loadrc():
+	"""Attempt to load the rc file and apply settings."""
+
+	c = ConfigParser.ConfigParser()
+	if not( c.read( os.path.expanduser('~/.bpythonrc') ) ):
+		return
+	
+	if not c.has_section('Global'):
+		return
+	
+	if c.has_option('Global', 'requiretab'):
+		if c.get('Global', 'requiretab') == 'no':
+			OPTS.requiretab = True
+		else:
+			OPTS.requiretab = False
+
 def main( scr ):
 	"""main function for the curses convenience wrapper
 
@@ -1287,6 +1299,7 @@ def main( scr ):
 	DO_RESIZE = False
 	signal.signal( signal.SIGWINCH, lambda x,y: sigwinch(scr) )
 	
+	loadrc()
 	stdscr = scr
 	curses.start_color()
 	curses.use_default_colors()
