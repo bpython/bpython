@@ -430,7 +430,7 @@ class Repl:
 			for i in range( 0, l ):
 				if i+1 >= cols and not i % cols and i < l:
 					self.list_win.addstr( '\n  ' )
-				self.list_win.addstr( items[ i ] + ( " " * (wl - len(items[ i ]))), curses.color_pair( self._C["c"]+1 ) )
+				self.list_win.addstr( items[ i ] + ( " " * (wl - len(items[ i ])+1)), curses.color_pair( self._C["c"]+1 ) )
 		
 
 		self.list_win.border()
