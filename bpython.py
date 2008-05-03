@@ -44,9 +44,9 @@ import fcntl
 import ConfigParser
 from bpython.formatter import BPythonFormatter
 
-class Opts( object ):
+class Dummy( object ):
 	pass
-OPTS = Opts()
+OPTS = Dummy()
 
 try:
 	from pygments import highlight
@@ -364,31 +364,44 @@ class Repl:
 
 	def show_list( self, items, topline=None ):
 		"""Display a list of options on the screen."""
-
+		shared = Dummy()
 		y, x = self.scr.getyx()
 		h, w = self.scr.getmaxyx()
 		down = ( y < h / 2 )
 		max_h = (h-y-2) if down else (y-2)
-		optw = int(0.6 * w)
-		self.lastmax = 0
+		shared.optw = int(0.6 * w)
+		shared.lastmax = 0
+		shared.s_trunc = 0
 		items = [ i.rpartition('.')[-1] for i in items ]
 		
 		def calc_lsize(r):
 			"""Calculate the size required on screen to display the list."""
 
 			if items:
-				wl = self.lastmax = max( (len( items[-1] ), self.lastmax) ) 
+				wl = shared.lastmax = max( (len( items[-1] ), shared.lastmax) ) 
 			else:
 				wl = 1
+
 			l = len( items )
-			cols = optw / wl
+			cols = shared.optw / wl
+
+			if not cols:
+				shared.optw = wl + 4
+				if shared.optw > w:
+					wl = shared.s_trunc = w-8
+					shared.optw = w-5
+				cols = 1
+
 			rows = l / cols
 			if l % cols:
 				rows += 1
 			opth = rows + 2
 			return wl, opth
 
-		wl, opth = calc_lsize( 0.6 )
+		t = calc_lsize( 0.6 )
+		if t is None:
+			return
+		wl, opth = t
 		
 		if topline:
 			max_h -= 1
@@ -397,7 +410,7 @@ class Repl:
 		items = items_t[:1]
 
 		while len(items) != len(items_t):
-			items.append( items_t[ len(items) -1 ] )
+			items.append( items_t[ len(items) ] )
 			wl, opth = calc_lsize( 0.6 )
 			if opth >= max_h:
 				break
@@ -411,7 +424,7 @@ class Repl:
 		self.list_win.erase()
 		self.scr.touchwin()
 		self.scr.noutrefresh()
-		self.list_win.resize( opth, optw+3 )
+		self.list_win.resize( opth, shared.optw+3 )
 
 
 		if down:
@@ -419,8 +432,8 @@ class Repl:
 		else:
 			self.list_win.mvwin( y - opth, 1 )
 
-		rows = opth-2# + 1
-		cols = optw / wl
+		rows = opth-2
+		cols = shared.optw / wl or 1
 
 		if topline:
 			l -= cols * self.mkargspec( topline, down )
@@ -430,6 +443,8 @@ class Repl:
 			for i in range( 0, l ):
 				if i+1 >= cols and not i % cols and i < l:
 					self.list_win.addstr( '\n  ' )
+				if shared.s_trunc and len(items[i]) > wl:
+					items[i] = items[i][:shared.s_trunc-3] + '...'
 				self.list_win.addstr( items[ i ] + ( " " * (wl - len(items[ i ])+1)), curses.color_pair( self._C["c"]+1 ) )
 		
 
