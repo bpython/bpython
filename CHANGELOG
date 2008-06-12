@@ -1,3 +1,11 @@
+v0.4.0
+======
+It's been quite a long time since the last update, due to several
+uninteresting and invalid excuses, but I finally reworked the list
+drawing procedures so the crashing seems to have been taken care of
+to an extent. If it still crashes, the way I've written it will hopefully
+allow a much more robust way of fixing it, one that might actually work.
+
 v0.3.2
 ======
 Thanks to Aaron Gallagher for pointing out a case where the hugely
