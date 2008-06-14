@@ -384,7 +384,7 @@ class Repl:
             if not wl:
                 wl = 1
             cols = (max_w - 2) / wl
-            rows = len( v_items ) / cols
+            rows = len( v_items ) / (cols or 1)
 
             if cols * rows < len( v_items ):
                 rows += 1
@@ -399,13 +399,13 @@ class Repl:
             return True
 
         if items:
-            v_items = [ items[0] ] # visible items (we'll append until we can't fit any more in)
+            v_items = [ items[0][:max_w-3] ] # visible items (we'll append until we can't fit any more in)
             lsize()
         else:
             v_items = []
 
         for i in items[1:]:
-            v_items.append( i )
+            v_items.append( i[:max_w-3] )
             if not lsize():
                 del v_items[-1]
                 break
@@ -418,6 +418,8 @@ class Repl:
         wl = shared.wl
         
         if topline and not v_items:
+            w = max_w
+        elif wl + 3 > max_w:
             w = max_w
         else:
             w = (cols + 1) * wl + 3
@@ -438,7 +440,7 @@ class Repl:
         for ix, i in enumerate(v_items):
             padding = (wl - len(i)) * ' '
             self.list_win.addstr( i + padding, curses.color_pair( self._C["c"]+1 ) )
-            if ix and not ix % cols and ix < len(v_items):
+            if (cols == 1) or (ix and not ix % cols and ix < len(v_items)):
                 self.list_win.addstr( '\n ' )
             #self.list_win.refresh()
             #time.sleep(0.5)
