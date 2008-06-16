@@ -766,7 +766,7 @@ class Repl( object ):
         self.s_hist.append( s.rstrip('\n') )
 
     def flush( self ):
-        """Olivier Grisel brought it to my attention that the scapy
+        """Olivier Grisel brought it to my attention that the logging
         module tries to call this method, since it makes assumptions
         about stdout that may not necessarily be true. The docs for
         sys.stdout say:
@@ -775,8 +775,9 @@ class Repl( object ):
          object is acceptable as long as it has a write() method
          that takes a string argument."
 
-        So I consider this to be a bug in scapy, and this is a hack
-        to fix it, unfortunately. I'm sure they're not the only ones.""" 
+        So I consider this to be a bug in logging, and this is a hack
+        to fix it, unfortunately. I'm sure it's not the only module
+        to do it.""" 
         pass
 
     def echo( self, s, redraw=True ):
