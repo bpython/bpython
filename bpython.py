@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# bpython 0.4.0::fancy curses interface to the Python repl::Bob Farrell 2008
+# bpython 0.4.2::fancy curses interface to the Python repl::Bob Farrell 2008
 #
 # The MIT License
 # 
@@ -819,6 +819,9 @@ class Repl:
 
         y, x = self.scr.getyx()
 
+        if not self.s:
+            return
+
         if x == self.ix and y == self.iy:
             return
 
@@ -864,6 +867,8 @@ class Repl:
             self.clrtobol()
             self.c = '\n'
             # Don't return; let it get handled
+        if self.c == chr( 27 ):
+            return ''
 
         if self.c in ( chr(127), 'KEY_BACKSPACE' ):
             self.bs()
