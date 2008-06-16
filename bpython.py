@@ -780,6 +780,10 @@ class Repl( object ):
         to do it.""" 
         pass
 
+    def close( self ):
+        """See the flush() method docstring."""
+        pass
+
     def echo( self, s, redraw=True ):
         """Parse and echo a formatted string with appropriate attributes. It uses the
         formatting method as defined in formatter.py to parse the srings. It won't update
