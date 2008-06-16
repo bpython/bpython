@@ -44,6 +44,16 @@ import fcntl
 import ConfigParser
 from bpython.formatter import BPythonFormatter
 
+# XXX I don't ever use this feature so I'm hoping someone can
+# test it for me; as you can see it is simple enough, taken
+# directly from:
+# http://docs.python.org/tut/node4.html#startup
+# Let me know if it breaks
+filename = os.environ.get('PYTHONSTARTUP')
+if filename and os.path.isfile(filename):
+    execfile(filename)
+##################################################
+
 class Dummy( object ):
     pass
 OPTS = Dummy()
