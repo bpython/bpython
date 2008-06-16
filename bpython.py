@@ -134,7 +134,7 @@ class Interpreter( code.InteractiveInterpreter ):
         map( self.write, [ "\x01y\x03%s" % i for i in l ] )
 
 
-class Repl:
+class Repl( object ):
     """Implements the necessary guff for a Python-repl-alike interface
     
     The execution of the code entered and all that stuff was taken from the
@@ -755,6 +755,20 @@ class Repl:
         self.echo( s )
         self.s_hist.append( s.rstrip('\n') )
 
+    def flush( self ):
+        """Olivier Grisel brought it to my attention that the scapy
+        module tries to call this method, since it makes assumptions
+        about stdout that may not necessarily be true. The docs for
+        sys.stdout say:
+        
+        "stdout and stderr needn't be built-in file objects: any
+         object is acceptable as long as it has a write() method
+         that takes a string argument."
+
+        So I consider this to be a bug in scapy, and this is a hack
+        to fix it, unfortunately. I'm sure they're not the only ones.""" 
+        pass
+
     def echo( self, s, redraw=True ):
         """Parse and echo a formatted string with appropriate attributes. It uses the
         formatting method as defined in formatter.py to parse the srings. It won't update
@@ -1071,7 +1085,7 @@ class Repl:
             if self.p_key() is None:
                 return self.s
         
-class Statusbar:
+class Statusbar( object ):
     """This class provides the status bar at the bottom of the screen.
     It has message() and prompt() methods for user interactivity, as
     well as settext() and clear() methods for changing its appearance.
