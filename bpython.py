@@ -44,16 +44,6 @@ import fcntl
 import ConfigParser
 from bpython.formatter import BPythonFormatter
 
-# XXX I don't ever use this feature so I'm hoping someone can
-# test it for me; as you can see it is simple enough, taken
-# directly from:
-# http://docs.python.org/tut/node4.html#startup
-# Let me know if it breaks
-filename = os.environ.get('PYTHONSTARTUP')
-if filename and os.path.isfile(filename):
-    execfile(filename)
-##################################################
-
 class Dummy( object ):
     pass
 OPTS = Dummy()
@@ -210,6 +200,7 @@ class Repl( object ):
         self.argspec = None
         self.tablen = None
         self.s = ''
+
         
         if not OPTS.argspec:
             return
@@ -714,6 +705,15 @@ class Repl( object ):
         entered for using up/down to go back and forth (which has to be separate
         to the evaluation history, which will be truncated when undoing."""
         
+        # This was a feature request to have the PYTHONSTARTUP
+        # file executed on startup - I personally don't use this
+        # feature so please notify me of any breakage.
+        filename = os.environ.get('PYTHONSTARTUP')
+        if filename and os.path.isfile(filename):
+            for line in open(filename, 'r'):
+                self.push( line )
+            self.push( '\n' )
+
         self.iy, self.ix = self.scr.getyx()
         more = False
         while not self.do_exit:
