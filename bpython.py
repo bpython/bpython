@@ -41,6 +41,7 @@ import signal
 import struct
 import termios
 import fcntl
+import string
 import ConfigParser
 from bpython.formatter import BPythonFormatter
 
@@ -810,7 +811,7 @@ class Repl( object ):
         s = s.replace( '\x03', '' )
         s = s.replace( '\x01', '' )
 
-
+        
         self.scr.addstr( s, a )    
 
         if redraw and not self.evaluating:
@@ -953,7 +954,7 @@ class Repl( object ):
         elif self.c == '\t':
             return self.tab()
 
-        elif len( self.c ) == 1 and ord( self.c ) <= 127:
+        elif len( self.c ) == 1 and self.c in string.printable:#ord( self.c ) <= 127:
             self.addc( self.c )
             self.print_line( self.s )
 
