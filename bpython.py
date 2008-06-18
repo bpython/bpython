@@ -412,8 +412,11 @@ class Repl( object ):
                 break
 
         rows = shared.rows
-        if rows + height_offset <= max_h:
+        if rows + height_offset < max_h:
             rows += height_offset
+            display_rows = rows
+        else:
+            display_rows = rows + height_offset
 
         cols = shared.cols
         wl = shared.wl
@@ -425,6 +428,9 @@ class Repl( object ):
         else:
             w = (cols + 1) * wl + 3
 
+        if height_offset and display_rows+5 >= max_h:
+            del v_items[-(cols * (height_offset)):]
+
         self.list_win.resize( rows+2, w )#(cols + 1) * wl + 3 )
 
         if down:
@@ -432,19 +438,15 @@ class Repl( object ):
         else:
             self.list_win.mvwin(y-rows-2, 0)
 
-        if height_offset and rows >= max_h:
-            #v_items = ['lol']
-            del v_items[-(cols * height_offset):]
-
         if v_items:
             self.list_win.addstr( '\n ' )
+
         for ix, i in enumerate(v_items):
             padding = (wl - len(i)) * ' '
             self.list_win.addstr( i + padding, curses.color_pair( self._C["c"]+1 ) )
             if (cols == 1) or (ix and not ix % cols and ix < len(v_items)):
                 self.list_win.addstr( '\n ' )
-            #self.list_win.refresh()
-            #time.sleep(0.5)
+
         self.statusbar.win.touchwin()
         self.statusbar.win.noutrefresh()
         self.list_win.border()
@@ -459,13 +461,14 @@ class Repl( object ):
         It's also kind of messy due to it having to call so many addstr() to get
         the colouring right, but it seems to be pretty sturdy."""
 
-        r = 0
+        r = 3
         fn = topline[0]
         args = topline[1][0]
         kwargs = topline[1][3]
         _args = topline[1][1]
         _kwargs = topline[1][2]
         max_w = int(self.scr.getmaxyx()[1] * 0.6)
+        self.list_win.erase()
         self.list_win.resize( 3, max_w )
         h, w = self.list_win.getmaxyx()
 
@@ -489,10 +492,11 @@ class Repl( object ):
                     self.list_win.mvwin( ty-1, 1 )
                     self.list_win.resize(h,w)
                 elif down and h + r < maxh-ty:
-                    h +=1
+                    h += 1
                     self.list_win.resize(h,w)
                 else:
-                    r += 1
+                    break
+                r += 1
                 self.list_win.addstr('\n\t')
 
             self.list_win.addstr( str(i), curses.color_pair( self._C["g"]+1 ) | curses.A_BOLD )
