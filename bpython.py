@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# bpython 0.4.2::fancy curses interface to the Python repl::Bob Farrell 2008
+# bpython 0.5.0::fancy curses interface to the Python repl::Bob Farrell 2008
 #
 # The MIT License
 # 
@@ -64,10 +64,19 @@ try:
 except ImportError:
     OPTS.argspec = False
 else:
-    import pydoc
     OPTS.argspec = True
 
+import pydoc
+
 # TODO:
+#
+# 
+# No config file yet. This will allow things like "indent depth" for requiring
+# the user to hit return n times to signify the end of a code block.
+#
+# C-l doesn't repaint the screen yet.
+#
+# Tab completion does not work if not at the end of the line.
 #
 # Triple-quoted strings over multiple lines are not colourised correctly.
 #
@@ -718,6 +727,13 @@ class Repl( object ):
             for line in open(filename, 'r'):
                 self.push( line )
             self.push( '\n' )
+
+# The regular help() function uses PAGER to display the help, which
+# screws with bpython.
+        from bpython import internal
+        internal.window = self.scr
+        self.push('from bpython import internal\n')
+        self.push('help = internal._help')
 
         self.iy, self.ix = self.scr.getyx()
         more = False
