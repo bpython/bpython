@@ -1,3 +1,28 @@
+v0.5.0
+======
+A few people have commented that the help() built-in function
+doesn't work so well with bpython, since Python will try to output
+the help string to PAGER (usually "less") which obviously makes
+everything go wrong when curses is involved. With a bit of hackery
+I've written my own ghetto pager and injected my own help function
+into the interpreter when it initialises in an attempt to rectify this.
+As such, it's pretty untested but it seems to be working okay for me.
+Suggestions/bug reports/patches are welcome regarding this.
+
+v0.4.2
+======
+Well, hopefully we're one step closer to making the list sizing
+stuff work. I really hate doing code for that kind of thing as I
+never get it quite right, but with perseverence it should end up
+being completely stable; it's not the hardest thing in the world.
+
+Various cosmetic fixes have been put in at the request of a bunch
+of people who were kind enough to send me emails regarding their
+experiences.
+
+PYTHONSTARTUP is now dealt with and used properly, as per the vanilla
+interpreter.
+
 v0.4.1
 ======
 It looks like the last release was actually pretty bug-free, aside
