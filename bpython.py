@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# bpython 0.5.3::fancy curses interface to the Python repl::Bob Farrell 2008
+# bpython 0.5.4::fancy curses interface to the Python repl::Bob Farrell 2008
 #
 # The MIT License
 # 
@@ -65,6 +65,11 @@ try:
         alphas, alphanums, printables, ParseException
 except ImportError:
     OPTS.arg_spec = False
+# XXX: This is for later, as the loadrc function checks that it got imported okay.
+# pyparsing will still be in sys.modules even if only part of the import works, so
+# this makes sure only a clean import happens or no import.
+    if 'pyparsing' in sys.modules:
+        del sys.modules['pyparsing']
 else:
     OPTS.arg_spec = True
 
@@ -218,7 +223,6 @@ class Repl( object ):
         self.s = ''
         self.list_win_visible = False
 
-        
         if not OPTS.arg_spec:
             return
 
@@ -502,6 +506,8 @@ class Repl( object ):
         self.scr.touchwin()
         self.scr.cursyncup()
         self.scr.noutrefresh()
+# This looks a little odd, but I can't figure a better way to stick the cursor
+# back where it belongs (refreshing the window hides the list_win)
         self.scr.move( *self.scr.getyx() )
         self.list_win.refresh()
 
@@ -1399,10 +1405,15 @@ def loadrc():
     leaves them as strings and handles hopefully all the sane ways of
     representing a boolean."""
 
-    if not os.path.isfile( os.path.expanduser( '~/.bpythonrc' ) ):
+    if len(sys.argv) > 2:
+        path = sys.argv[2]
+    else:
+        path = os.path.expanduser( '~/.bpythonrc' )
+
+    if not os.path.isfile( path ):
         return
 
-    f = open( os.path.expanduser( '~/.bpythonrc' ) )
+    f = open( path )
     parser = shlex.shlex( f )
     
     bools = {
