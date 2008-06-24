@@ -1063,6 +1063,9 @@ class Repl( object ):
         
         sl = sorted( l, key=str.__len__ )
         for i, c in enumerate( l[-1] ):
+# I hate myself. Please email seamusmb@gmail.com to call him an dickhead for
+# insisting that I make bpython 2.4-compatible. I couldn't be bothered
+# refactoring, so ghetto all() it is:
             if not reduce( lambda x, y: (x and y) or False,
                             ( k.startswith( l[-1][:i] ) for k in sl ),
                             True ):
