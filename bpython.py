@@ -409,7 +409,10 @@ class Repl( object ):
         y, x = self.scr.getyx()
         h, w = self.scr.getmaxyx()
         down = (y < h / 2)
-        max_h = h - y if down else y+1
+        if down:
+            max_h = h - y 
+        else:
+            max_h = y+1
         max_w = int(w * 0.6)
 
         self.list_win.erase()
@@ -1060,7 +1063,9 @@ class Repl( object ):
         
         sl = sorted( l, key=str.__len__ )
         for i, c in enumerate( l[-1] ):
-            if not all( k.startswith( l[-1][:i] ) for k in sl ):
+            if not reduce( lambda x, y: (x and y) or False,
+                            ( k.startswith( l[-1][:i] ) for k in sl ),
+                            True ):
                 break
 
         return l[-1][:i-1]
@@ -1434,6 +1439,9 @@ def loadrc():
         if hasattr( OPTS, k ):
             setattr( OPTS, k, v )
 
+    if not "pyparsing" in sys.modules:
+        OPTS.arg_spec = False
+
 stdscr = None
 
 def main( scr ):
@@ -1478,7 +1486,7 @@ try:
     o = curses.wrapper( main )
 except:
     tb = traceback.format_exc()
-finally: # I don't know why this is necessary; without it the wrapper doesn't always
+# I don't know why this is necessary; without it the wrapper doesn't always
 # do its job.
     if stdscr is not None:
         stdscr.keypad(0)
