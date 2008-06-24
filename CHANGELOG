@@ -1,3 +1,11 @@
+v0.6.1
+======
+Somehow it escaped my attention that the list window was never
+fully using the rightmost column, except for the first row. This
+is because me and numbers don't have the best relationship. I think
+stability is really improving with the latest spat of bugfixes,
+keep me informed of any bugs.
+
 v0.6.0
 ======
 No noticeable changes except that bpython should now work with

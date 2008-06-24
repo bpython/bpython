@@ -417,9 +417,11 @@ class Repl( object ):
             max_h = h - y 
         else:
             max_h = y+1
-        max_w = int(w * 0.6)
+        max_w = int(w * 0.8)
 
         self.list_win.erase()
+        if items and '.' in items[0]:
+            items = [ x.rpartition('.')[2] for x in items ]
 
         if topline:
             height_offset = self.mkargspec(topline, down) + 1
@@ -430,8 +432,8 @@ class Repl( object ):
             wl = max( len(i) for i in v_items ) + 1 # longest word length (and a space)
             if not wl:
                 wl = 1
-            cols = (max_w - 2) / wl
-            rows = len( v_items ) / (cols or 1)
+            cols = ((max_w - 2) / wl) or 1 
+            rows = len( v_items ) / cols
 
             if cols * rows < len( v_items ):
                 rows += 1
@@ -473,7 +475,11 @@ class Repl( object ):
         elif wl + 3 > max_w:
             w = max_w
         else:
-            w = (cols + 1) * wl + 3
+            t = (cols + 1) * wl + 3
+            if t > max_w:
+                t = max_w
+            w = t
+
 
         if height_offset and display_rows+5 >= max_h:
             del v_items[-(cols * (height_offset)):]
@@ -487,11 +493,12 @@ class Repl( object ):
 
         if v_items:
             self.list_win.addstr( '\n ' )
+         
 
         for ix, i in enumerate(v_items):
             padding = (wl - len(i)) * ' '
             self.list_win.addstr( i + padding, curses.color_pair( self._C["c"]+1 ) )
-            if ((cols == 1) or (ix and not ix % cols)) and ix+1 < len(v_items):
+            if (cols == 1 or (ix and not (ix+1) % cols)) and ix + 1 < len(v_items):
                 self.list_win.addstr( '\n ' )
         
 # XXX: After all the trouble I had with sizing the list box (I'm not very good
