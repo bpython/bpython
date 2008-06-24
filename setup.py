@@ -31,7 +31,7 @@ PYTHONLIB = os.path.join(get_python_lib(standard_lib=1, prefix=""),
                          "site-packages")
 
 setup(name="bpython",
-      version = "0.5.0",
+      version = "0.5.3",
       description = "Fancy Interface to the Python Interpreter",
       author = "Robert Anthony Farrell",
       author_email = "robertanthonyfarrell@gmail.com",
