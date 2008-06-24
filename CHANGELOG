@@ -1,3 +1,14 @@
+v0.5.2
+======
+help() actually displays the full help page, and I fixed up the
+ghetto pager a little.
+
+v0.5.1
+======
+Now you can hit tab to display the autocomplete list, rather than
+have it pop up automatically as you type which, apparently, annoys
+Brendogg.
+
 v0.5.0
 ======
 A few people have commented that the help() built-in function
