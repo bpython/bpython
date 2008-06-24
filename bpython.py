@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# bpython 0.5.2::fancy curses interface to the Python repl::Bob Farrell 2008
+# bpython 0.5.3::fancy curses interface to the Python repl::Bob Farrell 2008
 #
 # The MIT License
 # 
@@ -64,9 +64,9 @@ try:
         Group, OneOrMore, ZeroOrMore, Literal, Optional, Word, \
         alphas, alphanums, printables, ParseException
 except ImportError:
-    OPTS.argspec = False
+    OPTS.arg_spec = False
 else:
-    OPTS.argspec = True
+    OPTS.arg_spec = True
 
 import pydoc
 
@@ -219,7 +219,7 @@ class Repl( object ):
         self.list_win_visible = False
 
         
-        if not OPTS.argspec:
+        if not OPTS.arg_spec:
             return
 
         pexp = Forward()
@@ -328,7 +328,7 @@ class Repl( object ):
                         r = t
             return r
 
-        if not OPTS.argspec:
+        if not OPTS.arg_spec:
             return False
 
         t = parse_parens( self.s )
@@ -1400,8 +1400,10 @@ def loadrc():
     bools = {
         'true': True,
         'yes': True,
+        'on': True,
         'false': False,
-        'no': False
+        'no': False,
+        'off': False
     }
 
     config = {}
@@ -1412,9 +1414,12 @@ def loadrc():
         if not k:
             break
 
+        k = k.lower()
+
         if parser.get_token() == '=':
             v = parser.get_token() or None
 
+        print v
         if v is not None:
             try:
                 v = int(v)
@@ -1423,9 +1428,9 @@ def loadrc():
                     v = bools[v.lower()]
 
             config[k] = v 
-
+    f.close()
         
-    for k in config:
+    for k, v in config.iteritems():
         if hasattr( OPTS, k ):
             setattr( OPTS, k, v )
 

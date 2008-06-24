@@ -1,3 +1,8 @@
+v0.5.3
+======
+Now you can configure a ~/.bpythonrc file (or pass a rc file at the
+command line (bpython /foo/bar). See README for details.
+
 v0.5.2
 ======
 help() actually displays the full help page, and I fixed up the

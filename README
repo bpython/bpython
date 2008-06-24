@@ -95,16 +95,16 @@ as you type.
 	the screen data will be flushed to stdout, so it basically
 	looks the same as if you had quit the vanilla interpreter.
 
+Configuration
+=============
+See the sample-rc file for a list of available options.
+You should save your rc file as ~/.bpythonrc or specify
+at the command line:
+
+bpython /path/to/bpythonrc
+
 Known Bugs
 ==========
 
-* There's some weirdness when you use rewind sometimes with how
-it displays the text afterwards, I haven't had enough time to
-sit down and look at exactly what's causing it, as it doesn't
-seem to happen a lot, and it fixes itself pretty quickly anyway.
-
 * Triple quoted strings over multiple lines work, but they're
 not highlighted properly.
-
-* There is no way to configure the keys or the pastebin options,
-this is a definite for the next release.
