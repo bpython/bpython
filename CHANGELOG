@@ -1,3 +1,12 @@
+v0.6.0
+======
+No noticeable changes except that bpython should now work with
+Python 2.4. Personally I think it's silly to make a development
+tool work with an out of date version of Python but some people
+seem to disagree. The only real downside is that I had to do a
+horrible version of all() using reduce(), otherwise there's no
+real differences in the code.
+
 v0.5.3
 ======
 Now you can configure a ~/.bpythonrc file (or pass a rc file at the
