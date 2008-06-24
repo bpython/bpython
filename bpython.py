@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# bpython 0.5.0::fancy curses interface to the Python repl::Bob Farrell 2008
+# bpython 0.5.1::fancy curses interface to the Python repl::Bob Farrell 2008
 #
 # The MIT License
 # 
@@ -49,6 +49,8 @@ class Dummy( object ):
     pass
 OPTS = Dummy()
 
+OPTS.auto_display_list = True
+
 try:
     from pygments import highlight
     from pygments.lexers import PythonLexer
@@ -70,6 +72,10 @@ import pydoc
 
 # TODO:
 #
+# Keyboard interrupt needs to tidy up the screen afterwards.
+#
+# Ability to require a keypress (e.g. tab) to display autocomplete
+# list.
 # 
 # No config file yet. This will allow things like "indent depth" for requiring
 # the user to hit return n times to signify the end of a code block.
@@ -210,6 +216,7 @@ class Repl( object ):
         self.argspec = None
         self.tablen = None
         self.s = ''
+        self.list_win_visible = False
 
         
         if not OPTS.argspec:
@@ -334,10 +341,25 @@ class Repl( object ):
         
         return getargspec( func )
 
-    def complete( self ):
+    def complete( self, tab=False ):
+        """Wrap the _complete method to determine the visibility of list_win
+        since there can be several reasons why it won't be displayed; this
+        makes it more manageable."""
+        
+        if self.list_win_visible and not OPTS.auto_display_list:
+            self.scr.touchwin()
+            self.list_win_visible = False
+            return
+
+        if OPTS.auto_display_list or tab:
+            self.list_win_visible = self._complete( tab )
+            return
+
+    def _complete( self, tab=False ):
         """Construct a full list of possible completions and construct and
         display them in a window. Also check if there's an available argspec
-        (via the inspect module) and bang that on top of the completions too."""
+        (via the inspect module) and bang that on top of the completions too.
+        The return value is whether the list_win is visible or not."""
 
         words = []
         i = 0
@@ -349,7 +371,7 @@ class Repl( object ):
         if not (cw or self.argspec):
             self.scr.redrawwin()
             self.scr.refresh()
-            return None
+            return False
 
         if not cw:
             self.matches = []
@@ -365,12 +387,19 @@ class Repl( object ):
 
         if (e or not self.completer.matches) and not self.argspec:
             self.scr.redrawwin()
-            return
+            return False
 
         if not e and self.completer.matches:
             self.matches = sorted( set( self.completer.matches ) ) # remove duplicates and
 # restore order
+
+        if len( self.matches ) == 1 and not OPTS.auto_display_list:
+            self.list_win_visible = True
+            self.tab()
+            return False
+
         self.show_list( self.matches, self.argspec )
+        return True
 
     def show_list( self, items, topline=None ):
         shared = Dummy()
@@ -419,6 +448,7 @@ class Repl( object ):
             v_items.append( i[:max_w-3] )
             if not lsize():
                 del v_items[-1]
+                v_items[-1] = '...'
                 break
 
         rows = shared.rows
@@ -454,14 +484,22 @@ class Repl( object ):
         for ix, i in enumerate(v_items):
             padding = (wl - len(i)) * ' '
             self.list_win.addstr( i + padding, curses.color_pair( self._C["c"]+1 ) )
-            if (cols == 1) or (ix and not ix % cols and ix < len(v_items)):
+            if ((cols == 1) or (ix and not ix % cols)) and ix+1 < len(v_items):
                 self.list_win.addstr( '\n ' )
+        
+# XXX: After all the trouble I had with sizing the list box (I'm not very good
+# at that type of thing) I decided to do this bit of tidying up here just to make
+# sure there's no unnececessary blank lines, it makes things look nicer. :)
+        y = self.list_win.getyx()[0]
+        self.list_win.resize(y + 2, w )
 
         self.statusbar.win.touchwin()
         self.statusbar.win.noutrefresh()
         self.list_win.border()
         self.scr.touchwin()
+        self.scr.cursyncup()
         self.scr.noutrefresh()
+        self.scr.move( *self.scr.getyx() )
         self.list_win.refresh()
 
     
@@ -996,12 +1034,20 @@ class Repl( object ):
                 self.tablen = self.scr.getyx()[1] - x
             return True
 
+        if not OPTS.auto_display_list and not self.list_win_visible:
+            self.complete( tab=True )
+            return True
+
         cw = self.cw()
-        if cw:
-            b = self.strbase( self.matches )
-            if b:
-                self.s += b[ len( cw ) : ]
-                self.print_line( self.s )
+        if not cw:
+            return True
+
+        b = self.strbase( self.matches )
+        if b:
+            self.s += b[ len( cw ) : ]
+            self.print_line( self.s )
+            if len( self.matches ) == 1 and OPTS.auto_display_list:
+                self.scr.touchwin()
         return True
 
     def strbase( self, l ):
