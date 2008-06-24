@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# bpython 0.5.1::fancy curses interface to the Python repl::Bob Farrell 2008
+# bpython 0.5.2::fancy curses interface to the Python repl::Bob Farrell 2008
 #
 # The MIT License
 # 
@@ -42,7 +42,7 @@ import struct
 import termios
 import fcntl
 import string
-import ConfigParser
+import shlex
 from bpython.formatter import BPythonFormatter
 
 class Dummy( object ):
@@ -768,10 +768,10 @@ class Repl( object ):
 
 # The regular help() function uses PAGER to display the help, which
 # screws with bpython.
-        from bpython import internal
-        internal.window = self.scr
-        self.push('from bpython import internal\n')
-        self.push('help = internal._help')
+        from bpython import _internal
+        _internal.window = self.scr
+        self.push('from bpython import _internal\n')
+        self.push('help = _internal._help')
 
         self.iy, self.ix = self.scr.getyx()
         more = False
@@ -788,6 +788,7 @@ class Repl( object ):
             self.scr.redrawwin()
             if self.do_exit:
                 return
+
             self.h_i = 0
             self.history.append( inp )
             self.s_hist[-1] += self.f_string
@@ -1385,20 +1386,50 @@ def do_resize( caller ):
     # The list win resizes itself every time it appears so no need to do it here.
 
 def loadrc():
-    """Attempt to load the rc file and apply settings."""
+    """Use the shlex module to make a simple lexer for the settings,
+    it also attempts to convert any integers to Python ints, otherwise
+    leaves them as strings and handles hopefully all the sane ways of
+    representing a boolean."""
 
-    c = ConfigParser.ConfigParser()
-    if not( c.read( os.path.expanduser('~/.bpythonrc') ) ):
+    if not os.path.isfile( os.path.expanduser( '~/.bpythonrc' ) ):
         return
+
+    f = open( os.path.expanduser( '~/.bpythonrc' ) )
+    parser = shlex.shlex( f )
     
-    if not c.has_section('Global'):
-        return
-    
-    if c.has_option('Global', 'requiretab'):
-        if c.get('Global', 'requiretab') == 'no':
-            OPTS.requiretab = True
-        else:
-            OPTS.requiretab = False
+    bools = {
+        'true': True,
+        'yes': True,
+        'false': False,
+        'no': False
+    }
+
+    config = {}
+    while True:
+        k = parser.get_token()
+        v = None
+
+        if not k:
+            break
+
+        if parser.get_token() == '=':
+            v = parser.get_token() or None
+
+        if v is not None:
+            try:
+                v = int(v)
+            except ValueError:
+                if v.lower() in bools:
+                    v = bools[v.lower()]
+
+            config[k] = v 
+
+        
+    for k in config:
+        if hasattr( OPTS, k ):
+            setattr( OPTS, k, v )
+
+stdscr = None
 
 def main( scr ):
     """main function for the curses convenience wrapper
@@ -1414,7 +1445,6 @@ def main( scr ):
     global DO_RESIZE
     DO_RESIZE = False
     signal.signal( signal.SIGWINCH, lambda x,y: sigwinch(scr) )
-    
     loadrc()
     stdscr = scr
     curses.start_color()
@@ -1445,7 +1475,8 @@ except:
     tb = traceback.format_exc()
 finally: # I don't know why this is necessary; without it the wrapper doesn't always
 # do its job.
-    stdscr.keypad(0)
+    if stdscr is not None:
+        stdscr.keypad(0)
     curses.echo()
     curses.nocbreak()
     curses.endwin()
