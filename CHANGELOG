@@ -1,3 +1,12 @@
+v0.6.2
+======
+The help() now works (as far as I can see) exactly the same
+as the vanilla help() in the regular interpreter. I copied some
+code from pydoc.py to make it handle the special cases, e.g.
+help('keywords')
+help('modules')
+etc.
+
 v0.6.1
 ======
 Somehow it escaped my attention that the list window was never
