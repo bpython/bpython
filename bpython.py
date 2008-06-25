@@ -77,14 +77,6 @@ import pydoc
 
 # TODO:
 #
-# Keyboard interrupt needs to tidy up the screen afterwards.
-#
-# Ability to require a keypress (e.g. tab) to display autocomplete
-# list.
-# 
-# No config file yet. This will allow things like "indent depth" for requiring
-# the user to hit return n times to signify the end of a code block.
-#
 # C-l doesn't repaint the screen yet.
 #
 # Tab completion does not work if not at the end of the line.
@@ -203,7 +195,7 @@ class Repl( object ):
         self.interp = interp
         self.match = False
         self.rl_hist = []
-        self.stdout_hist = []
+        self.stdout_hist = ''
         self.s_hist = []
         self.history = []
         self.h_i = 0
@@ -584,7 +576,7 @@ class Repl( object ):
         """This method returns the 'spoofed' stdout buffer, for writing to a file
         or sending to a pastebin or whatever."""
 
-        return "\n".join( self.stdout_hist )
+        return self.stdout_hist#"\n".join( self.stdout_hist )
 
     def write2file( self ):
         """Prompt for a filename and write the current contents of the stdout buffer
@@ -727,9 +719,8 @@ class Repl( object ):
         """Clear the buffer, redraw the screen and re-evaluate the history"""
 
         self.evaluating = True
-        self.stdout_hist = []
+        self.stdout_hist = ''
         self.f_string = ''
-        self.stdout_hist = []
         self.buffer = []
         self.scr.erase()
         self.s_hist = []
@@ -738,7 +729,7 @@ class Repl( object ):
 
         self.iy, self.ix = self.scr.getyx()
         for line in self.history:
-            self.stdout_hist[-1] += line.rstrip('\n')
+            self.stdout_hist += line + '\n'
             self.print_line( line )
             self.s_hist[-1] += self.f_string
             self.scr.addstr( '\n' ) # I decided it was easier to just do this manually
@@ -757,11 +748,11 @@ class Repl( object ):
         """Show the appropriate Python prompt"""
         if not more:
             self.echo( "\x01g\x03>>> " )
-            self.stdout_hist.append('>>> ')
+            self.stdout_hist += '>>> '
             self.s_hist.append( '\x01g\x03>>> \x04' )
         else:
             self.echo( "\x01r\x03... " )
-            self.stdout_hist.append('... ')
+            self.stdout_hist += '... '
             self.s_hist.append( '\x01r\x03... \x04' )
 
     def repl( self ):
@@ -808,7 +799,7 @@ class Repl( object ):
             self.h_i = 0
             self.history.append( inp )
             self.s_hist[-1] += self.f_string
-            self.stdout_hist[-1] += inp.rstrip('\n')
+            self.stdout_hist += inp + '\n'#.rstrip('\n')
             self.rl_hist.append( inp ) # Keep two copies so you can go up and down in the hist
             more = self.push( inp )
 
@@ -832,14 +823,18 @@ class Repl( object ):
 
     def write( self, s ):
         """For overriding stdout defaults"""
-        if s.rstrip('\n'):
-            if '\x03' in s:
-                t = s.split('\x03')[1].rstrip('\n')
-            else:
-                t = s.rstrip('\n')
-            self.stdout_hist.append( t )
+        if s.rstrip() and '\x03' in s:
+                t = s.split('\x03')[1]
+        else:
+            t = s
+
+        if not self.stdout_hist:
+            self.stdout_hist = t
+        else:
+            self.stdout_hist += t
+
         self.echo( s )
-        self.s_hist.append( s.rstrip('\n') )
+        self.s_hist.append( s.rstrip() )
 
     def flush( self ):
         """Olivier Grisel brought it to my attention that the logging
