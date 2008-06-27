@@ -62,19 +62,18 @@ else:
 try:
     from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
         Group, OneOrMore, ZeroOrMore, Literal, Optional, Word, \
-        alphas, alphanums, ParseException
+        alphas, alphanums, printables, ParseExxception
 except ImportError:
     OPTS.arg_spec = False
+    print ("pyparsing could not be imported properly, " 
+    "parameter list spec will not work." )
 # XXX: This is for later, as the loadrc function checks that it got imported okay.
 # pyparsing will still be in sys.modules even if only part of the import works, so
-# this makes sure only a clean import happens or no import.
+# this makes sure only a clean import happens or no import at all.
     if 'pyparsing' in sys.modules:
         del sys.modules['pyparsing']
 else:
     OPTS.arg_spec = True
-# Some older versions of pyparsing don't seem to have the "printables" so I've
-# just put it in here with my bare hands:
-    printables = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
 
 import pydoc
 
