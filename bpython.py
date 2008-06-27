@@ -415,7 +415,7 @@ class Repl( object ):
 
         self.list_win.erase()
         if items and '.' in items[0]:
-            items = [ x.rpartition('.')[2] for x in items ]
+            items = [ x.rsplit('.')[-1] for x in items ]
 
         if topline:
             height_offset = self.mkargspec(topline, down) + 1
