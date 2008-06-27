@@ -62,7 +62,7 @@ else:
 try:
     from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
         Group, OneOrMore, ZeroOrMore, Literal, Optional, Word, \
-        alphas, alphanums, printables, ParseException
+        alphas, alphanums, ParseException
 except ImportError:
     OPTS.arg_spec = False
 # XXX: This is for later, as the loadrc function checks that it got imported okay.
@@ -72,6 +72,9 @@ except ImportError:
         del sys.modules['pyparsing']
 else:
     OPTS.arg_spec = True
+# Some older versions of pyparsing don't seem to have the "printables" so I've
+# just put it in here with my bare hands:
+    printables = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
 
 import pydoc
 
