@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# bpython 0.5.4::fancy curses interface to the Python repl::Bob Farrell 2008
+# bpython 0.6.3::fancy curses interface to the Python repl::Bob Farrell 2008
 #
 # The MIT License
 # 
@@ -62,7 +62,7 @@ else:
 try:
     from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
         Group, OneOrMore, ZeroOrMore, Literal, Optional, Word, \
-        alphas, alphanums, printables, ParseExxception
+        alphas, alphanums, printables, ParseException
 except ImportError:
     OPTS.arg_spec = False
     print ("pyparsing could not be imported properly, " 
