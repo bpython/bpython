@@ -1,3 +1,7 @@
+v0.6.3
+======
+Forgot to switch rpartition to split for 2.4 compat.
+
 v0.6.2
 ======
 The help() now works (as far as I can see) exactly the same
