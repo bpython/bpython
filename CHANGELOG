@@ -1,3 +1,7 @@
+v0.6.4
+======
+KeyboardInterrupt handler clears the list window properly now.
+
 v0.6.3
 ======
 Forgot to switch rpartition to split for 2.4 compat.
