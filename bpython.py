@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# bpython 0.6.3::fancy curses interface to the Python repl::Bob Farrell 2008
+# bpython 0.6.4::fancy curses interface to the Python repl::Bob Farrell 2008
 #
 # The MIT License
 # 
@@ -792,6 +792,8 @@ class Repl( object ):
             except KeyboardInterrupt:
                 self.statusbar.message('KeyboardInterrupt')
                 self.scr.addstr('\n')
+                self.scr.touchwin()
+                self.scr.refresh()
                 continue
 
             self.scr.redrawwin()
