@@ -1444,7 +1444,6 @@ def loadrc():
         if parser.get_token() == '=':
             v = parser.get_token() or None
 
-        print v
         if v is not None:
             try:
                 v = int(v)
