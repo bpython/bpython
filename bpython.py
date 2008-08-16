@@ -578,7 +578,7 @@ class Repl( object ):
         """This method returns the 'spoofed' stdout buffer, for writing to a file
         or sending to a pastebin or whatever."""
 
-        return self.stdout_hist#"\n".join( self.stdout_hist )
+        return self.stdout_hist + '\n'
 
     def write2file( self ):
         """Prompt for a filename and write the current contents of the stdout buffer
@@ -1006,8 +1006,11 @@ class Repl( object ):
             return ''
 
         elif self.c in ( chr(4), '^D' ): # C-d
-            self.do_exit = True
-            return None
+            if not self.s:
+                self.do_exit = True
+                return None
+            else:
+                return ''
 
         elif self.c == 'KEY_F(2)':
             self.write2file()
