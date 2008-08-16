@@ -1,3 +1,9 @@
+v0.7.0
+======
+C-d behaviour changed so it no longer exits if the current line isn't empty.
+
+Extra linebreak added to end of stdout flush.
+
 v0.6.4
 ======
 KeyboardInterrupt handler clears the list window properly now.
