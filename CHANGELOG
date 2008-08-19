@@ -4,6 +4,8 @@ C-d behaviour changed so it no longer exits if the current line isn't empty.
 
 Extra linebreak added to end of stdout flush.
 
+pygments and pyparsing are now dependencies.
+
 v0.6.4
 ======
 KeyboardInterrupt handler clears the list window properly now.
