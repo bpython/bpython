@@ -43,7 +43,7 @@ import termios
 import fcntl
 import string
 import shlex
-from bpython.formatter import BPythonFormatter
+import pydoc
 
 class Dummy( object ):
     pass
@@ -51,31 +51,15 @@ OPTS = Dummy()
 
 OPTS.auto_display_list = True
 
-try:
-    from pygments import highlight
-    from pygments.lexers import PythonLexer
-except ImportError:
-    OPTS.syntax = False
-else:
-    OPTS.syntax = True
+from pygments import highlight
+from pygments.lexers import PythonLexer
+from bpython.formatter import BPythonFormatter
+OPTS.syntax = True
 
-try:
-    from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
-        Group, OneOrMore, ZeroOrMore, Literal, Optional, Word, \
-        alphas, alphanums, printables, ParseException
-except ImportError:
-    OPTS.arg_spec = False
-    print ("pyparsing could not be imported properly, " 
-    "parameter list spec will not work." )
-# XXX: This is for later, as the loadrc function checks that it got imported okay.
-# pyparsing will still be in sys.modules even if only part of the import works, so
-# this makes sure only a clean import happens or no import at all.
-    if 'pyparsing' in sys.modules:
-        del sys.modules['pyparsing']
-else:
-    OPTS.arg_spec = True
-
-import pydoc
+from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
+    Group, OneOrMore, ZeroOrMore, Literal, Optional, Word, \
+    alphas, alphanums, printables, ParseException
+OPTS.arg_spec = True
 
 # TODO:
 #
