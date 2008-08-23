@@ -1,0 +1,1 @@
+blacklist = ['pyparsing', 'code', 'pygments/lexer']
