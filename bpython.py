@@ -280,7 +280,7 @@ class Repl( object ):
                 #self.argspec = self.argspec % func
                 return True
 
-            except (NameError, TypeError, KeyError), x:
+            except (NameError, TypeError, KeyError):
                 t = getpydocspec( f, func )
                 if t is None:
                     return None
@@ -340,15 +340,12 @@ class Repl( object ):
             self.list_win_visible = self._complete( tab )
             return
 
-    def _complete( self, tab=False ):
+    def _complete( self, unused_tab=False ):
         """Construct a full list of possible completions and construct and
         display them in a window. Also check if there's an available argspec
         (via the inspect module) and bang that on top of the completions too.
         The return value is whether the list_win is visible or not."""
 
-        words = []
-        i = 0
-        
         if not self.get_args():
             self.argspec = None
 
@@ -794,7 +791,7 @@ class Repl( object ):
             self.rl_hist.append( inp ) # Keep two copies so you can go up and down in the hist
             more = self.push( inp )
 
-    def size( self, scr ):
+    def size( self ):
         """Set instance attributes for x and y top left corner coordinates
         and width and heigth for the window."""
         h, w = stdscr.getmaxyx()
@@ -806,7 +803,7 @@ class Repl( object ):
     def resize( self ):
         """This method exists simply to keep it straight forward when initialising
         a window and resizing it."""
-        self.size( self.scr )
+        self.size()
         self.scr.erase()
         self.scr.resize( self.h, self.w )
         self.scr.mvwin( self.y, self.x )
@@ -932,7 +929,7 @@ class Repl( object ):
         else:
             self.s = self.s[ : -self.cpos-1 ] + self.s[ -self.cpos : ]
 
-        for i in range(n):
+        for _ in range(n):
             self.scr.delch( y, x - n )
         self.scr.refresh()
 
@@ -1090,7 +1087,7 @@ class Repl( object ):
         cursor position and move appropriately so it doesn't clear
         the current line after the cursor."""
         if self.cpos:
-            for i in range( self.cpos ):
+            for _ in range( self.cpos ):
                 self.mvc( -1 )
 
         self.echo( "\n" )
@@ -1133,7 +1130,7 @@ class Repl( object ):
 
         if self.cpos:
             t = self.cpos
-            for i in range( self.cpos ):
+            for _ in range( self.cpos ):
                 self.mvc( 1 )
             self.cpos = t
 
@@ -1152,7 +1149,7 @@ class Repl( object ):
         self.s = ''
         self.iy, self.ix = self.scr.getyx()
 
-        for i in range(n_indent):
+        for _ in range(n_indent):
             self.c = '\t'
             self.p_key()
 
@@ -1204,7 +1201,7 @@ class Statusbar( object ):
 
     def __init__( self, scr, pwin, s=None, c=None ):
         """Initialise the statusbar and display the initial (text if there is any)"""
-        self.size( scr )
+        self.size()
         self.win = curses.newwin( self.h, self.w, self.y, self.x )
 
         self.s = s or ''    
@@ -1214,7 +1211,7 @@ class Statusbar( object ):
         self.pwin = pwin
         self.settext( s, c )
         
-    def size( self, scr ):
+    def size( self ):
         """Set instance attributes for x and y top left corner coordinates
         and width and heigth for the window."""
         h, w = gethw()
@@ -1226,7 +1223,7 @@ class Statusbar( object ):
     def resize( self ):
         """This method exists simply to keep it straight forward when initialising
         a window and resizing it."""
-        self.size( self.win )
+        self.size()
         self.win.mvwin( self.y, self.x )
         self.win.resize( self.h, self.w )
         self.refresh()
@@ -1340,7 +1337,7 @@ def init_wins( scr, cols ):
 
     return main_win, statusbar
 
-def sigwinch( scr ):
+def sigwinch( unused_scr ):
     global DO_RESIZE
     DO_RESIZE = True
 
@@ -1466,7 +1463,7 @@ def main( scr ):
     global stdscr
     global DO_RESIZE
     DO_RESIZE = False
-    signal.signal( signal.SIGWINCH, lambda x,y: sigwinch(scr) )
+    signal.signal( signal.SIGWINCH, lambda *_: sigwinch(scr) )
     loadrc()
     stdscr = scr
     curses.start_color()
