@@ -29,11 +29,9 @@ import os
 import sys
 import curses
 import code
-import codeop
 import traceback
 import re
 import time
-import math
 import urllib
 import rlcompleter
 import inspect
@@ -60,6 +58,8 @@ from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
     Group, OneOrMore, ZeroOrMore, Literal, Optional, Word, \
     alphas, alphanums, printables, ParseException
 OPTS.arg_spec = True
+
+DO_RESIZE = False
 
 # TODO:
 #
@@ -200,6 +200,7 @@ class Repl( object ):
         self.tablen = None
         self.s = ''
         self.list_win_visible = False
+        self._C = {}
 
         if not OPTS.arg_spec:
             return
@@ -1487,23 +1488,24 @@ def main( scr ):
     repl.repl()
     return repl.getstdout()
 
-tb = None
-try:
-    o = curses.wrapper( main )
-except:
-    tb = traceback.format_exc()
-# I don't know why this is necessary; without it the wrapper doesn't always
-# do its job.
-    if stdscr is not None:
-        stdscr.keypad(0)
-    curses.echo()
-    curses.nocbreak()
-    curses.endwin()
+if __name__ == '__main__':
+    tb = None
+    try:
+        o = curses.wrapper( main )
+    except:
+        tb = traceback.format_exc()
+    # I don't know why this is necessary; without it the wrapper doesn't always
+    # do its job.
+        if stdscr is not None:
+            stdscr.keypad(0)
+        curses.echo()
+        curses.nocbreak()
+        curses.endwin()
 
-sys.stdout = sys.__stdout__
-if tb:
-    print tb
-    sys.exit(1)
+    sys.stdout = sys.__stdout__
+    if tb:
+        print tb
+        sys.exit(1)
 
-sys.stdout.write( o ) # Fake stdout data so everything's still visible after exiting
-sys.stdout.flush()
+    sys.stdout.write( o ) # Fake stdout data so everything's still visible after exiting
+    sys.stdout.flush()
