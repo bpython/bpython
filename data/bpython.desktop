@@ -1,0 +1,9 @@
+[Desktop Entry]
+Icon=/usr/share/pixmaps/python.xpm
+Name=bpython
+Comment=A fancy interface to the python interpreter!
+Exec=/usr/bin/bpython
+Terminal=true
+Type=Application
+Categories=Development;Utility;ConsoleOnly;
+StartupNotify=true

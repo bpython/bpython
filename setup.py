@@ -9,6 +9,7 @@ import distutils.file_util
 import distutils.dir_util
 import sys, os
 import glob
+import platform
 import re
 
 # Make distutils copy bpython.py to bpython
@@ -30,6 +31,11 @@ distutils.dir_util.copy_tree = copy_tree
 PYTHONLIB = os.path.join(get_python_lib(standard_lib=1, prefix=""),
                          "site-packages")
 
+if platform.system() == 'FreeBSD':
+    man_dir = 'man'
+else:
+    man_dir = 'share/man'
+
 setup(name="bpython",
       version = "0.6.4",
       description = "Fancy Interface to the Python Interpreter",
@@ -43,6 +49,9 @@ bpython is a fancy interface to the Python interpreter for Unix-like operating s
 """,
       packages = ["bpython"],
       scripts = ["bpython.py"],
+      data_files = [
+                    (os.path.join(man_dir, 'man1'), ['doc/bpython.1']),
+                    (os.path.join(man_dir, 'man5'), ['doc/bpythonrc.5']),
+                    ('share/applications', ['data/bpython.desktop'])
+                   ]
       )
-
-
