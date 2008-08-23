@@ -45,23 +45,26 @@ import string
 import shlex
 import pydoc
 
-class Dummy( object ):
-    pass
-OPTS = Dummy()
-
-OPTS.auto_display_list = True
-
+# These are used for syntax hilighting.
 from pygments import highlight
 from pygments.lexers import PythonLexer
 from bpython.formatter import BPythonFormatter
-OPTS.syntax = True
 
+# And these are used for argspec.
 from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
     Group, OneOrMore, ZeroOrMore, Literal, Optional, Word, \
     alphas, alphanums, printables, ParseException
-OPTS.arg_spec = True
 
+class Dummy( object ):
+    pass
+OPTS = Dummy()
 DO_RESIZE = False
+
+# Set default values. (Overridden by loadrc())
+OPTS.tab_length = 4
+OPTS.auto_display_list = True
+OPTS.syntax = True
+OPTS.arg_spec = True
 
 # TODO:
 #
@@ -199,7 +202,6 @@ class Repl( object ):
         self.f_string = ''
         self.matches = []
         self.argspec = None
-        self.tablen = None
         self.s = ''
         self.list_win_visible = False
         self._C = {}
@@ -920,12 +922,12 @@ class Repl( object ):
             x = gethw()[1]
 
         if not self.cpos: # I know the nested if blocks look nasty. :(
-            if self.s[-1] == '\t':
-                n = self.tablen
-                if len(self.s) > 1:
-                    n = n * 2
+            if self.atbol():
+                n = len(self.s) % OPTS.tab_length
+                if not n:
+                    n = OPTS.tab_length
 
-            self.s = self.s[ : -1 ]
+            self.s = self.s[ : -n ]
         else:
             self.s = self.s[ : -self.cpos-1 ] + self.s[ -self.cpos : ]
 
@@ -1027,14 +1029,14 @@ class Repl( object ):
         otherwise attempt to autocomplete to the best match of possible
         choices in the match list."""
         
-        if self.tablen is None:
-            x = self.scr.getyx()[1]
-
         if self.atbol():
-            self.addstr( self.c )
+            x_pos = len(self.s) - self.cpos
+            num_spaces = x_pos % OPTS.tab_length
+            if not num_spaces:
+                num_spaces = OPTS.tab_length
+
+            self.addstr( ' ' * num_spaces)
             self.print_line( self.s )
-            if self.tablen is None:
-                self.tablen = self.scr.getyx()[1] - x
             return True
 
         if not OPTS.auto_display_list and not self.list_win_visible:
@@ -1445,8 +1447,6 @@ def loadrc():
         if hasattr( OPTS, k ):
             setattr( OPTS, k, v )
 
-    if not "pyparsing" in sys.modules:
-        OPTS.arg_spec = False
 
 stdscr = None
 
