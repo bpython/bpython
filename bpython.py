@@ -937,6 +937,17 @@ class Repl( object ):
         for _ in range(n):
             self.scr.delch( y, x - n )
 
+        return n
+
+    def bs_word(self):
+        pos = len(self.s) - self.cpos - 1
+        # First we delete any space to the left of the cursor.
+        while pos >= 0 and self.s[pos] == ' ':
+            pos -= self.bs()
+        # Then we delete a full word.
+        while pos >= 0 and self.s[pos] != ' ':
+            pos -= self.bs()
+
     def delete( self ):
         """Process a del"""
         if not len(self.s): 
@@ -1003,6 +1014,11 @@ class Repl( object ):
 
         elif self.c == "KEY_END":
             self.mvc(-self.cpos)
+
+        elif self.c in ('^W', chr(23)): # C-w
+            self.bs_word()
+            self.complete()
+            return ''
 
         elif self.c in ('^U', chr(21) ): # C-u
             self.clrtobol()
