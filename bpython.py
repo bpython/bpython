@@ -950,7 +950,7 @@ class Repl( object ):
 
     def delete( self ):
         """Process a del"""
-        if not len(self.s): 
+        if self.s: 
             return
 
         if self.mvc(-1):
