@@ -23,8 +23,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# Requires at least Python 2.5 and pygments (apt-get install python-pyments)
+# Requires at least Python 2.4, pygments and pyparsing
+# Debian/Ubuntu: aptitude install python-pyments python-pyparsing
 #
+
 import os
 import sys
 import curses
@@ -1013,7 +1015,7 @@ class Repl( object ):
             return self.tab()
 
         elif len( self.c ) == 1 and self.c in string.printable:#ord( self.c ) <= 127:
-            self.addc( self.c )
+            self.addstr( self.c )
             self.print_line( self.s )
 
         else:
@@ -1032,7 +1034,7 @@ class Repl( object ):
             x = self.scr.getyx()[1]
 
         if self.atbol():
-            self.addc( self.c )
+            self.addstr( self.c )
             self.print_line( self.s )
             if self.tablen is None:
                 self.tablen = self.scr.getyx()[1] - x
@@ -1093,14 +1095,14 @@ class Repl( object ):
 
         self.echo( "\n" )
 
-    def addc( self, c ):
-        """Add a character to the current input line and figure out
+    def addstr( self, s ):
+        """Add a string to the current input line and figure out
         where it should go, depending on the cursor position."""
         if not self.cpos:
-            self.s += self.c
+            self.s += s
         else:
             l = len( self.s ) 
-            self.s = self.s[ : l - self.cpos ] + self.c + self.s[ l - self.cpos : ]
+            self.s = self.s[ : l - self.cpos ] + s + self.s[ l - self.cpos : ]
 
         self.complete()
 
