@@ -6,6 +6,10 @@ Extra linebreak added to end of stdout flush.
 
 pygments and pyparsing are now dependencies.
 
+Jørgen Tjernø has done lots of cool things like write a manpage and .desktop
+file and improved the way tabbing works and also added home, end and del key
+handling as well as C-w for deleting words - thanks a lot!
+
 v0.6.4
 ======
 KeyboardInterrupt handler clears the list window properly now.
