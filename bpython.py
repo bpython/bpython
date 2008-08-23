@@ -55,9 +55,10 @@ from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
     Group, OneOrMore, ZeroOrMore, Literal, Optional, Word, \
     alphas, alphanums, printables, ParseException
 
-class Dummy( object ):
-    pass
-OPTS = Dummy()
+class Struct( object ):
+    pass  # When we inherit, a __dict__ is added (object uses slots)
+
+OPTS = Struct()
 DO_RESIZE = False
 
 # Set default values. (Overridden by loadrc())
@@ -386,7 +387,7 @@ class Repl( object ):
         return True
 
     def show_list( self, items, topline=None ):
-        shared = Dummy()
+        shared = Struct()
         shared.cols = 0
         shared.rows = 0
         shared.wl = 0
