@@ -886,10 +886,10 @@ class Repl( object ):
         y, x = self.scr.getyx()
 
         if self.cpos == 0 and i < 0:
-            return
+            return False
 
         if x == self.ix and y == self.iy and i >= 1:
-            return
+            return False
 
         h, w = gethw()
         if x - i < 0:
@@ -905,7 +905,9 @@ class Repl( object ):
         if refresh:
             self.scr.refresh()
 
-    def bs( self ):
+        return True
+
+    def bs( self, delete_tabs=True ):
         """Process a backspace"""
 
         y, x = self.scr.getyx()
@@ -923,7 +925,7 @@ class Repl( object ):
             x = gethw()[1]
 
         if not self.cpos: # I know the nested if blocks look nasty. :(
-            if self.atbol():
+            if self.atbol() and delete_tabs:
                 n = len(self.s) % OPTS.tab_length
                 if not n:
                     n = OPTS.tab_length
@@ -934,7 +936,14 @@ class Repl( object ):
 
         for _ in range(n):
             self.scr.delch( y, x - n )
-        self.scr.refresh()
+
+    def delete( self ):
+        """Process a del"""
+        if not len(self.s): 
+            return
+
+        if self.mvc(-1):
+            self.bs(False)
 
     def clrtobol( self ):
         """Clear from cursor to beginning of line; usual C-u behaviour"""
@@ -966,7 +975,12 @@ class Repl( object ):
             self.complete()
             return ''
 
-        elif self.c == chr(18):# C-r
+        elif self.c == 'KEY_DC': # Del
+            self.delete()
+            self.complete()
+            return ''
+
+        elif self.c == chr(18): # C-r
             self.undo()
             return ''
 
@@ -983,6 +997,12 @@ class Repl( object ):
         
         elif self.c == 'KEY_RIGHT': # Cursor Right
             self.mvc( -1 )
+
+        elif self.c == "KEY_HOME":
+            self.mvc(len(self.s) - self.cpos)
+
+        elif self.c == "KEY_END":
+            self.mvc(-self.cpos)
 
         elif self.c in ('^U', chr(21) ): # C-u
             self.clrtobol()
@@ -1014,7 +1034,7 @@ class Repl( object ):
         elif self.c == '\t':
             return self.tab()
 
-        elif len( self.c ) == 1 and self.c in string.printable:#ord( self.c ) <= 127:
+        elif len( self.c ) == 1 and self.c in string.printable:
             self.addstr( self.c )
             self.print_line( self.s )
 
