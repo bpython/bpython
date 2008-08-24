@@ -813,7 +813,6 @@ class Repl( object ):
             try:
                 inp = self.get_line()
             except KeyboardInterrupt:
-                sys.exit() # DELETE ME !!!
                 self.statusbar.message('KeyboardInterrupt')
                 self.scr.addstr('\n')
                 self.scr.touchwin()
