@@ -12,6 +12,9 @@ handling as well as C-w for deleting words - thanks a lot!
 
 raw_input() and all its friends now work fine.
 
+PYTHONSTARTUP handled without blowing up on stupid errors (it now parses the
+file at once instead of feeding it to the repl line-by-line).
+
 v0.6.4
 ======
 KeyboardInterrupt handler clears the list window properly now.

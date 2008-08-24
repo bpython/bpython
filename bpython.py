@@ -789,14 +789,14 @@ class Repl( object ):
         entered for using up/down to go back and forth (which has to be separate
         to the evaluation history, which will be truncated when undoing."""
         
-        # This was a feature request to have the PYTHONSTARTUP
-        # file executed on startup - I personally don't use this
-        # feature so please notify me of any breakage.
+# This was a feature request to have the PYTHONSTARTUP
+# file executed on startup - I personally don't use this
+# feature so please notify me of any breakage.
         filename = os.environ.get('PYTHONSTARTUP')
         if filename and os.path.isfile(filename):
-            for line in open(filename, 'r'):
-                self.push( line )
-            self.push( '\n' )
+            f = open(filename, 'r')
+            self.interp.runsource(f.read())
+            f.close()
 
 # The regular help() function uses PAGER to display the help, which
 # screws with bpython.
@@ -826,8 +826,9 @@ class Repl( object ):
             self.h_i = 0
             self.history.append( inp )
             self.s_hist[-1] += self.f_string
-            self.stdout_hist += inp + '\n'#.rstrip('\n')
-            self.rl_hist.append( inp ) # Keep two copies so you can go up and down in the hist
+            self.stdout_hist += inp + '\n'
+# Keep two copies so you can go up and down in the hist:
+            self.rl_hist.append( inp ) 
             more = self.push( inp )
 
     def size( self ):
