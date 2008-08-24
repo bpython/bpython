@@ -44,6 +44,7 @@ import fcntl
 import string
 import shlex
 import pydoc
+import cStringIO
 
 # These are used for syntax hilighting.
 from pygments import highlight
@@ -58,8 +59,42 @@ from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
 class Struct( object ):
     pass  # When we inherit, a __dict__ is added (object uses slots)
 
+class FakeStdin(object):
+    """Provide a fake stdin type for things like raw_input() etc."""
+
+    def __init__(self, interface):
+        """Take the curses Repl on init and assume it provides a get_key method
+        which, fortunately, it does."""
+
+        self.interface = interface
+
+    def readline(self):
+        """I can't think of any reason why anything other than readline would
+        be useful in the context of an interactive interpreter so this is the
+        only one I've done anything with. The others are just there in case
+        someone does something weird to stop it from blowing up."""
+
+        buffer = ''
+        while True:
+            key = self.interface.get_key()
+            sys.stdout.write(key)
+# Include the \n in the buffer - raw_input() seems to deal with trailing
+# linebreaks and will break if it gets an empty string.
+            buffer += key
+            if key == '\n':
+                break
+
+        return buffer
+
+    def read(self, x):
+        pass
+
+    def readlines(self, x):
+        pass
+
 OPTS = Struct()
 DO_RESIZE = False
+
 
 # Set default values. (Overridden by loadrc())
 OPTS.tab_length = 4
@@ -206,6 +241,7 @@ class Repl( object ):
         self.s = ''
         self.list_win_visible = False
         self._C = {}
+        sys.stdin = FakeStdin(self)
 
         if not OPTS.arg_spec:
             return
@@ -777,6 +813,7 @@ class Repl( object ):
             try:
                 inp = self.get_line()
             except KeyboardInterrupt:
+                sys.exit() # DELETE ME !!!
                 self.statusbar.message('KeyboardInterrupt')
                 self.scr.addstr('\n')
                 self.scr.touchwin()
@@ -969,7 +1006,6 @@ class Repl( object ):
 
     def p_key( self ):
         """Process a keypress"""
-
 
         if self.c is None:
             return ''
@@ -1198,11 +1234,18 @@ class Repl( object ):
 
         self.c = None
         self.cpos = 0
+
+        while True:
+            self.c = self.get_key()
+            if self.p_key() is None:
+                return self.s
+
+    def get_key(self):
         while True:
             if self.idle:
                 self.idle( self )
             try:
-                self.c = self.scr.getkey()
+                key = self.scr.getkey()
             except curses.error: # I'm quite annoyed with the ambiguity of
 # this exception handler. I previously caught "curses.error, x" and accessed
 # x.message and checked that it was "no input", which seemed a crappy way of
@@ -1210,9 +1253,9 @@ class Repl( object ):
 # seems to have entirely different attributes. So let's hope getkey() doesn't
 # raise any other crazy curses exceptions. :)
                     continue
+            else:
+                return key
 
-            if self.p_key() is None:
-                return self.s
         
 class Statusbar( object ):
     """This class provides the status bar at the bottom of the screen.
