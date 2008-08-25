@@ -13,3 +13,13 @@ syntax = on
 # Display the arg spec (list of arguments) for callables,
 # when possible (default: on).
 arg_spec = true
+
+# History file:
+hist_file = ~/.pythonhist
+
+# Number of lines to store in history (set to 0 to disable):
+hist_len = 100
+
+# Soft tab size:
+tab_length = 4
+
