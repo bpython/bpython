@@ -795,8 +795,9 @@ class Repl( object ):
         filename = os.environ.get('PYTHONSTARTUP')
         if filename and os.path.isfile(filename):
             f = open(filename, 'r')
-            self.interp.runsource(f.read())
+            code_obj = compile(f.read(), filename, 'exec')
             f.close()
+            self.interp.runcode(code_obj)
 
 # The regular help() function uses PAGER to display the help, which
 # screws with bpython.
