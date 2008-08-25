@@ -1,3 +1,8 @@
+v0.7.1
+======
+Added support for a history file, defaults to ~/.pythonhist and 100 lines but
+is configurable from the rc file (see sample-rc).
+
 v0.7.0
 ======
 C-d behaviour changed so it no longer exits if the current line isn't empty.

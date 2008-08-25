@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# bpython 0.7.0::fancy curses interface to the Python repl::Bob Farrell 2008
+# bpython 0.7.1::fancy curses interface to the Python repl::Bob Farrell 2008
 #
 # The MIT License
 # 
@@ -101,6 +101,8 @@ OPTS.tab_length = 4
 OPTS.auto_display_list = True
 OPTS.syntax = True
 OPTS.arg_spec = True
+OPTS.hist_file = '~/.pythonhist'
+OPTS.hist_length = 100
 
 # TODO:
 #
@@ -245,6 +247,10 @@ class Repl( object ):
 
         if not OPTS.arg_spec:
             return
+
+        pythonhist = os.path.expanduser('~/.pythonhist')
+        if os.path.exists(pythonhist):
+            self.rl_hist = open(pythonhist, 'r').readlines()
 
         pexp = Forward()
         chars = printables.replace('(', '')
@@ -829,7 +835,8 @@ class Repl( object ):
             self.s_hist[-1] += self.f_string
             self.stdout_hist += inp + '\n'
 # Keep two copies so you can go up and down in the hist:
-            self.rl_hist.append( inp ) 
+            if inp:
+                self.rl_hist.append( inp + '\n' ) 
             more = self.push( inp )
 
     def size( self ):
@@ -1566,6 +1573,11 @@ def main( scr ):
 
 
     repl.repl()
+    if OPTS.hist_length:
+        f = open(os.path.expanduser('~/.pythonhist'), 'w')
+        f.writelines(repl.rl_hist[-OPTS.hist_length:])
+        f.close()
+
     return repl.getstdout()
 
 if __name__ == '__main__':
