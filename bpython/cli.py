@@ -1538,7 +1538,7 @@ def loadrc():
 
 stdscr = None
 
-def main( scr ):
+def main_curses( scr ):
     """main function for the curses convenience wrapper
 
     Initialise the two main objects: the interpreter
@@ -1580,10 +1580,10 @@ def main( scr ):
 
     return repl.getstdout()
 
-if __name__ == '__main__':
+def main():
     tb = None
     try:
-        o = curses.wrapper( main )
+        o = curses.wrapper( main_curses )
     except:
         tb = traceback.format_exc()
     # I don't know why this is necessary; without it the wrapper doesn't always
@@ -1601,3 +1601,6 @@ if __name__ == '__main__':
 
     sys.stdout.write( o ) # Fake stdout data so everything's still visible after exiting
     sys.stdout.flush()
+
+if __name__ == '__main__':
+    main()
