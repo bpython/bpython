@@ -1,0 +1,7 @@
+include .gitignore
+include .pycheckrc
+include CHANGELOG
+include LICENSE
+include data/bpython.desktop
+include doc/*.[0-9]
+include sample.rc
