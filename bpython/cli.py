@@ -219,6 +219,7 @@ class Repl( object ):
         it's blocking (waiting for keypresses). This, again, should be in a
         different class"""
 
+        self.cut_buffer = ''
         self.buffer = []
         self.scr = scr
         self.interp = interp
@@ -1001,6 +1002,20 @@ class Repl( object ):
         if self.mvc(-1):
             self.bs(False)
 
+    def cut_to_buffer ( self ):
+        """Clear from cursor to end of line, placing into cut buffer"""
+        self.cut_buffer = self.s[ -self.cpos : ]
+        self.s = self.s[ : -self.cpos ]
+        self.cpos = 0
+        self.print_line( self.s, clr=True )
+        self.scr.redrawwin()
+        self.scr.refresh()
+
+    def yank_from_buffer ( self ):
+        """Paste the text from the cut buffer at the current cursor location"""
+        self.addstr( self.cut_buffer )
+        self.print_line( self.s, clr=True )
+
     def clrtobol( self ):
         """Clear from cursor to beginning of line; usual C-u behaviour"""
         if not self.cpos:
@@ -1053,11 +1068,19 @@ class Repl( object ):
         elif self.c == 'KEY_RIGHT': # Cursor Right
             self.mvc( -1 )
 
-        elif self.c == "KEY_HOME":
+        elif self.c in ("KEY_HOME", '^A', chr(1)): # home or ^A
             self.mvc(len(self.s) - self.cpos)
 
-        elif self.c == "KEY_END":
+        elif self.c in ("KEY_END", '^E', chr(5)): # end or ^E
             self.mvc(-self.cpos)
+
+        elif self.c in ('^K', chr(11)): # cut to buffer
+            self.cut_to_buffer()
+            return ''
+
+        elif self.c in ('^Y', chr(25)): # yank from buffer
+            self.yank_from_buffer()
+            return ''
 
         elif self.c in ('^W', chr(23)): # C-w
             self.bs_word()
