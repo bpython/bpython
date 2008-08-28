@@ -3,6 +3,13 @@ v0.7.1
 Added support for a history file, defaults to ~/.pythonhist and 100 lines but
 is configurable from the rc file (see sample-rc).
 
+Charles Duffy has added a yank/put thing - C-k and C-y. He also ran the code
+through some PEP-8 checker thing and fixed up a few old habits I manage to
+break but didn't manage to fix the code to reflect this - thank you!
+
+Jørgen Tjernø has fixed up the autoindentation issues we encountered when
+bringing soft tabs in.
+
 v0.7.0
 ======
 C-d behaviour changed so it no longer exits if the current line isn't empty.
