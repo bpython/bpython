@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup
-import sys, os
 import glob
+import os
 import platform
 import re
+import sys
 
 if platform.system() == 'FreeBSD':
     man_dir = 'man'
@@ -20,7 +21,8 @@ setup(
     description = "Fancy Interface to the Python Interpreter",
     license = "MIT/X",
     url = "http://www.noiseforfree.com/bpython/",
-    long_description = """bpython is a fancy interface to the Python interpreter for Unix-like operating systems.""",
+    long_description = """bpython is a fancy interface to the Python
+    interpreter for Unix-like operating systems.""",
     install_requires = [
         'pygments',
         'pyparsing',
@@ -33,7 +35,7 @@ setup(
     ],
     entry_points = {
         'console_scripts': [
-            'bpython = bpython.cli:main'
+            'bpython = bpython.cli:main',
         ],
     }
 )
