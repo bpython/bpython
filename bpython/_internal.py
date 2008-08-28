@@ -8,7 +8,8 @@ import cStringIO
 # actual user input, I couldn't think of another way of doing this.
 window = None
 
-def _help( obj ):
+
+def _help(obj):
     """Wrapper for the regular help() function but with a ghetto
     PAGER since curses + less = :(
     As per the vanilla help(), this function special-cases for str,
@@ -17,7 +18,7 @@ def _help( obj ):
     """
     io = cStringIO.StringIO()
     doc = pydoc.TextDoc()
-    helper = pydoc.Helper( None, io )
+    helper = pydoc.Helper(None, io)
 
     rows, columns = window.getmaxyx()
     rows -= 3
@@ -29,19 +30,26 @@ def _help( obj ):
 #   the bpython help is no compliant with the vanilla help.
 #   Please let me know if you find this to be untrue.
     if type(obj) is type(''):
-        if obj == 'help': helper.intro()
-        elif obj == 'keywords': helper.listkeywords()
-        elif obj == 'topics': helper.listtopics()
-        elif obj == 'modules': helper.listmodules()
+        if obj == 'help':
+            helper.intro()
+        elif obj == 'keywords':
+            helper.listkeywords()
+        elif obj == 'topics':
+            helper.listtopics()
+        elif obj == 'modules':
+            helper.listmodules()
         elif obj[:8] == 'modules ':
             helper.listmodules(split(obj)[1])
-        elif obj in helper.keywords: helper.showtopic(obj)
-        elif obj in helper.topics: helper.showtopic(obj)
-        elif obj: output = doc.document( eval(obj) ) 
+        elif obj in helper.keywords:
+            helper.showtopic(obj)
+        elif obj in helper.topics:
+            helper.showtopic(obj)
+        elif obj:
+            output = doc.document(eval(obj))
 #######################
 
     else:
-        output = doc.document( obj )
+        output = doc.document(obj)
         if not output:
             output = "No help found for %s" % obj
             return
@@ -63,18 +71,19 @@ def _help( obj ):
 
     paragraphs = []
     for o in output:
-        paragraphs.append( textwrap.wrap( o, columns ) )
+        paragraphs.append(textwrap.wrap(o, columns))
 
     i = 0
-    for j, paragraph in enumerate( paragraphs ):
+    for j, paragraph in enumerate(paragraphs):
         for line in paragraph:
-            sys.stdout.write( line + '\n' )
+            sys.stdout.write(line + '\n')
             i += 1
 # This is a little unclear, but it just waits for a
 # keypress when the a page worth of text has been
 # displayed and returns if 'q' is pressed:
             if not i % rows and not wait_for_key():
                 return
+
 
 def wait_for_key():
     """Block until a key is pressed for the ghetto paging."""
@@ -90,7 +99,10 @@ def wait_for_key():
     clear_line()
     return q
 
+
 def clear_line():
     y = window.getyx()[0]
     window.move(y, 0)
     window.clrtoeol()
+
+# vim: sw=4 ts=4 sts=4 ai et
