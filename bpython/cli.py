@@ -59,9 +59,10 @@ from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
 
 stdscr = None
 
-
 class Struct(object):
-    pass  # When we inherit, a __dict__ is added (object uses slots)
+    """Simple class for instantiating objects we can add arbitrary attributes
+    to and use for various arbitrary things."""
+    pass
 
 
 class FakeStdin(object):
@@ -158,6 +159,43 @@ def make_colours():
 
 
 class Interpreter(code.InteractiveInterpreter):
+    
+    def __init__(self):
+        """The syntaxerror callback can be set at any time and will be called
+        on a caught syntax error. The purpose for this in bpython is so that
+        the repl can be instantiated after the interpreter (which it
+        necessarily must be with the current factoring) and then an exception
+        callback can be added to the Interpeter instance afterwards - more
+        specifically, this is so that autoindentation does not occur after a
+        traceback."""
+
+        self.syntaxerror_callback = None
+# Unfortunately code.InteractiveInterpreter is a classic class, so no super()
+        code.InteractiveInterpreter.__init__(self)
+
+    def showsyntaxerror(self, filename=None):
+        """Override the regular handler, the code's copied and pasted from
+        code.py, as per showtraceback, but with the syntaxerror callback called
+        and the text in a pretty colour."""
+        if self.syntaxerror_callback is not None:
+            self.syntaxerror_callback()
+
+        type, value, sys.last_traceback = sys.exc_info()
+        sys.last_type = type
+        sys.last_value = value
+        if filename and type is SyntaxError:
+            # Work hard to stuff the correct filename in the exception
+            try:
+                msg, (dummy_filename, lineno, offset, line) = value
+            except:
+                # Not the format we expect; leave it alone
+                pass
+            else:
+                # Stuff in the right filename
+                value = SyntaxError(msg, (filename, lineno, offset, line))
+                sys.last_value = value
+        list = traceback.format_exception_only(type, value)
+        map(self.writetb, list)
 
     def showtraceback(self):
         """This needs to override the default traceback thing
@@ -280,8 +318,8 @@ class Repl(object):
         left of the cursor"""
 
         if self.cpos:
-            # I don't know if autocomplete should be disabled if the cursor
-            # isn't at the end of the line, but that's what this does for now.
+# I don't know if autocomplete should be disabled if the cursor
+# isn't at the end of the line, but that's what this does for now.
             return
 
         l = len(self.s)
@@ -318,7 +356,7 @@ class Repl(object):
                 return None
 
             args = [i.strip() for i in s.groups()[1].split(',')]
-            return [func, (args, None, None, None)]#None, None, None]
+            return [func, (args, None, None, None)]
 
         def getargspec(func):
             try:
@@ -330,7 +368,8 @@ class Repl(object):
             else:
                 try:
                     f = eval(func, self.interp.locals)
-                except Exception: # Same deal with the exceptions :(
+                except Exception:
+# Same deal with the exceptions :(
                     return None
 
             try:
@@ -339,8 +378,6 @@ class Repl(object):
                 else:
                     argspec = inspect.getargspec(f)
                 self.argspec = [func, argspec]
-                #[0]]#"Args for %s: " + ", ".join(argspec[0])
-                #self.argspec = self.argspec % func
                 return True
 
             except (NameError, TypeError, KeyError):
@@ -349,7 +386,8 @@ class Repl(object):
                     return None
                 self.argspec = t
                 return True
-            except AttributeError: # no __init__
+            except AttributeError:
+# This happens if no __init__ is found
                 return None
 
         def parse_parens(s):
@@ -423,9 +461,10 @@ class Repl(object):
 
         try:
             self.completer.complete(cw, 0)
-        except Exception: # This sucks, but it's either that or list all the
-# exceptions that could possibly be raised here, so if anyone wants to do that,
-# feel free to send me a patch.
+        except Exception:
+# This sucks, but it's either that or list all the exceptions that could
+# possibly be raised here, so if anyone wants to do that, feel free to send me
+# a patch.
             e = True
         else:
             e = False
@@ -435,7 +474,7 @@ class Repl(object):
             return False
 
         if not e and self.completer.matches:
-            # remove duplicates and restore order
+# remove duplicates and restore order
             self.matches = sorted(set(self.completer.matches))
 
         if len(self.matches) == 1 and not OPTS.auto_display_list:
@@ -470,7 +509,6 @@ class Repl(object):
             height_offset = 0
 
         def lsize():
-            # wl = longest word length (and a space)
             wl = max(len(i) for i in v_items) + 1
             if not wl:
                 wl = 1
@@ -490,7 +528,7 @@ class Repl(object):
             return True
 
         if items:
-            # visible items (we'll append until we can't fit any more in)
+# visible items (we'll append until we can't fit any more in)
             v_items = [items[0][:max_w-3]]
             lsize()
         else:
@@ -527,7 +565,7 @@ class Repl(object):
         if height_offset and display_rows+5 >= max_h:
             del v_items[-(cols * (height_offset)):]
 
-        self.list_win.resize(rows+2, w)#(cols + 1) * wl + 3)
+        self.list_win.resize(rows+2, w)
 
         if down:
             self.list_win.mvwin(y+1, 0)
@@ -807,7 +845,7 @@ class Repl(object):
 
         self.evaluating = False
         #map(self.push, self.history)
-        #^-- That's how simple this function was at first :(
+        #^-- That's how simple this method was at first :(
 
     def prompt(self, more):
         """Show the appropriate Python prompt"""
@@ -1004,7 +1042,8 @@ class Repl(object):
             y -= 1
             x = gethw()[1]
 
-        if not self.cpos: # I know the nested if blocks look nasty. :(
+        if not self.cpos:
+# I know the nested if blocks look nasty. :(
             if self.atbol() and delete_tabs:
                 n = len(self.s) % OPTS.tab_length
                 if not n:
@@ -1021,10 +1060,10 @@ class Repl(object):
 
     def bs_word(self):
         pos = len(self.s) - self.cpos - 1
-        # First we delete any space to the left of the cursor.
+# First we delete any space to the left of the cursor.
         while pos >= 0 and self.s[pos] == ' ':
             pos -= self.bs()
-        # Then we delete a full word.
+# Then we delete a full word.
         while pos >= 0 and self.s[pos] != ' ':
             pos -= self.bs()
 
@@ -1202,7 +1241,7 @@ class Repl(object):
 
         sl = sorted(l, key=str.__len__)
         for i, c in enumerate(l[-1]):
-# I hate myself. Please email seamusmb@gmail.com to call him an dickhead for
+# I hate myself. Please email seamusmb@gmail.com to call him a dickhead for
 # insisting that I make bpython 2.4-compatible. I couldn't be bothered
 # refactoring, so ghetto all() it is:
             if not reduce(lambda x, y: (x and y) or False,
@@ -1284,12 +1323,20 @@ class Repl(object):
         idiot)."""
 
         self.ts = ''
-        n_indent = re.split('[^\t]', self.s, 1)[0].count('\t')
-        indent = self.s.endswith(':')
+
+        indent_spaces = 0
+        for c in self.s:
+            if c == ' ':
+                indent_spaces += 1
+            else:
+                break
+
+        indent = self.s.rstrip().endswith(':')
+
         self.s = ''
         self.iy, self.ix = self.scr.getyx()
 
-        for _ in range(n_indent):
+        for _ in range(indent_spaces // OPTS.tab_length):
             self.c = '\t'
             self.p_key()
 
@@ -1305,18 +1352,25 @@ class Repl(object):
             if self.p_key() is None:
                 return self.s
 
+    def clear_current_line(self):
+        """This is used as the exception callback for the Interpreter instance.
+        It prevents autoindentation from occuring after a traceback."""
+
+        self.s = ''
+
     def get_key(self):
         while True:
             if self.idle:
                 self.idle(self)
             try:
                 key = self.scr.getkey()
-            except curses.error: # I'm quite annoyed with the ambiguity of
-# this exception handler. I previously caught "curses.error, x" and accessed
-# x.message and checked that it was "no input", which seemed a crappy way of
-# doing it. But then I ran it on a different computer and the exception
-# seems to have entirely different attributes. So let's hope getkey() doesn't
-# raise any other crazy curses exceptions. :)
+            except curses.error:
+# I'm quite annoyed with the ambiguity of this exception handler. I previously
+# caught "curses.error, x" and accessed x.message and checked that it was "no
+# input", which seemed a crappy way of doing it. But then I ran it on a
+# different computer and the exception seems to have entirely different
+# attributes. So let's hope getkey() doesn't raise any other crazy curses
+# exceptions. :)
                     continue
             else:
                 return key
@@ -1476,9 +1530,9 @@ def init_wins(scr, cols):
 
     main_win = curses.newwin(h-1, w, 0, 0)
     main_win.scrollok(True)
-    main_win.keypad(1) # Thanks to Angus Gibson for pointing out
-# this missing line which was causing problems that needed dirty
-# hackery to fix. :)
+    main_win.keypad(1) 
+# Thanks to Angus Gibson for pointing out this missing line which was causing
+# problems that needed dirty hackery to fix. :)
 
     statusbar = Statusbar(scr, main_win,
         ".:: <C-d> Exit  <C-r> Rewind  <F2> Save  <F8> Pastebin ::.",
@@ -1533,7 +1587,8 @@ def do_resize(caller):
     global DO_RESIZE
     h, w = gethw()
     if not h:
-        return # Hopefully this shouldn't happen. :)
+# Hopefully this shouldn't happen. :)
+        return
 
     curses.endwin()
     os.environ["LINES"] = str(h)
@@ -1543,8 +1598,7 @@ def do_resize(caller):
 
     caller.resize()
     caller.statusbar.resize()
-    # The list win resizes itself every time it appears so no need to do it
-    # here.
+# The list win resizes itself every time it appears so no need to do it here.
 
 
 def loadrc():
@@ -1629,6 +1683,8 @@ def main_curses(scr):
     interpreter = Interpreter()
 
     repl = Repl(main_win, interpreter, statusbar, idle)
+    interpreter.syntaxerror_callback = repl.clear_current_line
+
     repl._C = cols
 
     sys.stdout = repl
@@ -1650,8 +1706,8 @@ def main():
         o = curses.wrapper(main_curses)
     except:
         tb = traceback.format_exc()
-    # I don't know why this is necessary; without it the wrapper doesn't always
-    # do its job.
+# I don't know why this is necessary; without it the wrapper doesn't always do
+# its job.
         if stdscr is not None:
             stdscr.keypad(0)
         curses.echo()
@@ -1663,7 +1719,7 @@ def main():
         print tb
         sys.exit(1)
 
-    # Fake stdout data so everything's still visible after exiting
+# Fake stdout data so everything's still visible after exiting
     sys.stdout.write(o)
     sys.stdout.flush()
 
