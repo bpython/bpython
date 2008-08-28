@@ -56,7 +56,7 @@ from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
     Group, OneOrMore, ZeroOrMore, Literal, Optional, Word, \
     alphas, alphanums, printables, ParseException
 
-class Struct( object ):
+class Struct(object):
     pass  # When we inherit, a __dict__ is added (object uses slots)
 
 class FakeStdin(object):
@@ -123,15 +123,15 @@ OPTS.hist_length = 100
 def DEBUG(s):
     """This shouldn't ever be called in any release of bpython, so
     beat me up if you find anything calling it."""
-    open('/home/bob/tmp/plonker','a').write( "%s\n" % str( s )  )
+    open('/home/bob/tmp/plonker','a').write("%s\n" % str(s) )
 
 def make_colours():
     """Init all the colours in curses and bang them into a dictionary"""
 
-    for i in range( 63 ):
+    for i in range(63):
         if i > 7: j = i / 8
         else: j = -1
-        curses.init_pair( i+1, i % 8, j )
+        curses.init_pair(i+1, i % 8, j)
 
     c = {}
     # blacK, Red, Green, Yellow, Blue, Magenta, Cyan, White, Default:
@@ -147,8 +147,8 @@ def make_colours():
     
     return c
     
-class Interpreter( code.InteractiveInterpreter ):
-    def showtraceback( self ):
+class Interpreter(code.InteractiveInterpreter):
+    def showtraceback(self):
         """This needs to override the default traceback thing
         so it can put it into a pretty colour and maybe other
         stuff, I don't know"""
@@ -158,25 +158,25 @@ class Interpreter( code.InteractiveInterpreter ):
             sys.last_type = t
             sys.last_value = v
             sys.last_traceback = tb
-            tblist = traceback.extract_tb( tb )
+            tblist = traceback.extract_tb(tb)
             del tblist[:1]
 
-            l = traceback.format_list( tblist )
+            l = traceback.format_list(tblist)
             if l:
-                l.insert( 0, "Traceback (most recent call last):\n" )
-            l[len(l):] = traceback.format_exception_only( t, v )
+                l.insert(0, "Traceback (most recent call last):\n")
+            l[len(l):] = traceback.format_exception_only(t, v)
         finally:
             tblist = tb = None
         
-        self.writetb( l )
+        self.writetb(l)
 
-    def writetb( self, l ):
+    def writetb(self, l):
         """This outputs the traceback and should be overridden for anything
         fancy."""
-        map( self.write, [ "\x01y\x03%s" % i for i in l ] )
+        map(self.write, [ "\x01y\x03%s" % i for i in l])
 
 
-class Repl( object ):
+class Repl(object):
     """Implements the necessary guff for a Python-repl-alike interface
     
     The execution of the code entered and all that stuff was taken from the
@@ -209,7 +209,7 @@ class Repl( object ):
 
     """
 
-    def __init__( self, scr, interp, statusbar=None, idle=None):
+    def __init__(self, scr, interp, statusbar=None, idle=None):
         """Initialise the repl with, unfortunately, a curses screen passed to it.
         This needs to be split up so the curses crap isn't in here.
 
@@ -234,9 +234,9 @@ class Repl( object ):
         self.do_exit = False
         self.cpos = 0
 # Use the interpreter's namespace only for the readline stuff:
-        self.completer = rlcompleter.Completer( self.interp.locals )
+        self.completer = rlcompleter.Completer(self.interp.locals)
         self.statusbar = statusbar
-        self.list_win = curses.newwin( 1, 1, 1, 1 )
+        self.list_win = curses.newwin(1, 1, 1, 1)
         self.idle = idle
         self.f_string = ''
         self.matches = []
@@ -256,11 +256,11 @@ class Repl( object ):
         pexp = Forward()
         chars = printables.replace('(', '')
         chars = chars.replace(')', '')
-        pexpnest = Optional( Word( chars ) ) + Literal( "(" ) + Optional( Group( pexp ) ) + Optional( Literal( ")" ) )
-        pexp << ( OneOrMore( Word( chars ) | pexpnest ) )
+        pexpnest = Optional(Word(chars)) + Literal("(") + Optional(Group(pexp)) + Optional(Literal(")"))
+        pexp << (OneOrMore(Word(chars) | pexpnest))
         self.pparser = pexp
 
-    def cw( self ):
+    def cw(self):
         """Return the current word, i.e. the (incomplete) word
         directly to the left of the cursor"""
 
@@ -268,66 +268,66 @@ class Repl( object ):
 # if the cursor isn't at the end of the line, but that's what this does for now.
             return
 
-        l = len( self.s )
+        l = len(self.s)
 
-        if not self.s or ( not self.s[ l-1 ].isalnum() and self.s[ l-1 ] not in ( '.', '_' ) ):
+        if not self.s or (not self.s[ l-1].isalnum() and self.s[ l-1] not in ('.', '_')):
             return
     
         i = 1
         while i < l+1:
-            if not self.s[ -i ].isalnum() and self.s[ -i ] not in ( '.', '_' ):
+            if not self.s[ -i].isalnum() and self.s[ -i] not in ('.', '_'):
                 break
             i += 1
-        return self.s[ -i +1: ]
+        return self.s[ -i +1:]
 
 
-    def get_args( self ):
+    def get_args(self):
         """Check if an unclosed parenthesis exists, then attempt to get the argspec()
         for it. On success, update self.argspec and return True, otherwise set
         self.argspec to None and return False"""
 
-        def getpydocspec( f, func ):
+        def getpydocspec(f, func):
             try:
-                argspec = pydoc.getdoc( f )
+                argspec = pydoc.getdoc(f)
             except NameError:
                 return None
 
-            rx = re.compile( r'([a-zA-Z_][a-zA-Z0-9_]*?)\((.*?)\)' )
-            s = rx.search( argspec )
+            rx = re.compile(r'([a-zA-Z_][a-zA-Z0-9_]*?)\((.*?)\)')
+            s = rx.search(argspec)
             if s is None:
                 return None
 
             if s.groups()[0] != func:
                 return None
             
-            args = [ i.strip() for i in s.groups()[1].split(',') ]
+            args = [ i.strip() for i in s.groups()[1].split(',')]
             return [func, (args, None, None, None)]#None, None, None]
 
 
-        def getargspec( func ):
+        def getargspec(func):
             try:
                 if func in self.interp.locals:
-                    f = self.interp.locals[ func ]
+                    f = self.interp.locals[ func]
             except TypeError:
                 return None
 
             else:
                 try:
-                    f = eval( func, self.interp.locals )
+                    f = eval(func, self.interp.locals)
                 except Exception: # Same deal with the exceptions :(
                     return None
 
             try:
                 if inspect.isclass(f):
-                    argspec = inspect.getargspec( f.__init__ )
+                    argspec = inspect.getargspec(f.__init__)
                 else:
-                    argspec = inspect.getargspec( f )
-                self.argspec = [func, argspec]#[0]]#"Args for %s: " + ", ".join( argspec[0] )
+                    argspec = inspect.getargspec(f)
+                self.argspec = [func, argspec]#[0]]#"Args for %s: " + ", ".join(argspec[0])
                 #self.argspec = self.argspec % func
                 return True
 
             except (NameError, TypeError, KeyError):
-                t = getpydocspec( f, func )
+                t = getpydocspec(f, func)
                 if t is None:
                     return None
                 self.argspec = t
@@ -335,26 +335,26 @@ class Repl( object ):
             except AttributeError: # no __init__
                 return None
 
-        def parse_parens( s ):
+        def parse_parens(s):
             """Run a string through the pyparsing pattern for paren
             counting."""
 
             try:
-                parsed = self.pparser.parseString( s ).asList()
+                parsed = self.pparser.parseString(s).asList()
             except ParseException:
                 return False
 
             return parsed
 
-        def walk( seq ):
+        def walk(seq):
             """Walk a nested list and return the last list found that
             doesn't have a close paren in it (i.e. the active function)"""
             r = None
-            if isinstance( seq, list ):
+            if isinstance(seq, list):
                 if ")" not in seq and "(" in seq:
-                    r = seq[ seq.index('(') - 1 ]
+                    r = seq[ seq.index('(') - 1]
                 for i in seq:
-                    t = walk( i )
+                    t = walk(i)
                     if t:
                         r = t
             return r
@@ -362,17 +362,17 @@ class Repl( object ):
         if not OPTS.arg_spec:
             return False
 
-        t = parse_parens( self.s )
+        t = parse_parens(self.s)
         if not t:
             return False 
 
-        func = walk( t )
+        func = walk(t)
         if not func:
             return False
         
-        return getargspec( func )
+        return getargspec(func)
 
-    def complete( self, tab=False ):
+    def complete(self, tab=False):
         """Wrap the _complete method to determine the visibility of list_win
         since there can be several reasons why it won't be displayed; this
         makes it more manageable."""
@@ -383,10 +383,10 @@ class Repl( object ):
             return
 
         if OPTS.auto_display_list or tab:
-            self.list_win_visible = self._complete( tab )
+            self.list_win_visible = self._complete(tab)
             return
 
-    def _complete( self, unused_tab=False ):
+    def _complete(self, unused_tab=False):
         """Construct a full list of possible completions and construct and
         display them in a window. Also check if there's an available argspec
         (via the inspect module) and bang that on top of the completions too.
@@ -405,7 +405,7 @@ class Repl( object ):
             self.matches = []
 
         try:
-            self.completer.complete( cw, 0 )
+            self.completer.complete(cw, 0)
         except Exception: # This sucks, but it's either that or list all the
 # exceptions that could possibly be raised here, so if anyone wants to do that,
 # feel free to send me a patch.
@@ -418,18 +418,18 @@ class Repl( object ):
             return False
 
         if not e and self.completer.matches:
-            self.matches = sorted( set( self.completer.matches ) ) # remove duplicates and
+            self.matches = sorted(set(self.completer.matches)) # remove duplicates and
 # restore order
 
-        if len( self.matches ) == 1 and not OPTS.auto_display_list:
+        if len(self.matches) == 1 and not OPTS.auto_display_list:
             self.list_win_visible = True
             self.tab()
             return False
 
-        self.show_list( self.matches, self.argspec )
+        self.show_list(self.matches, self.argspec)
         return True
 
-    def show_list( self, items, topline=None ):
+    def show_list(self, items, topline=None):
         shared = Struct()
         shared.cols = 0
         shared.rows = 0
@@ -445,7 +445,7 @@ class Repl( object ):
 
         self.list_win.erase()
         if items and '.' in items[0]:
-            items = [ x.rsplit('.')[-1] for x in items ]
+            items = [ x.rsplit('.')[-1] for x in items]
 
         if topline:
             height_offset = self.mkargspec(topline, down) + 1
@@ -453,13 +453,13 @@ class Repl( object ):
             height_offset = 0
 
         def lsize():
-            wl = max( len(i) for i in v_items ) + 1 # longest word length (and a space)
+            wl = max(len(i) for i in v_items) + 1 # longest word length (and a space)
             if not wl:
                 wl = 1
             cols = ((max_w - 2) / wl) or 1 
-            rows = len( v_items ) / cols
+            rows = len(v_items) / cols
 
-            if cols * rows < len( v_items ):
+            if cols * rows < len(v_items):
                 rows += 1
 
             if rows + 2 >= max_h:
@@ -472,13 +472,13 @@ class Repl( object ):
             return True
 
         if items:
-            v_items = [ items[0][:max_w-3] ] # visible items (we'll append until we can't fit any more in)
+            v_items = [ items[0][:max_w-3]] # visible items (we'll append until we can't fit any more in)
             lsize()
         else:
             v_items = []
 
         for i in items[1:]:
-            v_items.append( i[:max_w-3] )
+            v_items.append(i[:max_w-3])
             if not lsize():
                 del v_items[-1]
                 v_items[-1] = '...'
@@ -508,7 +508,7 @@ class Repl( object ):
         if height_offset and display_rows+5 >= max_h:
             del v_items[-(cols * (height_offset)):]
 
-        self.list_win.resize( rows+2, w )#(cols + 1) * wl + 3 )
+        self.list_win.resize(rows+2, w)#(cols + 1) * wl + 3)
 
         if down:
             self.list_win.mvwin(y+1, 0)
@@ -516,20 +516,20 @@ class Repl( object ):
             self.list_win.mvwin(y-rows-2, 0)
 
         if v_items:
-            self.list_win.addstr( '\n ' )
+            self.list_win.addstr('\n ')
          
 
         for ix, i in enumerate(v_items):
             padding = (wl - len(i)) * ' '
-            self.list_win.addstr( i + padding, curses.color_pair( self._C["c"]+1 ) )
+            self.list_win.addstr(i + padding, curses.color_pair(self._C["c"]+1))
             if (cols == 1 or (ix and not (ix+1) % cols)) and ix + 1 < len(v_items):
-                self.list_win.addstr( '\n ' )
+                self.list_win.addstr('\n ')
         
 # XXX: After all the trouble I had with sizing the list box (I'm not very good
 # at that type of thing) I decided to do this bit of tidying up here just to make
 # sure there's no unnececessary blank lines, it makes things look nicer. :)
         y = self.list_win.getyx()[0]
-        self.list_win.resize(y + 2, w )
+        self.list_win.resize(y + 2, w)
 
         self.statusbar.win.touchwin()
         self.statusbar.win.noutrefresh()
@@ -539,11 +539,11 @@ class Repl( object ):
         self.scr.noutrefresh()
 # This looks a little odd, but I can't figure a better way to stick the cursor
 # back where it belongs (refreshing the window hides the list_win)
-        self.scr.move( *self.scr.getyx() )
+        self.scr.move(*self.scr.getyx())
         self.list_win.refresh()
 
     
-    def mkargspec( self, topline, down ):
+    def mkargspec(self, topline, down):
         """This figures out what to do with the argspec and puts it nicely into
         the list window. It returns the number of lines used to display the argspec.
         It's also kind of messy due to it having to call so many addstr() to get
@@ -557,27 +557,27 @@ class Repl( object ):
         _kwargs = topline[1][2]
         max_w = int(self.scr.getmaxyx()[1] * 0.6)
         self.list_win.erase()
-        self.list_win.resize( 3, max_w )
+        self.list_win.resize(3, max_w)
         h, w = self.list_win.getmaxyx()
 
-        self.list_win.addstr( '\n  ')
-        self.list_win.addstr( fn, curses.color_pair( self._C["b"]+1 ) | curses.A_BOLD )
-        self.list_win.addstr( ': ( ', curses.color_pair( self._C["y"]+1 ) )
+        self.list_win.addstr('\n  ')
+        self.list_win.addstr(fn, curses.color_pair(self._C["b"]+1) | curses.A_BOLD)
+        self.list_win.addstr(': (', curses.color_pair(self._C["y"]+1))
         maxh = self.scr.getmaxyx()[0]
 
-        for k, i in enumerate( args ):
+        for k, i in enumerate(args):
             y, x = self.list_win.getyx()
-            ln = len( str(i) )
+            ln = len(str(i))
             kw = None
             if kwargs and k+1 > len(args) - len(kwargs):
                 kw = '%s' % str(kwargs[ k - (len(args) - len(kwargs))])
-                ln += len( kw ) + 1
+                ln += len(kw) + 1
         
             if ln + x >= w:
                 ty = self.list_win.getbegyx()[0]
                 if not down and ty > 0:
                     h +=1
-                    self.list_win.mvwin( ty-1, 1 )
+                    self.list_win.mvwin(ty-1, 1)
                     self.list_win.resize(h,w)
                 elif down and h + r < maxh-ty:
                     h += 1
@@ -587,50 +587,50 @@ class Repl( object ):
                 r += 1
                 self.list_win.addstr('\n\t')
 
-            self.list_win.addstr( str(i), curses.color_pair( self._C["g"]+1 ) | curses.A_BOLD )
+            self.list_win.addstr(str(i), curses.color_pair(self._C["g"]+1) | curses.A_BOLD)
             if kw:
-                self.list_win.addstr( '=', curses.color_pair( self._C["c"]+1 ) )
-                self.list_win.addstr( kw, curses.color_pair( self._C["g"]+1) )
+                self.list_win.addstr('=', curses.color_pair(self._C["c"]+1))
+                self.list_win.addstr(kw, curses.color_pair(self._C["g"]+1))
             if k != len(args) -1:
-                self.list_win.addstr( ', ', curses.color_pair( self._C["g"]+1 ) )
+                self.list_win.addstr(', ', curses.color_pair(self._C["g"]+1))
 
         if _args:
-            self.list_win.addstr( ', ', curses.color_pair( self._C["g"]+1 ) )
-            self.list_win.addstr( '*%s' % _args, curses.color_pair( self._C["m"]+1 ) )
+            self.list_win.addstr(', ', curses.color_pair(self._C["g"]+1))
+            self.list_win.addstr('*%s' % _args, curses.color_pair(self._C["m"]+1))
         if _kwargs:
-            self.list_win.addstr( ', ', curses.color_pair( self._C["g"]+1 ) )
-            self.list_win.addstr( '**%s' % _kwargs, curses.color_pair( self._C["m"]+1 ) )
-        self.list_win.addstr( ' )', curses.color_pair( self._C["y"]+1 ) )
+            self.list_win.addstr(', ', curses.color_pair(self._C["g"]+1))
+            self.list_win.addstr('**%s' % _kwargs, curses.color_pair(self._C["m"]+1))
+        self.list_win.addstr(')', curses.color_pair(self._C["y"]+1))
 
         return r
 
-    def getstdout( self ):
+    def getstdout(self):
         """This method returns the 'spoofed' stdout buffer, for writing to a file
         or sending to a pastebin or whatever."""
 
         return self.stdout_hist + '\n'
 
-    def write2file( self ):
+    def write2file(self):
         """Prompt for a filename and write the current contents of the stdout buffer
         to disk."""
     
-        fn = self.statusbar.prompt( 'Save to file: ' )
+        fn = self.statusbar.prompt('Save to file: ')
 
         if fn.startswith('~'):
-            fn = os.path.expanduser( fn )
+            fn = os.path.expanduser(fn)
 
         s = self.getstdout()
         
         try:
-            f = open( fn, 'w' )
-            f.write( s )
+            f = open(fn, 'w')
+            f.write(s)
             f.close()
         except IOError:
-            self.statusbar.message("Disk write error for file '%s'." % fn )
+            self.statusbar.message("Disk write error for file '%s'." % fn)
         else:
-            self.statusbar.message( 'Saved to %s' % fn )
+            self.statusbar.message('Saved to %s' % fn)
 
-    def pastebin( self ):
+    def pastebin(self):
         """Upload to a pastebin and display the URL in the status bar."""
         
         s = self.getstdout()
@@ -638,23 +638,23 @@ class Repl( object ):
         pdata = { 'lang' : 'Python',
             'cvt_tabs' : 'No',
             'text' : s }
-        pdata = urllib.urlencode( pdata )
+        pdata = urllib.urlencode(pdata)
 
-        self.statusbar.message( 'Posting data to pastebin...' )
-        u = urllib.urlopen( url, data=pdata )
+        self.statusbar.message('Posting data to pastebin...')
+        u = urllib.urlopen(url, data=pdata)
         d = u.read()
 
-        rx = re.search( '(http://rafb.net/p/[0-9a-zA-Z]+\.html)', d )
+        rx = re.search('(http://rafb.net/p/[0-9a-zA-Z]+\.html)', d)
         if not rx:
-            self.statusbar.message( 'Error parsing pastebin URL! Please report a bug.' )
+            self.statusbar.message('Error parsing pastebin URL! Please report a bug.')
             return
     
         
-        r_url = rx.groups()[ 0 ]
-        self.statusbar.message( 'Pastebin URL: %s' % r_url, 10 )
+        r_url = rx.groups()[ 0]
+        self.statusbar.message('Pastebin URL: %s' % r_url, 10)
 
 
-    def make_list( self, items ):
+    def make_list(self, items):
         """Compile a list of items. At the moment this simply returns
         the list; it's here in case I decide to add any more functionality.
         I originally had this method return a list of items where each item
@@ -664,20 +664,20 @@ class Repl( object ):
         return items
 
 
-    def push( self, s ):
+    def push(self, s):
         """Push a line of code onto the buffer so it can process it all
         at once when a code block ends"""
         s = s.rstrip('\n')
-        self.buffer.append( s )
+        self.buffer.append(s)
 
-        more = self.interp.runsource( "\n".join( self.buffer ) )
+        more = self.interp.runsource("\n".join(self.buffer))
         
         if not more:
             self.buffer = []
 
         return more
 
-    def undo( self, n=1 ):
+    def undo(self, n=1):
         """Go back in the undo history n steps and call reeavluate()
         Note that in the program this is called "Rewind" because I
         want it to be clear that this is by no means a true undo
@@ -685,19 +685,19 @@ class Repl( object ):
         if not self.history:
             return None
 
-        if len( self.history ) < n:
-            n = len( self.history )
+        if len(self.history) < n:
+            n = len(self.history)
 
-        self.history = self.history[ : -n ]
+        self.history = self.history[:-n]
         self.reevaluate()
 
-    def enter_hist( self ):
+    def enter_hist(self):
         """Set flags for entering into the history by pressing up/down"""
         if not self.in_hist:
             self.in_hist = True
             self.ts = self.s
 
-    def back( self ):
+    def back(self):
         """Replace the active line with previous line in history and
         increment the index to keep track"""
 
@@ -707,13 +707,13 @@ class Repl( object ):
         self.cpos = 0
         self.enter_hist()
 
-        if self.h_i < len( self.rl_hist ):
+        if self.h_i < len(self.rl_hist):
             self.h_i += 1
         
-        self.s = self.rl_hist[ -self.h_i ].rstrip('\n')
-        self.print_line( self.s, clr=True )
+        self.s = self.rl_hist[ -self.h_i].rstrip('\n')
+        self.print_line(self.s, clr=True)
     
-    def fwd( self ):
+    def fwd(self):
         """Same as back() but, well, forward"""
 
         self.enter_hist()
@@ -722,32 +722,32 @@ class Repl( object ):
 
         if self.h_i > 1:
             self.h_i -= 1
-            self.s = self.rl_hist[ -self.h_i ]
+            self.s = self.rl_hist[ -self.h_i]
         else:
             self.h_i = 0
             self.s = self.ts
             self.ts = ''
             self.in_hist = False
         
-        self.print_line( self.s, clr=True )
+        self.print_line(self.s, clr=True)
         
-    def redraw( self ):
+    def redraw(self):
         """Redraw the screen."""
         self.scr.erase()
-        for k, s in enumerate( self.s_hist ):
+        for k, s in enumerate(self.s_hist):
             if not s:
                 continue
             self.iy, self.ix = self.scr.getyx()
             for i in s.split('\x04'):
-                self.echo( i, redraw=False )
-            if k < len( self.s_hist ) -1:
-                self.scr.addstr( '\n' )
+                self.echo(i, redraw=False)
+            if k < len(self.s_hist) -1:
+                self.scr.addstr('\n')
         self.iy, self.ix = self.scr.getyx()
-        self.print_line( self.s )
+        self.print_line(self.s)
         self.scr.refresh()
         self.statusbar.refresh()
 
-    def reevaluate( self ):
+    def reevaluate(self):
         """Clear the buffer, redraw the screen and re-evaluate the history"""
 
         self.evaluating = True
@@ -757,37 +757,37 @@ class Repl( object ):
         self.scr.erase()
         self.s_hist = []
 
-        self.prompt( False )
+        self.prompt(False)
 
         self.iy, self.ix = self.scr.getyx()
         for line in self.history:
             self.stdout_hist += line + '\n'
-            self.print_line( line )
+            self.print_line(line)
             self.s_hist[-1] += self.f_string
-            self.scr.addstr( '\n' ) # I decided it was easier to just do this manually
+            self.scr.addstr('\n') # I decided it was easier to just do this manually
 # than to make the print_line and history stuff more flexible.
-            more = self.push( line )
-            self.prompt( more )
+            more = self.push(line)
+            self.prompt(more)
             self.iy, self.ix = self.scr.getyx()
             
         self.s = ''
         self.scr.refresh()
 
         self.evaluating = False
-        #map( self.push, self.history ) # <-- That's how simple this function was at first :(
+        #map(self.push, self.history) # <-- That's how simple this function was at first :(
 
-    def prompt( self, more ):
+    def prompt(self, more):
         """Show the appropriate Python prompt"""
         if not more:
-            self.echo( "\x01g\x03>>> " )
+            self.echo("\x01g\x03>>> ")
             self.stdout_hist += '>>> '
-            self.s_hist.append( '\x01g\x03>>> \x04' )
+            self.s_hist.append('\x01g\x03>>> \x04')
         else:
-            self.echo( "\x01r\x03... " )
+            self.echo("\x01r\x03... ")
             self.stdout_hist += '... '
-            self.s_hist.append( '\x01r\x03... \x04' )
+            self.s_hist.append('\x01r\x03... \x04')
 
-    def repl( self ):
+    def repl(self):
         """Initialise the repl and jump into the loop. This method also
         has to keep a stack of lines entered for the horrible "undo"
         feature. It also tracks everything that would normally go to stdout
@@ -817,7 +817,7 @@ class Repl( object ):
         more = False
         while not self.do_exit:
             self.f_string = ''
-            self.prompt( more )
+            self.prompt(more)
             try:
                 inp = self.get_line()
             except KeyboardInterrupt:
@@ -832,15 +832,15 @@ class Repl( object ):
                 return
 
             self.h_i = 0
-            self.history.append( inp )
+            self.history.append(inp)
             self.s_hist[-1] += self.f_string
             self.stdout_hist += inp + '\n'
 # Keep two copies so you can go up and down in the hist:
             if inp:
-                self.rl_hist.append( inp + '\n' ) 
-            more = self.push( inp )
+                self.rl_hist.append(inp + '\n') 
+            more = self.push(inp)
 
-    def size( self ):
+    def size(self):
         """Set instance attributes for x and y top left corner coordinates
         and width and heigth for the window."""
         h, w = stdscr.getmaxyx()
@@ -849,16 +849,16 @@ class Repl( object ):
         self.h = h-1
         self.x = 0
 
-    def resize( self ):
+    def resize(self):
         """This method exists simply to keep it straight forward when initialising
         a window and resizing it."""
         self.size()
         self.scr.erase()
-        self.scr.resize( self.h, self.w )
-        self.scr.mvwin( self.y, self.x )
+        self.scr.resize(self.h, self.w)
+        self.scr.mvwin(self.y, self.x)
         self.redraw()
 
-    def write( self, s ):
+    def write(self, s):
         """For overriding stdout defaults"""
         if s.rstrip() and '\x03' in s:
                 t = s.split('\x03')[1]
@@ -870,10 +870,10 @@ class Repl( object ):
         else:
             self.stdout_hist += t
 
-        self.echo( s )
-        self.s_hist.append( s.rstrip() )
+        self.echo(s)
+        self.s_hist.append(s.rstrip())
 
-    def flush( self ):
+    def flush(self):
         """Olivier Grisel brought it to my attention that the logging
         module tries to call this method, since it makes assumptions
         about stdout that may not necessarily be true. The docs for
@@ -888,39 +888,39 @@ class Repl( object ):
         to do it.""" 
         pass
 
-    def close( self ):
+    def close(self):
         """See the flush() method docstring."""
         pass
 
-    def echo( self, s, redraw=True ):
+    def echo(self, s, redraw=True):
         """Parse and echo a formatted string with appropriate attributes. It uses the
         formatting method as defined in formatter.py to parse the srings. It won't update
         the screen if it's reevaluating the code (as it does with undo)."""
 
-        a = curses.color_pair( 0 )
+        a = curses.color_pair(0)
         if '\x01' in s:
-            rx = re.search( '\x01([a-z])([a-z]?)', s )
+            rx = re.search('\x01([a-z])([a-z]?)', s)
             if rx:
-                p = self._C[ rx.groups()[ 0 ] ]
-                if rx.groups()[ 1 ]:
-                    p *= self._C[ rx.groups()[ 1 ] ]
+                p = self._C[ rx.groups()[ 0]]
+                if rx.groups()[ 1]:
+                    p *= self._C[ rx.groups()[ 1]]
                 
-                a = curses.color_pair( int( p ) + 1 )
-                s = re.sub( '\x01[a-z][a-z]?', '', s )
+                a = curses.color_pair(int(p) + 1)
+                s = re.sub('\x01[a-z][a-z]?', '', s)
 
         if '\x02' in s:
             a = a | curses.A_BOLD
-            s = s.replace( '\x02', '' )
-        s = s.replace( '\x03', '' )
-        s = s.replace( '\x01', '' )
+            s = s.replace('\x02', '')
+        s = s.replace('\x03', '')
+        s = s.replace('\x01', '')
 
         
-        self.scr.addstr( s, a )    
+        self.scr.addstr(s, a)    
 
         if redraw and not self.evaluating:
             self.scr.refresh()
 
-    def mvc( self, i, refresh=True ):
+    def mvc(self, i, refresh=True):
         """This method moves the cursor relatively from the current
         position, where:
             0 == (right) end of current line
@@ -947,13 +947,13 @@ class Repl( object ):
             x = 0 + i
 
         self.cpos += i
-        self.scr.move( y, x - i )
+        self.scr.move(y, x - i)
         if refresh:
             self.scr.refresh()
 
         return True
 
-    def bs( self, delete_tabs=True ):
+    def bs(self, delete_tabs=True):
         """Process a backspace"""
 
         y, x = self.scr.getyx()
@@ -976,12 +976,12 @@ class Repl( object ):
                 if not n:
                     n = OPTS.tab_length
 
-            self.s = self.s[ : -n ]
+            self.s = self.s[:-n]
         else:
-            self.s = self.s[ : -self.cpos-1 ] + self.s[ -self.cpos : ]
+            self.s = self.s[:-self.cpos-1] + self.s[ -self.cpos :]
 
         for _ in range(n):
-            self.scr.delch( y, x - n )
+            self.scr.delch(y, x - n)
 
         return n
 
@@ -994,7 +994,7 @@ class Repl( object ):
         while pos >= 0 and self.s[pos] != ' ':
             pos -= self.bs()
 
-    def delete( self ):
+    def delete(self):
         """Process a del"""
         if not self.s: 
             return
@@ -1002,32 +1002,32 @@ class Repl( object ):
         if self.mvc(-1):
             self.bs(False)
 
-    def cut_to_buffer ( self ):
+    def cut_to_buffer (self):
         """Clear from cursor to end of line, placing into cut buffer"""
-        self.cut_buffer = self.s[ -self.cpos : ]
-        self.s = self.s[ : -self.cpos ]
+        self.cut_buffer = self.s[ -self.cpos :]
+        self.s = self.s[:-self.cpos]
         self.cpos = 0
-        self.print_line( self.s, clr=True )
+        self.print_line(self.s, clr=True)
         self.scr.redrawwin()
         self.scr.refresh()
 
-    def yank_from_buffer ( self ):
+    def yank_from_buffer (self):
         """Paste the text from the cut buffer at the current cursor location"""
-        self.addstr( self.cut_buffer )
-        self.print_line( self.s, clr=True )
+        self.addstr(self.cut_buffer)
+        self.print_line(self.s, clr=True)
 
-    def clrtobol( self ):
+    def clrtobol(self):
         """Clear from cursor to beginning of line; usual C-u behaviour"""
         if not self.cpos:
             self.s = ''
         else:
-            self.s = self.s[ self.cpos : ]
+            self.s = self.s[ self.cpos :]
         
-        self.print_line( self.s, clr=True )
+        self.print_line(self.s, clr=True)
         self.scr.redrawwin()
         self.scr.refresh()
 
-    def p_key( self ):
+    def p_key(self):
         """Process a keypress"""
 
         if self.c is None:
@@ -1037,10 +1037,10 @@ class Repl( object ):
             self.clrtobol()
             self.c = '\n'
             # Don't return; let it get handled
-        if self.c == chr( 27 ):
+        if self.c == chr(27):
             return ''
 
-        if self.c in ( chr(127), 'KEY_BACKSPACE' ):
+        if self.c in (chr(127), 'KEY_BACKSPACE'):
             self.bs()
             self.complete()
             return ''
@@ -1063,10 +1063,10 @@ class Repl( object ):
             return ''
 
         elif self.c == 'KEY_LEFT': # Cursor Left
-            self.mvc( 1 )
+            self.mvc(1)
         
         elif self.c == 'KEY_RIGHT': # Cursor Right
-            self.mvc( -1 )
+            self.mvc(-1)
 
         elif self.c in ("KEY_HOME", '^A', chr(1)): # home or ^A
             self.mvc(len(self.s) - self.cpos)
@@ -1087,15 +1087,15 @@ class Repl( object ):
             self.complete()
             return ''
 
-        elif self.c in ('^U', chr(21) ): # C-u
+        elif self.c in ('^U', chr(21)): # C-u
             self.clrtobol()
             return ''
 
-        elif self.c in ('^L', chr(12) ): # C-l
+        elif self.c in ('^L', chr(12)): # C-l
             self.redraw()
             return ''
 
-        elif self.c in ( chr(4), '^D' ): # C-d
+        elif self.c in (chr(4), '^D'): # C-d
             if not self.s:
                 self.do_exit = True
                 return None
@@ -1117,9 +1117,9 @@ class Repl( object ):
         elif self.c == '\t':
             return self.tab()
 
-        elif len( self.c ) == 1 and self.c in string.printable:
-            self.addstr( self.c )
-            self.print_line( self.s )
+        elif len(self.c) == 1 and self.c in string.printable:
+            self.addstr(self.c)
+            self.print_line(self.s)
 
         else:
             return ''
@@ -1127,7 +1127,7 @@ class Repl( object ):
 
         return True
 
-    def tab( self ):
+    def tab(self):
         """Process the tab key being hit. If there's only whitespace
         in the line or the line is blank then process a normal tab,
         otherwise attempt to autocomplete to the best match of possible
@@ -1139,46 +1139,46 @@ class Repl( object ):
             if not num_spaces:
                 num_spaces = OPTS.tab_length
 
-            self.addstr( ' ' * num_spaces)
-            self.print_line( self.s )
+            self.addstr(' ' * num_spaces)
+            self.print_line(self.s)
             return True
 
         if not OPTS.auto_display_list and not self.list_win_visible:
-            self.complete( tab=True )
+            self.complete(tab=True)
             return True
 
         cw = self.cw()
         if not cw:
             return True
 
-        b = self.strbase( self.matches )
+        b = self.strbase(self.matches)
         if b:
-            self.s += b[ len( cw ) : ]
-            self.print_line( self.s )
-            if len( self.matches ) == 1 and OPTS.auto_display_list:
+            self.s += b[ len(cw) :]
+            self.print_line(self.s)
+            if len(self.matches) == 1 and OPTS.auto_display_list:
                 self.scr.touchwin()
         return True
 
-    def strbase( self, l ):
+    def strbase(self, l):
         """Probably not the best way of doing it but this function returns
         a common base string in a list of strings (for tab completion)."""
 
-        if len( l ) == 1:
+        if len(l) == 1:
             return l[0]
         
-        sl = sorted( l, key=str.__len__ )
-        for i, c in enumerate( l[-1] ):
+        sl = sorted(l, key=str.__len__)
+        for i, c in enumerate(l[-1]):
 # I hate myself. Please email seamusmb@gmail.com to call him an dickhead for
 # insisting that I make bpython 2.4-compatible. I couldn't be bothered
 # refactoring, so ghetto all() it is:
-            if not reduce( lambda x, y: (x and y) or False,
-                            ( k.startswith( l[-1][:i] ) for k in sl ),
-                            True ):
+            if not reduce(lambda x, y: (x and y) or False,
+                            (k.startswith(l[-1][:i]) for k in sl),
+                            True):
                 break
 
         return l[-1][:i-1]
 
-    def atbol( self ):
+    def atbol(self):
         """Return True or False accordingly if the cursor is at the beginning
         of the line (whitespace is ignored). This exists so that p_key() knows
         how to handle the tab key being pressed - if there is nothing but white
@@ -1188,28 +1188,28 @@ class Repl( object ):
         if not self.s.lstrip():
             return True
 
-    def lf( self ):
+    def lf(self):
         """Process a linefeed character; it only needs to check the
         cursor position and move appropriately so it doesn't clear
         the current line after the cursor."""
         if self.cpos:
-            for _ in range( self.cpos ):
-                self.mvc( -1 )
+            for _ in range(self.cpos):
+                self.mvc(-1)
 
-        self.echo( "\n" )
+        self.echo("\n")
 
-    def addstr( self, s ):
+    def addstr(self, s):
         """Add a string to the current input line and figure out
         where it should go, depending on the cursor position."""
         if not self.cpos:
             self.s += s
         else:
-            l = len( self.s ) 
-            self.s = self.s[ : l - self.cpos ] + s + self.s[ l - self.cpos : ]
+            l = len(self.s) 
+            self.s = self.s[:l - self.cpos] + s + self.s[ l - self.cpos :]
 
         self.complete()
 
-    def print_line( self, s, clr=False ):
+    def print_line(self, s, clr=False):
         """Chuck a line of text through the highlighter, move the cursor
         to the beginning of the line and output it to the screen."""
 
@@ -1217,12 +1217,12 @@ class Repl( object ):
             clr = True
 
         if OPTS.syntax:
-            o = highlight( s, PythonLexer(), BPythonFormatter() )
+            o = highlight(s, PythonLexer(), BPythonFormatter())
         else:
             o = s
 
         self.f_string = o
-        self.scr.move( self.iy, self.ix )
+        self.scr.move(self.iy, self.ix)
 
         if clr:
             self.scr.clrtoeol()
@@ -1232,15 +1232,15 @@ class Repl( object ):
             
         if o:
             for t in o.split('\x04'):
-                self.echo( t.rstrip('\n') )
+                self.echo(t.rstrip('\n'))
 
         if self.cpos:
             t = self.cpos
-            for _ in range( self.cpos ):
-                self.mvc( 1 )
+            for _ in range(self.cpos):
+                self.mvc(1)
             self.cpos = t
 
-    def get_line( self ):
+    def get_line(self):
         """Get a line of text and return it
         This function initialises an empty string and gets the 
         curses cursor position on the screen and stores it
@@ -1250,7 +1250,7 @@ class Repl( object ):
         idiot)."""
 
         self.ts = ''
-        n_indent = re.split( '[^\t]', self.s, 1 )[0].count('\t')        
+        n_indent = re.split('[^\t]', self.s, 1)[0].count('\t')        
         indent = self.s.endswith(':')
         self.s = ''
         self.iy, self.ix = self.scr.getyx()
@@ -1274,7 +1274,7 @@ class Repl( object ):
     def get_key(self):
         while True:
             if self.idle:
-                self.idle( self )
+                self.idle(self)
             try:
                 key = self.scr.getkey()
             except curses.error: # I'm quite annoyed with the ambiguity of
@@ -1288,7 +1288,7 @@ class Repl( object ):
                 return key
 
         
-class Statusbar( object ):
+class Statusbar(object):
     """This class provides the status bar at the bottom of the screen.
     It has message() and prompt() methods for user interactivity, as
     well as settext() and clear() methods for changing its appearance.
@@ -1298,13 +1298,13 @@ class Statusbar( object ):
     has been called (it'll display for a couple of seconds and then disappear).
 
     It should be called as:
-        foo = Statusbar( stdscr, scr, 'Initial text to display' )
+        foo = Statusbar(stdscr, scr, 'Initial text to display')
     or, for a blank statusbar:
-        foo = Statusbar( stdscr, scr )
+        foo = Statusbar(stdscr, scr)
 
     It can also receive the argument 'c' which will be an integer referring
     to a curses colour pair, e.g.:
-        foo = Statusbar( stdscr, 'Hello', c=4 )
+        foo = Statusbar(stdscr, 'Hello', c=4)
 
     stdscr should be a curses window object in which to put the status bar.
     pwin should be the parent window. To be honest, this is only really here
@@ -1312,19 +1312,19 @@ class Statusbar( object ):
     
     """
 
-    def __init__( self, scr, pwin, s=None, c=None ):
+    def __init__(self, scr, pwin, s=None, c=None):
         """Initialise the statusbar and display the initial (text if there is any)"""
         self.size()
-        self.win = curses.newwin( self.h, self.w, self.y, self.x )
+        self.win = curses.newwin(self.h, self.w, self.y, self.x)
 
         self.s = s or ''    
         self._s = self.s
         self.c = c
         self.timer = 0
         self.pwin = pwin
-        self.settext( s, c )
+        self.settext(s, c)
         
-    def size( self ):
+    def size(self):
         """Set instance attributes for x and y top left corner coordinates
         and width and heigth for the window."""
         h, w = gethw()
@@ -1333,20 +1333,20 @@ class Statusbar( object ):
         self.h = 1
         self.x = 0
 
-    def resize( self ):
+    def resize(self):
         """This method exists simply to keep it straight forward when initialising
         a window and resizing it."""
         self.size()
-        self.win.mvwin( self.y, self.x )
-        self.win.resize( self.h, self.w )
+        self.win.mvwin(self.y, self.x)
+        self.win.resize(self.h, self.w)
         self.refresh()
     
-    def refresh( self ):
+    def refresh(self):
         """This is here to make sure the status bar text is redraw properly
         after a resize."""
-        self.settext( self._s )
+        self.settext(self._s)
 
-    def check( self ):
+    def check(self):
         """This is the method that should be called every half second or so
         to see if the status bar needs updating."""
         if not self.timer:
@@ -1355,24 +1355,24 @@ class Statusbar( object ):
         if time.time() < self.timer:
             return
         
-        self.settext( self._s )
+        self.settext(self._s)
         
 
-    def message( self, s, n=3 ):
+    def message(self, s, n=3):
         """Display a message for a short n seconds on the statusbar and return
         it to its original state."""
         self.timer = time.time() + n
-        self.settext( s )
+        self.settext(s)
         
 
-    def prompt( self, s='' ):
+    def prompt(self, s=''):
         """Prompt the user for some input (with the optional prompt 's') and
         return the input text, then restore the statusbar to its original value."""
         
-        self.settext( s or '? ', p=True )
+        self.settext(s or '? ', p=True)
         iy, ix = self.win.getyx()
         
-        def bs( s ):
+        def bs(s):
             y, x = self.win.getyx()
             if x == ix:
                 return s
@@ -1386,23 +1386,23 @@ class Statusbar( object ):
             c = self.win.getch()
 
             if c == 127:
-                o = bs( o )
+                o = bs(o)
                 continue
 
             if not c or c > 127:
                 continue
-            c = chr( c )
+            c = chr(c)
 
             if c == '\n':
                 break
 
-            self.win.addstr( c )
+            self.win.addstr(c)
             o += c
         
-        self.settext( self._s )
+        self.settext(self._s)
         return o
 
-    def settext( self, s, c=None, p=False ):
+    def settext(self, s, c=None, p=False):
         """Set the text on the status bar to a new permanent value; this is the value
         that will be set after a prompt or message. c is the optional curses colour
         pair to use (if not specified the last specified colour pair will be used).
@@ -1410,8 +1410,8 @@ class Statusbar( object ):
         prompting)."""
         
         self.win.erase()
-        if len( s ) >= self.w:
-            s = s[ : self.w-1 ]
+        if len(s) >= self.w:
+            s = s[:self.w-1]
 
         self.s = s
         if c:
@@ -1419,9 +1419,9 @@ class Statusbar( object ):
 
         if s:
             if self.c:
-                self.win.addstr( s, curses.color_pair( self.c ) )
+                self.win.addstr(s, curses.color_pair(self.c))
             else:
-                self.win.addstr( s )
+                self.win.addstr(s)
 
         if not p:
             self.win.noutrefresh()
@@ -1429,28 +1429,28 @@ class Statusbar( object ):
         else:
             self.win.refresh()
 
-    def clear( self ):
+    def clear(self):
         """Clear the status bar."""
         self.win.clear()
 
-def init_wins( scr, cols ):
+def init_wins(scr, cols):
     """Initialise the two windows (the main repl interface and the
     little status bar at the bottom with some stuff in it)"""
 #TODO: Document better what stuff is on the status bar.
 
     h, w = gethw()
 
-    main_win = curses.newwin( h-1, w, 0, 0 )
-    main_win.scrollok( True )
+    main_win = curses.newwin(h-1, w, 0, 0)
+    main_win.scrollok(True)
     main_win.keypad(1) # Thanks to Angus Gibson for pointing out
 # this missing line which was causing problems that needed dirty
 # hackery to fix. :)
 
-    statusbar = Statusbar( scr, main_win, ".:: <C-d> Exit  <C-r> Rewind  <F2> Save  <F8> Pastebin ::.", (cols["g"]) *cols["y"] +1 )
+    statusbar = Statusbar(scr, main_win, ".:: <C-d> Exit  <C-r> Rewind  <F2> Save  <F8> Pastebin ::.", (cols["g"]) *cols["y"] +1)
 
     return main_win, statusbar
 
-def sigwinch( unused_scr ):
+def sigwinch(unused_scr):
     global DO_RESIZE
     DO_RESIZE = True
 
@@ -1473,7 +1473,7 @@ def gethw():
         "hhhh", fcntl.ioctl(sys.__stdout__, termios.TIOCGWINSZ, "\000"*8))[0:2]
     return h, w
 
-def idle( caller ):
+def idle(caller):
     """This is called once every iteration through the getkey()
     loop (currently in the Repl class, see the get_line() method).
     The statusbar check needs to go here to take care of timed 
@@ -1485,9 +1485,9 @@ def idle( caller ):
     caller.statusbar.check()
 
     if DO_RESIZE:
-        do_resize( caller )
+        do_resize(caller)
 
-def do_resize( caller ):
+def do_resize(caller):
     """This needs to hack around readline and curses not playing
     nicely together. See also gethw() above."""
     global DO_RESIZE
@@ -1496,8 +1496,8 @@ def do_resize( caller ):
         return # Hopefully this shouldn't happen. :) 
 
     curses.endwin()
-    os.environ["LINES"] = str( h )
-    os.environ["COLUMNS"] = str( w )
+    os.environ["LINES"] = str(h)
+    os.environ["COLUMNS"] = str(w)
     curses.doupdate()
     DO_RESIZE = False
 
@@ -1514,13 +1514,13 @@ def loadrc():
     if len(sys.argv) > 2:
         path = sys.argv[2]
     else:
-        path = os.path.expanduser( '~/.bpythonrc' )
+        path = os.path.expanduser('~/.bpythonrc')
 
-    if not os.path.isfile( path ):
+    if not os.path.isfile(path):
         return
 
-    f = open( path )
-    parser = shlex.shlex( f )
+    f = open(path)
+    parser = shlex.shlex(f)
     
     bools = {
         'true': True,
@@ -1555,13 +1555,13 @@ def loadrc():
     f.close()
         
     for k, v in config.iteritems():
-        if hasattr( OPTS, k ):
-            setattr( OPTS, k, v )
+        if hasattr(OPTS, k):
+            setattr(OPTS, k, v)
 
 
 stdscr = None
 
-def main_curses( scr ):
+def main_curses(scr):
     """main function for the curses convenience wrapper
 
     Initialise the two main objects: the interpreter
@@ -1574,21 +1574,21 @@ def main_curses( scr ):
     global stdscr
     global DO_RESIZE
     DO_RESIZE = False
-    signal.signal( signal.SIGWINCH, lambda *_: sigwinch(scr) )
+    signal.signal(signal.SIGWINCH, lambda *_: sigwinch(scr))
     loadrc()
     stdscr = scr
     curses.start_color()
     curses.use_default_colors()
     cols = make_colours() 
 
-    scr.timeout( 300 )
+    scr.timeout(300)
 
-    main_win, statusbar = init_wins( scr, cols )
+    main_win, statusbar = init_wins(scr, cols)
 
 
     interpreter = Interpreter()
 
-    repl = Repl( main_win, interpreter, statusbar, idle )
+    repl = Repl(main_win, interpreter, statusbar, idle)
     repl._C = cols
 
     sys.stdout = repl
@@ -1606,7 +1606,7 @@ def main_curses( scr ):
 def main():
     tb = None
     try:
-        o = curses.wrapper( main_curses )
+        o = curses.wrapper(main_curses)
     except:
         tb = traceback.format_exc()
     # I don't know why this is necessary; without it the wrapper doesn't always
@@ -1622,7 +1622,7 @@ def main():
         print tb
         sys.exit(1)
 
-    sys.stdout.write( o ) # Fake stdout data so everything's still visible after exiting
+    sys.stdout.write(o) # Fake stdout data so everything's still visible after exiting
     sys.stdout.flush()
 
 if __name__ == '__main__':
