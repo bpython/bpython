@@ -10,6 +10,12 @@ break but didn't manage to fix the code to reflect this - thank you!
 Jørgen Tjernø has fixed up the autoindentation issues we encountered when
 bringing soft tabs in.
 
+SyntaxError, ValueError and OverflowError are now caught properly
+(code.InteractiveInterpreter treats these as different to other exceptions as
+it doesn't print the whole traceback, so a different handler is called). This
+was discovered as I was trying to stop autoindentation from occurring on a
+SyntaxError, which has also been fixed.
+
 v0.7.0
 ======
 C-d behaviour changed so it no longer exits if the current line isn't empty.
