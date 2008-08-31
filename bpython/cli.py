@@ -294,6 +294,7 @@ class Repl(object):
         self.list_win_visible = False
         self._C = {}
         sys.stdin = FakeStdin(self)
+        sys.path.insert(0, '.')
 
         if not OPTS.arg_spec:
             return
