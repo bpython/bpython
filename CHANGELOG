@@ -16,6 +16,8 @@ it doesn't print the whole traceback, so a different handler is called). This
 was discovered as I was trying to stop autoindentation from occurring on a
 SyntaxError, which has also been fixed.
 
+'.' now in sys.path on startup.
+
 v0.7.0
 ======
 C-d behaviour changed so it no longer exits if the current line isn't empty.
