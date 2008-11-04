@@ -43,6 +43,7 @@ import termios
 import fcntl
 import string
 import shlex
+import socket
 import pydoc
 import cStringIO
 
@@ -713,8 +714,12 @@ class Repl(object):
         pdata = urllib.urlencode(pdata)
 
         self.statusbar.message('Posting data to pastebin...')
-        u = urllib.urlopen(url, data=pdata)
-        d = u.read()
+        try:
+            u = urllib.urlopen(url, data=pdata)
+            d = u.read()
+        except (socket.error, socket.timeout, IOError), e:
+            self.statusbar.message( 'Upload failed: %s' % str(e) )
+            return
 
         rx = re.search('(http://rafb.net/p/[0-9a-zA-Z]+\.html)', d)
         if not rx:
@@ -928,6 +933,7 @@ class Repl(object):
         self.scr.erase()
         self.scr.resize(self.h, self.w)
         self.scr.mvwin(self.y, self.x)
+        self.statusbar.resize(refresh=False)
         self.redraw()
 
     def write(self, s):
@@ -1422,13 +1428,14 @@ class Statusbar(object):
         self.h = 1
         self.x = 0
 
-    def resize(self):
+    def resize(self, refresh=True):
         """This method exists simply to keep it straight forward when
         initialising a window and resizing it."""
         self.size()
         self.win.mvwin(self.y, self.x)
         self.win.resize(self.h, self.w)
-        self.refresh()
+        if refresh:
+            self.refresh()
 
     def refresh(self):
         """This is here to make sure the status bar text is redraw properly
@@ -1598,7 +1605,6 @@ def do_resize(caller):
     DO_RESIZE = False
 
     caller.resize()
-    caller.statusbar.resize()
 # The list win resizes itself every time it appears so no need to do it here.
 
 
