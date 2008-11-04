@@ -1,3 +1,9 @@
+v0.7.2
+======
+Menno sent me some patches to fix some stuff:
+    * Socket error handled when submitting to a pastebin.
+    * Resizing could crash if you resize small enough.
+
 v0.7.1
 ======
 Added support for a history file, defaults to ~/.pythonhist and 100 lines but
