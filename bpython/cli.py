@@ -145,17 +145,18 @@ def make_colours():
             j = -1
         curses.init_pair(i+1, i % 8, j)
 
-    c = {}
     # blacK, Red, Green, Yellow, Blue, Magenta, Cyan, White, Default:
-    c["k"] = 0
-    c["r"] = 1
-    c["g"] = 2
-    c["y"] = 3
-    c["b"] = 4
-    c["m"] = 5
-    c["c"] = 6
-    c["w"] = 7
-    c["d"] = -1
+    c = {
+        'k' : 0,
+        'r' : 1,
+        'g' : 2,
+        'y' : 3,
+        'b' : 4,
+        'm' : 5,
+        'c' : 6,
+        'w' : 7,
+        'd' : -1,
+    }
     return c
 
 
