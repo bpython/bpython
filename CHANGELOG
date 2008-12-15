@@ -9,6 +9,9 @@ Menno sent me some patches to fix some stuff:
 flush_output option added to config to control whether output is flushed to
 stdout or not on exit.
 
+Piping something to bpython made it lock up as stdin was not the keyboard -
+bpython just executes stdin and exits instead of trying to do something clever.
+
 v0.7.1
 ======
 Added support for a history file, defaults to ~/.pythonhist and 100 lines but
