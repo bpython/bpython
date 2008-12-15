@@ -110,6 +110,7 @@ OPTS.syntax = True
 OPTS.arg_spec = True
 OPTS.hist_file = '~/.pythonhist'
 OPTS.hist_length = 100
+OPTS.flush_output = True
 
 # TODO:
 #
@@ -1733,7 +1734,8 @@ def main():
         sys.exit(1)
 
 # Fake stdout data so everything's still visible after exiting
-    sys.stdout.write(o)
+    if OPTS.flush_output:
+        sys.stdout.write(o)
     sys.stdout.flush()
 
 if __name__ == '__main__':
