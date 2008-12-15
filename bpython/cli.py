@@ -654,8 +654,13 @@ class Repl(object):
                 r += 1
                 self.list_win.addstr('\n\t')
 
+            if str(i) == 'self' and k == 0:
+                color = self._C["r"]
+            else:
+                color = self._C["g"]
+
             self.list_win.addstr(str(i),
-                curses.color_pair(self._C["g"]+1) | curses.A_BOLD)
+                curses.color_pair(color + 1) | curses.A_BOLD)
             if kw:
                 self.list_win.addstr('=', curses.color_pair(self._C["c"]+1))
                 self.list_win.addstr(kw, curses.color_pair(self._C["g"]+1))
