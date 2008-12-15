@@ -45,7 +45,7 @@ import string
 import shlex
 import socket
 import pydoc
-import cStringIO
+from cStringIO import StringIO
 
 # These are used for syntax hilighting.
 from pygments import highlight
@@ -1715,7 +1715,13 @@ def main_curses(scr):
 
 
 def main():
+    if not os.isatty(sys.stdin.fileno()):
+        interpreter = code.InteractiveInterpreter()
+        interpreter.runsource(sys.stdin.read())
+        return
+
     tb = None
+
     try:
         o = curses.wrapper(main_curses)
     except:
