@@ -950,6 +950,9 @@ class Repl(object):
         else:
             t = s
 
+        if isinstance(t, unicode):
+            t = t.encode(sys.__stdout__.encoding)
+
         if not self.stdout_hist:
             self.stdout_hist = t
         else:
@@ -982,6 +985,8 @@ class Repl(object):
         uses the formatting method as defined in formatter.py to parse the
         srings. It won't update the screen if it's reevaluating the code (as it
         does with undo)."""
+        if isinstance(s, unicode):
+            s = s.encode(sys.__stdout__.encoding)
 
         a = curses.color_pair(0)
         if '\x01' in s:
