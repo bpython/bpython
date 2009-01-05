@@ -12,6 +12,10 @@ stdout or not on exit.
 Piping something to bpython made it lock up as stdin was not the keyboard -
 bpython just executes stdin and exits instead of trying to do something clever.
 
+Mark Florisson (eggy) gave me a patch that stops weird breakage when unicode
+objects get added into the output buffer - they now get encoded into the output
+encoding.
+
 v0.7.1
 ======
 Added support for a history file, defaults to ~/.pythonhist and 100 lines but
