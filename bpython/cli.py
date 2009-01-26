@@ -951,7 +951,7 @@ class Repl(object):
             t = s
 
         if isinstance(t, unicode):
-            t = t.encode(sys.__stdout__.encoding)
+            t = t.encode(getattr(sys.__stdout__, 'encoding') or sys.getdefaultencoding())
 
         if not self.stdout_hist:
             self.stdout_hist = t
@@ -986,7 +986,7 @@ class Repl(object):
         srings. It won't update the screen if it's reevaluating the code (as it
         does with undo)."""
         if isinstance(s, unicode):
-            s = s.encode(sys.__stdout__.encoding)
+            s = s.encode(getattr(sys.__stdout__, 'encoding') or sys.getdefaultencoding())
 
         a = curses.color_pair(0)
         if '\x01' in s:

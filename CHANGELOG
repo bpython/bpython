@@ -16,6 +16,9 @@ Mark Florisson (eggy) gave me a patch that stops weird breakage when unicode
 objects get added into the output buffer - they now get encoded into the output
 encoding.
 
+Bohdan Vlasyuk sent me a patch that fixes a problem with the above patch from
+Mark if sys.__stdout__.encoding didn't exist.
+
 v0.7.1
 ======
 Added support for a history file, defaults to ~/.pythonhist and 100 lines but
