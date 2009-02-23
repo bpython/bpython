@@ -688,6 +688,19 @@ class Repl(object):
 
         return self.stdout_hist + '\n'
 
+    def formatforfile(self, s):
+        """Format the stdout buffer to something suitable for writing to disk,
+        i.e. without >>> and ... at input lines and with "# OUT: " prepended to
+        output lines."""
+
+        def process():
+            for line in s.split('\n'):
+                if line.startswith('>>>') or line.startswith('...'):
+                    yield line[4:]
+                elif line.rstrip():
+                    yield "# OUT: %s" % (line,)
+        return "\n".join(process())
+
     def write2file(self):
         """Prompt for a filename and write the current contents of the stdout
         buffer to disk."""
@@ -697,7 +710,7 @@ class Repl(object):
         if fn.startswith('~'):
             fn = os.path.expanduser(fn)
 
-        s = self.getstdout()
+        s = self.formatforfile(self.getstdout())
 
         try:
             f = open(fn, 'w')
