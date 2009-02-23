@@ -19,6 +19,10 @@ encoding.
 Bohdan Vlasyuk sent me a patch that fixes a problem with the above patch from
 Mark if sys.__stdout__.encoding didn't exist.
 
+Save to file now outputs executable code (i.e. without the >>> and ... and with
+"# OUT: " prepended to all output lines). I never used this feature much but
+someone asked for this behaviour.
+
 v0.7.1
 ======
 Added support for a history file, defaults to ~/.pythonhist and 100 lines but
