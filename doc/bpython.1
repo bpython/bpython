@@ -1,0 +1,105 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH BPYTHON 1 "August 13, 2008"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+bpython \- a fancy curses interface to the Python interactive interpreter
+.SH SYNOPSIS
+.B bpython
+.I rc\-file
+.SH DESCRIPTION
+The idea is to provide the user with all the features
+in\-line, much like modern IDEs, but in a simple,
+lightweight package that can be run in a terminal
+window.
+
+.B * In\-line syntax highlighting.
+.RS
+Hilights commands as you type!
+.RE
+.B * Readline\-like autocomplete with suggestions displayed as you type.
+.RS
+Press tab to complete expressions when there's only one suggestion.
+.RE
+.B * Expected parameter list.
+.RS
+This displays a list of parameters for any function you call. It uses the inspect module, then tries pydoc.
+.RE
+.B * Rewind.
+.RS
+This is a bit misleading, but it code that has been entered is remembered, and when you Rewind, it pops the last line and re\-evaluates the entire code. This is error\-prone, and mostly useful for defining classes and functions. 
+.RE
+.B * Pastebin code/write to file.
+.RS
+This posts the current buffer to a pastebin (rafb.net/paste for now) or writes it to a file.
+.RE
+.B * Flush curses screen to stdout.
+.RS
+Unlike other curses apps, it dumps the screen data to stdout when you quit, so you see what you've done in the buffer of your terminal.
+.RE
+
+.SH KEYS
+.B <C\-d>
+Exit
+.RS
+Exits the interpreter, like normal interactive Python.
+.RE
+.B <C\-r>
+Rewind
+.RS
+Rewinds and "undoes" the last statement, read 
+.B DESCRIPTION
+for more info.
+.RE
+.B <F2>
+Save
+.RS
+Saves the current buffer to a file.
+.RE
+.B <F8>
+Pastebin
+.RS
+Posts the current buffer to 
+.B http://rafb.net/paste
+(will probably become configurable), and displays the URL.
+.RE
+.B <Tab>
+Autocomplete
+.RS
+If there's an unambigious completion of the expression, fill it in.
+.RE
+
+.SH FILES
+~/.bpythonrc
+.RS
+Your bpython config. See sample-rc (in /usr/share/docs/bpython/examples on Debian) for various options you can use, or read
+.BR bpythonrc (5)
+ .
+.RE
+
+.SH SEE ALSO
+.BR bpythonrc (5),
+.BR python (1).
+
+.SH KNOWN BUGS
+Triple quoted strings over multiple lines work, but they're not highlighted
+properly.
+
+.SH AUTHOR
+bpython was written by Robert Anthony Farrell <robertanthonyfarrel@gmail.com>.
+.PP
+This manual page was written by Jørgen Pedersen Tjernø <jorgen@devsoft.no>,
+for the Debian project (but may be used by others).

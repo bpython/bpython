@@ -1,0 +1,215 @@
+v0.7.2
+======
+Menno sent me some patches to fix some stuff:
+    * Socket error handled when submitting to a pastebin.
+    * Resizing could crash if you resize small enough.
+
+'self' in arg list is now highlighted a different colour.
+
+flush_output option added to config to control whether output is flushed to
+stdout or not on exit.
+
+Piping something to bpython made it lock up as stdin was not the keyboard -
+bpython just executes stdin and exits instead of trying to do something clever.
+
+Mark Florisson (eggy) gave me a patch that stops weird breakage when unicode
+objects get added into the output buffer - they now get encoded into the output
+encoding.
+
+Bohdan Vlasyuk sent me a patch that fixes a problem with the above patch from
+Mark if sys.__stdout__.encoding didn't exist.
+
+Save to file now outputs executable code (i.e. without the >>> and ... and with
+"# OUT: " prepended to all output lines). I never used this feature much but
+someone asked for this behaviour.
+
+v0.7.1
+======
+Added support for a history file, defaults to ~/.pythonhist and 100 lines but
+is configurable from the rc file (see sample-rc).
+
+Charles Duffy has added a yank/put thing - C-k and C-y. He also ran the code
+through some PEP-8 checker thing and fixed up a few old habits I manage to
+break but didn't manage to fix the code to reflect this - thank you!
+
+Jørgen Tjernø has fixed up the autoindentation issues we encountered when
+bringing soft tabs in.
+
+SyntaxError, ValueError and OverflowError are now caught properly
+(code.InteractiveInterpreter treats these as different to other exceptions as
+it doesn't print the whole traceback, so a different handler is called). This
+was discovered as I was trying to stop autoindentation from occurring on a
+SyntaxError, which has also been fixed.
+
+'.' now in sys.path on startup.
+
+v0.7.0
+======
+C-d behaviour changed so it no longer exits if the current line isn't empty.
+
+Extra linebreak added to end of stdout flush.
+
+pygments and pyparsing are now dependencies.
+
+Jørgen Tjernø has done lots of cool things like write a manpage and .desktop
+file and improved the way tabbing works and also added home, end and del key
+handling as well as C-w for deleting words - thanks a lot!
+
+raw_input() and all its friends now work fine.
+
+PYTHONSTARTUP handled without blowing up on stupid errors (it now parses the
+file at once instead of feeding it to the repl line-by-line).
+
+v0.6.4
+======
+KeyboardInterrupt handler clears the list window properly now.
+
+v0.6.3
+======
+Forgot to switch rpartition to split for 2.4 compat.
+
+v0.6.2
+======
+The help() now works (as far as I can see) exactly the same
+as the vanilla help() in the regular interpreter. I copied some
+code from pydoc.py to make it handle the special cases, e.g.
+help('keywords')
+help('modules')
+etc.
+
+v0.6.1
+======
+Somehow it escaped my attention that the list window was never
+fully using the rightmost column, except for the first row. This
+is because me and numbers don't have the best relationship. I think
+stability is really improving with the latest spat of bugfixes,
+keep me informed of any bugs.
+
+v0.6.0
+======
+No noticeable changes except that bpython should now work with
+Python 2.4. Personally I think it's silly to make a development
+tool work with an out of date version of Python but some people
+seem to disagree. The only real downside is that I had to do a
+horrible version of all() using reduce(), otherwise there's no
+real differences in the code.
+
+v0.5.3
+======
+Now you can configure a ~/.bpythonrc file (or pass a rc file at the
+command line (bpython /foo/bar). See README for details.
+
+v0.5.2
+======
+help() actually displays the full help page, and I fixed up the
+ghetto pager a little.
+
+v0.5.1
+======
+Now you can hit tab to display the autocomplete list, rather than
+have it pop up automatically as you type which, apparently, annoys
+Brendogg.
+
+v0.5.0
+======
+A few people have commented that the help() built-in function
+doesn't work so well with bpython, since Python will try to output
+the help string to PAGER (usually "less") which obviously makes
+everything go wrong when curses is involved. With a bit of hackery
+I've written my own ghetto pager and injected my own help function
+into the interpreter when it initialises in an attempt to rectify this.
+As such, it's pretty untested but it seems to be working okay for me.
+Suggestions/bug reports/patches are welcome regarding this.
+
+v0.4.2
+======
+Well, hopefully we're one step closer to making the list sizing
+stuff work. I really hate doing code for that kind of thing as I
+never get it quite right, but with perseverence it should end up
+being completely stable; it's not the hardest thing in the world.
+
+Various cosmetic fixes have been put in at the request of a bunch
+of people who were kind enough to send me emails regarding their
+experiences.
+
+PYTHONSTARTUP is now dealt with and used properly, as per the vanilla
+interpreter.
+
+v0.4.1
+======
+It looks like the last release was actually pretty bug-free, aside
+from one tiny bug that NEVER ACTUALLY HAPPENS but someone was bugging
+me about it anyway, oh well.
+
+v0.4.0
+======
+It's been quite a long time since the last update, due to several
+uninteresting and invalid excuses, but I finally reworked the list
+drawing procedures so the crashing seems to have been taken care of
+to an extent. If it still crashes, the way I've written it will hopefully
+allow a much more robust way of fixing it, one that might actually work.
+
+v0.3.2
+======
+Thanks to Aaron Gallagher for pointing out a case where the hugely
+inefficient list generation routines were actually making a significant
+issue; they're much more efficient now and should hopefully not cause
+any more problems.
+
+v0.3.1
+======
+Thanks to Klaus Alexander Seis for the expanduser() patch.
+Auto indent works on multiple levels now.
+
+v0.3.0
+======
+Now with auto-indent. Let me know if it's annoying.
+
+v0.2.4
+======
+Thanks a lot to Angus Gibson for submitting a patch to fix a problem
+I was having with initialising the keyboard stuff in curses properly.
+
+Also a big thanks to John Beisley for providing the patch that shows
+a class __init__ method's argspec on class instantiation.
+
+I've fixed up the argspec display so it handles really long argspecs
+(e.g. subprocess.Popen()) and doesn't crash if something horrible
+happens (rather, it avoids letting something horrible happen).
+
+I decided to add a key that will get rid of the autocomplete window,
+since it can get in the way. C-l seemed like a good choice, since
+it would work well as a side-effect of redrawing the screen (at 
+least that makes sense to me). In so doing I also cleaned up a lot
+of the reevaluating and resizing code so that a lot of the strange
+output seen on Rewind/resize seems to be gone.
+
+v0.2.3
+======
+The fix for the last bug broke the positioning of the autocomplete
+box, whoops.
+
+v0.2.2
+======
+That pesky bug keeps coming up. I think it's finally nailed but
+it's just a matter of testing and hoping. I hate numbers.
+
+v0.2.1
+======
+I'm having a bit of trouble with some integer division that's
+causing trouble when a certain set of circumstances arise,
+and I think I've taken care of that little bug, since it's
+a real pain in the ass and only creeps up when I'm actually
+doing something useful, so I'll test it for a bit and release
+it as hopefully a bug fixed version.
+
+v0.2.0
+======
+A little late in the day to start a changelog, but here goes...
+This version fixed another annoying little bug that was causing
+crashes given certain exact circumstances. I always find it's the
+way with curses and sizing of windows and things...
+
+I've also got bpython to try looking into pydoc if no matches
+are found for the argspec, which means the builtins have argspecs
+too now, hooray.
