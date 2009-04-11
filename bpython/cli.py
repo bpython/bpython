@@ -329,10 +329,11 @@ class Repl(object):
         m = re.match(r"(\w+(\.\w+)*)\.(\w*)", text)
         if not m:
             return []
+
         expr, attr = m.group(1, 3)
         obj = eval(expr, self.interp.locals)
         type_ = type(obj)
-
+        f = None
         # Dark magic:
         if type_ != types.InstanceType:
             f = getattr(type_, '__getattribute__', None)
@@ -344,15 +345,23 @@ class Repl(object):
                     f = None
         # /Dark magic
 
+        try:
+            matches = self.attr_lookup(obj, expr, attr)
+        finally:
+            # Dark magic:
+            if f is not None:
+                setattr(type_, '__getattribute__', f)
+            # /Dark magic
+        return matches
+
+    def attr_lookup(self, obj, expr, attr):
+        """Second half of original attr_matches method factored out so it can
+        be wrapped in a safe try/finally block in case anything bad happens to
+        restore the original __getattribute__ method."""
         words = dir(obj)
         if hasattr(obj, '__class__'):
             words.append('__class__')
             words = words + rlcompleter.get_class_members(obj.__class__)
-
-        # Dark magic:
-        if f is not None:
-            setattr(type_, '__getattribute__', f)
-        # /Dark magic
 
         matches = []
         n = len(attr)
