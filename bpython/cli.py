@@ -820,7 +820,12 @@ class Repl(object):
         s = s.rstrip('\n')
         self.buffer.append(s)
 
-        more = self.interp.runsource("\n".join(self.buffer))
+        try:
+            more = self.interp.runsource("\n".join(self.buffer))
+        except SystemExit:
+            # Avoid a traceback on e.g. quit()
+            self.do_exit = True
+            return False
 
         if not more:
             self.buffer = []
