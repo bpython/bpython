@@ -335,22 +335,38 @@ class Repl(object):
         type_ = type(obj)
         f = None
         # Dark magic:
+        # If __getattribute__ doesn't exist on the class and __getattr__ does
+        # then __getattr__ will be called when doing
+        #   getattr(type_, '__getattribute__', None)
+        # so we need to first remove the __getattr__, then the
+        # __getattribute__, then look up the attributes and then restore the
+        # original methods. :-(
+        # The upshot being that introspecting on an object to display its
+        # attributes will avoid unwanted side-effects.
         if type_ != types.InstanceType:
-            f = getattr(type_, '__getattribute__', None)
-            if f is not None:
+            __getattr__ = getattr(type_, '__getattr__', None)
+            if __getattr__ is not None:
+                try:
+                    setattr(type_, '__getattr__', (lambda _: None))
+                except TypeError:
+                    __getattr__ = None
+            __getattribute__ = getattr(type_, '__getattribute__', None)
+            if __getattribute__ is not None:
                 try:
                     setattr(type_, '__getattribute__', object.__getattribute__)
                 except TypeError:
                     # XXX: This happens for e.g. built-in types
-                    f = None
+                    __getattribute__ = None
         # /Dark magic
 
         try:
             matches = self.attr_lookup(obj, expr, attr)
         finally:
             # Dark magic:
-            if f is not None:
-                setattr(type_, '__getattribute__', f)
+            if __getattribute__ is not None:
+                setattr(type_, '__getattribute__', __getattribute__)
+            if __getattr__ is not None:
+                setattr(type_, '__getattr__', __getattr__)
             # /Dark magic
         return matches
 
@@ -519,7 +535,6 @@ class Repl(object):
         try:
             self.completer.complete(cw, 0)
         except Exception:
-            raise
 # This sucks, but it's either that or list all the exceptions that could
 # possibly be raised here, so if anyone wants to do that, feel free to send me
 # a patch. XXX: Make sure you raise here if you're debugging the completion
