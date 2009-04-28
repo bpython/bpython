@@ -333,7 +333,8 @@ class Repl(object):
         expr, attr = m.group(1, 3)
         obj = eval(expr, self.interp.locals)
         type_ = type(obj)
-        f = None
+        __getattribute__ = None
+        __getattr__ = None
         # Dark magic:
         # If __getattribute__ doesn't exist on the class and __getattr__ does
         # then __getattr__ will be called when doing
