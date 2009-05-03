@@ -15,7 +15,7 @@ else:
 
 setup(
     name="bpython",
-    version = "0.7.1",
+    version = "0.8.0",
     author = "Robert Anthony Farrell",
     author_email = "robertanthonyfarrell@gmail.com",
     description = "Fancy Interface to the Python Interpreter",
