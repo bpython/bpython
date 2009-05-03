@@ -1,3 +1,10 @@
+v0.8.0
+======
+It's been a long while since the last release and there've been numerous little
+bugfixes and extras here and there so I'm putting this out as 0.8.0. Check the
+hg commit history if you want more info:
+http://bitbucket.org/bobf/bpython/
+
 v0.7.2
 ======
 Menno sent me some patches to fix some stuff:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# bpython 0.7.1::fancy curses interface to the Python repl::Bob Farrell 2008
+# bpython 0.8.0::fancy curses interface to the Python repl::Bob Farrell 2008
 #
 # The MIT License
 #
