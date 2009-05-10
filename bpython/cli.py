@@ -1344,7 +1344,9 @@ class Repl(object):
         """Probably not the best way of doing it but this function returns
         a common base string in a list of strings (for tab completion)."""
 
-        if len(l) == 1:
+        if not l:
+            return ''
+        elif len(l) == 1:
             return l[0]
 
         sl = sorted(l, key=str.__len__)
