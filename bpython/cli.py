@@ -1034,8 +1034,12 @@ class Repl(object):
 
     def write(self, s):
         """For overriding stdout defaults"""
+        if '\x04' in s:
+            for block in s.split('\x04'):
+                self.write(block)
+            return
         if s.rstrip() and '\x03' in s:
-                t = s.split('\x03')[1]
+            t = s.split('\x03')[1]
         else:
             t = s
 
@@ -1764,6 +1768,14 @@ def loadrc():
         if hasattr(OPTS, k):
             setattr(OPTS, k, v)
 
+class FakeDict(object):
+    """Very simple dict-alike that returns a constant value for any key -
+    used as a hacky solution to using a colours dict containing colour codes if
+    colour initialisation fails."""
+    def __init__(self, val):
+        self._val = val
+    def __getitem__(self, k):
+        return self._val
 
 def main_curses(scr):
     """main function for the curses convenience wrapper
@@ -1781,9 +1793,12 @@ def main_curses(scr):
     signal.signal(signal.SIGWINCH, lambda *_: sigwinch(scr))
     loadrc()
     stdscr = scr
-    curses.start_color()
-    curses.use_default_colors()
-    cols = make_colours()
+    try:
+        curses.start_color()
+        curses.use_default_colors()
+        cols = make_colours()
+    except curses.error:
+        cols = FakeDict(-1)
 
     scr.timeout(300)
 
