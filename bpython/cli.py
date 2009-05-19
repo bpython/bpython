@@ -544,9 +544,11 @@ class Repl(object):
         else:
             e = False
 
-        if (e or not self.completer.matches) and not self.argspec:
-            self.scr.redrawwin()
-            return False
+        if e or not self.completer.matches:
+            self.matches = []
+            if not self.argspec:
+                self.scr.redrawwin()
+                return False
 
         if not e and self.completer.matches:
 # remove duplicates and restore order
