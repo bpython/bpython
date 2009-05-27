@@ -203,7 +203,7 @@ class Interpreter(code.InteractiveInterpreter):
                 value = SyntaxError(msg, (filename, lineno, offset, line))
                 sys.last_value = value
         list = traceback.format_exception_only(type, value)
-        map(self.writetb, list)
+        self.writetb(list)
 
     def showtraceback(self):
         """This needs to override the default traceback thing
