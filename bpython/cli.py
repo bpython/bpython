@@ -1279,6 +1279,7 @@ class Repl(object):
             return ''
 
         elif self.c in ('^L', chr(12)): # C-l
+            self.s_hist = [self.s_hist[-1]]
             self.redraw()
             return ''
 
