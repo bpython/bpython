@@ -47,6 +47,8 @@ import socket
 import pydoc
 import types
 from cStringIO import StringIO
+from urlparse import urljoin
+from xmlrpclib import ServerProxy, Error as XMLRPCError
 
 # These are used for syntax hilighting.
 from pygments import highlight
@@ -797,32 +799,20 @@ class Repl(object):
     def pastebin(self):
         """Upload to a pastebin and display the URL in the status bar."""
 
+        pasteservice_url = 'http://paste.pocoo.org/'
+        pasteservice = ServerProxy(urljoin(pasteservice_url, '/xmlrpc/'))
+
         s = self.getstdout()
-        url = 'http://rafb.net/paste/paste.php'
-        pdata = {
-            'lang': 'Python',
-            'cvt_tabs': 'No',
-            'text': s
-        }
-        pdata = urllib.urlencode(pdata)
 
         self.statusbar.message('Posting data to pastebin...')
         try:
-            u = urllib.urlopen(url, data=pdata)
-            d = u.read()
-        except (socket.error, socket.timeout, IOError), e:
+            paste_id = pasteservice.pastes.newPaste('pycon', s)
+        except XMLRPCError, e:
             self.statusbar.message( 'Upload failed: %s' % str(e) )
             return
-
-        rx = re.search('(http://rafb.net/p/[0-9a-zA-Z]+\.html)', d)
-        if not rx:
-            self.statusbar.message(
-                'Error parsing pastebin URL! Please report a bug.')
-            return
-
-
-        r_url = rx.groups()[0]
-        self.statusbar.message('Pastebin URL: %s' % r_url, 10)
+        
+        paste_url = urljoin(pasteservice_url, '/show/%s/' % paste_id)
+        self.statusbar.message('Pastebin URL: %s' % paste_url, 10)
 
     def make_list(self, items):
         """Compile a list of items. At the moment this simply returns
