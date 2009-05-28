@@ -140,7 +140,7 @@ OPTS.flush_output = True
 def DEBUG(s):
     """This shouldn't ever be called in any release of bpython, so
     beat me up if you find anything calling it."""
-    open('/home/bob/tmp/plonker', 'a').write("%s\n" % str(s))
+    open('/home/bob/tmp/plonker', 'a').write("%s\n" % (str(s), ))
 
 
 def make_colours():
@@ -231,7 +231,7 @@ class Interpreter(code.InteractiveInterpreter):
     def writetb(self, l):
         """This outputs the traceback and should be overridden for anything
         fancy."""
-        map(self.write, ["\x01y\x03%s" % i for i in l])
+        map(self.write, ["\x01y\x03%s" % (i, ) for i in l])
 
 
 class Repl(object):
@@ -713,7 +713,7 @@ class Repl(object):
             ln = len(str(i))
             kw = None
             if kwargs and k+1 > len(args) - len(kwargs):
-                kw = '%s' % str(kwargs[k - (len(args) - len(kwargs))])
+                kw = str(kwargs[k - (len(args) - len(kwargs))])
                 ln += len(kw) + 1
 
             if ln + x >= w:
@@ -746,12 +746,12 @@ class Repl(object):
         if _args:
             self.list_win.addstr(', ',
                 curses.color_pair(self._C["g"]+1))
-            self.list_win.addstr('*%s' % _args,
+            self.list_win.addstr('*%s' % (_args, ),
                 curses.color_pair(self._C["m"]+1))
         if _kwargs:
             self.list_win.addstr(', ',
                 curses.color_pair(self._C["g"]+1))
-            self.list_win.addstr('**%s' % _kwargs,
+            self.list_win.addstr('**%s' % (_kwargs, ),
                 curses.color_pair(self._C["m"]+1))
         self.list_win.addstr(')', curses.color_pair(self._C["y"]+1))
 
@@ -792,9 +792,9 @@ class Repl(object):
             f.write(s)
             f.close()
         except IOError:
-            self.statusbar.message("Disk write error for file '%s'." % fn)
+            self.statusbar.message("Disk write error for file '%s'." % (fn, ))
         else:
-            self.statusbar.message('Saved to %s' % fn)
+            self.statusbar.message('Saved to %s' % (fn, ))
 
     def pastebin(self):
         """Upload to a pastebin and display the URL in the status bar."""
@@ -808,11 +808,11 @@ class Repl(object):
         try:
             paste_id = pasteservice.pastes.newPaste('pycon', s)
         except XMLRPCError, e:
-            self.statusbar.message( 'Upload failed: %s' % str(e) )
+            self.statusbar.message( 'Upload failed: %s' % (str(e), ) )
             return
         
-        paste_url = urljoin(pasteservice_url, '/show/%s/' % paste_id)
-        self.statusbar.message('Pastebin URL: %s' % paste_url, 10)
+        paste_url = urljoin(pasteservice_url, '/show/%s/' % (paste_id, ))
+        self.statusbar.message('Pastebin URL: %s' % (paste_url, ), 10)
 
     def make_list(self, items):
         """Compile a list of items. At the moment this simply returns
