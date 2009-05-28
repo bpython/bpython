@@ -744,13 +744,15 @@ class Repl(object):
                 self.list_win.addstr(', ', curses.color_pair(self._C["g"]+1))
 
         if _args:
-            self.list_win.addstr(', ',
-                curses.color_pair(self._C["g"]+1))
+            if args:
+                self.list_win.addstr(', ',
+                    curses.color_pair(self._C["g"]+1))
             self.list_win.addstr('*%s' % (_args, ),
                 curses.color_pair(self._C["m"]+1))
         if _kwargs:
-            self.list_win.addstr(', ',
-                curses.color_pair(self._C["g"]+1))
+            if args or _args:
+                self.list_win.addstr(', ',
+                    curses.color_pair(self._C["g"]+1))
             self.list_win.addstr('**%s' % (_kwargs, ),
                 curses.color_pair(self._C["m"]+1))
         self.list_win.addstr(')', curses.color_pair(self._C["y"]+1))
