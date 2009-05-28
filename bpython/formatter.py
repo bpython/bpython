@@ -93,9 +93,9 @@ class BPythonFormatter(Formatter):
                 continue
 
             if token in f_strings:
-                o += f_strings[token] % text
+                o += f_strings[token] % (text, )
             else:
-                o += f_strings[Token] % text
+                o += f_strings[Token] % (text, )
         outfile.write(o.rstrip())
 
 # vim: sw=4 ts=4 sts=4 ai et

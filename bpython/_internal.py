@@ -51,7 +51,7 @@ def _help(obj):
     else:
         output = doc.document(obj)
         if not output:
-            output = "No help found for %s" % obj
+            output = "No help found for %s" % (obj, )
             return
 
     if output is None:
