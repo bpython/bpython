@@ -55,6 +55,9 @@ from pygments import highlight
 from pygments.lexers import PythonLexer
 from bpython.formatter import BPythonFormatter
 
+# This for import completion
+from bpython import importcompletion
+
 # And these are used for argspec.
 from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
     Group, OneOrMore, ZeroOrMore, Literal, Optional, Word, \
@@ -535,26 +538,31 @@ class Repl(object):
         if not cw:
             self.matches = []
 
-        try:
-            self.completer.complete(cw, 0)
-        except Exception:
+        # Check for import completion
+        e = False
+        matches = importcompletion.complete(self.s, cw)
+        if not matches:
+            # Nope, no import, continue with normal completion
+            try:
+                self.completer.complete(cw, 0)
+            except Exception:
 # This sucks, but it's either that or list all the exceptions that could
 # possibly be raised here, so if anyone wants to do that, feel free to send me
 # a patch. XXX: Make sure you raise here if you're debugging the completion
 # stuff !
-            e = True
-        else:
-            e = False
+                e = True
+            else:
+                matches = self.completer.matches
 
-        if e or not self.completer.matches:
+        if e or not matches:
             self.matches = []
             if not self.argspec:
                 self.scr.redrawwin()
                 return False
 
-        if not e and self.completer.matches:
+        if not e and matches:
 # remove duplicates and restore order
-            self.matches = sorted(set(self.completer.matches))
+            self.matches = sorted(set(matches))
 
         if len(self.matches) == 1 and not OPTS.auto_display_list:
             self.list_win_visible = True
