@@ -70,6 +70,23 @@ f_strings = {
     Whitespace: "\x02d\x03%s\x04",
 }
 
+f_strings_light = {
+    Keyword: "\x01b\x03%s\x04",
+    Name: "\x01k\x02\x03%s\x04",
+    Comment: "\x01b\x03%s\x04",
+    String: "\x01g\x03%s\x04",
+    Error: "\x01r\x03%s\x04",
+    Literal: "\x01r\x03%s\x04",
+    Literal.String: "\x01g\x03%s\x04",
+    Token.Literal.Number.Float: "\x01g\x02\x03%s\x04",
+    Number: "\x01g\x03%s\x04",
+    Operator: "\x01b\x02\x03%s\x04",
+    Operator.Word: "\x01k\x02\x03%s\x04",
+    Punctuation: "\x01b\x02\x03%s\x04",
+    Generic: "\x01d\x03%s\x04",
+    Token: "\x01b\x03%s\x04",
+    Whitespace: "\x02d\x03%s\x04",
+}
 
 class BPythonFormatter(Formatter):
     """This is the custom formatter for bpython.
