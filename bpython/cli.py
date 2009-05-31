@@ -1331,12 +1331,6 @@ class Repl(object):
             self.print_line(self.s)
             return True
 
-        if not importcompletion.modules:
-            line = self.s.lstrip()
-            if line.startswith('from ') or line.startswith('import '):
-                self.statusbar.message('Scanning for modules...')
-                importcompletion.reload()
-
         if not OPTS.auto_display_list and not self.list_win_visible:
             self.complete(tab=True)
             return True
@@ -1699,6 +1693,7 @@ def idle(caller):
 
     global stdscr
 
+    importcompletion.find_coroutine()
     caller.statusbar.check()
 
     if DO_RESIZE:
