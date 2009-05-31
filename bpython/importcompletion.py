@@ -27,8 +27,8 @@ import sys
 
 
 # The cached list of all known modules
-modules = list()
-
+modules = set()
+fully_loaded = False
 
 def complete(line, cw):
     """Construct a full list of possibly completions for imports."""
@@ -88,18 +88,29 @@ def find_modules(path):
 def find_all_modules(path=None):
     """Return a list with all modules in `path`, which should be a list of
     directory names. If path is not given, sys.path will be used."""
-    modules = set()
     if path is None:
         modules.update(sys.builtin_module_names)
         path = sys.path
 
     for p in path:
         modules.update(find_modules(p))
-    
-    return modules
+        yield
 
+def find_coroutine():
+    global fully_loaded
+
+    if fully_loaded:
+        return
+
+    try:
+        find_iterator.next()
+    except StopIteration:
+        fully_loaded = True
 
 def reload():
     """Refresh the list of known modules."""
-    global modules
-    modules = find_all_modules()
+    modules.clear()
+    for _ in find_all_modules():
+        pass
+
+find_iterator = find_all_modules()
