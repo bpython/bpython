@@ -52,9 +52,11 @@ from xmlrpclib import ServerProxy, Error as XMLRPCError
 from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 # These are used for syntax hilighting.
-from pygments import highlight
+from pygments import format
 from pygments.lexers import PythonLexer
+from pygments.token import Token
 from bpython.formatter import BPythonFormatter
+from itertools import chain
 
 # This for import completion
 from bpython import importcompletion
@@ -119,8 +121,6 @@ DO_RESIZE = False
 #
 # Tab completion does not work if not at the end of the line.
 #
-# Triple-quoted strings over multiple lines are not colourised correctly.
-#
 # Numerous optimisations can be made but it seems to do all the lookup stuff
 # fast enough on even my crappy server so I'm not too bothered about that
 # at the moment.
@@ -162,6 +162,18 @@ def make_colours():
     return c
 
 
+def next_token_inside_string(s, inside_string):
+    """Given a code string s and an initial state inside_string, return
+    whether the next token will be inside a string or not."""
+    for token, value in PythonLexer().get_tokens(s):
+        if token is Token.String and value in ['"""', "'''", '"', "'"]:
+            if not inside_string:
+                inside_string = value
+            elif value == inside_string:
+                inside_string = False
+    return inside_string
+
+
 class Interpreter(code.InteractiveInterpreter):
     
     def __init__(self):
@@ -188,6 +200,7 @@ class Interpreter(code.InteractiveInterpreter):
         sys.last_type = type
         sys.last_value = value
         if filename and type is SyntaxError:
+            self.inside_string = False
             # Work hard to stuff the correct filename in the exception
             try:
                 msg, (dummy_filename, lineno, offset, line) = value
@@ -296,6 +309,7 @@ class Repl(object):
         self.matches = []
         self.argspec = None
         self.s = ''
+        self.inside_string = False
         self.list_win_visible = False
         self._C = {}
         sys.stdin = FakeStdin(self)
@@ -1377,6 +1391,9 @@ class Repl(object):
             for _ in range(self.cpos):
                 self.mvc(-1)
 
+        self.inside_string = next_token_inside_string(self.s,
+                                                      self.inside_string)
+
         self.echo("\n")
 
     def addstr(self, s):
@@ -1398,7 +1415,16 @@ class Repl(object):
             clr = True
 
         if OPTS.syntax:
-            o = highlight(s, PythonLexer(), BPythonFormatter())
+            if self.inside_string:
+                # A string started in another line is continued in this
+                # line
+                tokens = PythonLexer().get_tokens(self.inside_string + s)
+                token, value = tokens.next()
+                if token is Token.String.Doc:
+                    tokens = chain([(Token.String, value[3:])], tokens)
+            else:
+                tokens = PythonLexer().get_tokens(s)
+            o = format(tokens, BPythonFormatter())
         else:
             o = s
 
