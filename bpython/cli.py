@@ -49,6 +49,7 @@ import types
 from cStringIO import StringIO
 from urlparse import urljoin
 from xmlrpclib import ServerProxy, Error as XMLRPCError
+from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 # These are used for syntax hilighting.
 from pygments import highlight
@@ -111,16 +112,6 @@ class FakeStdin(object):
 
 OPTS = Struct()
 DO_RESIZE = False
-
-
-# Set default values. (Overridden by loadrc())
-OPTS.tab_length = 4
-OPTS.auto_display_list = True
-OPTS.syntax = True
-OPTS.arg_spec = True
-OPTS.hist_file = '~/.pythonhist'
-OPTS.hist_length = 100
-OPTS.flush_output = True
 
 # TODO:
 #
@@ -1718,59 +1709,38 @@ def do_resize(caller):
     caller.resize()
 # The list win resizes itself every time it appears so no need to do it here.
 
-
-def loadrc():
-    """Use the shlex module to make a simple lexer for the settings,
-    it also attempts to convert any integers to Python ints, otherwise
-    leaves them as strings and handles hopefully all the sane ways of
-    representing a boolean."""
-
+def loadini():
+    """Loads .ini configuration file and stores its values in OPTS"""
+    class CP(ConfigParser):
+        def safeget(self, section, option,  default):
+            """safet get method using default values"""
+            try:
+                v = self.get(section, option)
+            except NoSectionError, NoOptionError:
+                v = default
+            if isinstance(v, bool):
+                return v
+            try:
+                return int(v)
+            except ValueError:
+                return v
+    
     if len(sys.argv) > 2:
         path = sys.argv[2]
     else:
-        path = os.path.expanduser('~/.bpythonrc')
+        configfile = os.path.expanduser('~/.bpython.ini')
+    
+    config = CP()
+    config.read(configfile)
 
-    if not os.path.isfile(path):
-        return
+    OPTS.tab_length = config.safeget('general', 'tab_length', 4)
+    OPTS.auto_display_list = config.safeget('general', 'auto_display_list', True)
+    OPTS.syntax = config.safeget('general', 'syntax', True)
+    OPTS.arg_spec = config.safeget('general', 'arg_spec', True)
+    OPTS.hist_file = config.safeget('general', 'hist_file', '~/.pythonhist')
+    OPTS.hist_length = config.safeget('general', 'hist_length', 100)
+    OPTS.flush_output = config.safeget('general', 'flush_output', True)
 
-    f = open(path)
-    parser = shlex.shlex(f)
-
-    bools = {
-        'true': True,
-        'yes': True,
-        'on': True,
-        'false': False,
-        'no': False,
-        'off': False
-    }
-
-    config = {}
-    while True:
-        k = parser.get_token()
-        v = None
-
-        if not k:
-            break
-
-        k = k.lower()
-
-        if parser.get_token() == '=':
-            v = parser.get_token() or None
-
-        if v is not None:
-            try:
-                v = int(v)
-            except ValueError:
-                if v.lower() in bools:
-                    v = bools[v.lower()]
-
-            config[k] = v
-    f.close()
-
-    for k, v in config.iteritems():
-        if hasattr(OPTS, k):
-            setattr(OPTS, k, v)
 
 class FakeDict(object):
     """Very simple dict-alike that returns a constant value for any key -
@@ -1795,7 +1765,7 @@ def main_curses(scr):
     global DO_RESIZE
     DO_RESIZE = False
     signal.signal(signal.SIGWINCH, lambda *_: sigwinch(scr))
-    loadrc()
+    loadini()
     stdscr = scr
     try:
         curses.start_color()
