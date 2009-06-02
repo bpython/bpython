@@ -301,6 +301,10 @@ class Repl(object):
 # Use the interpreter's namespace only for the readline stuff:
         self.completer = rlcompleter.Completer(self.interp.locals)
         self.completer.attr_matches = self.attr_matches
+        # Gna, Py 2.6's rlcompleter searches for __call__ inside the
+        # instance instead of the type, so we monkeypatch to prevent
+        # side-effects (__getattr__/__getattribute__)
+        self.completer._callable_postfix = self._callable_postfix
         self.statusbar = statusbar
         self.list_win = curses.newwin(1, 1, 1, 1)
         self.idle = idle
@@ -395,6 +399,12 @@ class Repl(object):
             if word[:n] == attr and word != "__builtins__":
                 matches.append("%s.%s" % (expr, word))
         return matches
+
+    def _callable_postfix(self, value, word):
+        """rlcompleter's _callable_postfix done right."""
+        if hasattr(type(value), '__call__'):
+            word += '('
+        return word
 
     def cw(self):
         """Return the current word, i.e. the (incomplete) word directly to the
