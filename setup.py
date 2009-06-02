@@ -30,7 +30,7 @@ setup(
     packages = ["bpython"],
     data_files = [
         (os.path.join(man_dir, 'man1'), ['doc/bpython.1']),
-        (os.path.join(man_dir, 'man5'), ['doc/bpythonrc.5']),
+        (os.path.join(man_dir, 'man5'), ['doc/bpython.ini.5']),
         ('share/applications', ['data/bpython.desktop'])
     ],
     entry_points = {
