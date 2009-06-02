@@ -1794,7 +1794,7 @@ def loadini():
                 return v
 
     if len(sys.argv) > 2:
-        path = sys.argv[2]
+        configfile = sys.argv[2]
     else:
         configfile = os.path.expanduser('~/.bpython.ini')
 
