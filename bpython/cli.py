@@ -1851,11 +1851,9 @@ def main_curses(scr):
     global stdscr
     global DO_RESIZE
     DO_RESIZE = False
-    if os.path.isfile(path):
-        migrate_rc(path)
+
     signal.signal(signal.SIGWINCH, lambda *_: sigwinch(scr))
 
-    loadini()
     stdscr = scr
     try:
         curses.start_color()
@@ -1900,6 +1898,7 @@ def main():
     path = os.path.expanduser('~/.bpythonrc')   # migrating old configuration file
     if os.path.isfile(path):
         migrate_rc(path)
+    loadini()
 
     try:
         o = curses.wrapper(main_curses)
