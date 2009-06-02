@@ -1735,7 +1735,8 @@ def do_resize(caller):
 # The list win resizes itself every time it appears so no need to do it here.
 
 def migrate_rc(path):
-    """Use the shlex module to convert the old configuration file to the new format"""
+    """Use the shlex module to convert the old configuration file to the new format.
+    The old configuration file is renamed but not removed by now."""
     import shlex
     f = open(path)
     parser = shlex.shlex(f)
@@ -1775,6 +1776,12 @@ def migrate_rc(path):
     f = open(os.path.expanduser('~/.bpython.ini'), 'w')
     config.write(f)
     f.close()
+    os.rename(path, os.path.expanduser('~/.bpythonrc.bak'))
+    print "The configuration file for bpython has been changed. A new .bpython.ini file has been created in your home directory."
+    print "The existing .bpythonrc file has been renamed to .bpythonrc.bak and it can be removed."
+    print "Press enter to continue."
+    raw_input()
+
 
 
 def loadini():
@@ -1834,11 +1841,10 @@ def main_curses(scr):
     global stdscr
     global DO_RESIZE
     DO_RESIZE = False
-    signal.signal(signal.SIGWINCH, lambda *_: sigwinch(scr))
-
-    path = os.path.expanduser('~/.bpythonrc')   # migrating old configuration file
     if os.path.isfile(path):
         migrate_rc(path)
+    signal.signal(signal.SIGWINCH, lambda *_: sigwinch(scr))
+
     loadini()
     stdscr = scr
     try:
@@ -1880,6 +1886,10 @@ def main():
         return
 
     tb = None
+
+    path = os.path.expanduser('~/.bpythonrc')   # migrating old configuration file
+    if os.path.isfile(path):
+        migrate_rc(path)
 
     try:
         o = curses.wrapper(main_curses)
