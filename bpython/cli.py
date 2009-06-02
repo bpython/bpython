@@ -42,7 +42,6 @@ import struct
 import termios
 import fcntl
 import string
-import shlex
 import socket
 import pydoc
 import types
@@ -175,7 +174,7 @@ def next_token_inside_string(s, inside_string):
 
 
 class Interpreter(code.InteractiveInterpreter):
-    
+
     def __init__(self):
         """The syntaxerror callback can be set at any time and will be called
         on a caught syntax error. The purpose for this in bpython is so that
@@ -825,7 +824,7 @@ class Repl(object):
         except XMLRPCError, e:
             self.statusbar.message( 'Upload failed: %s' % (str(e), ) )
             return
-        
+
         paste_url = urljoin(pasteservice_url, '/show/%s/' % (paste_id, ))
         self.statusbar.message('Pastebin URL: %s' % (paste_url, ), 10)
 
@@ -1665,7 +1664,7 @@ def init_wins(scr, cols):
 
     main_win = curses.newwin(h-1, w, 0, 0)
     main_win.scrollok(True)
-    main_win.keypad(1) 
+    main_win.keypad(1)
 # Thanks to Angus Gibson for pointing out this missing line which was causing
 # problems that needed dirty hackery to fix. :)
 
@@ -1735,6 +1734,49 @@ def do_resize(caller):
     caller.resize()
 # The list win resizes itself every time it appears so no need to do it here.
 
+def migrate_rc(path):
+    """Use the shlex module to convert the old configuration file to the new format"""
+    import shlex
+    f = open(path)
+    parser = shlex.shlex(f)
+
+    bools = {
+        'true': True,
+        'yes': True,
+        'on': True,
+        'false': False,
+        'no': False,
+        'off': False
+    }
+
+    config = ConfigParser()
+    config.add_section('general')
+
+    while True:
+        k = parser.get_token()
+        v = None
+
+        if not k:
+            break
+
+        k = k.lower()
+
+        if parser.get_token() == '=':
+            v = parser.get_token() or None
+
+        if v is not None:
+            try:
+                v = int(v)
+            except ValueError:
+                if v.lower() in bools:
+                    v = bools[v.lower()]
+                config.set('general', k, v)
+    f.close()
+    f = open(os.path.expanduser('~/.bpython.ini'))
+    config.write(f)
+    f.close()
+
+
 def loadini():
     """Loads .ini configuration file and stores its values in OPTS"""
     class CP(ConfigParser):
@@ -1750,12 +1792,12 @@ def loadini():
                 return int(v)
             except ValueError:
                 return v
-    
+
     if len(sys.argv) > 2:
         path = sys.argv[2]
     else:
         configfile = os.path.expanduser('~/.bpython.ini')
-    
+
     config = CP()
     config.read(configfile)
 
@@ -1791,6 +1833,10 @@ def main_curses(scr):
     global DO_RESIZE
     DO_RESIZE = False
     signal.signal(signal.SIGWINCH, lambda *_: sigwinch(scr))
+
+    path = os.path.expanduser('~/.bpythonrc')   # migrating old configuration file
+    if os.path.isfile(path):
+        migrate_rc(path)
     loadini()
     stdscr = scr
     try:
