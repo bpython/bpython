@@ -1,3 +1,21 @@
+v0.9.0
+======
+Module import completion added.
+
+Changed to paste.pocoo.org due to rafb.net no longer offering a pastebin
+service.
+
+Switched to .ini file format for config file.
+
+White background-friendly colour scheme added.
+
+C-l now clears the screen.
+
+SyntaxError now correctly added to history to prevent it garbling up on a
+redraw.
+
+Probably some other things, but I hate changelogs. :)
+
 v0.8.0
 ======
 It's been a long while since the last release and there've been numerous little
