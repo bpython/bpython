@@ -2,7 +2,7 @@
 .\" First parameter, NAME, should be all caps
 .\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
 .\" other parameters are allowed: see man(7), man(1)
-.TH BPYTHONRC 5 "August 13, 2008"
+.TH BPYTHON.INI 5 "August 13, 2008"
 .\" Please adjust this date whenever revising the manpage.
 .\"
 .\" Some roff macros, for reference:
@@ -16,41 +16,38 @@
 .\" .sp <n>    insert n+1 empty lines
 .\" for manpage-specific macros, see man(7)
 .SH NAME
-bpythonrc \- user configuration file for bpython
+bpython.ini \- user configuration file for bpython
 .SH SYNOPSIS
-.B ~/.bpythonrc
+.B ~/.bpython.ini
 .SH DESCRIPTION
 The 
-.B bpythonrc
+.B bpython.ini
 contains various options controlling the behaviour of 
 .B bpython
  .
 
 Boolean values are 
-.B yes, true, on
-and
-.B no, false, off
- . Currently only boolean variables exist. 
+.B True, False
 
 The various options are:
 
 .B auto_display_list 
 .BI boolean
-(default: yes)
+(default: True)
 .RS
 Display the autocomplete list as you type. When this is off, you can hit tab to see the suggestions.
 .RE
 
 .B syntax
 .BI boolean
-(default: yes)
+(default: True)
 .RS
 Syntax highlighting as you type.
 .RE
 
 .B arg_spec
 .BI boolean
-(default: yes)
+(default: True)
 .RS
 Display the arg spec (list of arguments) for callables, when possible.
 .RE
