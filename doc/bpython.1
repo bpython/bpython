@@ -19,7 +19,7 @@
 bpython \- a fancy curses interface to the Python interactive interpreter
 .SH SYNOPSIS
 .B bpython
-.I rc\-file
+.I ini file
 .SH DESCRIPTION
 The idea is to provide the user with all the features
 in\-line, much like modern IDEs, but in a simple,
@@ -44,7 +44,7 @@ This is a bit misleading, but it code that has been entered is remembered, and w
 .RE
 .B * Pastebin code/write to file.
 .RS
-This posts the current buffer to a pastebin (rafb.net/paste for now) or writes it to a file.
+This posts the current buffer to a pastebin (paste.pocoo.org) or writes it to a file.
 .RE
 .B * Flush curses screen to stdout.
 .RS
@@ -73,7 +73,7 @@ Saves the current buffer to a file.
 Pastebin
 .RS
 Posts the current buffer to 
-.B http://rafb.net/paste
+.B http://paste.pocoo.org/
 (will probably become configurable), and displays the URL.
 .RE
 .B <Tab>
@@ -83,15 +83,15 @@ If there's an unambigious completion of the expression, fill it in.
 .RE
 
 .SH FILES
-~/.bpythonrc
+~/.bpython.ini
 .RS
-Your bpython config. See sample-rc (in /usr/share/docs/bpython/examples on Debian) for various options you can use, or read
-.BR bpythonrc (5)
+Your bpython config. See sample.ini (in /usr/share/docs/bpython/examples on Debian) for various options you can use, or read
+.BR bpython.ini (5)
  .
 .RE
 
 .SH SEE ALSO
-.BR bpythonrc (5),
+.BR bpython.ini (5),
 .BR python (1).
 
 .SH KNOWN BUGS
