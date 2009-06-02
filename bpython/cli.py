@@ -1772,7 +1772,7 @@ def migrate_rc(path):
                     v = bools[v.lower()]
                 config.set('general', k, v)
     f.close()
-    f = open(os.path.expanduser('~/.bpython.ini'))
+    f = open(os.path.expanduser('~/.bpython.ini'), 'w')
     config.write(f)
     f.close()
 
@@ -1784,7 +1784,9 @@ def loadini():
             """safet get method using default values"""
             try:
                 v = self.get(section, option)
-            except NoSectionError, NoOptionError:
+            except NoSectionError:
+                v = default
+            except NoOptionError:
                 v = default
             if isinstance(v, bool):
                 return v
