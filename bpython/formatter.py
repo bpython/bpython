@@ -53,23 +53,40 @@ from pygments.token import Keyword, Name, Comment, String, Error, \
 """
 
 f_strings = {
-    Keyword: "\x01y\x03%s\x04",
-    Name: "\x01w\x02\x03%s\x04",
-    Comment: "\x01b\x03%s\x04",
-    String: "\x01m\x03%s\x04",
-    Error: "\x01r\x03%s\x04",
-    Literal: "\x01r\x03%s\x04",
-    Literal.String: "\x01m\x03%s\x04",
-    Token.Literal.Number.Float: "\x01g\x02\x03%s\x04",
-    Number: "\x01g\x03%s\x04",
-    Operator: "\x01c\x02\x03%s\x04",
-    Operator.Word: "\x01c\x02\x03%s\x04",
-    Punctuation: "\x01c\x02\x03%s\x04",
-    Generic: "\x01d\x03%s\x04",
-    Token: "\x01g\x03%s\x04",
-    Whitespace: "\x02d\x03%s\x04",
+    Keyword: "\x01y",
+    Name: "\x01w\x02",
+    Comment: "\x01b",
+    String: "\x01m",
+    Error: "\x01r",
+    Literal: "\x01r",
+    Literal.String: "\x01m",
+    Token.Literal.Number.Float: "\x01g\x02",
+    Number: "\x01g",
+    Operator: "\x01c\x02",
+    Operator.Word: "\x01c\x02",
+    Punctuation: "\x01c\x02",
+    Generic: "\x01d",
+    Token: "\x01g",
+    Whitespace: "\x02d",
 }
 
+f_strings_light = {
+    Keyword: "\x01b",
+    Name: "\x01k\x02",
+    Comment: "\x01b",
+    String: "\x01g",
+    Error: "\x01r",
+    Literal: "\x01r",
+    Literal.String: "\x01g",
+    Token.Literal.Number.Float: "\x01g\x02",
+    Number: "\x01g",
+    Operator: "\x01b\x02",
+    Operator.Word: "\x01k\x02",
+    Punctuation: "\x01b\x02",
+    Generic: "\x01d",
+    Token: "\x01b",
+    Whitespace: "\x02d",
+}
 
 class BPythonFormatter(Formatter):
     """This is the custom formatter for bpython.
@@ -93,9 +110,9 @@ class BPythonFormatter(Formatter):
                 continue
 
             if token in f_strings:
-                o += f_strings[token] % (text, )
+                o +=  "%s\x03%s\x04" % (f_strings[token], text )
             else:
-                o += f_strings[Token] % (text, )
+                o += "%s\x03%s\x04" % (f_strings[Token], text )
         outfile.write(o.rstrip())
 
 # vim: sw=4 ts=4 sts=4 ai et

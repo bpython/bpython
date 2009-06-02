@@ -49,11 +49,17 @@ import types
 from cStringIO import StringIO
 from urlparse import urljoin
 from xmlrpclib import ServerProxy, Error as XMLRPCError
+from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 # These are used for syntax hilighting.
-from pygments import highlight
+from pygments import format
 from pygments.lexers import PythonLexer
+from pygments.token import Token
 from bpython.formatter import BPythonFormatter
+from itertools import chain
+
+# This for import completion
+from bpython import importcompletion
 
 # And these are used for argspec.
 from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
@@ -109,23 +115,11 @@ class FakeStdin(object):
 OPTS = Struct()
 DO_RESIZE = False
 
-
-# Set default values. (Overridden by loadrc())
-OPTS.tab_length = 4
-OPTS.auto_display_list = True
-OPTS.syntax = True
-OPTS.arg_spec = True
-OPTS.hist_file = '~/.pythonhist'
-OPTS.hist_length = 100
-OPTS.flush_output = True
-
 # TODO:
 #
 # C-l doesn't repaint the screen yet.
 #
 # Tab completion does not work if not at the end of the line.
-#
-# Triple-quoted strings over multiple lines are not colourised correctly.
 #
 # Numerous optimisations can be made but it seems to do all the lookup stuff
 # fast enough on even my crappy server so I'm not too bothered about that
@@ -168,6 +162,18 @@ def make_colours():
     return c
 
 
+def next_token_inside_string(s, inside_string):
+    """Given a code string s and an initial state inside_string, return
+    whether the next token will be inside a string or not."""
+    for token, value in PythonLexer().get_tokens(s):
+        if token is Token.String and value in ['"""', "'''", '"', "'"]:
+            if not inside_string:
+                inside_string = value
+            elif value == inside_string:
+                inside_string = False
+    return inside_string
+
+
 class Interpreter(code.InteractiveInterpreter):
     
     def __init__(self):
@@ -194,6 +200,7 @@ class Interpreter(code.InteractiveInterpreter):
         sys.last_type = type
         sys.last_value = value
         if filename and type is SyntaxError:
+            self.inside_string = False
             # Work hard to stuff the correct filename in the exception
             try:
                 msg, (dummy_filename, lineno, offset, line) = value
@@ -302,6 +309,7 @@ class Repl(object):
         self.matches = []
         self.argspec = None
         self.s = ''
+        self.inside_string = False
         self.list_win_visible = False
         self._C = {}
         sys.stdin = FakeStdin(self)
@@ -535,26 +543,31 @@ class Repl(object):
         if not cw:
             self.matches = []
 
-        try:
-            self.completer.complete(cw, 0)
-        except Exception:
+        # Check for import completion
+        e = False
+        matches = importcompletion.complete(self.s, cw)
+        if not matches:
+            # Nope, no import, continue with normal completion
+            try:
+                self.completer.complete(cw, 0)
+            except Exception:
 # This sucks, but it's either that or list all the exceptions that could
 # possibly be raised here, so if anyone wants to do that, feel free to send me
 # a patch. XXX: Make sure you raise here if you're debugging the completion
 # stuff !
-            e = True
-        else:
-            e = False
+                e = True
+            else:
+                matches = self.completer.matches
 
-        if e or not self.completer.matches:
+        if e or not matches:
             self.matches = []
             if not self.argspec:
                 self.scr.redrawwin()
                 return False
 
-        if not e and self.completer.matches:
+        if not e and matches:
 # remove duplicates and restore order
-            self.matches = sorted(set(self.completer.matches))
+            self.matches = sorted(set(matches))
 
         if len(self.matches) == 1 and not OPTS.auto_display_list:
             self.list_win_visible = True
@@ -744,13 +757,15 @@ class Repl(object):
                 self.list_win.addstr(', ', curses.color_pair(self._C["g"]+1))
 
         if _args:
-            self.list_win.addstr(', ',
-                curses.color_pair(self._C["g"]+1))
+            if args:
+                self.list_win.addstr(', ',
+                    curses.color_pair(self._C["g"]+1))
             self.list_win.addstr('*%s' % (_args, ),
                 curses.color_pair(self._C["m"]+1))
         if _kwargs:
-            self.list_win.addstr(', ',
-                curses.color_pair(self._C["g"]+1))
+            if args or _args:
+                self.list_win.addstr(', ',
+                    curses.color_pair(self._C["g"]+1))
             self.list_win.addstr('**%s' % (_kwargs, ),
                 curses.color_pair(self._C["m"]+1))
         self.list_win.addstr(')', curses.color_pair(self._C["y"]+1))
@@ -1376,6 +1391,9 @@ class Repl(object):
             for _ in range(self.cpos):
                 self.mvc(-1)
 
+        self.inside_string = next_token_inside_string(self.s,
+                                                      self.inside_string)
+
         self.echo("\n")
 
     def addstr(self, s):
@@ -1397,7 +1415,16 @@ class Repl(object):
             clr = True
 
         if OPTS.syntax:
-            o = highlight(s, PythonLexer(), BPythonFormatter())
+            if self.inside_string:
+                # A string started in another line is continued in this
+                # line
+                tokens = PythonLexer().get_tokens(self.inside_string + s)
+                token, value = tokens.next()
+                if token is Token.String.Doc:
+                    tokens = chain([(Token.String, value[3:])], tokens)
+            else:
+                tokens = PythonLexer().get_tokens(s)
+            o = format(tokens, BPythonFormatter())
         else:
             o = s
 
@@ -1683,6 +1710,7 @@ def idle(caller):
 
     global stdscr
 
+    importcompletion.find_coroutine()
     caller.statusbar.check()
 
     if DO_RESIZE:
@@ -1707,59 +1735,38 @@ def do_resize(caller):
     caller.resize()
 # The list win resizes itself every time it appears so no need to do it here.
 
-
-def loadrc():
-    """Use the shlex module to make a simple lexer for the settings,
-    it also attempts to convert any integers to Python ints, otherwise
-    leaves them as strings and handles hopefully all the sane ways of
-    representing a boolean."""
-
+def loadini():
+    """Loads .ini configuration file and stores its values in OPTS"""
+    class CP(ConfigParser):
+        def safeget(self, section, option,  default):
+            """safet get method using default values"""
+            try:
+                v = self.get(section, option)
+            except NoSectionError, NoOptionError:
+                v = default
+            if isinstance(v, bool):
+                return v
+            try:
+                return int(v)
+            except ValueError:
+                return v
+    
     if len(sys.argv) > 2:
         path = sys.argv[2]
     else:
-        path = os.path.expanduser('~/.bpythonrc')
+        configfile = os.path.expanduser('~/.bpython.ini')
+    
+    config = CP()
+    config.read(configfile)
 
-    if not os.path.isfile(path):
-        return
+    OPTS.tab_length = config.safeget('general', 'tab_length', 4)
+    OPTS.auto_display_list = config.safeget('general', 'auto_display_list', True)
+    OPTS.syntax = config.safeget('general', 'syntax', True)
+    OPTS.arg_spec = config.safeget('general', 'arg_spec', True)
+    OPTS.hist_file = config.safeget('general', 'hist_file', '~/.pythonhist')
+    OPTS.hist_length = config.safeget('general', 'hist_length', 100)
+    OPTS.flush_output = config.safeget('general', 'flush_output', True)
 
-    f = open(path)
-    parser = shlex.shlex(f)
-
-    bools = {
-        'true': True,
-        'yes': True,
-        'on': True,
-        'false': False,
-        'no': False,
-        'off': False
-    }
-
-    config = {}
-    while True:
-        k = parser.get_token()
-        v = None
-
-        if not k:
-            break
-
-        k = k.lower()
-
-        if parser.get_token() == '=':
-            v = parser.get_token() or None
-
-        if v is not None:
-            try:
-                v = int(v)
-            except ValueError:
-                if v.lower() in bools:
-                    v = bools[v.lower()]
-
-            config[k] = v
-    f.close()
-
-    for k, v in config.iteritems():
-        if hasattr(OPTS, k):
-            setattr(OPTS, k, v)
 
 class FakeDict(object):
     """Very simple dict-alike that returns a constant value for any key -
@@ -1784,7 +1791,7 @@ def main_curses(scr):
     global DO_RESIZE
     DO_RESIZE = False
     signal.signal(signal.SIGWINCH, lambda *_: sigwinch(scr))
-    loadrc()
+    loadini()
     stdscr = scr
     try:
         curses.start_color()
