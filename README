@@ -94,7 +94,7 @@ as you type.
 	I don't really use the save thing much, but the pastebin
 	thing's great. Hit a key and what you see on the screen
 	will be sent to a pastebin and a URL is returned for you
-	to do what you like with. I've hardcoded rafb.net/paste
+	to do what you like with. I've hardcoded paste.pocoo.org
 	in for now, that needs to be fixed so it's configurable.
 	Next release, I promise.
 
