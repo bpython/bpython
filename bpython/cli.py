@@ -69,7 +69,7 @@ from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
 from bpython import __version__
 
 def log(x):
-    f = open('/home/bob/tmp/bpython.out', 'a')
+    f = open('/bpython.log', 'a')
     f.write('%s\n' % (x,))
 
 
