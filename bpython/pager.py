@@ -24,18 +24,22 @@
 import curses
 import errno
 import os
+import pydoc
 import subprocess
 import sys
 
 
 def get_pager_command():
-    command = os.environ.get('PAGER')
+    command = os.environ.get('PAGER', 'less -r').split()
     return command
 
 
 def page_internal(data):
     """A more than dumb pager function."""
-    sys.stdout.write(data)
+    if hasattr(pydoc, 'ttypager'):
+        pydoc.ttypager(data)
+    else:
+        sys.stdout.write(data)
 
 
 def page(data, use_internal=False):
@@ -44,11 +48,15 @@ def page(data, use_internal=False):
         page_internal(data)
     else:
         curses.endwin()
-        popen = subprocess.Popen([command], stdin=subprocess.PIPE)
         try:
+            popen = subprocess.Popen(command, stdin=subprocess.PIPE)
             popen.stdin.write(data)
             popen.stdin.close()
         except OSError, e:
+            if e.errno == errno.ENOENT:
+                # pager command not found, fall back to internal pager
+                page_internal(data)
+                return
             if e.errno != errno.EPIPE:
                 raise
         popen.wait()
