@@ -1680,6 +1680,10 @@ def init_wins(scr, cols):
 # Thanks to Angus Gibson for pointing out this missing line which was causing
 # problems that needed dirty hackery to fix. :)
 
+# TODO:
+# 
+# This should show to be configured keys from bpython.ini
+# 
     statusbar = Statusbar(scr, main_win,
         ".:: <C-d> Exit  <C-r> Rewind  <F2> Save  <F8> Pastebin ::.",
         (cols["g"]) * cols["y"] + 1)
