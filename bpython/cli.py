@@ -199,7 +199,6 @@ class Interpreter(code.InteractiveInterpreter):
         sys.last_type = type
         sys.last_value = value
         if filename and type is SyntaxError:
-            self.inside_string = False
             # Work hard to stuff the correct filename in the exception
             try:
                 msg, (dummy_filename, lineno, offset, line) = value
@@ -1499,6 +1498,7 @@ class Repl(object):
         """This is used as the exception callback for the Interpreter instance.
         It prevents autoindentation from occuring after a traceback."""
 
+        self.inside_string = False
         self.s = ''
 
     def get_key(self):
