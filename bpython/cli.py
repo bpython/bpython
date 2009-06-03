@@ -119,8 +119,6 @@ DO_RESIZE = False
 
 # TODO:
 #
-# C-l doesn't repaint the screen yet.
-#
 # Tab completion does not work if not at the end of the line.
 #
 # Numerous optimisations can be made but it seems to do all the lookup stuff
