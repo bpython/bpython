@@ -1001,6 +1001,7 @@ class Repl(object):
 # stdout instead of our wrapped
         self.push('from bpython import _internal\n')
         self.push('help = _internal._help')
+        self.push('del _internal')
 
         self.iy, self.ix = self.scr.getyx()
         more = False
