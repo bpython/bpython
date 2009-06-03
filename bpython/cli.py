@@ -168,11 +168,13 @@ def next_token_inside_string(s, inside_string):
     """Given a code string s and an initial state inside_string, return
     whether the next token will be inside a string or not."""
     for token, value in PythonLexer().get_tokens(s):
-        if token is Token.String and value in ['"""', "'''", '"', "'"]:
-            if not inside_string:
-                inside_string = value
-            elif value == inside_string:
-                inside_string = False
+        if token is Token.String:
+            value = value.lstrip('bBrRuU')
+            if value in ['"""', "'''", '"', "'"]:
+                if not inside_string:
+                    inside_string = value
+                elif value == inside_string:
+                    inside_string = False
     return inside_string
 
 
