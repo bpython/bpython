@@ -1908,9 +1908,9 @@ def main():
 # its job.
         if stdscr is not None:
             stdscr.keypad(0)
-        curses.echo()
-        curses.nocbreak()
-        curses.endwin()
+            curses.echo()
+            curses.nocbreak()
+            curses.endwin()
 
     sys.stdout = sys.__stdout__
     if tb:
