@@ -997,10 +997,8 @@ class Repl(object):
             f.close()
             self.interp.runcode(code_obj)
 
-# The regular help() function uses PAGER to display the help, which
-# screws with bpython.
-        from bpython import _internal
-        _internal.window = self.scr
+# Use our own helper function because Python's will use real stdin and
+# stdout instead of our wrapped
         self.push('from bpython import _internal\n')
         self.push('help = _internal._help')
 
