@@ -46,6 +46,7 @@ import socket
 import pydoc
 import types
 from cStringIO import StringIO
+from optparse import OptionParser
 from urlparse import urljoin
 from xmlrpclib import ServerProxy, Error as XMLRPCError
 from ConfigParser import ConfigParser, NoSectionError, NoOptionError
@@ -64,6 +65,8 @@ from bpython import importcompletion
 from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
     Group, OneOrMore, ZeroOrMore, Literal, Optional, Word, \
     alphas, alphanums, printables, ParseException
+
+from bpython import __version__
 
 def log(x):
     f = open('/home/bob/tmp/bpython.out', 'a')
@@ -1794,7 +1797,7 @@ def migrate_rc(path):
 
 
 
-def loadini():
+def loadini(configfile):
     """Loads .ini configuration file and stores its values in OPTS"""
     class CP(ConfigParser):
         def safeget(self, section, option,  default):
@@ -1812,10 +1815,7 @@ def loadini():
             except ValueError:
                 return v
 
-    if len(sys.argv) > 2:
-        configfile = sys.argv[2]
-    else:
-        configfile = os.path.expanduser('~/.bpython.ini')
+    configfile = os.path.expanduser(configfile)
 
     config = CP()
     config.read(configfile)
@@ -1887,7 +1887,24 @@ def main_curses(scr):
     return repl.getstdout()
 
 
-def main():
+def main(args=None):
+    if args is None:
+        args = sys.argv
+
+    parser = OptionParser()
+    parser.add_option('--config', '-c', default='~/.bpython.ini',
+                      help='use CONFIG instead of default config file')
+    parser.add_option('--version', '-V', action='store_true',
+                      help='print version and exit')
+
+    options, args = parser.parse_args(args)
+
+    if options.version:
+        print 'bpython version', __version__,
+        print 'on top of Python', sys.version.split()[0]
+        print '(C) 2008-2009 Bob Farrell et al. See AUTHORS for detail.'
+        return
+
     if not os.isatty(sys.stdin.fileno()):
         interpreter = code.InteractiveInterpreter()
         interpreter.runsource(sys.stdin.read())
@@ -1898,7 +1915,7 @@ def main():
     path = os.path.expanduser('~/.bpythonrc')   # migrating old configuration file
     if os.path.isfile(path):
         migrate_rc(path)
-    loadini()
+    loadini(options.config)
 
     try:
         o = curses.wrapper(main_curses)

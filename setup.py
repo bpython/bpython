@@ -8,6 +8,8 @@ import platform
 import re
 import sys
 
+from bpython import __version__
+
 if platform.system() == 'FreeBSD':
     man_dir = 'man'
 else:
@@ -15,7 +17,7 @@ else:
 
 setup(
     name="bpython",
-    version = "0.9.1",
+    version = __version__,
     author = "Robert Anthony Farrell",
     author_email = "robertanthonyfarrell@gmail.com",
     description = "Fancy Interface to the Python Interpreter",
