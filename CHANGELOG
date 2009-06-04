@@ -1,3 +1,15 @@
+v0.9.2
+======
+help() now uses an external pager if available.
+
+Fix for highlighting prefixed strings.
+
+Fix to reset string highlighting after a SyntaxError.
+
+bpython now uses optparse for option parsing and it supports --version now.
+Configuration files are no longer passed by the first command line argument
+but by the -c command line switch.
+
 v0.9.1
 ======
 Fixed a small but annoying bug with sys.argv ini file passing
