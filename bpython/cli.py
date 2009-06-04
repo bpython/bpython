@@ -72,7 +72,7 @@ def log(x):
     f = open('/tmp/bpython.log', 'a')
     f.write('%s\n' % (x,))
 
-
+orig_stdout = sys.__stdout__
 stdscr = None
 
 class Struct(object):
@@ -1061,7 +1061,8 @@ class Repl(object):
             t = s
 
         if isinstance(t, unicode):
-            t = t.encode(getattr(sys.__stdout__, 'encoding') or sys.getdefaultencoding())
+            t = (t.encode(getattr(orig_stdout, 'encoding', None) or
+                 sys.getdefaultencoding()))
 
         if not self.stdout_hist:
             self.stdout_hist = t
@@ -1096,7 +1097,8 @@ class Repl(object):
         srings. It won't update the screen if it's reevaluating the code (as it
         does with undo)."""
         if isinstance(s, unicode):
-            s = s.encode(getattr(sys.__stdout__, 'encoding') or sys.getdefaultencoding())
+            s = (s.encode(getattr(orig_stdout, 'encoding', None)
+                 or sys.getdefaultencoding()))
 
         a = curses.color_pair(0)
         if '\x01' in s:
@@ -1712,7 +1714,7 @@ def gethw():
 
     """
     h, w = struct.unpack(
-        "hhhh", fcntl.ioctl(sys.__stdout__, termios.TIOCGWINSZ, "\000"*8))[0:2]
+        "hhhh", fcntl.ioctl(orig_stdout, termios.TIOCGWINSZ, "\000"*8))[0:2]
     return h, w
 
 
@@ -1932,7 +1934,7 @@ def main(args=None):
             curses.nocbreak()
             curses.endwin()
 
-    sys.stdout = sys.__stdout__
+    sys.stdout = orig_stdout
     if tb:
         print tb
         sys.exit(1)
