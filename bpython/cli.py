@@ -69,7 +69,7 @@ from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
 from bpython import __version__
 
 def log(x):
-    f = open('/home/bob/tmp/bpython.out', 'a')
+    f = open('/tmp/bpython.log', 'a')
     f.write('%s\n' % (x,))
 
 
@@ -118,8 +118,6 @@ OPTS = Struct()
 DO_RESIZE = False
 
 # TODO:
-#
-# C-l doesn't repaint the screen yet.
 #
 # Tab completion does not work if not at the end of the line.
 #
@@ -1682,6 +1680,10 @@ def init_wins(scr, cols):
 # Thanks to Angus Gibson for pointing out this missing line which was causing
 # problems that needed dirty hackery to fix. :)
 
+# TODO:
+# 
+# This should show to be configured keys from bpython.ini
+# 
     statusbar = Statusbar(scr, main_win,
         ".:: <C-d> Exit  <C-r> Rewind  <F2> Save  <F8> Pastebin ::.",
         (cols["g"]) * cols["y"] + 1)

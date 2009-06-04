@@ -41,6 +41,16 @@ I hope you find it useful and please feel free to
 submit any bugs/patches (yeah right)/suggestions
 to:
 robertanthonyfarrell@gmail.com
+or place them at the bitbucket issue page for this
+project at:
+http://bitbucket.org/bobf/bpython/issues/
+
+For any other ways of communicating with bpython
+users and devs you can find us at the communication
+page on the projects homepage:
+http://www.noiseforfree.com/bpython/community.html
+
+Hope to see you there!
 
 Features
 ========
@@ -84,7 +94,7 @@ as you type.
 	I don't really use the save thing much, but the pastebin
 	thing's great. Hit a key and what you see on the screen
 	will be sent to a pastebin and a URL is returned for you
-	to do what you like with. I've hardcoded rafb.net/paste
+	to do what you like with. I've hardcoded paste.pocoo.org
 	in for now, that needs to be fixed so it's configurable.
 	Next release, I promise.
 
@@ -108,3 +118,10 @@ Known Bugs
 
 * Triple quoted strings over multiple lines work, but they're
 not highlighted properly.
+* Unicode schmunicode is in the works but will take some work
+to have curses play nice.
+
+For more known bugs please see bpython's issue tracker at
+bitbucket:
+
+http://bitbucket.org/bobf/bpython/issues/
