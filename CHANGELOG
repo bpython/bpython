@@ -10,6 +10,9 @@ bpython now uses optparse for option parsing and it supports --version now.
 Configuration files are no longer passed by the first command line argument
 but by the -c command line switch.
 
+Fix for problem related to editing lines in the history:
+http://bitbucket.org/bobf/bpython/issue/10/odd-behaviour-when-editing-commands-in-the-history
+
 v0.9.1
 ======
 Fixed a small but annoying bug with sys.argv ini file passing
