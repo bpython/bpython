@@ -913,7 +913,7 @@ class Repl(object):
 
         if self.h_i > 1:
             self.h_i -= 1
-            self.s = self.rl_hist[-self.h_i]
+            self.s = self.rl_hist[-self.h_i].rstrip('\n')
         else:
             self.h_i = 0
             self.s = self.ts
