@@ -107,11 +107,11 @@ as you type.
 
 Configuration
 =============
-See the sample-rc file for a list of available options.
-You should save your rc file as ~/.bpythonrc or specify
+See the sample.ini file for a list of available options.
+You should save your ini file as ~/.bpython.ini or specify
 at the command line:
 
-bpython /path/to/bpythonrc
+bpython -c /path/to/bpython.ini
 
 Known Bugs
 ==========
