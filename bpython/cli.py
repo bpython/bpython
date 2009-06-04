@@ -27,6 +27,9 @@
 # Debian/Ubuntu: aptitude install python-pyments python-pyparsing
 #
 
+from __future__ import with_statement
+
+import codecs
 import os
 import sys
 import curses
@@ -45,7 +48,9 @@ import string
 import socket
 import pydoc
 import types
+import unicodedata
 from cStringIO import StringIO
+from locale import LC_ALL, getpreferredencoding, setlocale
 from optparse import OptionParser
 from urlparse import urljoin
 from xmlrpclib import ServerProxy, Error as XMLRPCError
@@ -88,6 +93,7 @@ class FakeStdin(object):
         """Take the curses Repl on init and assume it provides a get_key method
         which, fortunately, it does."""
 
+        self.encoding = getpreferredencoding()
         self.interface = interface
 
     def readline(self):
@@ -325,7 +331,9 @@ class Repl(object):
 
         pythonhist = os.path.expanduser('~/.pythonhist')
         if os.path.exists(pythonhist):
-            self.rl_hist = open(pythonhist, 'r').readlines()
+            with codecs.open(pythonhist, 'r', getpreferredencoding(),
+                             'ignore') as hfile:
+                self.rl_hist = hfile.readlines()
 
         pexp = Forward()
         chars = printables.replace('(', '')
@@ -855,7 +863,10 @@ class Repl(object):
         self.buffer.append(s)
 
         try:
-            more = self.interp.runsource("\n".join(self.buffer))
+            encoding = getpreferredencoding()
+            source = '# coding: %s\n' % (encoding, )
+            source += '\n'.join(self.buffer).encode(encoding)
+            more = self.interp.runsource(source)
         except SystemExit:
             # Avoid a traceback on e.g. quit()
             self.do_exit = True
@@ -950,7 +961,7 @@ class Repl(object):
 
         self.iy, self.ix = self.scr.getyx()
         for line in self.history:
-            self.stdout_hist += line + '\n'
+            self.stdout_hist += line.encode(getpreferredencoding()) + '\n'
             self.print_line(line)
             self.s_hist[-1] += self.f_string
 # I decided it was easier to just do this manually
@@ -1024,7 +1035,7 @@ class Repl(object):
             self.h_i = 0
             self.history.append(inp)
             self.s_hist[-1] += self.f_string
-            self.stdout_hist += inp + '\n'
+            self.stdout_hist += inp.encode(getpreferredencoding()) + '\n'
 # Keep two copies so you can go up and down in the hist:
             if inp:
                 self.rl_hist.append(inp + '\n')
@@ -1061,8 +1072,7 @@ class Repl(object):
             t = s
 
         if isinstance(t, unicode):
-            t = (t.encode(getattr(orig_stdout, 'encoding', None) or
-                 sys.getdefaultencoding()))
+            t = t.encode(getpreferredencoding())
 
         if not self.stdout_hist:
             self.stdout_hist = t
@@ -1097,8 +1107,7 @@ class Repl(object):
         srings. It won't update the screen if it's reevaluating the code (as it
         does with undo)."""
         if isinstance(s, unicode):
-            s = (s.encode(getattr(orig_stdout, 'encoding', None)
-                 or sys.getdefaultencoding()))
+            s = s.encode(getpreferredencoding())
 
         a = curses.color_pair(0)
         if '\x01' in s:
@@ -1322,7 +1331,8 @@ class Repl(object):
         elif self.c == '\t':
             return self.tab()
 
-        elif len(self.c) == 1 and self.c in string.printable:
+        elif (not self.c.startswith('KEY_')
+              and not unicodedata.category(self.c) == 'Cc'):
             self.addstr(self.c)
             self.print_line(self.s)
 
@@ -1506,11 +1516,18 @@ class Repl(object):
         self.s = ''
 
     def get_key(self):
+        key = ''
         while True:
             if self.idle:
                 self.idle(self)
             try:
-                key = self.scr.getkey()
+                key += self.scr.getkey()
+                key = key.decode(getpreferredencoding())
+                self.scr.nodelay(False)
+            except UnicodeDecodeError:
+# Yes, that actually kind of sucks, but I don't see another way to get
+# input right
+                self.scr.nodelay(True)
             except curses.error:
 # I'm quite annoyed with the ambiguity of this exception handler. I previously
 # caught "curses.error, x" and accessed x.message and checked that it was "no
@@ -1518,7 +1535,10 @@ class Repl(object):
 # different computer and the exception seems to have entirely different
 # attributes. So let's hope getkey() doesn't raise any other crazy curses
 # exceptions. :)
-                    continue
+                self.scr.nodelay(False)
+                # XXX What to do here? Raise an exception?
+                if key:
+                    return key
             else:
                 return key
 
@@ -1885,9 +1905,10 @@ def main_curses(scr):
 
     repl.repl()
     if OPTS.hist_length:
-        f = open(os.path.expanduser('~/.pythonhist'), 'w')
-        f.writelines(repl.rl_hist[-OPTS.hist_length:])
-        f.close()
+        histfilename = os.path.expanduser('~/.pythonhist')
+        with codecs.open(histfilename, 'w', getpreferredencoding(),
+                         'ignore') as hfile:
+            hfile.writelines(repl.rl_hist[-OPTS.hist_length:])
 
     return repl.getstdout()
 
@@ -1914,6 +1935,8 @@ def main(args=None):
         interpreter = code.InteractiveInterpreter()
         interpreter.runsource(sys.stdin.read())
         return
+
+    setlocale(LC_ALL, '')
 
     tb = None
 
