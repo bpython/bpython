@@ -4,8 +4,7 @@ bpython - A fancy curses interface to the Python interactive interpreter
 Dependencies
 ============
 Pygments
-pyparsing
-(apt-get install python-pyparsing python-pygments)
+(apt-get install python-pygments)
 
 Introduction
 ============
