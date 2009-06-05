@@ -1732,7 +1732,8 @@ def idle(caller):
 
     global stdscr
 
-    importcompletion.find_coroutine()
+    if importcompletion.find_coroutine():
+        curses.ungetch('')
     caller.statusbar.check()
 
     if DO_RESIZE:

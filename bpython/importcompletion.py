@@ -103,12 +103,14 @@ def find_coroutine():
     global fully_loaded
 
     if fully_loaded:
-        return
+        return None
 
     try:
         find_iterator.next()
     except StopIteration:
         fully_loaded = True
+
+    return True
 
 def reload():
     """Refresh the list of known modules."""
