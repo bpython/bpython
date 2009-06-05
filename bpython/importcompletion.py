@@ -93,8 +93,9 @@ def find_all_modules(path=None):
         path = sys.path
 
     for p in path:
-        modules.update(find_modules(p))
-        yield
+        for module in find_modules(p):
+            modules.add(module)
+            yield
 
 def find_coroutine():
     global fully_loaded
