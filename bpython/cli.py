@@ -326,15 +326,10 @@ class Repl(object):
                              'ignore') as hfile:
                 self.rl_hist = hfile.readlines()
 
-    def attr_matches(self, text):
-        """Taken from rlcompleter.py and bent to my will."""
-
-        m = re.match(r"(\w+(\.\w+)*)\.(\w*)", text)
-        if not m:
-            return []
-
-        expr, attr = m.group(1, 3)
-        obj = eval(expr, self.interp.locals)
+    def clean_object(self, obj):
+        """Try to make an object not exhibit side-effects on attribute
+        lookup. Return the type's magic attributes so they can be reapplied
+        with restore_object"""
         type_ = type(obj)
         __getattribute__ = None
         __getattr__ = None
@@ -362,16 +357,33 @@ class Repl(object):
                     # XXX: This happens for e.g. built-in types
                     __getattribute__ = None
         # /Dark magic
+        return __getattribute__, __getattr__
 
+    def restore_object(self, obj, attribs):
+        """Restore an object's magic methods as returned from clean_object"""
+        type_ = type(obj)
+        __getattribute__, __getattr__ = attribs
+        # Dark magic:
+        if __getattribute__ is not None:
+            setattr(type_, '__getattribute__', __getattribute__)
+        if __getattr__ is not None:
+            setattr(type_, '__getattr__', __getattr__)
+        # /Dark magic
+
+    def attr_matches(self, text):
+        """Taken from rlcompleter.py and bent to my will."""
+
+        m = re.match(r"(\w+(\.\w+)*)\.(\w*)", text)
+        if not m:
+            return []
+
+        expr, attr = m.group(1, 3)
+        obj = eval(expr, self.interp.locals)
+        attribs = self.clean_object(obj)
         try:
             matches = self.attr_lookup(obj, expr, attr)
         finally:
-            # Dark magic:
-            if __getattribute__ is not None:
-                setattr(type_, '__getattribute__', __getattribute__)
-            if __getattr__ is not None:
-                setattr(type_, '__getattr__', __getattr__)
-            # /Dark magic
+            self.restore_object(obj, attribs)
         return matches
 
     def attr_lookup(self, obj, expr, attr):
@@ -392,8 +404,12 @@ class Repl(object):
 
     def _callable_postfix(self, value, word):
         """rlcompleter's _callable_postfix done right."""
-        if hasattr(type(value), '__call__'):
-            word += '('
+        attribs = self.clean_object(value)
+        try:
+            if hasattr(value, '__call__'):
+                word += '('
+        finally:
+            self.restore_object(value, attribs)
         return word
 
     def cw(self):
