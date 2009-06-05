@@ -115,13 +115,7 @@ bpython -c /path/to/bpython.ini
 
 Known Bugs
 ==========
-
-* Triple quoted strings over multiple lines work, but they're
-not highlighted properly.
-* Unicode schmunicode is in the works but will take some work
-to have curses play nice.
-
-For more known bugs please see bpython's issue tracker at
+For known bugs please see bpython's issue tracker at
 bitbucket:
 
 http://bitbucket.org/bobf/bpython/issues/
