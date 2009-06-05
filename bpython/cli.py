@@ -62,11 +62,6 @@ from itertools import chain
 # This for import completion
 from bpython import importcompletion
 
-# And these are used for argspec.
-from pyparsing import Forward, Suppress, QuotedString, dblQuotedString, \
-    Group, OneOrMore, ZeroOrMore, Literal, Optional, Word, \
-    alphas, alphanums, printables, ParseException
-
 from bpython import __version__
 
 def log(x):
@@ -331,17 +326,6 @@ class Repl(object):
                              'ignore') as hfile:
                 self.rl_hist = hfile.readlines()
 
-        pexp = Forward()
-        chars = printables.replace('(', '')
-        chars = chars.replace(')', '')
-        pexpnest = (
-            Optional(Word(chars)) +
-            Literal("(") +
-            Optional(Group(pexp)) +
-            Optional(Literal(")")))
-        pexp << (OneOrMore(Word(chars) | pexpnest))
-        self.pparser = pexp
-
     def attr_matches(self, text):
         """Taken from rlcompleter.py and bent to my will."""
 
@@ -489,39 +473,24 @@ class Repl(object):
 # This happens if no __init__ is found
                 return None
 
-        def parse_parens(s):
-            """Run a string through the pyparsing pattern for paren
-            counting."""
-
-            try:
-                parsed = self.pparser.parseString(s).asList()
-            except ParseException:
-                return False
-
-            return parsed
-
-        def walk(seq):
-            """Walk a nested list and return the last list found that
-            doesn't have a close paren in it (i.e. the active function)"""
-            r = None
-            if isinstance(seq, list):
-                if ")" not in seq and "(" in seq:
-                    r = seq[seq.index('(') - 1]
-                for i in seq:
-                    t = walk(i)
-                    if t:
-                        r = t
-            return r
-
         if not OPTS.arg_spec:
             return False
 
-        t = parse_parens(self.s)
-        if not t:
-            return False
-
-        func = walk(t)
-        if not func:
+        stack = ['']
+        try:
+            for (token, value) in PythonLexer().get_tokens(self.s):
+                if token is Token.Punctuation:
+                    if value == '(':
+                        stack.append('')
+                    elif value == ')':
+                        stack.pop()
+                elif (token is Token.Name or token in Token.Name.subtypes or
+                      token is Token.Operatir and value == '.'):
+                    stack[-1] += value
+                else:
+                    stack[-1] = ''
+            func = stack.pop() or stack.pop()
+        except IndexError:
             return False
 
         return getargspec(func)
