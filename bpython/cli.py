@@ -1383,7 +1383,7 @@ class Repl(object):
         elif len(l) == 1:
             return l[0]
 
-        sl = sorted(l, key=str.__len__)
+        sl = sorted(l, key=len)
         for i, c in enumerate(l[-1]):
 # I hate myself. Please email seamusmb@gmail.com to call him a dickhead for
 # insisting that I make bpython 2.4-compatible. I couldn't be bothered
