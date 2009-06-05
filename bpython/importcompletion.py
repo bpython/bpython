@@ -33,29 +33,31 @@ fully_loaded = False
 def complete(line, cw):
     """Construct a full list of possibly completions for imports."""
     tokens = line.split()
-    if tokens[0] in ['from', 'import']:
-        completing_from = False
-        if tokens[0] == 'from':
-            if len(tokens) > 3:
-                if '.' in cw:
-                    # This will result in a SyntaxError, so do not return
-                    # any matches
-                    return list()
-                completing_from = True
-                cw = '%s.%s' % (tokens[1], cw)
-            elif len(tokens) == 3:
-                return ['import']
-        
-        matches = list()
-        for name in modules:
-            if not (name.startswith(cw) and name.find('.', len(cw)) == -1):
-                continue
-            if completing_from:
-                name = name[len(tokens[1]) + 1:]
-            matches.append(name)
-        return matches
-    else:
+    if tokens[0] not in ['from', 'import']:
         return list()
+
+    completing_from = False
+    if tokens[0] == 'from':
+        if len(tokens) > 3:
+            if '.' in cw:
+                # This will result in a SyntaxError, so do not return
+                # any matches
+                return list()
+            completing_from = True
+            cw = '%s.%s' % (tokens[1], cw)
+        elif len(tokens) == 3:
+            return ['import']
+    
+    matches = list()
+    for name in modules:
+        if not (name.startswith(cw) and name.find('.', len(cw)) == -1):
+            continue
+        if completing_from:
+            name = name[len(tokens[1]) + 1:]
+        matches.append(name)
+    if not matches:
+        return None
+    return matches
 
 
 def find_modules(path):
