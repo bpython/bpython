@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# bpython 0.8.0::fancy curses interface to the Python repl::Bob Farrell 2008
 #
 # The MIT License
 #
@@ -22,9 +21,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
-# Requires at least Python 2.4, pygments and pyparsing
-# Debian/Ubuntu: aptitude install python-pyments python-pyparsing
 #
 
 from __future__ import with_statement
@@ -1383,7 +1379,7 @@ class Repl(object):
         elif len(l) == 1:
             return l[0]
 
-        sl = sorted(l, key=str.__len__)
+        sl = sorted(l, key=len)
         for i, c in enumerate(l[-1]):
 # I hate myself. Please email seamusmb@gmail.com to call him a dickhead for
 # insisting that I make bpython 2.4-compatible. I couldn't be bothered
