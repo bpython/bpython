@@ -561,6 +561,10 @@ class Repl(object):
         # Check for import completion
         e = False
         matches = importcompletion.complete(self.s, cw)
+        if matches is None:
+            self.scr.redrawwin()
+            return False
+
         if not matches:
             # Nope, no import, continue with normal completion
             try:
