@@ -137,11 +137,48 @@ def DEBUG(s):
 def make_colours():
     """Init all the colours in curses and bang them into a dictionary"""
 
+    OPTS.light = {
+        'listwin': 'b',
+        'args': 'g',
+        'kwvalue': 'b',
+        'self': 'r',
+        '*args': 'g',
+        '**kwargs': 'g',
+        'punctuation': 'k',
+        'paren': 'y',
+        'function': 'r',
+        'more': 'g',
+        'prompt': 'r',
+        'output': 'k',
+        'statusbar': 'r',
+    }
+    OPTS.dark = {
+        'listwin': 'c',
+        'args': 'g',
+        'kwvalue': 'b',
+        'self': 'r',
+        '*args': 'g',
+        '**kwargs': 'g',
+        'punctuation': 'm',
+        'paren': 'y',
+        'function': 'r',
+        'more': 'y',
+        'prompt': 'g',
+        'output': 'w',
+        'statusbar': 'c',
+    }
+    if OPTS.color_scheme == 'light':
+        bg = 7
+        OPTS.extras = OPTS.light
+    else:
+        bg = 0
+        OPTS.extras = OPTS.dark
+
     for i in range(63):
         if i > 7:
             j = i / 8
         else:
-            j = -1
+            j = bg
         curses.init_pair(i+1, i % 8, j)
 
     # blacK, Red, Green, Yellow, Blue, Magenta, Cyan, White, Default:
@@ -156,6 +193,7 @@ def make_colours():
         'w' : 7,
         'd' : -1,
     }
+    c.update((k, c[v]) for k, v in OPTS.extras.iteritems())
     return c
 
 
@@ -305,7 +343,7 @@ class Repl(object):
         # side-effects (__getattr__/__getattribute__)
         self.completer._callable_postfix = self._callable_postfix
         self.statusbar = statusbar
-        self.list_win = curses.newwin(1, 1, 1, 1)
+        self.list_win = newwin(1, 1, 1, 1)
         self.idle = idle
         self.f_string = ''
         self.matches = []
@@ -676,7 +714,7 @@ class Repl(object):
             padding = (wl - len(i)) * ' '
             self.list_win.addstr(
                 i + padding,
-                curses.color_pair(self._C["c"]+1))
+                curses.color_pair(self._C["listwin"]+1))
             if ((cols == 1 or (ix and not (ix+1) % cols))
                     and ix + 1 < len(v_items)):
                 self.list_win.addstr('\n ')
@@ -721,8 +759,8 @@ class Repl(object):
 
         self.list_win.addstr('\n  ')
         self.list_win.addstr(fn,
-            curses.color_pair(self._C["b"]+1) | curses.A_BOLD)
-        self.list_win.addstr(': (', curses.color_pair(self._C["y"]+1))
+            curses.color_pair(self._C["function"]+1) | curses.A_BOLD)
+        self.list_win.addstr(': (', curses.color_pair(self._C["paren"]+1))
         maxh = self.scr.getmaxyx()[0]
 
         for k, i in enumerate(args):
@@ -748,31 +786,33 @@ class Repl(object):
                 self.list_win.addstr('\n\t')
 
             if str(i) == 'self' and k == 0:
-                color = self._C["r"]
+                color = self._C["self"]
             else:
-                color = self._C["g"]
+                color = self._C["args"]
 
             self.list_win.addstr(str(i),
                 curses.color_pair(color + 1) | curses.A_BOLD)
             if kw:
-                self.list_win.addstr('=', curses.color_pair(self._C["c"]+1))
-                self.list_win.addstr(kw, curses.color_pair(self._C["g"]+1))
+                self.list_win.addstr('=',
+                    curses.color_pair(self._C["punctuation"]+1))
+                self.list_win.addstr(kw, curses.color_pair(self._C["kwvalue"]+1))
             if k != len(args) -1:
-                self.list_win.addstr(', ', curses.color_pair(self._C["g"]+1))
+                self.list_win.addstr(', ',
+                    curses.color_pair(self._C["punctuation"]+1))
 
         if _args:
             if args:
                 self.list_win.addstr(', ',
-                    curses.color_pair(self._C["g"]+1))
+                    curses.color_pair(self._C["args"]+1))
             self.list_win.addstr('*%s' % (_args, ),
-                curses.color_pair(self._C["m"]+1))
+                curses.color_pair(self._C["*args"]+1))
         if _kwargs:
             if args or _args:
                 self.list_win.addstr(', ',
-                    curses.color_pair(self._C["g"]+1))
+                    curses.color_pair(self._C["punctuation"]+1))
             self.list_win.addstr('**%s' % (_kwargs, ),
-                curses.color_pair(self._C["m"]+1))
-        self.list_win.addstr(')', curses.color_pair(self._C["y"]+1))
+                curses.color_pair(self._C["**kwargs"]+1))
+        self.list_win.addstr(')', curses.color_pair(self._C["paren"]+1))
 
         return r
 
@@ -966,13 +1006,13 @@ class Repl(object):
     def prompt(self, more):
         """Show the appropriate Python prompt"""
         if not more:
-            self.echo("\x01g\x03>>> ")
+            self.echo("\x01%s\x03>>> " % (OPTS.extras['prompt'],))
             self.stdout_hist += '>>> '
-            self.s_hist.append('\x01g\x03>>> \x04')
+            self.s_hist.append('\x01%s\x03>>> \x04' % (OPTS.extras['prompt'],))
         else:
-            self.echo("\x01r\x03... ")
+            self.echo("\x01%s\x03... " % (OPTS.extras['more'],))
             self.stdout_hist += '... '
-            self.s_hist.append('\x01r\x03... \x04')
+            self.s_hist.append('\x01%s\x03... \x04' % (OPTS.extras['more'],))
 
     def repl(self):
         """Initialise the repl and jump into the loop. This method also has to
@@ -1094,7 +1134,7 @@ class Repl(object):
         if isinstance(s, unicode):
             s = s.encode(getpreferredencoding())
 
-        a = curses.color_pair(0)
+        a = curses.color_pair(colors[OPTS.extras['output']]+1)
         if '\x01' in s:
             rx = re.search('\x01([a-z])([a-z]?)', s)
             if rx:
@@ -1104,7 +1144,6 @@ class Repl(object):
 
                 a = curses.color_pair(int(p) + 1)
                 s = re.sub('\x01[a-z][a-z]?', '', s)
-
         if '\x02' in s:
             a = a | curses.A_BOLD
             s = s.replace('\x02', '')
@@ -1555,7 +1594,7 @@ class Statusbar(object):
     def __init__(self, scr, pwin, s=None, c=None):
         """Initialise the statusbar and display the initial text (if any)"""
         self.size()
-        self.win = curses.newwin(self.h, self.w, self.y, self.x)
+        self.win = newwin(self.h, self.w, self.y, self.x)
 
         self.s = s or ''
         self._s = self.s
@@ -1681,7 +1720,7 @@ def init_wins(scr, cols):
 
     h, w = gethw()
 
-    main_win = curses.newwin(h-1, w, 0, 0)
+    main_win = newwin(h-1, w, 0, 0)
     main_win.scrollok(True)
     main_win.keypad(1)
 # Thanks to Angus Gibson for pointing out this missing line which was causing
@@ -1693,7 +1732,7 @@ def init_wins(scr, cols):
 # 
     statusbar = Statusbar(scr, main_win,
         ".:: <C-d> Exit  <C-r> Rewind  <F2> Save  <F8> Pastebin ::.",
-        (cols["g"]) * cols["y"] + 1)
+            cols[OPTS.extras['statusbar']] + 1)
 
     return main_win, statusbar
 
@@ -1850,6 +1889,19 @@ class FakeDict(object):
     def __getitem__(self, k):
         return self._val
 
+def newwin(*args):
+    """Wrapper for curses.newwin to automatically set background colour on any
+    newly created window."""
+    win = curses.newwin(*args)
+    if OPTS.color_scheme == 'light':
+        bg = colors['w']
+    else:
+        bg = colors['k']
+    colpair = curses.color_pair(bg)
+    win.bkgd(' ', colpair)
+    return win
+
+
 def main_curses(scr):
     """main function for the curses convenience wrapper
 
@@ -1862,6 +1914,7 @@ def main_curses(scr):
     """
     global stdscr
     global DO_RESIZE
+    global colors
     DO_RESIZE = False
 
     signal.signal(signal.SIGWINCH, lambda *_: sigwinch(scr))
@@ -1874,10 +1927,12 @@ def main_curses(scr):
     except curses.error:
         cols = FakeDict(-1)
 
+    # FIXME: Gargh, bad design results in using globals without a refactor :(
+    colors = cols
+
     scr.timeout(300)
 
     main_win, statusbar = init_wins(scr, cols)
-
 
     interpreter = Interpreter()
 
@@ -1953,6 +2008,7 @@ def main(args=None):
     if OPTS.flush_output:
         sys.stdout.write(o)
     sys.stdout.flush()
+
 
 if __name__ == '__main__':
     main()
