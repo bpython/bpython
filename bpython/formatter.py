@@ -71,20 +71,20 @@ f_strings = {
 }
 
 f_strings_light = {
-    Keyword: "\x01b",
-    Name: "\x01k\x02",
-    Comment: "\x01b",
+    Keyword: "\x01y\x02",
+    Name: "\x01k",
+    Comment: "\x01g\x02",
     String: "\x01g",
     Error: "\x01r",
     Literal: "\x01r",
-    Literal.String: "\x01g",
+    Literal.String: "\x01b\x02",
     Token.Literal.Number.Float: "\x01g\x02",
     Number: "\x01g",
     Operator: "\x01b\x02",
     Operator.Word: "\x01k\x02",
     Punctuation: "\x01b\x02",
     Generic: "\x01d",
-    Token: "\x01b",
+    Token: "\x01r\x02",
     Whitespace: "\x02d",
 }
 

@@ -151,6 +151,7 @@ def make_colours():
         'prompt': 'r',
         'output': 'k',
         'statusbar': 'r',
+        'error': 'b',
     }
     OPTS.dark = {
         'listwin': 'c',
@@ -166,6 +167,7 @@ def make_colours():
         'prompt': 'g',
         'output': 'w',
         'statusbar': 'c',
+        'error': 'y',
     }
     if OPTS.color_scheme == 'light':
         bg = 7
@@ -274,7 +276,7 @@ class Interpreter(code.InteractiveInterpreter):
     def writetb(self, l):
         """This outputs the traceback and should be overridden for anything
         fancy."""
-        map(self.write, ["\x01y\x03%s" % (i, ) for i in l])
+        map(self.write, ["\x01%s\x03%s" % (OPTS.extras['error'], i) for i in l])
 
 
 class Repl(object):
