@@ -100,7 +100,12 @@ class BPythonFormatter(Formatter):
     See the Pygments source for more info; it's pretty
     straightforward."""
 
-    def __init__(self, **options):
+    def __init__(self, color_scheme, **options):
+        if color_scheme == "light":
+            self.f_strings = f_strings_light
+        else:
+            self.f_strings = f_strings
+
         Formatter.__init__(self, **options)
 
     def format(self, tokensource, outfile):
@@ -109,10 +114,10 @@ class BPythonFormatter(Formatter):
             if text == '\n':
                 continue
 
-            if token in f_strings:
-                o +=  "%s\x03%s\x04" % (f_strings[token], text )
+            if token in self.f_strings:
+                o +=  "%s\x03%s\x04" % (self.f_strings[token], text )
             else:
-                o += "%s\x03%s\x04" % (f_strings[Token], text )
+                o += "%s\x03%s\x04" % (self.f_strings[Token], text )
         outfile.write(o.rstrip())
 
 # vim: sw=4 ts=4 sts=4 ai et
