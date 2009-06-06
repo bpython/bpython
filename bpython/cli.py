@@ -1431,7 +1431,7 @@ class Repl(object):
                     tokens = chain([(Token.String, value[3:])], tokens)
             else:
                 tokens = PythonLexer().get_tokens(s)
-            o = format(tokens, BPythonFormatter())
+            o = format(tokens, BPythonFormatter(OPTS.color_scheme))
         else:
             o = s
 
@@ -1838,6 +1838,7 @@ def loadini(configfile):
     OPTS.hist_file = config.safeget('general', 'hist_file', '~/.pythonhist')
     OPTS.hist_length = config.safeget('general', 'hist_length', 100)
     OPTS.flush_output = config.safeget('general', 'flush_output', True)
+    OPTS.color_scheme = config.safeget('general', 'color_scheme', 'dark')
 
 
 class FakeDict(object):
