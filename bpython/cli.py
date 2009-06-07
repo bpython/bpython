@@ -1488,6 +1488,8 @@ class Repl(object):
                 o = format(t, BPythonFormatter(OPTS.color_scheme))
                 self.scr.move(lineno, 4)
                 map(self.echo, o.split('\x04'))
+            
+            y, x = self.scr.getyx()
             if self.highlighted_paren:
                 # Clear previous highlighted paren
                 reprint_line(*self.highlighted_paren)
@@ -1496,7 +1498,6 @@ class Repl(object):
             source = '\n'.join(self.buffer) + '\n%s' % (s, )
             i = line = 0
             pos = 3
-            y, x = self.scr.getyx()
             for (token, value) in PythonLexer().get_tokens(source):
                 pos += len(value)
                 under_cursor = (line == len(self.buffer) and pos == x)
