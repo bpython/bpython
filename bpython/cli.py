@@ -45,6 +45,7 @@ import socket
 import pydoc
 import types
 import unicodedata
+from itertools import chain
 from cStringIO import StringIO
 from locale import LC_ALL, getpreferredencoding, setlocale
 from optparse import OptionParser
@@ -133,54 +134,14 @@ def DEBUG(s):
     open('/tmp/bpython-debug', 'a').write("%s\n" % (str(s), ))
 
 
-def make_colours():
+def get_color(name):
+    return colors[OPTS.color_scheme[name]]
+
+def get_colpair(name):
+    return curses.color_pair(get_color(name) + 1)
+
+def make_colors():
     """Init all the colours in curses and bang them into a dictionary"""
-
-    OPTS.light = {
-        'listwin': 'b',
-        'args': 'g',
-        'kwvalue': 'b',
-        'self': 'r',
-        '*args': 'g',
-        '**kwargs': 'g',
-        'punctuation': 'k',
-        'paren': 'y',
-        'function': 'r',
-        'more': 'g',
-        'prompt': 'r',
-        'output': 'k',
-        'statusbar': 'r',
-        'error': 'b',
-    }
-    OPTS.dark = {
-        'listwin': 'c',
-        'args': 'g',
-        'kwvalue': 'b',
-        'self': 'r',
-        '*args': 'g',
-        '**kwargs': 'g',
-        'punctuation': 'm',
-        'paren': 'y',
-        'function': 'r',
-        'more': 'y',
-        'prompt': 'g',
-        'output': 'w',
-        'statusbar': 'c',
-        'error': 'y',
-    }
-    if OPTS.color_scheme == 'light':
-        bg = 7
-        OPTS.extras = OPTS.light
-    else:
-        bg = 0
-        OPTS.extras = OPTS.dark
-
-    for i in range(63):
-        if i > 7:
-            j = i / 8
-        else:
-            j = bg
-        curses.init_pair(i+1, i % 8, j)
 
     # blacK, Red, Green, Yellow, Blue, Magenta, Cyan, White, Default:
     c = {
@@ -194,7 +155,13 @@ def make_colours():
         'w' : 7,
         'd' : -1,
     }
-    c.update((k, c[v]) for k, v in OPTS.extras.iteritems())
+    for i in range(63):
+        if i > 7:
+            j = i / 8
+        else:
+            j = c[OPTS.color_scheme['background']]
+        curses.init_pair(i+1, i % 8, j)
+
     return c
 
 
@@ -275,7 +242,7 @@ class Interpreter(code.InteractiveInterpreter):
     def writetb(self, l):
         """This outputs the traceback and should be overridden for anything
         fancy."""
-        map(self.write, ["\x01%s\x03%s" % (OPTS.extras['error'], i) for i in l])
+        map(self.write, ["\x01%s\x03%s" % (OPTS.color_scheme['error'], i) for i in l])
 
 
 class Repl(object):
@@ -714,9 +681,7 @@ class Repl(object):
 
         for ix, i in enumerate(v_items):
             padding = (wl - len(i)) * ' '
-            self.list_win.addstr(
-                i + padding,
-                curses.color_pair(self._C["listwin"]+1))
+            self.list_win.addstr(i + padding, get_colpair('main'))
             if ((cols == 1 or (ix and not (ix+1) % cols))
                     and ix + 1 < len(v_items)):
                 self.list_win.addstr('\n ')
@@ -730,6 +695,7 @@ class Repl(object):
 
         self.statusbar.win.touchwin()
         self.statusbar.win.noutrefresh()
+        self.list_win.attron(get_colpair('main'))
         self.list_win.border()
         self.scr.touchwin()
         self.scr.cursyncup()
@@ -761,8 +727,8 @@ class Repl(object):
 
         self.list_win.addstr('\n  ')
         self.list_win.addstr(fn,
-            curses.color_pair(self._C["function"]+1) | curses.A_BOLD)
-        self.list_win.addstr(': (', curses.color_pair(self._C["paren"]+1))
+            get_colpair('name') | curses.A_BOLD)
+        self.list_win.addstr(': (', get_colpair('name'))
         maxh = self.scr.getmaxyx()[0]
 
         for k, i in enumerate(args):
@@ -788,33 +754,27 @@ class Repl(object):
                 self.list_win.addstr('\n\t')
 
             if str(i) == 'self' and k == 0:
-                color = self._C["self"]
+                color = get_colpair('name')
             else:
-                color = self._C["args"]
+                color = get_colpair('token')
 
-            self.list_win.addstr(str(i),
-                curses.color_pair(color + 1) | curses.A_BOLD)
+            self.list_win.addstr(str(i), color | curses.A_BOLD)
             if kw:
-                self.list_win.addstr('=',
-                    curses.color_pair(self._C["punctuation"]+1))
-                self.list_win.addstr(kw, curses.color_pair(self._C["kwvalue"]+1))
+                self.list_win.addstr('=', get_colpair('punctuation'))
+                self.list_win.addstr(kw, get_colpair('token'))
             if k != len(args) -1:
-                self.list_win.addstr(', ',
-                    curses.color_pair(self._C["punctuation"]+1))
+                self.list_win.addstr(', ', get_colpair("punctuation"))
 
         if _args:
             if args:
-                self.list_win.addstr(', ',
-                    curses.color_pair(self._C["args"]+1))
-            self.list_win.addstr('*%s' % (_args, ),
-                curses.color_pair(self._C["*args"]+1))
+                self.list_win.addstr(', ', get_colpair('punctuation'))
+            self.list_win.addstr('*%s' % (_args, ), get_colpair('token'))
+
         if _kwargs:
             if args or _args:
-                self.list_win.addstr(', ',
-                    curses.color_pair(self._C["punctuation"]+1))
-            self.list_win.addstr('**%s' % (_kwargs, ),
-                curses.color_pair(self._C["**kwargs"]+1))
-        self.list_win.addstr(')', curses.color_pair(self._C["paren"]+1))
+                self.list_win.addstr(', ', get_colpair('punctuation'))
+            self.list_win.addstr('**%s' % (_kwargs, ), get_colpair('token'))
+        self.list_win.addstr(')', get_colpair('punctuation'))
 
         return r
 
@@ -1008,13 +968,14 @@ class Repl(object):
     def prompt(self, more):
         """Show the appropriate Python prompt"""
         if not more:
-            self.echo("\x01%s\x03>>> " % (OPTS.extras['prompt'],))
+            self.echo("\x01%s\x03>>> " % (OPTS.color_scheme['prompt'],))
             self.stdout_hist += '>>> '
-            self.s_hist.append('\x01%s\x03>>> \x04' % (OPTS.extras['prompt'],))
+            self.s_hist.append('\x01%s\x03>>> \x04' % (OPTS.color_scheme['prompt'],))
         else:
-            self.echo("\x01%s\x03... " % (OPTS.extras['more'],))
+            self.echo("\x01%s\x03... " % (OPTS.color_scheme['prompt_more'],))
             self.stdout_hist += '... '
-            self.s_hist.append('\x01%s\x03... \x04' % (OPTS.extras['more'],))
+            self.s_hist.append('\x01%s\x03... \x04' %
+                (OPTS.color_scheme['prompt_more'],))
 
     def repl(self):
         """Initialise the repl and jump into the loop. This method also has to
@@ -1136,7 +1097,7 @@ class Repl(object):
         if isinstance(s, unicode):
             s = s.encode(getpreferredencoding())
 
-        a = curses.color_pair(colors[OPTS.extras['output']]+1)
+        a = get_colpair('output')
         if '\x01' in s:
             rx = re.search('\x01([a-z])([a-z]?)', s)
             if rx:
@@ -1807,7 +1768,7 @@ def init_wins(scr, cols):
 # 
     statusbar = Statusbar(scr, main_win,
         ".:: <C-d> Exit  <C-r> Rewind  <F2> Save  <F8> Pastebin ::.",
-            cols[OPTS.extras['statusbar']] + 1)
+            cols[OPTS.color_scheme['main']] + 1)
 
     return main_win, statusbar
 
@@ -1915,30 +1876,32 @@ def migrate_rc(path):
     config.write(f)
     f.close()
     os.rename(path, os.path.expanduser('~/.bpythonrc.bak'))
-    print "The configuration file for bpython has been changed. A new .bpython.ini file has been created in your home directory."
-    print "The existing .bpythonrc file has been renamed to .bpythonrc.bak and it can be removed."
+    print ("The configuration file for bpython has been changed. A new "
+           ".bpython.ini file has been created in your home directory.")
+    print ("The existing .bpythonrc file has been renamed to .bpythonrc.bak "
+           "and it can be removed.")
     print "Press enter to continue."
     raw_input()
 
 
+class CP(ConfigParser):
+    def safeget(self, section, option, default):
+        """safet get method using default values"""
+        try:
+            v = self.get(section, option)
+        except NoSectionError:
+            v = default
+        except NoOptionError:
+            v = default
+        if isinstance(v, bool):
+            return v
+        try:
+            return int(v)
+        except ValueError:
+            return v
 
 def loadini(configfile):
     """Loads .ini configuration file and stores its values in OPTS"""
-    class CP(ConfigParser):
-        def safeget(self, section, option,  default):
-            """safet get method using default values"""
-            try:
-                v = self.get(section, option)
-            except NoSectionError:
-                v = default
-            except NoOptionError:
-                v = default
-            if isinstance(v, bool):
-                return v
-            try:
-                return int(v)
-            except ValueError:
-                return v
 
     configfile = os.path.expanduser(configfile)
 
@@ -1952,7 +1915,43 @@ def loadini(configfile):
     OPTS.hist_file = config.safeget('general', 'hist_file', '~/.pythonhist')
     OPTS.hist_length = config.safeget('general', 'hist_length', 100)
     OPTS.flush_output = config.safeget('general', 'flush_output', True)
-    OPTS.color_scheme = config.safeget('general', 'color_scheme', 'dark')
+    color_scheme_name = config.safeget('general', 'color_scheme', 'default')
+
+    if color_scheme_name == 'default':
+        OPTS.color_scheme = {
+            'keyword': 'Y',
+            'name': 'B',
+            'comment': 'b',
+            'string': 'g',
+            'error': 'r',
+            'number': 'g',
+            'operator': 'c',
+            'punctuation': 'y',
+            'token': 'g',
+            'background': 'k',
+            'output': 'w',
+            'main': 'c',
+            'prompt': 'r',
+            'prompt_more': 'g',
+        }
+    else:
+        path = os.path.expanduser('~/.bpython/%s.theme' % (color_scheme_name,))
+        # XXX ConfigParser doesn't raise an IOError if it tries to read a file
+        # that doesn't exist which isn't helpful to us:
+        if not os.path.isfile(path):
+            raise IOError("'%s' is not a readable file" % (path,))
+        load_theme(color_scheme_name)
+
+def load_theme(name):
+    path = os.path.expanduser('~/.bpython/%s.theme' % (name,))
+    theme = CP()
+    theme.read(path)
+    OPTS.color_scheme = {}
+    for k, v in chain(theme.items('syntax'), theme.items('interface')):
+        if theme.has_option('syntax', k):
+            OPTS.color_scheme[k] = theme.get('syntax', k)
+        else:
+            OPTS.color_scheme[k] = theme.get('interface', k)
 
 
 class FakeDict(object):
@@ -1968,11 +1967,7 @@ def newwin(*args):
     """Wrapper for curses.newwin to automatically set background colour on any
     newly created window."""
     win = curses.newwin(*args)
-    if OPTS.color_scheme == 'light':
-        bg = colors['w']
-    else:
-        bg = colors['k']
-    colpair = curses.color_pair(bg)
+    colpair = get_colpair('background')
     win.bkgd(' ', colpair)
     return win
 
@@ -1998,7 +1993,7 @@ def main_curses(scr):
     try:
         curses.start_color()
         curses.use_default_colors()
-        cols = make_colours()
+        cols = make_colors()
     except curses.error:
         cols = FakeDict(-1)
 

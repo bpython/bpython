@@ -54,44 +54,24 @@ from pygments.token import Keyword, Name, Comment, String, Error, \
 
 Parenthesis = Token.Punctuation.Parenthesis
 
-f_strings = {
-    Keyword: "\x01y",
-    Name: "\x01w\x02",
-    Comment: "\x01b",
-    String: "\x01m",
-    Error: "\x01r",
-    Literal: "\x01r",
-    Literal.String: "\x01m",
-    Token.Literal.Number.Float: "\x01g\x02",
-    Number: "\x01g",
-    Operator: "\x01c\x02",
-    Operator.Word: "\x01c\x02",
-    Parenthesis: "\x01r\x02",
-    Punctuation: "\x01c\x02",
-    Generic: "\x01d",
-    Token: "\x01g",
-    Whitespace: "\x02d",
+theme_map = {
+    Keyword: 'keyword',
+    Name: 'name',
+    Comment: 'comment',
+    String: 'string',
+    Literal: 'string',
+    Literal.String: 'string',
+    Error: 'error',
+    Number: 'number',
+    Token.Literal.Number.Float: 'number',
+    Operator: 'operator',
+    Operator.Word: 'operator',
+    Punctuation: 'punctuation',
+    Token: 'token',
+    Whitespace: 'background',
 }
 
-f_strings_light = {
-    Keyword: "\x01y\x02",
-    Name: "\x01k",
-    Comment: "\x01g\x02",
-    String: "\x01g",
-    Error: "\x01r",
-    Literal: "\x01r",
-    Literal.String: "\x01b\x02",
-    Token.Literal.Number.Float: "\x01g\x02",
-    Number: "\x01g",
-    Operator: "\x01b\x02",
-    Operator.Word: "\x01k\x02",
-    Parenthesis: "\x01r\x02",
-    Punctuation: "\x01b\x02",
-    Generic: "\x01d",
-    Token: "\x01r\x02",
-    Whitespace: "\x02d",
-}
-
+    
 class BPythonFormatter(Formatter):
     """This is the custom formatter for bpython.
     Its format() method receives the tokensource
@@ -104,12 +84,15 @@ class BPythonFormatter(Formatter):
     See the Pygments source for more info; it's pretty
     straightforward."""
 
-    def __init__(self, color_scheme, **options):
-        if color_scheme == "light":
-            self.f_strings = f_strings_light
-        else:
-            self.f_strings = f_strings
+    f_strings = {}
 
+    def __init__(self, color_scheme, **options):
+        if not self.f_strings:
+            for k, v in theme_map.iteritems():
+                if color_scheme[v].isupper():
+                    self.f_strings[k] = '\x01%s\x02' % (color_scheme[v].lower(),)
+                else:
+                    self.f_strings[k] = '\x01%s' % (color_scheme[v],)
         Formatter.__init__(self, **options)
 
     def format(self, tokensource, outfile):
