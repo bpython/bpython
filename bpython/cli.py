@@ -56,8 +56,7 @@ from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 from pygments import format
 from pygments.lexers import PythonLexer
 from pygments.token import Token
-from bpython.formatter import BPythonFormatter
-from itertools import chain
+from bpython.formatter import BPythonFormatter, Parenthesis
 
 # This for import completion
 from bpython import importcompletion
@@ -352,6 +351,7 @@ class Repl(object):
         self.argspec = None
         self.s = ''
         self.inside_string = False
+        self.highlighted_paren = None
         self.list_win_visible = False
         self._C = {}
         sys.stdin = FakeStdin(self)
@@ -1303,9 +1303,13 @@ class Repl(object):
 
         elif self.c == 'KEY_LEFT': # Cursor Left
             self.mvc(1)
+            # Redraw (as there might have been highlighted parens)
+            self.print_line(self.s)
 
         elif self.c == 'KEY_RIGHT': # Cursor Right
             self.mvc(-1)
+            # Redraw (as there might have been highlighted parens)
+            self.print_line(self.s)
 
         elif self.c in ("KEY_HOME", '^A', chr(1)): # home or ^A
             self.mvc(len(self.s) - self.cpos)
@@ -1442,6 +1446,8 @@ class Repl(object):
         self.inside_string = next_token_inside_string(self.s,
                                                       self.inside_string)
 
+        # Reprint the line (as there was maybe a highlighted paren in it)
+        self.print_line(self.s)
         self.echo("\n")
 
     def addstr(self, s):
@@ -1469,9 +1475,75 @@ class Repl(object):
                 tokens = PythonLexer().get_tokens(self.inside_string + s)
                 token, value = tokens.next()
                 if token is Token.String.Doc:
-                    tokens = chain([(Token.String, value[3:])], tokens)
+                    tokens = [(Token.String, value[3:])] + list(tokens)
             else:
-                tokens = PythonLexer().get_tokens(s)
+                tokens = list(PythonLexer().get_tokens(s))
+            # Highlight matching parentheses
+            def reprint_line(lineno, s, to_replace=[]):
+                if lineno < 0:
+                    return
+                t = list(PythonLexer().get_tokens(s))
+                for (i, token) in to_replace:
+                    t[i] = token
+                o = format(t, BPythonFormatter(OPTS.color_scheme))
+                self.scr.move(lineno, 4)
+                map(self.echo, o.split('\x04'))
+            if self.highlighted_paren:
+                # Clear previous highlighted paren
+                reprint_line(*self.highlighted_paren)
+                self.highlighted_paren = None
+            stack = list()
+            source = '\n'.join(self.buffer) + '\n%s' % (s, )
+            i = line = 0
+            pos = 3
+            y, x = self.scr.getyx()
+            for (token, value) in PythonLexer().get_tokens(source):
+                pos += len(value)
+                under_cursor = (line == len(self.buffer) and pos == x)
+                if token is Token.Punctuation:
+                    if value == '(':
+                        if under_cursor:
+                            tokens[i] = (Parenthesis, '(')
+                            # Push marker on the stack
+                            stack.append(Parenthesis)
+                        else:
+                            stack.append((line, i))
+                    elif value == ')':
+                        try:
+                            value = stack.pop()
+                        except IndexError:
+                            # SyntaxError.. more closed parentheses than
+                            # opened
+                            break
+                        if value is Parenthesis:
+                            # Marker found
+                            tokens[i] = (Parenthesis, ')')
+                            break
+                        elif under_cursor:
+                            tokens[i] = (Parenthesis, ')')
+                            (line, i) = value
+                            screen_line = y - len(self.buffer) + line
+                            if line == len(self.buffer):
+                                self.highlighted_paren = (screen_line, s)
+                                tokens[i] = (Parenthesis, '(')
+                            else:
+                                self.highlighted_paren = (screen_line,
+                                                          self.buffer[line])
+                                # We need to redraw a line
+                                reprint_line(
+                                    screen_line,
+                                    self.buffer[line],
+                                    [(i, (Parenthesis, '('))]
+                                )
+                    elif under_cursor:
+                        break
+                elif under_cursor:
+                    break
+                elif token is Token.Text and value == '\n':
+                    line += 1
+                    i = -1
+                    pos = 3
+                i += 1
             o = format(tokens, BPythonFormatter(OPTS.color_scheme))
         else:
             o = s

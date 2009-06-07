@@ -52,6 +52,8 @@ from pygments.token import Keyword, Name, Comment, String, Error, \
 
 """
 
+Parenthesis = Token.Punctuation.Parenthesis
+
 f_strings = {
     Keyword: "\x01y",
     Name: "\x01w\x02",
@@ -64,6 +66,7 @@ f_strings = {
     Number: "\x01g",
     Operator: "\x01c\x02",
     Operator.Word: "\x01c\x02",
+    Parenthesis: "\x01r\x02",
     Punctuation: "\x01c\x02",
     Generic: "\x01d",
     Token: "\x01g",
@@ -82,6 +85,7 @@ f_strings_light = {
     Number: "\x01g",
     Operator: "\x01b\x02",
     Operator.Word: "\x01k\x02",
+    Parenthesis: "\x01r\x02",
     Punctuation: "\x01b\x02",
     Generic: "\x01d",
     Token: "\x01r\x02",
