@@ -1502,31 +1502,31 @@ class Repl(object):
                 pos += len(value)
                 under_cursor = (line == len(self.buffer) and pos == x)
                 if token is Token.Punctuation:
-                    if value == '(':
+                    if value in '({[':
                         if under_cursor:
-                            tokens[i] = (Parenthesis, '(')
+                            tokens[i] = (Parenthesis, value)
                             # Push marker on the stack
                             stack.append(Parenthesis)
                         else:
-                            stack.append((line, i))
-                    elif value == ')':
+                            stack.append((line, i, value))
+                    elif value in ')}]':
                         try:
-                            value = stack.pop()
+                            opening = stack.pop()
                         except IndexError:
                             # SyntaxError.. more closed parentheses than
                             # opened
                             break
-                        if value is Parenthesis:
+                        if opening is Parenthesis:
                             # Marker found
-                            tokens[i] = (Parenthesis, ')')
+                            tokens[i] = (Parenthesis, value)
                             break
                         elif under_cursor:
-                            tokens[i] = (Parenthesis, ')')
-                            (line, i) = value
+                            tokens[i] = (Parenthesis, value)
+                            (line, i, opening) = opening
                             screen_line = y - len(self.buffer) + line
                             if line == len(self.buffer):
                                 self.highlighted_paren = (screen_line, s)
-                                tokens[i] = (Parenthesis, '(')
+                                tokens[i] = (Parenthesis, opening)
                             else:
                                 self.highlighted_paren = (screen_line,
                                                           self.buffer[line])
@@ -1534,7 +1534,7 @@ class Repl(object):
                                 reprint_line(
                                     screen_line,
                                     self.buffer[line],
-                                    [(i, (Parenthesis, '('))]
+                                    [(i, (Parenthesis, opening))]
                                 )
                     elif under_cursor:
                         break
