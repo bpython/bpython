@@ -130,7 +130,7 @@ DO_RESIZE = False
 def DEBUG(s):
     """This shouldn't ever be called in any release of bpython, so
     beat me up if you find anything calling it."""
-    open('/home/bob/tmp/plonker', 'a').write("%s\n" % (str(s), ))
+    open('/tmp/bpython-debug', 'a').write("%s\n" % (str(s), ))
 
 
 def make_colours():
