@@ -523,6 +523,12 @@ class Repl(object):
         since there can be several reasons why it won't be displayed; this
         makes it more manageable."""
 
+        if self.paste_mode and self.list_win_visible:
+            self.scr.touchwin()
+
+        if self.paste_mode:
+            return
+
         if self.list_win_visible and not OPTS.auto_display_list:
             self.scr.touchwin()
             self.list_win_visible = False
@@ -1422,8 +1428,7 @@ class Repl(object):
             l = len(self.s)
             self.s = self.s[:l - self.cpos] + s + self.s[l - self.cpos:]
 
-        if not self.paste_mode:
-            self.complete()
+        self.complete()
 
     def print_line(self, s, clr=False, newline=False):
         """Chuck a line of text through the highlighter, move the cursor
