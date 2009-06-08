@@ -1109,7 +1109,7 @@ class Repl(object):
 
                 a = curses.color_pair(int(col_num) + 1)
                 s = re.sub('\x01[A-Za-z][A-Za-z]?', '', s)
-                if fg.upper():
+                if fg.isupper():
                     a = a | curses.A_BOLD
         s = s.replace('\x03', '')
         s = s.replace('\x01', '')
@@ -1735,7 +1735,7 @@ class Statusbar(object):
 
         if s:
             if self.c:
-                self.win.addstr(s, curses.color_pair(self.c))
+                self.win.addstr(s, self.c)
             else:
                 self.win.addstr(s)
 
@@ -1769,7 +1769,7 @@ def init_wins(scr, cols):
 # 
     statusbar = Statusbar(scr, main_win,
         ".:: <C-d> Exit  <C-r> Rewind  <F2> Save  <F8> Pastebin ::.",
-            cols[OPTS.color_scheme['main']] + 1)
+            get_colpair('main'))
 
     return main_win, statusbar
 

@@ -1,0 +1,23 @@
+# Each letter represent a colour marker: k, r, g, y, b, m, c, w
+# which stands for:    blacK, Red, Green, Yellow, Blue, Magenta,Cyan, White
+# Capital letters makes bold fonts
+# Copy to ~/.bpython/foo.theme and set "color_scheme = foo" in ~/.bpython.ini
+
+[syntax]
+keyword = M
+name = r
+comment = b
+string = g
+error = r
+number = B
+operator = c
+punctuation = b
+token = g
+other = b
+
+[interface]
+background = w
+output = b
+main = b
+prompt = r
+prompt_more = g
