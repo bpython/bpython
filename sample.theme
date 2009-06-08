@@ -4,20 +4,20 @@
 # Copy to ~/.bpython/foo.theme and set "color_scheme = foo" in ~/.bpython.ini
 
 [syntax]
-keyword = "Y"
-name = "B"
-comment = "b"
-string = "g"
-error = "r"
-number = "G"
-operator = "C"
-punctuation = "y"
-token = "G"
-other = "b"
+keyword = Y
+name = B
+comment = b
+string = g
+error = r
+number = G
+operator = C
+punctuation = y
+token = G
+other = b
 
 [interface]
-background = 'k'
-output = 'w'
-main = "c"
-prompt = "r"
-prompt_more = "g"
+background = k
+output = w
+main = c
+prompt = r
+prompt_more = g
