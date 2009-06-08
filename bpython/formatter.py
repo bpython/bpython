@@ -69,9 +69,10 @@ theme_map = {
     Punctuation: 'punctuation',
     Token: 'token',
     Whitespace: 'background',
+    Parenthesis: 'keyword',
 }
 
-    
+
 class BPythonFormatter(Formatter):
     """This is the custom formatter for bpython.
     Its format() method receives the tokensource
@@ -89,10 +90,7 @@ class BPythonFormatter(Formatter):
     def __init__(self, color_scheme, **options):
         if not self.f_strings:
             for k, v in theme_map.iteritems():
-                if color_scheme[v].isupper():
-                    self.f_strings[k] = '\x01%s\x02' % (color_scheme[v].lower(),)
-                else:
-                    self.f_strings[k] = '\x01%s' % (color_scheme[v],)
+                self.f_strings[k] = '\x01%s' % (color_scheme[v],)
         Formatter.__init__(self, **options)
 
     def format(self, tokensource, outfile):
