@@ -135,7 +135,7 @@ def DEBUG(s):
 
 
 def get_color(name):
-    return colors[OPTS.color_scheme[name]]
+    return colors[OPTS.color_scheme[name].lower()]
 
 def get_colpair(name):
     return curses.color_pair(get_color(name) + 1)
@@ -1099,17 +1099,18 @@ class Repl(object):
 
         a = get_colpair('output')
         if '\x01' in s:
-            rx = re.search('\x01([a-z])([a-z]?)', s)
+            rx = re.search('\x01([A-Za-z])([A-Za-z]?)', s)
             if rx:
-                p = self._C[rx.groups()[0]]
-                if rx.groups()[1]:
-                    p *= self._C[rx.groups()[1]]
+                fg = rx.groups()[0]
+                bg = rx.groups()[1]
+                col_num = self._C[fg.lower()]
+                if bg:
+                    col_num *= self._C[bg.lower()]
 
-                a = curses.color_pair(int(p) + 1)
-                s = re.sub('\x01[a-z][a-z]?', '', s)
-        if '\x02' in s:
-            a = a | curses.A_BOLD
-            s = s.replace('\x02', '')
+                a = curses.color_pair(int(col_num) + 1)
+                s = re.sub('\x01[A-Za-z][A-Za-z]?', '', s)
+                if fg.upper():
+                    a = a | curses.A_BOLD
         s = s.replace('\x03', '')
         s = s.replace('\x01', '')
 
@@ -1925,33 +1926,30 @@ def loadini(configfile):
             'string': 'g',
             'error': 'r',
             'number': 'g',
-            'operator': 'c',
-            'punctuation': 'y',
+            'operator': 'C',
+            'punctuation': 'c',
             'token': 'g',
             'background': 'k',
             'output': 'w',
             'main': 'c',
-            'prompt': 'r',
+            'prompt': 'y',
             'prompt_more': 'g',
         }
     else:
         path = os.path.expanduser('~/.bpython/%s.theme' % (color_scheme_name,))
-        # XXX ConfigParser doesn't raise an IOError if it tries to read a file
-        # that doesn't exist which isn't helpful to us:
-        if not os.path.isfile(path):
-            raise IOError("'%s' is not a readable file" % (path,))
-        load_theme(color_scheme_name)
+        load_theme(path)
 
-def load_theme(name):
-    path = os.path.expanduser('~/.bpython/%s.theme' % (name,))
+def load_theme(path):
     theme = CP()
-    theme.read(path)
+    f = open(path, 'r')
+    theme.readfp(f)
     OPTS.color_scheme = {}
     for k, v in chain(theme.items('syntax'), theme.items('interface')):
         if theme.has_option('syntax', k):
             OPTS.color_scheme[k] = theme.get('syntax', k)
         else:
             OPTS.color_scheme[k] = theme.get('interface', k)
+    f.close()
 
 
 class FakeDict(object):
