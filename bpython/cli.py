@@ -518,6 +518,14 @@ class Repl(object):
 
         return getargspec(func)
 
+    def check(self):
+        """Check if paste mode should still be active and, if not, deactivate
+        it and force syntax highlighting."""
+
+        if self.paste_mode and time.time() - self.last_key_press > 0.01:
+            self.paste_mode = False
+            self.print_line(self.s)
+
     def complete(self, tab=False):
         """Wrap the _complete method to determine the visibility of list_win
         since there can be several reasons why it won't be displayed; this
@@ -1821,6 +1829,7 @@ def idle(caller):
         stdscr.nodelay(False)
         curses.ungetch(key)
     caller.statusbar.check()
+    caller.check()
 
     if DO_RESIZE:
         do_resize(caller)
