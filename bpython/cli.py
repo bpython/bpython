@@ -320,6 +320,8 @@ class Repl(object):
         self.list_win_visible = False
         self._C = {}
         sys.stdin = FakeStdin(self)
+        self.paste_mode = False
+        self.last_key_press = time.time()
         sys.path.insert(0, '.')
 
         if not OPTS.arg_spec:
@@ -1025,7 +1027,7 @@ class Repl(object):
 # Keep two copies so you can go up and down in the hist:
             if inp:
                 self.rl_hist.append(inp + '\n')
-            more = self.push(inp)
+            more = self.push(inp) or self.paste_mode
 
     def size(self):
         """Set instance attributes for x and y top left corner coordinates
@@ -1408,7 +1410,7 @@ class Repl(object):
                                                       self.inside_string)
 
         # Reprint the line (as there was maybe a highlighted paren in it)
-        self.print_line(self.s)
+        self.print_line(self.s, newline=True)
         self.echo("\n")
 
     def addstr(self, s):
@@ -1420,16 +1422,17 @@ class Repl(object):
             l = len(self.s)
             self.s = self.s[:l - self.cpos] + s + self.s[l - self.cpos:]
 
-        self.complete()
+        if not self.paste_mode:
+            self.complete()
 
-    def print_line(self, s, clr=False):
+    def print_line(self, s, clr=False, newline=False):
         """Chuck a line of text through the highlighter, move the cursor
         to the beginning of the line and output it to the screen."""
 
         if not s:
             clr = True
 
-        if OPTS.syntax:
+        if OPTS.syntax and (not self.paste_mode or newline):
             if self.inside_string:
                 # A string started in another line is continued in this
                 # line
@@ -1449,7 +1452,7 @@ class Repl(object):
                 o = format(t, BPythonFormatter(OPTS.color_scheme))
                 self.scr.move(lineno, 4)
                 map(self.echo, o.split('\x04'))
-            
+
             y, x = self.scr.getyx()
             if self.highlighted_paren:
                 # Clear previous highlighted paren
@@ -1540,23 +1543,19 @@ class Repl(object):
 
         self.ts = ''
 
-        indent_spaces = 0
-        for c in self.s:
-            if c == ' ':
-                indent_spaces += 1
-            else:
-                break
+        indent_spaces = len(self.s) - len(self.s.lstrip(' '))
 
         indent = self.s.rstrip().endswith(':')
 
         self.s = ''
         self.iy, self.ix = self.scr.getyx()
 
-        for _ in range(indent_spaces // OPTS.tab_length):
-            self.c = '\t'
-            self.p_key()
+        if not self.paste_mode:
+            for _ in range(indent_spaces // OPTS.tab_length):
+                self.c = '\t'
+                self.p_key()
 
-        if indent:
+        if indent and not self.paste_mode:
             self.c = '\t'
             self.p_key()
 
@@ -1598,6 +1597,9 @@ class Repl(object):
                 if key:
                     return key
             else:
+                t = time.time()
+                self.paste_mode = (t - self.last_key_press <= 0.01)
+                self.last_key_press = t
                 return key
             finally:
                 if self.idle:
