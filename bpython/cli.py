@@ -62,6 +62,9 @@ from bpython.formatter import BPythonFormatter, Parenthesis
 # This for import completion
 from bpython import importcompletion
 
+# This for config
+from bpython.config import Struct, loadini, migrate_rc
+
 from bpython import __version__
 
 def log(x):
@@ -70,11 +73,6 @@ def log(x):
 
 orig_stdout = sys.__stdout__
 stdscr = None
-
-class Struct(object):
-    """Simple class for instantiating objects we can add arbitrary attributes
-    to and use for various arbitrary things."""
-    pass
 
 
 class FakeStdin(object):
@@ -1834,124 +1832,6 @@ def do_resize(caller):
     caller.resize()
 # The list win resizes itself every time it appears so no need to do it here.
 
-def migrate_rc(path):
-    """Use the shlex module to convert the old configuration file to the new format.
-    The old configuration file is renamed but not removed by now."""
-    import shlex
-    f = open(path)
-    parser = shlex.shlex(f)
-
-    bools = {
-        'true': True,
-        'yes': True,
-        'on': True,
-        'false': False,
-        'no': False,
-        'off': False
-    }
-
-    config = ConfigParser()
-    config.add_section('general')
-
-    while True:
-        k = parser.get_token()
-        v = None
-
-        if not k:
-            break
-
-        k = k.lower()
-
-        if parser.get_token() == '=':
-            v = parser.get_token() or None
-
-        if v is not None:
-            try:
-                v = int(v)
-            except ValueError:
-                if v.lower() in bools:
-                    v = bools[v.lower()]
-                config.set('general', k, v)
-    f.close()
-    f = open(os.path.expanduser('~/.bpython.ini'), 'w')
-    config.write(f)
-    f.close()
-    os.rename(path, os.path.expanduser('~/.bpythonrc.bak'))
-    print ("The configuration file for bpython has been changed. A new "
-           ".bpython.ini file has been created in your home directory.")
-    print ("The existing .bpythonrc file has been renamed to .bpythonrc.bak "
-           "and it can be removed.")
-    print "Press enter to continue."
-    raw_input()
-
-
-class CP(ConfigParser):
-    def safeget(self, section, option, default):
-        """safet get method using default values"""
-        try:
-            v = self.get(section, option)
-        except NoSectionError:
-            v = default
-        except NoOptionError:
-            v = default
-        if isinstance(v, bool):
-            return v
-        try:
-            return int(v)
-        except ValueError:
-            return v
-
-def loadini(configfile):
-    """Loads .ini configuration file and stores its values in OPTS"""
-
-    configfile = os.path.expanduser(configfile)
-
-    config = CP()
-    config.read(configfile)
-
-    OPTS.tab_length = config.safeget('general', 'tab_length', 4)
-    OPTS.auto_display_list = config.safeget('general', 'auto_display_list', True)
-    OPTS.syntax = config.safeget('general', 'syntax', True)
-    OPTS.arg_spec = config.safeget('general', 'arg_spec', True)
-    OPTS.hist_file = config.safeget('general', 'hist_file', '~/.pythonhist')
-    OPTS.hist_length = config.safeget('general', 'hist_length', 100)
-    OPTS.flush_output = config.safeget('general', 'flush_output', True)
-    color_scheme_name = config.safeget('general', 'color_scheme', 'default')
-
-    if color_scheme_name == 'default':
-        OPTS.color_scheme = {
-            'keyword': 'Y',
-            'name': 'B',
-            'comment': 'b',
-            'string': 'g',
-            'error': 'r',
-            'number': 'g',
-            'operator': 'C',
-            'punctuation': 'c',
-            'token': 'g',
-            'background': 'k',
-            'output': 'w',
-            'main': 'c',
-            'prompt': 'y',
-            'prompt_more': 'g',
-        }
-    else:
-        path = os.path.expanduser('~/.bpython/%s.theme' % (color_scheme_name,))
-        load_theme(path)
-
-def load_theme(path):
-    theme = CP()
-    f = open(path, 'r')
-    theme.readfp(f)
-    OPTS.color_scheme = {}
-    for k, v in chain(theme.items('syntax'), theme.items('interface')):
-        if theme.has_option('syntax', k):
-            OPTS.color_scheme[k] = theme.get('syntax', k)
-        else:
-            OPTS.color_scheme[k] = theme.get('interface', k)
-    f.close()
-
-
 class FakeDict(object):
     """Very simple dict-alike that returns a constant value for any key -
     used as a hacky solution to using a colours dict containing colour codes if
@@ -2053,7 +1933,7 @@ def main(args=None):
     path = os.path.expanduser('~/.bpythonrc')   # migrating old configuration file
     if os.path.isfile(path):
         migrate_rc(path)
-    loadini(options.config)
+    loadini(OPTS, options.config)
 
     try:
         o = curses.wrapper(main_curses)
