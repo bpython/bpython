@@ -1808,7 +1808,13 @@ def idle(caller):
     global stdscr
 
     if importcompletion.find_coroutine():
-        curses.ungetch('')
+        stdscr.nodelay(True)
+        try:
+            key = stdscr.getkey()
+        except curses.error:
+            key = ''
+        stdscr.nodelay(False)
+        curses.ungetch(key)
     caller.statusbar.check()
 
     if DO_RESIZE:
