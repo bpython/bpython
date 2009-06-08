@@ -1220,7 +1220,7 @@ class Repl(object):
         if not self.cpos:
             self.s = ''
         else:
-            self.s = self.s[self.cpos:]
+            self.s = self.s[-self.cpos:]
 
         self.print_line(self.s, clr=True)
         self.scr.redrawwin()
@@ -1296,6 +1296,7 @@ class Repl(object):
 
         elif self.c in ('^L', chr(12)): # C-l
             self.s_hist = [self.s_hist[-1]]
+            self.highlighted_paren = None
             self.redraw()
             return ''
 
