@@ -45,7 +45,6 @@ import socket
 import pydoc
 import types
 import unicodedata
-from itertools import chain
 from cStringIO import StringIO
 from locale import LC_ALL, getpreferredencoding, setlocale
 from optparse import OptionParser
@@ -325,6 +324,7 @@ class Repl(object):
         sys.stdin = FakeStdin(self)
         self.paste_mode = False
         self.last_key_press = time.time()
+        self.paste_time = 0.02
         sys.path.insert(0, '.')
 
         if not OPTS.arg_spec:
@@ -525,7 +525,8 @@ class Repl(object):
         """Check if paste mode should still be active and, if not, deactivate
         it and force syntax highlighting."""
 
-        if self.paste_mode and time.time() - self.last_key_press > 0.01:
+        if (self.paste_mode
+            and time.time() - self.last_key_press > self.paste_time):
             self.paste_mode = False
             self.print_line(self.s)
 
@@ -818,7 +819,11 @@ class Repl(object):
         """Prompt for a filename and write the current contents of the stdout
         buffer to disk."""
 
-        fn = self.statusbar.prompt('Save to file: ')
+        try:
+            fn = self.statusbar.prompt('Save to file (Esc to cancel): ')
+        except ValueError:
+            self.statusbar.message("Save cancelled.")
+            return
 
         if fn.startswith('~'):
             fn = os.path.expanduser(fn)
@@ -1614,7 +1619,7 @@ class Repl(object):
                     return key
             else:
                 t = time.time()
-                self.paste_mode = (t - self.last_key_press <= 0.01)
+                self.paste_mode = (t - self.last_key_press <= self.paste_time)
                 self.last_key_press = t
                 return key
             finally:
@@ -1722,6 +1727,9 @@ class Statusbar(object):
                 o = bs(o)
                 continue
 
+            if c == 27:
+                raise ValueError
+
             if not c or c < 0 or c > 127:
                 continue
             c = chr(c)
@@ -1729,7 +1737,7 @@ class Statusbar(object):
             if c == '\n':
                 break
 
-            self.win.addstr(c)
+            self.win.addstr(c, get_colpair('prompt'))
             o += c
 
         self.settext(self._s)
@@ -1825,7 +1833,7 @@ def idle(caller):
 
     global stdscr
 
-    if importcompletion.find_coroutine():
+    if importcompletion.find_coroutine() or caller.paste_mode:
         stdscr.nodelay(True)
         key = stdscr.getch()
         stdscr.nodelay(False)
@@ -1903,6 +1911,7 @@ def main_curses(scr):
 
     scr.timeout(300)
 
+    curses.raw(True)
     main_win, statusbar = init_wins(scr, cols)
 
     curses.raw(True)
