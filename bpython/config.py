@@ -1,5 +1,6 @@
 import os
 from ConfigParser import ConfigParser, NoSectionError, NoOptionError
+from itertools import chain
 
 
 class Struct(object):
@@ -64,11 +65,7 @@ def loadini(struct, configfile):
         }
     else:
         path = os.path.expanduser('~/.bpython/%s.theme' % (color_scheme_name,))
-        # XXX ConfigParser doesn't raise an IOError if it tries to read a file
-        # that doesn't exist which isn't helpful to us:
-        if not os.path.isfile(path):
-            raise IOError("'%s' is not a readable file" % (path,))
-        load_theme(struct, color_scheme_name)
+        load_theme(struct, path)
 
 
 def load_theme(struct, path):
