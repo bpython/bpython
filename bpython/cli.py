@@ -1578,8 +1578,6 @@ class Repl(object):
     def get_key(self):
         key = ''
         while True:
-            if self.idle:
-                self.idle(self)
             try:
                 key += self.scr.getkey()
                 key = key.decode(getpreferredencoding())
@@ -1601,6 +1599,9 @@ class Repl(object):
                     return key
             else:
                 return key
+            finally:
+                if self.idle:
+                    self.idle(self)
 
 
 class Statusbar(object):
@@ -1809,10 +1810,7 @@ def idle(caller):
 
     if importcompletion.find_coroutine():
         stdscr.nodelay(True)
-        try:
-            key = stdscr.getkey()
-        except curses.error:
-            key = ''
+        key = stdscr.getch()
         stdscr.nodelay(False)
         curses.ungetch(key)
     caller.statusbar.check()
