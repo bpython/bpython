@@ -41,6 +41,8 @@ def loadini(struct, configfile):
     struct.hist_file = config.safeget('general', 'hist_file', '~/.pythonhist')
     struct.hist_length = config.safeget('general', 'hist_length', 100)
     struct.flush_output = config.safeget('general', 'flush_output', True)
+    struct.pastebin_key = config.safeget('keyboard', 'pastebin', 'C-p')
+    struct.save_key = config.safeget('keyboard', 'save', 'C-s')
     color_scheme_name = config.safeget('general', 'color_scheme', 'default')
 
     if color_scheme_name == 'default':

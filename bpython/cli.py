@@ -65,6 +65,9 @@ from bpython import importcompletion
 # This for config
 from bpython.config import Struct, loadini, migrate_rc
 
+# This for keys
+from bpython.keys import key_dispatch
+
 from bpython import __version__
 
 def log(x):
@@ -1323,11 +1326,11 @@ class Repl(object):
             else:
                 return ''
 
-        elif self.c == 'KEY_F(2)':
+        elif self.c in key_dispatch[OPTS.save_key]:
             self.write2file()
             return ''
 
-        elif self.c == 'KEY_F(8)':
+        elif self.c == key_dispatch[OPTS.pastebin_key]:
             self.pastebin()
             return ''
 
@@ -1618,7 +1621,6 @@ class Repl(object):
                 if self.idle:
                     self.idle(self)
 
-
 class Statusbar(object):
     """This class provides the status bar at the bottom of the screen.
     It has message() and prompt() methods for user interactivity, as
@@ -1720,7 +1722,7 @@ class Statusbar(object):
                 o = bs(o)
                 continue
 
-            if not c or c > 127:
+            if not c or c < 0 or c > 127:
                 continue
             c = chr(c)
 
@@ -1783,7 +1785,7 @@ def init_wins(scr, cols):
 # This should show to be configured keys from bpython.ini
 # 
     statusbar = Statusbar(scr, main_win,
-        ".:: <C-d> Exit  <C-r> Rewind  <F2> Save  <F8> Pastebin ::.",
+        ".:: <C-d> Exit  <C-r> Rewind  <%s> Save  <%s> Pastebin ::." % (OPTS.save_key, OPTS.pastebin_key),
             get_colpair('main'))
 
     return main_win, statusbar
@@ -1902,6 +1904,8 @@ def main_curses(scr):
     scr.timeout(300)
 
     main_win, statusbar = init_wins(scr, cols)
+
+    curses.raw(True)
 
     interpreter = Interpreter()
 
