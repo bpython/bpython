@@ -511,7 +511,7 @@ class Repl(object):
                     elif value == ')':
                         stack.pop()
                 elif (token is Token.Name or token in Token.Name.subtypes or
-                      token is Token.Operatir and value == '.'):
+                      token is Token.Operator and value == '.'):
                     stack[-1] += value
                 else:
                     stack[-1] = ''
