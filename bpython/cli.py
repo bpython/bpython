@@ -1287,6 +1287,9 @@ class Repl(object):
 
         if self.c in (chr(127), 'KEY_BACKSPACE'):
             self.bs()
+            # Redraw (as there might have been highlighted parens)
+            self.print_line('')
+            self.print_line(self.s)
             self.complete()
             return ''
 
