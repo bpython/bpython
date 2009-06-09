@@ -1335,7 +1335,7 @@ class Repl(object):
             self.write2file()
             return ''
 
-        elif self.c == key_dispatch[OPTS.pastebin_key]:
+        elif self.c in key_dispatch[OPTS.pastebin_key]:
             self.pastebin()
             return ''
 
