@@ -40,4 +40,4 @@ key_dispatch['C-_'] = (chr(31), '^_')
 
 # fill dispatch with function keys
 for x in xrange(1,13):
-    key_dispatch['F%s' % str(x)] = ('KEY_F(%s)') % str(x)
+    key_dispatch['F%s' % str(x)] = ('KEY_F(%s)' % str(x),)
