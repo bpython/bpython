@@ -69,7 +69,7 @@ theme_map = {
     Punctuation: 'punctuation',
     Token: 'token',
     Whitespace: 'background',
-    Parenthesis: 'keyword',
+    Parenthesis: 'punctuation',
 }
 
 
@@ -91,6 +91,10 @@ class BPythonFormatter(Formatter):
         if not self.f_strings:
             for k, v in theme_map.iteritems():
                 self.f_strings[k] = '\x01%s' % (color_scheme[v],)
+                if k is Parenthesis:
+                    # FIXME: Find a way to make this the inverse of the current
+                    # background colour
+                    self.f_strings[k] += 'w'
         Formatter.__init__(self, **options)
 
     def format(self, tokensource, outfile):
