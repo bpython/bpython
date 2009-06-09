@@ -481,12 +481,14 @@ class Repl(object):
 # Same deal with the exceptions :(
                     return None
 
+            is_bound_method = inspect.ismethod(f) and f.im_self is not None
             try:
                 if inspect.isclass(f):
                     argspec = inspect.getargspec(f.__init__)
+                    is_bound_method = True
                 else:
                     argspec = inspect.getargspec(f)
-                self.argspec = [func, argspec]
+                self.argspec = [func, argspec, is_bound_method]
                 return True
 
             except (NameError, TypeError, KeyError):
@@ -494,6 +496,7 @@ class Repl(object):
                 if t is None:
                     return None
                 self.argspec = t
+                self.argspec.append(is_bound_method)
                 return True
             except AttributeError:
 # This happens if no __init__ is found
@@ -502,24 +505,35 @@ class Repl(object):
         if not OPTS.arg_spec:
             return False
 
-        stack = ['']
+        stack = [['', 0]]
         try:
             for (token, value) in PythonLexer().get_tokens(self.s):
                 if token is Token.Punctuation:
                     if value == '(':
-                        stack.append('')
+                        stack.append(['', 0])
                     elif value == ')':
                         stack.pop()
+                    elif value == ',':
+                        try:
+                            stack[-1][1] += 1
+                        except TypeError:
+                            stack[-1][1] = ''
                 elif (token is Token.Name or token in Token.Name.subtypes or
                       token is Token.Operator and value == '.'):
-                    stack[-1] += value
+                    stack[-1][0] += value
+                elif token is Token.Operator and value == '=':
+                    stack[-1][1] = stack[-1][0]
                 else:
-                    stack[-1] = ''
-            func = stack.pop() or stack.pop()
+                    stack[-1][0] = ''
+            _, arg_number = stack.pop()
+            func, _ = stack.pop()
         except IndexError:
             return False
 
-        return getargspec(func)
+        if getargspec(func):
+            self.argspec.append(arg_number)
+            return True
+        return False
 
     def check(self):
         """Check if paste mode should still be active and, if not, deactivate
@@ -738,6 +752,8 @@ class Repl(object):
         kwargs = topline[1][3]
         _args = topline[1][1]
         _kwargs = topline[1][2]
+        is_bound_method = topline[2]
+        in_arg = topline[3]
         max_w = int(self.scr.getmaxyx()[1] * 0.6)
         self.list_win.erase()
         self.list_win.resize(3, max_w)
@@ -748,6 +764,9 @@ class Repl(object):
             get_colpair('name') | curses.A_BOLD)
         self.list_win.addstr(': (', get_colpair('name'))
         maxh = self.scr.getmaxyx()[0]
+
+        if is_bound_method:
+            in_arg += 1
 
         for k, i in enumerate(args):
             y, x = self.list_win.getyx()
@@ -776,7 +795,10 @@ class Repl(object):
             else:
                 color = get_colpair('token')
 
-            self.list_win.addstr(str(i), color | curses.A_BOLD)
+            if k == in_arg or i == in_arg:
+                color |= curses.A_BOLD
+
+            self.list_win.addstr(str(i), color)
             if kw:
                 self.list_win.addstr('=', get_colpair('punctuation'))
                 self.list_win.addstr(kw, get_colpair('token'))
