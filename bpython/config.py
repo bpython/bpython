@@ -48,19 +48,19 @@ def loadini(struct, configfile):
 
     if color_scheme_name == 'default':
         struct.color_scheme = {
-            'keyword': 'Y',
-            'name': 'B',
+            'keyword': 'y',
+            'name': 'c',
             'comment': 'b',
-            'string': 'g',
+            'string': 'm',
             'error': 'r',
-            'number': 'g',
-            'operator': 'c',
+            'number': 'G',
+            'operator': 'Y',
             'punctuation': 'y',
-            'token': 'g',
+            'token': 'C',
             'background': 'k',
             'output': 'w',
             'main': 'c',
-            'prompt': 'r',
+            'prompt': 'c',
             'prompt_more': 'g',
         }
     else:
