@@ -188,9 +188,14 @@ class Interpreter(code.InteractiveInterpreter):
         necessarily must be with the current factoring) and then an exception
         callback can be added to the Interpeter instance afterwards - more
         specifically, this is so that autoindentation does not occur after a
-        traceback."""
+        traceback.
+
+        Interpreter.tblist_hook can be a function that will receive the tblist
+        from showtraceback() (after it has been modified to retain only the
+        last element) as the only argument and should mutate it in place."""
 
         self.syntaxerror_callback = None
+        self.tblist_hook = None
 # Unfortunately code.InteractiveInterpreter is a classic class, so no super()
         code.InteractiveInterpreter.__init__(self)
 
@@ -229,6 +234,8 @@ class Interpreter(code.InteractiveInterpreter):
             sys.last_traceback = tb
             tblist = traceback.extract_tb(tb)
             del tblist[:1]
+            if self.tblist_hook is not None:
+                self.tblist_hook(tblist)
 
             l = traceback.format_list(tblist)
             if l:
@@ -327,6 +334,8 @@ class Repl(object):
         self.paste_time = 0.02
         sys.path.insert(0, '.')
 
+        self.interp.tblist_hook = self.fix_traceback_offset
+
         if not OPTS.arg_spec:
             return
 
@@ -335,6 +344,14 @@ class Repl(object):
             with codecs.open(pythonhist, 'r', getpreferredencoding(),
                              'ignore') as hfile:
                 self.rl_hist = hfile.readlines()
+
+    def fix_traceback_offset(self, tblist):
+        """Will be assigned to interpreter.tblist_hook and, if the interpreter
+        supports it, will be called when the tblist is created and modified to
+        contain only the last value. This is basically a little hack to fix the
+        line number offset for the traceback due to us inserting the encoding
+        header into the interpreter."""
+        tblist[0] = (tblist[0][0], 1) + tblist[0][2:]
 
     def clean_object(self, obj):
         """Try to make an object not exhibit side-effects on attribute
