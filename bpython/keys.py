@@ -25,7 +25,20 @@
 
 import string
 
-key_dispatch = {}
+class KeyMap:
+    def __init__(self):
+        self.map = {}
+
+    def __getitem__(self, key):
+        if key in self.map:
+            return self.map[key]
+        else:
+            raise Exception('Configured keymap (%s) does not exist in bpython.keys' % key)
+
+    def __setitem__(self, key, value):
+        self.map[key] = value
+
+key_dispatch = KeyMap()
 
 # fill dispatch with letters
 for c in string.lowercase:
