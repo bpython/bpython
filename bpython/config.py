@@ -1,7 +1,7 @@
 import os
 from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 from itertools import chain
-
+from bpython.keys import key_dispatch
 
 class Struct(object):
     """Simple class for instantiating objects we can add arbitrary attributes
@@ -67,6 +67,10 @@ def loadini(struct, configfile):
         path = os.path.expanduser('~/.bpython/%s.theme' % (color_scheme_name,))
         load_theme(struct, path)
 
+
+    # checks for valid key configuration this part still sucks
+    for key in (struct.pastebin_key, struct.save_key):
+        key_dispatch[key]
 
 def load_theme(struct, path):
     theme = CP()
