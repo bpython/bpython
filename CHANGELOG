@@ -1,3 +1,18 @@
+v0.9.3
+======
+
+Full unicode support
+
+Configurable hotkey support
+
+Theming support
+
+Pastemode, disables syntax highlighting during a paste for faster pasting, highlights when done
+
+Parentheses matching
+
+Argument highlighting
+
 v0.9.2
 ======
 help() now uses an external pager if available.
