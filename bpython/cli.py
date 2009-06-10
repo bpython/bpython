@@ -522,13 +522,13 @@ class Repl(object):
         if not OPTS.arg_spec:
             return False
 
-        stack = [['', 0]]
+        stack = [['', 0, '']]
         try:
             for (token, value) in PythonLexer().get_tokens(self.s):
                 if token is Token.Punctuation:
-                    if value == '(':
-                        stack.append(['', 0])
-                    elif value == ')':
+                    if value in '([{':
+                        stack.append(['', 0, value])
+                    elif value in ')]}':
                         stack.pop()
                     elif value == ',':
                         try:
@@ -542,8 +542,10 @@ class Repl(object):
                     stack[-1][1] = stack[-1][0]
                 else:
                     stack[-1][0] = ''
-            _, arg_number = stack.pop()
-            func, _ = stack.pop()
+            while stack[-1][2] in '[{':
+                stack.pop()
+            _, arg_number, _ = stack.pop()
+            func, _, _ = stack.pop()
         except IndexError:
             return False
 
