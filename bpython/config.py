@@ -1,4 +1,5 @@
 import os
+import sys
 from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 from itertools import chain
 from bpython.keys import key_dispatch
@@ -65,16 +66,21 @@ def loadini(struct, configfile):
         }
     else:
         path = os.path.expanduser('~/.bpython/%s.theme' % (color_scheme_name,))
-        load_theme(struct, path)
+        load_theme(struct, path, configfile)
 
 
     # checks for valid key configuration this part still sucks
     for key in (struct.pastebin_key, struct.save_key):
         key_dispatch[key]
 
-def load_theme(struct, path):
+def load_theme(struct, path, inipath):
     theme = CP()
-    f = open(path, 'r')
+    try:
+        f = open(path, 'r')
+    except (IOError, OSError), e:
+        sys.stdout.write("Error loading theme file specified in '%s':\n%s\n" %
+                         (inipath, e))
+        sys.exit(1)
     theme.readfp(f)
     struct.color_scheme = {}
     for k, v in chain(theme.items('syntax'), theme.items('interface')):
