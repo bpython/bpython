@@ -1206,6 +1206,23 @@ class Repl(object):
 
         return True
 
+    def home(self, refresh=True):
+        self.scr.move(self.iy, self.ix)
+        self.cpos = len(self.s)
+        if refresh:
+            self.scr.refresh()
+        return True
+
+    def end(self, refresh=True):
+        self.cpos = 0
+        h, w = gethw()
+        y, x = divmod(len(self.s) + self.ix, w)
+        y += self.iy
+        self.scr.move(y, x)
+        if refresh:
+            self.scr.refresh()
+        return True
+
     def bs(self, delete_tabs=True):
         """Process a backspace"""
 
@@ -1330,10 +1347,10 @@ class Repl(object):
             self.print_line(self.s)
 
         elif self.c in ("KEY_HOME", '^A', chr(1)): # home or ^A
-            self.mvc(len(self.s) - self.cpos)
+            self.home()
 
         elif self.c in ("KEY_END", '^E', chr(5)): # end or ^E
-            self.mvc(-self.cpos)
+            self.end()
 
         elif self.c in ('^K', chr(11)): # cut to buffer
             self.cut_to_buffer()
