@@ -94,7 +94,7 @@ class BPythonFormatter(Formatter):
                 if k is Parenthesis:
                     # FIXME: Find a way to make this the inverse of the current
                     # background colour
-                    self.f_strings[k] += 'w'
+                    self.f_strings[k] += 'I'
         Formatter.__init__(self, **options)
 
     def format(self, tokensource, outfile):

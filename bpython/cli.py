@@ -1167,10 +1167,12 @@ class Repl(object):
                 fg = rx.groups()[0]
                 bg = rx.groups()[1]
                 col_num = self._C[fg.lower()]
-                if bg:
+                if bg and bg != 'I':
                     col_num *= self._C[bg.lower()]
 
                 a = curses.color_pair(int(col_num) + 1)
+                if bg == 'I':
+                    a = a | curses.A_REVERSE
                 s = re.sub('\x01[A-Za-z][A-Za-z]?', '', s)
                 if fg.isupper():
                     a = a | curses.A_BOLD
