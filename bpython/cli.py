@@ -181,23 +181,24 @@ def next_token_inside_string(s, inside_string):
 
 class Interpreter(code.InteractiveInterpreter):
 
-    def __init__(self):
+    def __init__(self, encoding):
         """The syntaxerror callback can be set at any time and will be called
         on a caught syntax error. The purpose for this in bpython is so that
         the repl can be instantiated after the interpreter (which it
         necessarily must be with the current factoring) and then an exception
         callback can be added to the Interpeter instance afterwards - more
         specifically, this is so that autoindentation does not occur after a
-        traceback.
+        traceback."""
 
-        Interpreter.tblist_hook can be a function that will receive the tblist
-        from showtraceback() (after it has been modified to retain only the
-        last element) as the only argument and should mutate it in place."""
-
+        self.encoding = encoding
         self.syntaxerror_callback = None
-        self.tblist_hook = None
 # Unfortunately code.InteractiveInterpreter is a classic class, so no super()
         code.InteractiveInterpreter.__init__(self)
+
+    def runsource(self, source):
+        source = '# coding: %s\n%s' % (self.encoding,
+                                       source.encode(self.encoding))
+        return code.InteractiveInterpreter.runsource(self, source)
 
     def showsyntaxerror(self, filename=None):
         """Override the regular handler, the code's copied and pasted from
@@ -217,8 +218,8 @@ class Interpreter(code.InteractiveInterpreter):
                 # Not the format we expect; leave it alone
                 pass
             else:
-                # Stuff in the right filename
-                value = SyntaxError(msg, (filename, lineno, offset, line))
+                # Stuff in the right filename and right lineno
+                value = SyntaxError(msg, (filename, lineno - 1, offset, line))
                 sys.last_value = value
         list = traceback.format_exception_only(type, value)
         self.writetb(list)
@@ -234,8 +235,8 @@ class Interpreter(code.InteractiveInterpreter):
             sys.last_traceback = tb
             tblist = traceback.extract_tb(tb)
             del tblist[:1]
-            if self.tblist_hook is not None:
-                self.tblist_hook(tblist)
+            # Set the right lineno (encoding header adds an extra line)
+            tblist[0] = (tblist[0][0], 1) + tblist[0][2:]
 
             l = traceback.format_list(tblist)
             if l:
@@ -334,8 +335,6 @@ class Repl(object):
         self.paste_time = 0.02
         sys.path.insert(0, '.')
 
-        self.interp.tblist_hook = self.fix_traceback_offset
-
         if not OPTS.arg_spec:
             return
 
@@ -344,14 +343,6 @@ class Repl(object):
             with codecs.open(pythonhist, 'r', getpreferredencoding(),
                              'ignore') as hfile:
                 self.rl_hist = hfile.readlines()
-
-    def fix_traceback_offset(self, tblist):
-        """Will be assigned to interpreter.tblist_hook and, if the interpreter
-        supports it, will be called when the tblist is created and modified to
-        contain only the last value. This is basically a little hack to fix the
-        line number offset for the traceback due to us inserting the encoding
-        header into the interpreter."""
-        tblist[0] = (tblist[0][0], 1) + tblist[0][2:]
 
     def clean_object(self, obj):
         """Try to make an object not exhibit side-effects on attribute
@@ -913,10 +904,7 @@ class Repl(object):
         self.buffer.append(s)
 
         try:
-            encoding = getpreferredencoding()
-            source = '# coding: %s\n' % (encoding, )
-            source += '\n'.join(self.buffer).encode(encoding)
-            more = self.interp.runsource(source)
+            more = self.interp.runsource('\n'.join(self.buffer))
         except SystemExit:
             # Avoid a traceback on e.g. quit()
             self.do_exit = True
@@ -1960,7 +1948,7 @@ def main_curses(scr):
 
     curses.raw(True)
 
-    interpreter = Interpreter()
+    interpreter = Interpreter(getpreferredencoding())
 
     repl = Repl(main_win, interpreter, statusbar, idle)
     interpreter.syntaxerror_callback = repl.clear_current_line
