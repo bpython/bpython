@@ -784,7 +784,7 @@ class Repl(object):
         self.list_win.addstr(': (', get_colpair('name'))
         maxh = self.scr.getmaxyx()[0]
 
-        if is_bound_method:
+        if is_bound_method and isinstance(in_arg, int):
             in_arg += 1
 
         for k, i in enumerate(args):
