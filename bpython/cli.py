@@ -1472,12 +1472,12 @@ class Repl(object):
             for _ in range(self.cpos):
                 self.mvc(-1)
 
-        self.inside_string = next_token_inside_string(self.s,
-                                                      self.inside_string)
-
         # Reprint the line (as there was maybe a highlighted paren in it)
         self.print_line(self.s, newline=True)
         self.echo("\n")
+
+        self.inside_string = next_token_inside_string(self.s,
+                                                      self.inside_string)
 
     def addstr(self, s):
         """Add a string to the current input line and figure out
