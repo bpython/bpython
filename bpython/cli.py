@@ -1865,12 +1865,10 @@ def idle(caller):
     messages and the resize handlers need to be here to make
     sure it happens conveniently."""
 
-    global stdscr
-
     if importcompletion.find_coroutine() or caller.paste_mode:
-        stdscr.nodelay(True)
-        key = stdscr.getch()
-        stdscr.nodelay(False)
+        caller.scr.nodelay(True)
+        key = caller.scr.getch()
+        caller.scr.nodelay(False)
         curses.ungetch(key)
     caller.statusbar.check()
     caller.check()
