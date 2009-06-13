@@ -902,12 +902,16 @@ class Repl(object):
         s = s.rstrip('\n')
         self.buffer.append(s)
 
+        # curses.raw(True) prevents C-c from causing a SIGINT
+        curses.raw(False)
         try:
             more = self.interp.runsource('\n'.join(self.buffer))
         except SystemExit:
             # Avoid a traceback on e.g. quit()
             self.do_exit = True
             return False
+        finally:
+            curses.raw(True)
 
         if not more:
             self.buffer = []
