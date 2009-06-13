@@ -59,5 +59,12 @@ def page(data, use_internal=False):
                 return
             if e.errno != errno.EPIPE:
                 raise
-        popen.wait()
+        while True:
+            try:
+                popen.wait()
+            except OSError, e:
+                if e.errno != errno.EINTR:
+                    raise
+            else:
+                break
         curses.doupdate()
