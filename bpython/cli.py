@@ -1331,7 +1331,7 @@ class Repl(object):
             self.complete()
             return ''
 
-        elif self.c == chr(18): # C-r
+        elif self.c in key_dispatch['C-r']: # C-r
             self.undo()
             return ''
 
@@ -1359,30 +1359,30 @@ class Repl(object):
         elif self.c in ("KEY_END", '^E', chr(5)): # end or ^E
             self.end()
 
-        elif self.c in ('^K', chr(11)): # cut to buffer
+        elif self.c in key_dispatch['C-k']: # cut to buffer
             self.cut_to_buffer()
             return ''
 
-        elif self.c in ('^Y', chr(25)): # yank from buffer
+        elif self.c in key_dispatch['C-y']: # yank from buffer
             self.yank_from_buffer()
             return ''
 
-        elif self.c in ('^W', chr(23)): # C-w
+        elif self.c in key_dispatch['C-w']: 
             self.bs_word()
             self.complete()
             return ''
 
-        elif self.c in ('^U', chr(21)): # C-u
+        elif self.c in key_dispatch['C-u']:
             self.clrtobol()
             return ''
 
-        elif self.c in ('^L', chr(12)): # C-l
+        elif self.c in key_dispatch['C-l']: 
             self.s_hist = [self.s_hist[-1]]
             self.highlighted_paren = None
             self.redraw()
             return ''
 
-        elif self.c in (chr(4), '^D'): # C-d
+        elif self.c in key_dispatch['C-d']: 
             if not self.s:
                 self.do_exit = True
                 return None
