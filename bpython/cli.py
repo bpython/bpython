@@ -45,6 +45,7 @@ import socket
 import pydoc
 import types
 import unicodedata
+import textwrap
 from cStringIO import StringIO
 from locale import LC_ALL, getpreferredencoding, setlocale
 from optparse import OptionParser
@@ -460,6 +461,8 @@ class Repl(object):
         argspec() for it. On success, update self.argspec and return True,
         otherwise set self.argspec to None and return False"""
 
+        self.current_func = None
+
         def getpydocspec(f, func):
             try:
                 argspec = pydoc.getdoc(f)
@@ -483,21 +486,25 @@ class Repl(object):
                     f = self.interp.locals[func]
             except TypeError:
                 return None
-
             else:
                 try:
                     f = eval(func, self.interp.locals)
                 except Exception:
 # Same deal with the exceptions :(
                     return None
+                else:
+                    self.current_func = f
 
             is_bound_method = inspect.ismethod(f) and f.im_self is not None
             try:
                 if inspect.isclass(f):
+                    self.current_func = f
                     argspec = inspect.getargspec(f.__init__)
+                    self.current_func = f.__init__
                     is_bound_method = True
                 else:
                     argspec = inspect.getargspec(f)
+                    self.current_func = f
                 self.argspec = [func, argspec, is_bound_method]
                 return True
 
@@ -615,11 +622,15 @@ class Repl(object):
             else:
                 matches = self.completer.matches
 
+        self.docstring = None
+
         if e or not matches:
             self.matches = []
             if not self.argspec:
                 self.scr.redrawwin()
                 return False
+            if self.current_func is not None:
+                self.docstring = getattr(self.current_func, '__doc__', None)
 
         if not e and matches:
 # remove duplicates and restore order
@@ -646,7 +657,6 @@ class Repl(object):
         else:
             max_h = y+1
         max_w = int(w * 0.8)
-
         self.list_win.erase()
         if items and '.' in items[0]:
             items = [x.rsplit('.')[-1] for x in items]
@@ -713,7 +723,17 @@ class Repl(object):
         if height_offset and display_rows+5 >= max_h:
             del v_items[-(cols * (height_offset)):]
 
-        self.list_win.resize(rows+2, w)
+        if self.docstring is None:
+            self.list_win.resize(rows+2, w)
+        else:
+            self.list_win.resize(max_h, max_w)
+            docstring = []
+            for paragraph in self.docstring.split('\n'):
+                for line in textwrap.wrap(paragraph, max_w - 2):
+                    docstring.append('\n %s' % (line,))
+            docstring = docstring[:max_h]
+            docstring_string = ''.join(docstring)
+            rows = len(docstring) + 1
 
         if down:
             self.list_win.mvwin(y+1, 0)
@@ -731,6 +751,8 @@ class Repl(object):
                     and ix + 1 < len(v_items)):
                 self.list_win.addstr('\n ')
 
+        if self.docstring is not None:
+            self.list_win.addstr(docstring_string, get_colpair('comment'))
 # XXX: After all the trouble I had with sizing the list box (I'm not very good
 # at that type of thing) I decided to do this bit of tidying up here just to
 # make sure there's no unnececessary blank lines, it makes things look nicer.
