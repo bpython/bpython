@@ -400,6 +400,10 @@ class Repl(object):
             return []
 
         expr, attr = m.group(1, 3)
+        if expr.isdigit():
+            # Special case: float literal, using attrs here will result in
+            # a SyntaxError
+            return []
         obj = eval(expr, self.interp.locals)
         with AttrCleaner(obj):
             matches = self.attr_lookup(obj, expr, attr)
