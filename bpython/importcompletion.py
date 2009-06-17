@@ -32,6 +32,9 @@ fully_loaded = False
 
 def complete(line, cw):
     """Construct a full list of possibly completions for imports."""
+    if not cw:
+        return None
+
     tokens = line.split()
     if tokens[0] not in ['from', 'import']:
         return list()
