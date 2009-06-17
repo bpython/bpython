@@ -1461,34 +1461,13 @@ class Repl(object):
         if not cw:
             return True
 
-        b = self.strbase(self.matches)
+        b = os.path.commonprefix(self.matches)
         if b:
             self.s += b[len(cw):]
             self.print_line(self.s)
             if len(self.matches) == 1 and OPTS.auto_display_list:
                 self.scr.touchwin()
         return True
-
-    def strbase(self, l):
-        """Probably not the best way of doing it but this function returns
-        a common base string in a list of strings (for tab completion)."""
-
-        if not l:
-            return ''
-        elif len(l) == 1:
-            return l[0]
-
-        sl = sorted(l, key=len)
-        for i, c in enumerate(l[-1]):
-# I hate myself. Please email seamusmb@gmail.com to call him a dickhead for
-# insisting that I make bpython 2.4-compatible. I couldn't be bothered
-# refactoring, so ghetto all() it is:
-            if not reduce(lambda x, y: (x and y) or False,
-                            (k.startswith(l[-1][:i]) for k in sl),
-                            True):
-                break
-
-        return l[-1][:i-1]
 
     def atbol(self):
         """Return True or False accordingly if the cursor is at the beginning
