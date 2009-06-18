@@ -638,6 +638,8 @@ class Repl(object):
                 return False
             if self.current_func is not None:
                 self.docstring = pydoc.getdoc(self.current_func)
+                if not self.docstring:
+                    self.docstring = None
 
         if not e and matches:
 # remove duplicates and restore order
