@@ -37,7 +37,7 @@ def complete(line, cw):
 
     tokens = line.split()
     if tokens[0] not in ['from', 'import']:
-        return list()
+        return None
 
     completing_from = False
     if tokens[0] == 'from':
@@ -45,7 +45,7 @@ def complete(line, cw):
             if '.' in cw:
                 # This will result in a SyntaxError, so do not return
                 # any matches
-                return list()
+                return None
             completing_from = True
             cw = '%s.%s' % (tokens[1], cw)
         elif len(tokens) == 3:
@@ -59,7 +59,7 @@ def complete(line, cw):
             name = name[len(tokens[1]) + 1:]
         matches.append(name)
     if not matches:
-        return None
+        return []
     return matches
 
 
