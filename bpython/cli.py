@@ -606,6 +606,7 @@ class Repl(object):
         e = False
         matches = importcompletion.complete(self.s, cw)
         if matches is None:
+            self.matches = []
             self.scr.redrawwin()
             return False
 
