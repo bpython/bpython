@@ -515,6 +515,8 @@ class Repl(object):
                 if t is None:
                     return None
                 self.argspec = t
+                if inspect.ismethoddescriptor(f):
+                    self.argspec[1][0].insert(0, 'obj')
                 self.argspec.append(is_bound_method)
                 return True
             except AttributeError:
