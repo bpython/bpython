@@ -731,7 +731,7 @@ class Repl(object):
             del v_items[-(cols * (height_offset)):]
 
         if self.docstring is None:
-            self.list_win.resize(rows +2, w)
+            self.list_win.resize(rows + 2, w)
         else:
             docstring = self.format_docstring(self.docstring, max_w - 2)
             docstring_string = ''.join(docstring)
