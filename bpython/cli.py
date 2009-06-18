@@ -608,12 +608,12 @@ class Repl(object):
         # Check for import completion
         e = False
         matches = importcompletion.complete(self.s, cw)
-        if matches is None:
+        if matches is not None and not matches:
             self.matches = []
             self.scr.redrawwin()
             return False
 
-        if not matches:
+        if matches is None:
             # Nope, no import, continue with normal completion
             try:
                 self.completer.complete(cw, 0)
