@@ -1373,11 +1373,11 @@ class Repl(object):
             self.undo()
             return ''
 
-        elif self.c == 'KEY_UP': # Cursor Up
+        elif self.c in ('KEY_UP', ) + key_dispatch['C-p']: # Cursor Up/C-p
             self.back()
             return ''
 
-        elif self.c == 'KEY_DOWN': # Cursor Down
+        elif self.c in ('KEY_DOWN', ) + key_dispatch['C-n']: # Cursor Down/C-n
             self.fwd()
             return ''
 
