@@ -634,7 +634,7 @@ class Repl(object):
                 self.scr.redrawwin()
                 return False
             if self.current_func is not None:
-                self.docstring = getattr(self.current_func, '__doc__', None)
+                self.docstring = pydoc.getdoc(self.current_func)
 
         if not e and matches:
 # remove duplicates and restore order
@@ -728,16 +728,12 @@ class Repl(object):
             del v_items[-(cols * (height_offset)):]
 
         if self.docstring is None:
-            self.list_win.resize(rows+2, w)
+            self.list_win.resize(rows +2, w)
         else:
-            self.list_win.resize(max_h, max_w)
-            docstring = []
-            for paragraph in self.docstring.split('\n'):
-                for line in textwrap.wrap(paragraph, max_w - 2):
-                    docstring.append('\n %s' % (line,))
-            docstring = docstring[:max_h]
+            docstring = self.format_docstring(self.docstring, max_w - 2)
             docstring_string = ''.join(docstring)
-            rows = len(docstring) + 1
+            rows = len(docstring) - 3
+            self.list_win.resize(rows + 2, max_w)
 
         if down:
             self.list_win.mvwin(y+1, 0)
@@ -777,6 +773,19 @@ class Repl(object):
 
         self.scr.move(*self.scr.getyx())
         self.list_win.refresh()
+
+    def format_docstring(self, docstring, width):
+        """Take a string and try to format it into a sane list of strings to be
+        put into the suggestion box."""
+
+        lines = docstring.split('\n')
+        out = []
+        for line in lines:
+            out.append('\n')
+            for block in textwrap.wrap(line, width):
+                out.append('  ' + block)
+        w = self.scr.getmaxyx()[1]
+        return out
 
     def mkargspec(self, topline, down):
         """This figures out what to do with the argspec and puts it nicely into
