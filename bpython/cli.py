@@ -89,6 +89,9 @@ class FakeStdin(object):
         self.encoding = getpreferredencoding()
         self.interface = interface
 
+    def isatty(self):
+        return True
+
     def readline(self):
         """I can't think of any reason why anything other than readline would
         be useful in the context of an interactive interpreter so this is the
