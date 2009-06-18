@@ -47,6 +47,7 @@ import types
 import unicodedata
 import textwrap
 from cStringIO import StringIO
+from itertools import takewhile
 from locale import LC_ALL, getpreferredencoding, setlocale
 from optparse import OptionParser
 from urlparse import urljoin
@@ -1939,7 +1940,7 @@ def newwin(*args):
     return win
 
 
-def main_curses(scr):
+def main_curses(scr, args, interactive=True):
     """main function for the curses convenience wrapper
 
     Initialise the two main objects: the interpreter
@@ -1984,6 +1985,14 @@ def main_curses(scr):
     sys.stdout = repl
     sys.stderr = repl
 
+    if args:
+        with open(args[0], 'r') as sourcefile:
+            code_obj = compile(sourcefile.read(), args[0], 'exec')
+        old_argv, sys.argv = sys.argv, args
+        interpreter.runcode(code_obj)
+        sys.argv = old_argv
+        if not interactive:
+            return repl.getstdout()
 
     repl.repl()
     if OPTS.hist_length:
@@ -1997,15 +2006,30 @@ def main_curses(scr):
 
 def main(args=None):
     if args is None:
-        args = sys.argv
+        args = sys.argv[1:]
 
-    parser = OptionParser()
+    parser = OptionParser(usage='Usage: %prog [options] [file [args]]\n'
+                                'NOTE: If bpython sees an argument it does '
+                                 'not know, execution falls back to the '
+                                 'regular Python interpreter.')
     parser.add_option('--config', '-c', default='~/.bpython.ini',
                       help='use CONFIG instead of default config file')
+    parser.add_option('--interactive', '-i', action='store_true',
+                      help='Drop to bpython shell after running file '
+                           'instead of exiting')
     parser.add_option('--version', '-V', action='store_true',
                       help='print version and exit')
 
-    options, args = parser.parse_args(args)
+    all_args = set(parser._short_opt.keys() + parser._long_opt.keys())
+    if args and not all_args.intersection(args):
+        # Just let Python handle this
+        os.execv(sys.executable, [sys.executable] + args)
+    else:
+        # Split args in bpython args and args for the executed file
+        real_args = list(takewhile(lambda arg: arg in all_args, args))
+        exec_args = args[len(real_args):]
+
+    options, args = parser.parse_args(real_args)
 
     if options.version:
         print 'bpython version', __version__,
@@ -2028,7 +2052,7 @@ def main(args=None):
     loadini(OPTS, options.config)
 
     try:
-        o = curses.wrapper(main_curses)
+        o = curses.wrapper(main_curses, exec_args, options.interactive)
     except:
         tb = traceback.format_exc()
 # I don't know why this is necessary; without it the wrapper doesn't always do
