@@ -78,6 +78,65 @@ def log(x):
 orig_stdout = sys.__stdout__
 stdscr = None
 
+def parsekeywordpairs(signature):
+    tokens = PythonLexer().get_tokens(signature)
+    stack = []
+    substack = []
+    parendepth = 0
+    begin = False
+    for token, value in tokens:
+        if not begin:
+            if token is Token.Punctuation and value == u'(':
+                begin = True
+            continue
+
+        if token is Token.Punctuation:
+            if value == u'(':
+                parendepth += 1
+            elif value == u')' and parendepth:
+                parendepth -= 1
+
+        if parendepth:
+            substack.append(value)
+            continue
+
+        if ((token is Token.Punctuation and value == ')')
+             or (token is Token.Punctuation and value == u',')
+             and not parendepth):
+            stack.append(substack[:])
+            del substack[:]
+            continue
+
+        if value and value.strip():
+            substack.append(value)
+
+    d = {}
+    for item in stack:
+        if len(item) >= 3:
+            d[item[0]] = ''.join(item[2:])
+    return d
+
+def fixlongargs(f, argspec):
+    """Functions taking default arguments that are references to other objects
+    whose str() is too big will cause breakage, so we swap out the object
+    itself with the name it was referenced with in the source by parsing the
+    source itself !"""
+    values = list(argspec[3])
+    if not values:
+        return
+    keys = argspec[0][-len(values):]
+    try:
+        src = inspect.getsourcelines(f)
+    except IOError:
+        return
+    signature = src[0][0]
+    kwparsed = parsekeywordpairs(signature)
+
+    for i, (key, value) in enumerate(zip(keys, values)):
+        if len(str(value)) != len(kwparsed[key]):
+            values[i] = kwparsed[key]
+
+    argspec[3] = values
 
 class FakeStdin(object):
     """Provide a fake stdin type for things like raw_input() etc."""
@@ -182,6 +241,10 @@ def next_token_inside_string(s, inside_string):
                 elif value == inside_string:
                     inside_string = False
     return inside_string
+
+def clean_argspec(spec, f):
+    """Argspecs can contain eg.. "foo=os.environ", so display that as it is in
+    the source as opposed to str(os.environ)"""
 
 
 class Interpreter(code.InteractiveInterpreter):
@@ -509,6 +572,8 @@ class Repl(object):
                 else:
                     argspec = inspect.getargspec(f)
                     self.current_func = f
+                argspec = list(argspec)
+                fixlongargs(f, argspec)
                 self.argspec = [func, argspec, is_bound_method]
                 return True
 
@@ -737,13 +802,13 @@ class Repl(object):
         else:
             docstring = self.format_docstring(self.docstring, max_w - 2)
             docstring_string = ''.join(docstring)
-            rows = len(docstring) - 3
-            self.list_win.resize(rows + 2, max_w)
+            rows = len(docstring) - 1
+            self.list_win.resize(rows + 3, max_w)
 
         if down:
-            self.list_win.mvwin(y+1, 0)
+            self.list_win.mvwin(y + 1, 0)
         else:
-            self.list_win.mvwin(y-rows-2, 0)
+            self.list_win.mvwin(y - rows - 2, 0)
 
         if v_items:
             self.list_win.addstr('\n ')
