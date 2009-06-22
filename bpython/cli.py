@@ -60,8 +60,9 @@ from pygments.lexers import PythonLexer
 from pygments.token import Token
 from bpython.formatter import BPythonFormatter, Parenthesis
 
-# This for import completion
+# This for completion
 from bpython import importcompletion
+from glob import glob
 
 # This for config
 from bpython.config import Struct, loadini, migrate_rc
@@ -495,6 +496,23 @@ class Repl(object):
                 word += '('
         return word
 
+    def current_string(self):
+        """Return the current string.
+        Note: This method will not really work for multiline strings."""
+        inside_string = next_token_inside_string(self.s, self.inside_string)
+        if inside_string:
+            string = list()
+            next_char = ''
+            for (char, next_char) in zip(reversed(self.s),
+                                         reversed(self.s[:-1])):
+                if char == inside_string and next_char != '\\':
+                    return ''.join(reversed(string))
+                string.append(char)
+            else:
+                if next_char == inside_string:
+                    return ''.join(reversed(string))
+        return ''
+
     def cw(self):
         """Return the current word, i.e. the (incomplete) word directly to the
         left of the cursor"""
@@ -650,7 +668,7 @@ class Repl(object):
             self.list_win_visible = self._complete(tab)
             return
 
-    def _complete(self, unused_tab=False):
+    def _complete(self, tab=False):
         """Construct a full list of possible completions and construct and
         display them in a window. Also check if there's an available argspec
         (via the inspect module) and bang that on top of the completions too.
@@ -660,13 +678,25 @@ class Repl(object):
             self.argspec = None
 
         cw = self.cw()
-        if not (cw or self.argspec):
+        cs = self.current_string()
+        if not (cw or cs or self.argspec):
             self.scr.redrawwin()
             self.scr.refresh()
             return False
 
         if not cw:
             self.matches = []
+
+        if cs and tab:
+            self.matches = list()
+            user_dir = os.path.expanduser('~')
+            for filename in glob(os.path.expanduser(cs + '*')):
+                if os.path.isdir(filename):
+                    filename += os.path.sep
+                if cs.startswith('~'):
+                    filename = '~' + filename[len(user_dir):]
+                self.matches.append(filename)
+            return True
 
         # Check for import completion
         e = False
@@ -1531,11 +1561,11 @@ class Repl(object):
             self.print_line(self.s)
             return True
 
+        self.complete(tab=True)
         if not OPTS.auto_display_list and not self.list_win_visible:
-            self.complete(tab=True)
             return True
 
-        cw = self.cw()
+        cw = self.current_string() or self.cw()
         if not cw:
             return True
 
