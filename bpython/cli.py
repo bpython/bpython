@@ -242,11 +242,6 @@ def next_token_inside_string(s, inside_string):
                     inside_string = False
     return inside_string
 
-def clean_argspec(spec, f):
-    """Argspecs can contain eg.. "foo=os.environ", so display that as it is in
-    the source as opposed to str(os.environ)"""
-
-
 class Interpreter(code.InteractiveInterpreter):
 
     def __init__(self, encoding):
