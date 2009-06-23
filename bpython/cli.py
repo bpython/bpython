@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#
+# *blush*
 # The MIT License
 #
 # Copyright (c) 2008 Bob Farrell
