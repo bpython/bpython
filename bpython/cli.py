@@ -825,7 +825,8 @@ class Repl(object):
         if self.docstring is None:
             self.list_win.resize(rows + 2, w)
         else:
-            docstring = self.format_docstring(self.docstring, max_w - 2)
+            docstring = self.format_docstring(self.docstring, max_w - 2,
+                max_h - height_offset)
             docstring_string = ''.join(docstring)
             rows = len(docstring) - 1
             self.list_win.resize(rows + 3, max_w)
@@ -869,17 +870,21 @@ class Repl(object):
         self.scr.move(*self.scr.getyx())
         self.list_win.refresh()
 
-    def format_docstring(self, docstring, width):
+    def format_docstring(self, docstring, width, height):
         """Take a string and try to format it into a sane list of strings to be
         put into the suggestion box."""
 
         lines = docstring.split('\n')
         out = []
+        i = 0
         for line in lines:
             out.append('\n')
+            i += 1
             for block in textwrap.wrap(line, width):
                 out.append('  ' + block)
-        w = self.scr.getmaxyx()[1]
+                if i >= height:
+                    return out
+                i += 1
         return out
 
     def mkargspec(self, topline, down):
