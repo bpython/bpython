@@ -740,7 +740,12 @@ class Repl(object):
             self.tab()
             return False
 
-        self.show_list(self.matches, self.argspec)
+        try:
+            self.show_list(self.matches, self.argspec)
+        except curses.error:
+            # XXX: This is a massive hack, it will go away when I get
+            # cusswords into a good enough state that we can start using it.
+            return False
         return True
 
     def show_list(self, items, topline=None):
