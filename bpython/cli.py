@@ -1969,7 +1969,7 @@ def init_wins(scr, cols):
 
 # TODO:
 # 
-# This should show to be configured keys from bpython.ini
+# This should show to be configured keys from ~/.bpython/config
 # 
     statusbar = Statusbar(scr, main_win,
         ".:: <C-d> Exit  <C-r> Rewind  <%s> Save  <%s> Pastebin ::." % (OPTS.save_key, OPTS.pastebin_key),
@@ -2130,7 +2130,7 @@ def main(args=None):
                                 'NOTE: If bpython sees an argument it does '
                                  'not know, execution falls back to the '
                                  'regular Python interpreter.')
-    parser.add_option('--config', '-c', default='~/.bpython.ini',
+    parser.add_option('--config', '-c', default='~/.bpython/config',
                       help='use CONFIG instead of default config file')
     parser.add_option('--interactive', '-i', action='store_true',
                       help='Drop to bpython shell after running file '
