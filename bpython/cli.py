@@ -745,6 +745,8 @@ class Repl(object):
         except curses.error:
             # XXX: This is a massive hack, it will go away when I get
             # cusswords into a good enough state that we can start using it.
+            self.list_win.border()
+            self.list_win.refresh()
             return False
         return True
 
