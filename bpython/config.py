@@ -3,6 +3,7 @@ import sys
 from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 from itertools import chain
 from bpython.keys import key_dispatch
+import errno
 
 class Struct(object):
     """Simple class for instantiating objects we can add arbitrary attributes
@@ -13,6 +14,9 @@ class Struct(object):
 class CP(ConfigParser):
     def safeget(self, section, option, default):
         """safet get method using default values"""
+        bools_t = ['true', 'yes', 'y', 'on']
+        bools_f = ['false', 'no', 'n', 'off']
+
         try:
             v = self.get(section, option)
         except NoSectionError:
@@ -22,6 +26,13 @@ class CP(ConfigParser):
         if isinstance(v, bool):
             return v
         try:
+            if v.lower() in bools_t:
+                return True
+            if v.lower() in bools_f:
+                return False
+        except AttributeError:
+            pass
+        try:
             return int(v)
         except ValueError:
             return v
@@ -30,10 +41,15 @@ class CP(ConfigParser):
 def loadini(struct, configfile):
     """Loads .ini configuration file and stores its values in struct"""
 
-    configfile = os.path.expanduser(configfile)
+    config_path = os.path.expanduser(configfile)
+    if not os.path.isfile(config_path) and configfile == '~/.bpython/config':
+        # FIXME: I decided ~/.bpython.ini was a crappy place for a config file,
+        # so this is just a fallback if the default is passed - remove this
+        # eventually please.
+        config_path = os.path.expanduser('~/.bpython.ini')
 
     config = CP()
-    config.read(configfile)
+    config.read(config_path)
 
     struct.tab_length = config.safeget('general', 'tab_length', 4)
     struct.auto_display_list = config.safeget('general', 'auto_display_list',
@@ -66,7 +82,7 @@ def loadini(struct, configfile):
         }
     else:
         path = os.path.expanduser('~/.bpython/%s.theme' % (color_scheme_name,))
-        load_theme(struct, path, configfile)
+        load_theme(struct, path, config_path)
 
 
     # checks for valid key configuration this part still sucks
@@ -130,12 +146,19 @@ def migrate_rc(path):
                     v = bools[v.lower()]
                 config.set('general', k, v)
     f.close()
-    f = open(os.path.expanduser('~/.bpython.ini'), 'w')
+    try:
+        os.makedirs(os.path.expanduser('~/.bpython'))
+    except OSError, e:
+        if e.errno == errno.EEXIST:
+            pass
+        else:
+            raise
+    f = open(os.path.expanduser('~/.bpython/config'), 'w')
     config.write(f)
     f.close()
     os.rename(path, os.path.expanduser('~/.bpythonrc.bak'))
     print ("The configuration file for bpython has been changed. A new "
-           ".bpython.ini file has been created in your home directory.")
+           "config file has been created as ~/.bpython/config")
     print ("The existing .bpythonrc file has been renamed to .bpythonrc.bak "
            "and it can be removed.")
     print "Press enter to continue."
