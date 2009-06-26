@@ -2176,6 +2176,7 @@ def main(args=None):
 # I don't know why this is necessary; without it the wrapper doesn't always do
 # its job.
         if stdscr is not None:
+            stdscr.clear()
             stdscr.keypad(0)
             curses.echo()
             curses.nocbreak()
