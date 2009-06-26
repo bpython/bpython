@@ -2120,7 +2120,9 @@ def main_curses(scr, args, interactive=True):
             hfile.writelines(repl.rl_hist[-OPTS.hist_length:])
 
     main_win.erase()
-    statusbar.win.erase()
+    main_win.refresh()
+    statusbar.win.clear()
+    statusbar.win.refresh()
     return repl.getstdout()
 
 
@@ -2178,8 +2180,7 @@ def main(args=None):
 # I don't know why this is necessary; without it the wrapper doesn't always do
 # its job.
         if stdscr is not None:
-            stdscr.erase()
-            curses.doupdate()
+            stdscr.clear()
             stdscr.keypad(0)
             curses.echo()
             curses.nocbreak()
