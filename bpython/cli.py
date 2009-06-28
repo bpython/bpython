@@ -122,6 +122,9 @@ def fixlongargs(f, argspec):
     whose str() is too big will cause breakage, so we swap out the object
     itself with the name it was referenced with in the source by parsing the
     source itself !"""
+    if argspec[3] is None:
+        # No keyword args, no need to do anything
+        return
     values = list(argspec[3])
     if not values:
         return
