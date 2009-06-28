@@ -575,7 +575,8 @@ class Repl(object):
                 else:
                     self.current_func = f
 
-            is_bound_method = inspect.ismethod(f) and f.im_self is not None
+            is_bound_method = (inspect.isclass(f) or
+                               (inspect.ismethod(f) and f.im_self is not None))
             try:
                 if inspect.isclass(f):
                     self.current_func = f
