@@ -24,6 +24,7 @@
 # Pygments really kicks ass, it made it really easy to
 # get the exact behaviour I wanted, thanks Pygments.:)
 
+import curses
 from pygments.formatter import Formatter
 from pygments.token import Keyword, Name, Comment, String, Error, \
      Number, Operator, Generic, Token, Whitespace, Literal, Punctuation
@@ -70,6 +71,7 @@ theme_map = {
     Token: 'token',
     Whitespace: 'background',
     Parenthesis: 'punctuation',
+    Parenthesis.UnderCursor: 'operator'
 }
 
 
@@ -99,9 +101,13 @@ class BPythonFormatter(Formatter):
 
     def format(self, tokensource, outfile):
         o = ''
+        curses.curs_set(1)
         for token, text in tokensource:
             if text == '\n':
                 continue
+
+            if token is Parenthesis.UnderCorsor:
+                curses.curs_set(0)
 
             if token in self.f_strings:
                 o +=  "%s\x03%s\x04" % (self.f_strings[token], text )

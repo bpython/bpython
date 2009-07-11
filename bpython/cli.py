@@ -1671,7 +1671,7 @@ class Repl(object):
                 if token is Token.Punctuation:
                     if value in '({[':
                         if under_cursor:
-                            tokens[i] = (Parenthesis, value)
+                            tokens[i] = (Parenthesis.UnderCursor, value)
                             # Push marker on the stack
                             stack.append(Parenthesis)
                         else:
@@ -1688,7 +1688,7 @@ class Repl(object):
                             tokens[i] = (Parenthesis, value)
                             break
                         elif under_cursor:
-                            tokens[i] = (Parenthesis, value)
+                            tokens[i] = (Parenthesis.UnderCursor, value)
                             (line, i, opening) = opening
                             screen_line = y - len(self.buffer) + line
                             if line == len(self.buffer):
