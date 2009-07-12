@@ -1656,9 +1656,10 @@ class Repl(object):
                 self.scr.move(lineno, 4)
                 map(self.echo, o.split('\x04'))
 
-            y, x = self.scr.getyx()
+            y = self.scr.getyx()[0]
+            x = self.ix + len(s) - self.cpos
             if not self.cpos:
-                x += 1
+                x -= 1
             if self.highlighted_paren:
                 # Clear previous highlighted paren
                 reprint_line(*self.highlighted_paren)
@@ -1690,7 +1691,15 @@ class Repl(object):
                             tokens[i] = (Parenthesis, value)
                             break
                         elif under_cursor:
-                            tokens[i] = (Parenthesis.UnderCursor, value)
+                            if self.cpos:
+                                tokens[i] = (Parenthesis.UnderCursor, value)
+                            else:
+                                # The cursor is at the end of line and
+                                # next to the paren, so it doesn't reverse
+                                # the paren. Therefore, we insert the
+                                # Parenthesis token here instead of the
+                                # Parenthesis.UnderCursor token.
+                                tokens[i] = (Parenthesis, value)
                             (line, i, opening) = opening
                             screen_line = y - len(self.buffer) + line
                             if line == len(self.buffer):
