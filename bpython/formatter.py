@@ -93,7 +93,7 @@ class BPythonFormatter(Formatter):
         if not self.f_strings:
             for k, v in theme_map.iteritems():
                 self.f_strings[k] = '\x01%s' % (color_scheme[v],)
-                if k is Parenthesis:
+                if k is Parenthesis or k is Parenthesis.UnderCursor:
                     # FIXME: Find a way to make this the inverse of the current
                     # background colour
                     self.f_strings[k] += 'I'
@@ -106,7 +106,7 @@ class BPythonFormatter(Formatter):
             if text == '\n':
                 continue
 
-            if token is Parenthesis.UnderCorsor:
+            if token is Parenthesis.UnderCursor:
                 curses.curs_set(0)
 
             if token in self.f_strings:
