@@ -1500,9 +1500,13 @@ class Repl(object):
 
         elif self.c in ("KEY_HOME", '^A', chr(1)): # home or ^A
             self.home()
+            # Redraw (as there might have been highlighted parens)
+            self.print_line(self.s)
 
         elif self.c in ("KEY_END", '^E', chr(5)): # end or ^E
             self.end()
+            # Redraw (as there might have been highlighted parens)
+            self.print_line(self.s)
 
         elif self.c in key_dispatch['C-k']: # cut to buffer
             self.cut_to_buffer()
