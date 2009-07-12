@@ -1657,6 +1657,8 @@ class Repl(object):
                 map(self.echo, o.split('\x04'))
 
             y, x = self.scr.getyx()
+            if not self.cpos:
+                x += 1
             if self.highlighted_paren:
                 # Clear previous highlighted paren
                 reprint_line(*self.highlighted_paren)
