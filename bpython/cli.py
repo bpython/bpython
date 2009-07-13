@@ -1474,6 +1474,8 @@ class Repl(object):
         elif self.c == 'KEY_DC': # Del
             self.delete()
             self.complete()
+            # Redraw (as there might have been highlighted parens)
+            self.print_line(self.s)
             return ''
 
         elif self.c in key_dispatch['C-r']: # C-r
@@ -1672,29 +1674,38 @@ class Repl(object):
             source = '\n'.join(self.buffer) + '\n%s' % (s, )
             i = line = 0
             pos = 3
+            parens = dict(zip('{([', '})]'))
             for (token, value) in PythonLexer().get_tokens(source):
                 pos += len(value)
                 under_cursor = (line == len(self.buffer) and pos == x)
                 if token is Token.Punctuation:
-                    if value in '({[':
+                    if value in parens:
                         if under_cursor:
                             tokens[i] = (Parenthesis.UnderCursor, value)
                             # Push marker on the stack
-                            stack.append(Parenthesis)
+                            stack.append((Parenthesis, value))
                         else:
                             stack.append((line, i, value))
-                    elif value in ')}]':
+                    elif value in parens.itervalues():
+                        saved_stack = list(stack)
                         try:
-                            opening = stack.pop()
+                            while True:
+                                opening = stack.pop()
+                                if parens[opening[-1]] == value:
+                                    break
                         except IndexError:
                             # SyntaxError.. more closed parentheses than
-                            # opened
-                            break
-                        if opening is Parenthesis:
+                            # opened or a wrong closing paren
+                            if not saved_stack:
+                                break
+                            else:
+                                opening = None
+                                stack = saved_stack
+                        if opening and opening[0] is Parenthesis:
                             # Marker found
                             tokens[i] = (Parenthesis, value)
                             break
-                        elif under_cursor:
+                        elif opening and under_cursor:
                             if self.cpos:
                                 tokens[i] = (Parenthesis.UnderCursor, value)
                             else:
