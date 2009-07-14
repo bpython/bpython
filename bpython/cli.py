@@ -248,7 +248,7 @@ def next_token_inside_string(s, inside_string):
 
 class Interpreter(code.InteractiveInterpreter):
 
-    def __init__(self, encoding):
+    def __init__(self, locals=None, encoding=sys.getdefaultencoding()):
         """The syntaxerror callback can be set at any time and will be called
         on a caught syntax error. The purpose for this in bpython is so that
         the repl can be instantiated after the interpreter (which it
@@ -260,7 +260,7 @@ class Interpreter(code.InteractiveInterpreter):
         self.encoding = encoding
         self.syntaxerror_callback = None
 # Unfortunately code.InteractiveInterpreter is a classic class, so no super()
-        code.InteractiveInterpreter.__init__(self)
+        code.InteractiveInterpreter.__init__(self, locals)
 
     def runsource(self, source):
         source = '# coding: %s\n%s' % (self.encoding,
@@ -2122,7 +2122,8 @@ def main_curses(scr, args, interactive=True):
 
     curses.raw(True)
 
-    interpreter = Interpreter(getpreferredencoding())
+    interpreter = Interpreter(dict(__name__='__main__', __doc__=None),
+                              getpreferredencoding())
 
     repl = Repl(main_win, interpreter, statusbar, idle)
     interpreter.syntaxerror_callback = repl.clear_current_line
