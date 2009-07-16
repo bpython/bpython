@@ -1705,7 +1705,7 @@ class Repl(object):
                             # Marker found
                             tokens[i] = (Parenthesis, value)
                             break
-                        elif opening and under_cursor:
+                        elif opening and under_cursor and not newline:
                             if self.cpos:
                                 tokens[i] = (Parenthesis.UnderCursor, value)
                             else:
