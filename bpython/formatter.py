@@ -101,7 +101,13 @@ class BPythonFormatter(Formatter):
 
     def format(self, tokensource, outfile):
         o = ''
-        curses.curs_set(1)
+
+        try:
+            curses.curs_set(1)
+        except curses.error:
+            # We are in a sucky terminal emulator that does not support it.
+            pass
+
         for token, text in tokensource:
             if text == '\n':
                 continue
