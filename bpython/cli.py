@@ -1231,6 +1231,8 @@ class Repl(object):
             if inp:
                 self.rl_hist.append(inp + '\n')
             more = self.push(inp) or self.paste_mode
+            if not more:
+                self.s = ''
 
     def size(self):
         """Set instance attributes for x and y top left corner coordinates
@@ -1705,7 +1707,7 @@ class Repl(object):
                             # Marker found
                             tokens[i] = (Parenthesis, value)
                             break
-                        elif opening and under_cursor:
+                        elif opening and under_cursor and not newline:
                             if self.cpos:
                                 tokens[i] = (Parenthesis.UnderCursor, value)
                             else:
