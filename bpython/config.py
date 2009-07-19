@@ -61,6 +61,16 @@ def loadini(struct, configfile):
     struct.flush_output = config.safeget('general', 'flush_output', True)
     struct.pastebin_key = config.safeget('keyboard', 'pastebin', 'F8')
     struct.save_key = config.safeget('keyboard', 'save', 'C-s')
+    struct.undo_key = config.safeget('keyboard', 'undo', 'C-r')
+    struct.up_one_line_key = config.safeget('keyboard', 'up_one_line', 'C-p')
+    struct.down_one_line_key = config.safeget('keyboard', 'down_one_line', 'C-n')
+    struct.cut_to_buffer_key = config.safeget('keyboard', 'cut_to_buffer', 'C-k')
+    struct.yank_from_buffer_key = config.safeget('keybard', 'yank_from_buffer', 'C-y')
+    struct.clear_word_key = config.safeget('keyboard', 'clear_word', 'C-w')
+    struct.clear_line_key = config.safeget('keyboard', 'clear_line', 'C-u')
+    struct.clear_screen_key = config.safeget('keyboard', 'clear_screen', 'C-l')
+    struct.exit_key = config.safeget('keyboard', 'exit', 'C-d')
+ 
     color_scheme_name = config.safeget('general', 'color_scheme', 'default')
 
     if color_scheme_name == 'default':
