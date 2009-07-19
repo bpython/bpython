@@ -1480,15 +1480,15 @@ class Repl(object):
             self.print_line(self.s)
             return ''
 
-        elif self.c in key_dispatch['C-r']: # C-r
+        elif self.c in key_dispatch[OPTS.undo_key]: # C-r
             self.undo()
             return ''
 
-        elif self.c in ('KEY_UP', ) + key_dispatch['C-p']: # Cursor Up/C-p
+        elif self.c in ('KEY_UP', ) + key_dispatch[OPTS.up_one_line_key]: # Cursor Up/C-p
             self.back()
             return ''
 
-        elif self.c in ('KEY_DOWN', ) + key_dispatch['C-n']: # Cursor Down/C-n
+        elif self.c in ('KEY_DOWN', ) + key_dispatch[OPTS.down_one_line_key]: # Cursor Down/C-n
             self.fwd()
             return ''
 
@@ -1512,30 +1512,30 @@ class Repl(object):
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif self.c in key_dispatch['C-k']: # cut to buffer
+        elif self.c in key_dispatch[OPTS.cut_to_buffer_key]: # cut to buffer
             self.cut_to_buffer()
             return ''
 
-        elif self.c in key_dispatch['C-y']: # yank from buffer
+        elif self.c in key_dispatch[OPTS.yank_from_buffer_key]: # yank from buffer
             self.yank_from_buffer()
             return ''
 
-        elif self.c in key_dispatch['C-w']: 
+        elif self.c in key_dispatch[OPTS.clear_word_key]: 
             self.bs_word()
             self.complete()
             return ''
 
-        elif self.c in key_dispatch['C-u']:
+        elif self.c in key_dispatch[OPTS.clear_line_key]:
             self.clrtobol()
             return ''
 
-        elif self.c in key_dispatch['C-l']: 
+        elif self.c in key_dispatch[OPTS.clear_screen_key]: 
             self.s_hist = [self.s_hist[-1]]
             self.highlighted_paren = None
             self.redraw()
             return ''
 
-        elif self.c in key_dispatch['C-d']: 
+        elif self.c in key_dispatch[OPTS.exit_key]: 
             if not self.s:
                 self.do_exit = True
                 return None
