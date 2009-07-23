@@ -1080,6 +1080,8 @@ class Repl(object):
 
         self.history = self.history[:-n]
         self.reevaluate()
+        # This will unhighlight highlighted parens
+        self.print_line(self.s)
 
     def enter_hist(self):
         """Set flags for entering into the history by pressing up/down"""
