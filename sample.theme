@@ -19,7 +19,7 @@ token = C
 [interface]
 # XXX: gnome-terminal appears to be braindead. The cursor will disappear unless
 # you set the background colour to "d".
-background = k
+background = d
 output = w
 main = c
 prompt = c
