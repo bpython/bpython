@@ -84,7 +84,7 @@ def loadini(struct, configfile):
             'operator': 'Y',
             'punctuation': 'y',
             'token': 'C',
-            'background': 'k',
+            'background': 'd',
             'output': 'w',
             'main': 'c',
             'prompt': 'c',
