@@ -248,7 +248,7 @@ def next_token_inside_string(s, inside_string):
 
 class Interpreter(code.InteractiveInterpreter):
 
-    def __init__(self, locals=None, encoding=sys.getdefaultencoding()):
+    def __init__(self, encoding):
         """The syntaxerror callback can be set at any time and will be called
         on a caught syntax error. The purpose for this in bpython is so that
         the repl can be instantiated after the interpreter (which it
@@ -260,7 +260,7 @@ class Interpreter(code.InteractiveInterpreter):
         self.encoding = encoding
         self.syntaxerror_callback = None
 # Unfortunately code.InteractiveInterpreter is a classic class, so no super()
-        code.InteractiveInterpreter.__init__(self, locals)
+        code.InteractiveInterpreter.__init__(self)
 
     def runsource(self, source):
         source = '# coding: %s\n%s' % (self.encoding,
@@ -1080,8 +1080,6 @@ class Repl(object):
 
         self.history = self.history[:-n]
         self.reevaluate()
-        # This will unhighlight highlighted parens
-        self.print_line(self.s)
 
     def enter_hist(self):
         """Set flags for entering into the history by pressing up/down"""
@@ -1233,8 +1231,6 @@ class Repl(object):
             if inp:
                 self.rl_hist.append(inp + '\n')
             more = self.push(inp) or self.paste_mode
-            if not more:
-                self.s = ''
 
     def size(self):
         """Set instance attributes for x and y top left corner coordinates
@@ -1478,19 +1474,17 @@ class Repl(object):
         elif self.c == 'KEY_DC': # Del
             self.delete()
             self.complete()
-            # Redraw (as there might have been highlighted parens)
-            self.print_line(self.s)
             return ''
 
-        elif self.c in key_dispatch[OPTS.undo_key]: # C-r
+        elif self.c in key_dispatch['C-r']: # C-r
             self.undo()
             return ''
 
-        elif self.c in ('KEY_UP', ) + key_dispatch[OPTS.up_one_line_key]: # Cursor Up/C-p
+        elif self.c in ('KEY_UP', ) + key_dispatch['C-p']: # Cursor Up/C-p
             self.back()
             return ''
 
-        elif self.c in ('KEY_DOWN', ) + key_dispatch[OPTS.down_one_line_key]: # Cursor Down/C-n
+        elif self.c in ('KEY_DOWN', ) + key_dispatch['C-n']: # Cursor Down/C-n
             self.fwd()
             return ''
 
@@ -1514,30 +1508,30 @@ class Repl(object):
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif self.c in key_dispatch[OPTS.cut_to_buffer_key]: # cut to buffer
+        elif self.c in key_dispatch['C-k']: # cut to buffer
             self.cut_to_buffer()
             return ''
 
-        elif self.c in key_dispatch[OPTS.yank_from_buffer_key]: # yank from buffer
+        elif self.c in key_dispatch['C-y']: # yank from buffer
             self.yank_from_buffer()
             return ''
 
-        elif self.c in key_dispatch[OPTS.clear_word_key]: 
+        elif self.c in key_dispatch['C-w']: 
             self.bs_word()
             self.complete()
             return ''
 
-        elif self.c in key_dispatch[OPTS.clear_line_key]:
+        elif self.c in key_dispatch['C-u']:
             self.clrtobol()
             return ''
 
-        elif self.c in key_dispatch[OPTS.clear_screen_key]: 
+        elif self.c in key_dispatch['C-l']: 
             self.s_hist = [self.s_hist[-1]]
             self.highlighted_paren = None
             self.redraw()
             return ''
 
-        elif self.c in key_dispatch[OPTS.exit_key]: 
+        elif self.c in key_dispatch['C-d']: 
             if not self.s:
                 self.do_exit = True
                 return None
@@ -1709,7 +1703,7 @@ class Repl(object):
                             # Marker found
                             tokens[i] = (Parenthesis, value)
                             break
-                        elif opening and under_cursor and not newline:
+                        elif opening and under_cursor:
                             if self.cpos:
                                 tokens[i] = (Parenthesis.UnderCursor, value)
                             else:
@@ -2126,8 +2120,7 @@ def main_curses(scr, args, interactive=True):
 
     curses.raw(True)
 
-    interpreter = Interpreter(dict(__name__='__main__', __doc__=None),
-                              getpreferredencoding())
+    interpreter = Interpreter(getpreferredencoding())
 
     repl = Repl(main_win, interpreter, statusbar, idle)
     interpreter.syntaxerror_callback = repl.clear_current_line
