@@ -1,3 +1,22 @@
+v0.9.4
+======
+
+Fixed issues:
+#36 when typing a float literal bpython autocompletes int methods
+#40 Autocompletion for file names
+#27 Indenting doesn't reset
+
+bpython configuration has moved from ~/.bpython.ini to ~/.bpython/config (currently
+still supporting fallback)
+
+leftovers of statusbar when exiting bpython cleaned up
+
+bpython now does not crash when a 'popup' goes out of window bounds
+
+numerous fixes and improvements to parentheses highlighting
+
+made *all* keys configurable (except for arrow keys/pgup/pgdown)
+
 v0.9.3
 ======
 
