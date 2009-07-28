@@ -96,6 +96,9 @@ def parsekeywordpairs(signature):
                 parendepth += 1
             elif value == u')' and parendepth:
                 parendepth -= 1
+            elif value == ':':
+                # End of signature reached
+                break
 
         if parendepth:
             substack.append(value)
@@ -133,7 +136,7 @@ def fixlongargs(f, argspec):
         src = inspect.getsourcelines(f)
     except IOError:
         return
-    signature = src[0][0]
+    signature = ''.join(src[0])
     kwparsed = parsekeywordpairs(signature)
 
     for i, (key, value) in enumerate(zip(keys, values)):
