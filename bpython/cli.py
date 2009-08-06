@@ -1562,8 +1562,7 @@ class Repl(object):
         elif self.c == '\t':
             return self.tab()
 
-        elif (not self.c.startswith('KEY_')
-              and not unicodedata.category(self.c) == 'Cc'):
+        elif len(self.c) == 1 and not unicodedata.category(self.c) == 'Cc':
             self.addstr(self.c)
             self.print_line(self.s)
 
