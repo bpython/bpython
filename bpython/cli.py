@@ -79,6 +79,23 @@ def log(x):
 orig_stdout = sys.__stdout__
 stdscr = None
 
+
+def calculate_screen_lines(tokens, width, cursor=0):
+    """Given a stream of tokens and a screen width plus an optional
+    initial cursor position, return the amount of needed lines on the
+    screen."""
+    lines = 1
+    pos = cursor
+    for (token, value) in tokens:
+        if token is Token.Text and value == '\n':
+            lines += 1
+        else:
+            pos += len(value)
+            lines += pos // width
+            pos %= width
+    return lines
+
+
 def parsekeywordpairs(signature):
     tokens = PythonLexer().get_tokens(signature)
     stack = []
@@ -1672,17 +1689,23 @@ class Repl(object):
             x = self.ix + len(s) - self.cpos
             if not self.cpos:
                 x -= 1
+            max_x = self.scr.getmaxyx()[1]
             if self.highlighted_paren:
                 # Clear previous highlighted paren
                 reprint_line(*self.highlighted_paren)
                 self.highlighted_paren = None
             stack = list()
             source = '\n'.join(self.buffer) + '\n%s' % (s, )
-            i = line = 0
-            pos = 3
+            all_tokens = list(PythonLexer().get_tokens(source))
+            screen_lines = calculate_screen_lines(all_tokens, max_x, 3) - 1
+            i = line = real_line = 0
+            real_pos = pos = 3
             parens = dict(zip('{([', '})]'))
-            for (token, value) in PythonLexer().get_tokens(source):
+            for (token, value) in all_tokens:
                 pos += len(value)
+                if real_pos + len(value) > max_x:
+                    real_line += (real_pos + len(value)) // max_x
+                    real_pos %= max_x
                 under_cursor = (line == len(self.buffer) and pos == x)
                 if token is Token.Punctuation:
                     if value in parens:
@@ -1691,7 +1714,7 @@ class Repl(object):
                             # Push marker on the stack
                             stack.append((Parenthesis, value))
                         else:
-                            stack.append((line, i, value))
+                            stack.append((real_line, i, value))
                     elif value in parens.itervalues():
                         saved_stack = list(stack)
                         try:
@@ -1722,7 +1745,7 @@ class Repl(object):
                                 # Parenthesis.UnderCursor token.
                                 tokens[i] = (Parenthesis, value)
                             (line, i, opening) = opening
-                            screen_line = y - len(self.buffer) + line
+                            screen_line = y - screen_lines + line + 1
                             if line == len(self.buffer):
                                 self.highlighted_paren = (screen_line, s)
                                 tokens[i] = (Parenthesis, opening)
@@ -1741,6 +1764,7 @@ class Repl(object):
                     break
                 elif token is Token.Text and value == '\n':
                     line += 1
+                    real_line += 1
                     i = -1
                     pos = 3
                 i += 1
