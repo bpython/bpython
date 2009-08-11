@@ -181,17 +181,21 @@ class FakeStdin(object):
         only one I've done anything with. The others are just there in case
         someone does something weird to stop it from blowing up."""
 
+        curses.raw(True)
         buffer = ''
-        while True:
-            key = self.interface.get_key()
-            sys.stdout.write(key)
+        try:
+            while True:
+                key = self.interface.get_key()
+                sys.stdout.write(key)
 # Include the \n in the buffer - raw_input() seems to deal with trailing
 # linebreaks and will break if it gets an empty string.
-            buffer += key
-            if key == '\n':
-                break
+                buffer += key
+                if key == '\n':
+                    break
+        finally:
+            curses.raw(False)
 
-        return buffer
+        return buffer.encode(getpreferredencoding())
 
     def read(self, x):
         pass
