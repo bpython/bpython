@@ -186,6 +186,15 @@ class FakeStdin(object):
         try:
             while True:
                 key = self.interface.get_key()
+                if key in [curses.erasechar(), 'KEY_BACKSPACE']:
+                    buffer = buffer[:-1]
+                    y, x = self.interface.scr.getyx()
+                    if x:
+                        self.interface.scr.delch(y, x - 1)
+                    continue
+                elif (key != '\n' and 
+                    (len(key) > 1 or unicodedata.category(key) == 'Cc')):
+                    continue
                 sys.stdout.write(key)
 # Include the \n in the buffer - raw_input() seems to deal with trailing
 # linebreaks and will break if it gets an empty string.
