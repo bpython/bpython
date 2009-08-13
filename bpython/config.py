@@ -70,6 +70,7 @@ def loadini(struct, configfile):
     struct.clear_line_key = config.safeget('keyboard', 'clear_line', 'C-u')
     struct.clear_screen_key = config.safeget('keyboard', 'clear_screen', 'C-l')
     struct.exit_key = config.safeget('keyboard', 'exit', 'C-d')
+    struct.last_output_key = config.safeget('keyboard', 'last_output', 'F9')
  
     color_scheme_name = config.safeget('general', 'color_scheme', 'default')
 

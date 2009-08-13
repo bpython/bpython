@@ -71,6 +71,7 @@ from bpython.config import Struct, loadini, migrate_rc
 from bpython.keys import key_dispatch
 
 from bpython import __version__
+from bpython.pager import page
 
 def log(x):
     f = open('/tmp/bpython.log', 'a')
@@ -481,6 +482,7 @@ class Repl(object):
         self.paste_mode = False
         self.last_key_press = time.time()
         self.paste_time = 0.02
+        self.prev_block_finished = 0
         sys.path.insert(0, '.')
 
         if not OPTS.arg_spec:
@@ -1265,8 +1267,10 @@ class Repl(object):
 # Keep two copies so you can go up and down in the hist:
             if inp:
                 self.rl_hist.append(inp + '\n')
+            stdout_position = len(self.stdout_hist)
             more = self.push(inp) or self.paste_mode
             if not more:
+                self.prev_block_finished = stdout_position
                 self.s = ''
 
     def size(self):
@@ -1583,6 +1587,10 @@ class Repl(object):
 
         elif self.c in key_dispatch[OPTS.pastebin_key]:
             self.pastebin()
+            return ''
+
+        elif self.c in key_dispatch[OPTS.last_output_key]:
+            page(self.stdout_hist[self.prev_block_finished:-4])
             return ''
 
         elif self.c == '\n':
