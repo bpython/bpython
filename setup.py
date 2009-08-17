@@ -1,14 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup
+
 import glob
 import os
 import platform
 import re
 import sys
+try:
+    from setuptools import setup
+    using_setuptools = True
+except ImportError:
+    from distutils.core import setup
+    using_setuptools = False
+
+try:
+    from distutils.command.build_py import build_py_2to3 as build_py
+except ImportError:
+    from distutils.command.build_py import build_py
 
 from bpython import __version__
+
 
 if platform.system() == 'FreeBSD':
     man_dir = 'man'
@@ -38,7 +50,9 @@ setup(
         'console_scripts': [
             'bpython = bpython.cli:main',
         ],
-    }
+    },
+    scripts = ([] if using_setuptools else ['data/bpython']),
+    cmdclass=dict(build_py=build_py)
 )
 
 # vim: encoding=utf-8 sw=4 ts=4 sts=4 ai et sta

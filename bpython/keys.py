@@ -41,8 +41,9 @@ class KeyMap:
 key_dispatch = KeyMap()
 
 # fill dispatch with letters
-for c in string.lowercase:
-    key_dispatch['C-%s' % c] = (chr(string.lowercase.index(c)+1), '^%s' % c.upper())
+for c in string.ascii_lowercase:
+    key_dispatch['C-%s' % c] = (chr(string.ascii_lowercase.index(c)+1),
+                                '^%s' % c.upper())
 
 # fill dispatch with cool characters
 key_dispatch['C-['] = (chr(27), '^[')
