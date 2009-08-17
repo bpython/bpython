@@ -1370,6 +1370,8 @@ class Repl(object):
                     a = a | curses.A_BOLD
         s = s.replace('\x03', '')
         s = s.replace('\x01', '')
+        # Replace NUL bytes, as addstr raises an exception otherwise
+        s = s.replace('\x00', '')
 
 
         self.scr.addstr(s, a)
