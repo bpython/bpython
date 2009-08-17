@@ -77,6 +77,7 @@ def log(x):
     f = open('/tmp/bpython.log', 'a')
     f.write('%s\n' % (x,))
 
+py3 = sys.version_info[0] == 3
 orig_stdout = sys.__stdout__
 stdscr = None
 
@@ -205,7 +206,10 @@ class FakeStdin(object):
         finally:
             curses.raw(False)
 
-        return buffer.encode(getpreferredencoding())
+        if py3:
+            return buffer
+        else:
+            return buffer.encode(getpreferredencoding())
 
     def read(self, x):
         pass
@@ -259,7 +263,7 @@ def make_colors():
     }
     for i in range(63):
         if i > 7:
-            j = i / 8
+            j = i // 8
         else:
             j = c[OPTS.color_scheme['background']]
         curses.init_pair(i+1, i % 8, j)
@@ -296,10 +300,11 @@ class Interpreter(code.InteractiveInterpreter):
 # Unfortunately code.InteractiveInterpreter is a classic class, so no super()
         code.InteractiveInterpreter.__init__(self, locals)
 
-    def runsource(self, source):
-        source = '# coding: %s\n%s' % (self.encoding,
-                                       source.encode(self.encoding))
-        return code.InteractiveInterpreter.runsource(self, source)
+    if not py3:
+        def runsource(self, source):
+            source = '# coding: %s\n%s' % (self.encoding,
+                                           source.encode(self.encoding))
+            return code.InteractiveInterpreter.runsource(self, source)
 
     def showsyntaxerror(self, filename=None):
         """Override the regular handler, the code's copied and pasted from
@@ -374,7 +379,7 @@ class AttrCleaner(object):
         # original methods. :-(
         # The upshot being that introspecting on an object to display its
         # attributes will avoid unwanted side-effects.
-        if type_ != types.InstanceType:
+        if py3 or type_ != types.InstanceType:
             __getattr__ = getattr(type_, '__getattr__', None)
             if __getattr__ is not None:
                 try:
@@ -795,7 +800,7 @@ class Repl(object):
         shared.wl = 0
         y, x = self.scr.getyx()
         h, w = self.scr.getmaxyx()
-        down = (y < h / 2)
+        down = (y < h // 2)
         if down:
             max_h = h - y
         else:
@@ -814,8 +819,8 @@ class Repl(object):
             wl = max(len(i) for i in v_items) + 1
             if not wl:
                 wl = 1
-            cols = ((max_w - 2) / wl) or 1
-            rows = len(v_items) / cols
+            cols = ((max_w - 2) // wl) or 1
+            rows = len(v_items) // cols
 
             if cols * rows < len(v_items):
                 rows += 1
@@ -1188,7 +1193,10 @@ class Repl(object):
 
         self.iy, self.ix = self.scr.getyx()
         for line in self.history:
-            self.stdout_hist += line.encode(getpreferredencoding()) + '\n'
+            if py3:
+                self.stdout_hist += line + '\n'
+            else:
+                self.stdout_hist += line.encode(getpreferredencoding()) + '\n'
             self.print_line(line)
             self.s_hist[-1] += self.f_string
 # I decided it was easier to just do this manually
@@ -1263,7 +1271,10 @@ class Repl(object):
             self.h_i = 0
             self.history.append(inp)
             self.s_hist[-1] += self.f_string
-            self.stdout_hist += inp.encode(getpreferredencoding()) + '\n'
+            if py3:
+                self.stdout_hist += inp + '\n'
+            else:
+                self.stdout_hist += inp.encode(getpreferredencoding()) + '\n'
 # Keep two copies so you can go up and down in the hist:
             if inp:
                 self.rl_hist.append(inp + '\n')
@@ -1303,7 +1314,7 @@ class Repl(object):
         else:
             t = s
 
-        if isinstance(t, unicode):
+        if not py3 and isinstance(t, unicode):
             t = t.encode(getpreferredencoding())
 
         if not self.stdout_hist:
@@ -1338,7 +1349,7 @@ class Repl(object):
         uses the formatting method as defined in formatter.py to parse the
         srings. It won't update the screen if it's reevaluating the code (as it
         does with undo)."""
-        if isinstance(s, unicode):
+        if not py3 and isinstance(s, unicode):
             s = s.encode(getpreferredencoding())
 
         a = get_colpair('output')
@@ -1859,7 +1870,8 @@ class Repl(object):
         while True:
             try:
                 key += self.scr.getkey()
-                key = key.decode(getpreferredencoding())
+                if not py3:
+                    key = key.decode(getpreferredencoding())
                 self.scr.nodelay(False)
             except UnicodeDecodeError:
 # Yes, that actually kind of sucks, but I don't see another way to get
