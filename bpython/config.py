@@ -160,9 +160,7 @@ def migrate_rc(path):
     try:
         os.makedirs(os.path.expanduser('~/.bpython'))
     except OSError, e:
-        if e.errno == errno.EEXIST:
-            pass
-        else:
+        if e.errno != errno.EEXIST:
             raise
     f = open(os.path.expanduser('~/.bpython/config'), 'w')
     config.write(f)
