@@ -188,12 +188,12 @@ class FakeStdin(object):
             while True:
                 key = self.interface.get_key()
                 if key in [curses.erasechar(), 'KEY_BACKSPACE']:
-                    buffer = buffer[:-1]
                     y, x = self.interface.scr.getyx()
-                    if x:
+                    if buffer:
                         self.interface.scr.delch(y, x - 1)
+                        buffer = buffer[:-1]
                     continue
-                elif (key != '\n' and 
+                elif (key != '\n' and
                     (len(key) > 1 or unicodedata.category(key) == 'Cc')):
                     continue
                 sys.stdout.write(key)
