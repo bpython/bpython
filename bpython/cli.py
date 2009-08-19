@@ -78,7 +78,6 @@ def log(x):
     f.write('%s\n' % (x,))
 
 py3 = sys.version_info[0] == 3
-orig_stdout = sys.__stdout__
 stdscr = None
 
 
@@ -2097,7 +2096,7 @@ def gethw():
 
     """
     h, w = struct.unpack(
-        "hhhh", fcntl.ioctl(orig_stdout, termios.TIOCGWINSZ, "\000"*8))[0:2]
+        "hhhh", fcntl.ioctl(sys.__stdout__, termios.TIOCGWINSZ, "\000"*8))[0:2]
     return h, w
 
 
@@ -2156,7 +2155,30 @@ def newwin(*args):
     return win
 
 
-def main_curses(scr, args, interactive=True):
+def curses_wrapper(func, *args, **kwargs):
+    """Like curses.wrapper(), but reuses stdscr when called again."""
+    global stdscr
+    if stdscr is None:
+        stdscr = curses.initscr()
+    try:
+        curses.noecho()
+        curses.cbreak()
+        stdscr.keypad(1)
+
+        try:
+            curses.start_color()
+        except curses.error:
+            pass
+
+        return func(stdscr, *args, **kwargs)
+    finally:
+        stdscr.keypad(0)
+        curses.echo()
+        curses.nocbreak()
+        curses.endwin()
+
+
+def main_curses(scr, args, interactive=True, locals_=None):
     """main function for the curses convenience wrapper
 
     Initialise the two main objects: the interpreter
@@ -2189,10 +2211,9 @@ def main_curses(scr, args, interactive=True):
     curses.raw(True)
     main_win, statusbar = init_wins(scr, cols)
 
-    curses.raw(True)
-
-    interpreter = Interpreter(dict(__name__='__main__', __doc__=None),
-                              getpreferredencoding())
+    if locals_ is None:
+        locals_ = dict(__name__='__main__', __doc__=None)
+    interpreter = Interpreter(locals_, getpreferredencoding())
 
     repl = Repl(main_win, interpreter, statusbar, idle)
     interpreter.syntaxerror_callback = repl.clear_current_line
@@ -2209,6 +2230,7 @@ def main_curses(scr, args, interactive=True):
         interpreter.runcode(code_obj)
         sys.argv = old_argv
         if not interactive:
+            curses.raw(False)
             return repl.getstdout()
 
     repl.repl()
@@ -2222,10 +2244,13 @@ def main_curses(scr, args, interactive=True):
     main_win.refresh()
     statusbar.win.clear()
     statusbar.win.refresh()
+    curses.raw(False)
     return repl.getstdout()
 
 
-def main(args=None):
+def main(args=None, locals_=None):
+    global stdscr
+
     if args is None:
         args = sys.argv[1:]
 
@@ -2238,6 +2263,8 @@ def main(args=None):
     parser.add_option('--interactive', '-i', action='store_true',
                       help='Drop to bpython shell after running file '
                            'instead of exiting')
+    parser.add_option('--quiet', '-q', action='store_true',
+                      help="Don't flush the output to stdout.")
     parser.add_option('--version', '-V', action='store_true',
                       help='print version and exit')
 
@@ -2265,33 +2292,26 @@ def main(args=None):
 
     setlocale(LC_ALL, '')
 
-    tb = None
-
     path = os.path.expanduser('~/.bpythonrc')   # migrating old configuration file
     if os.path.isfile(path):
         migrate_rc(path)
     loadini(OPTS, options.config)
 
-    try:
-        o = curses.wrapper(main_curses, exec_args, options.interactive)
-    except:
-        tb = traceback.format_exc()
-# I don't know why this is necessary; without it the wrapper doesn't always do
-# its job.
-        if stdscr is not None:
-            stdscr.clear()
-            stdscr.keypad(0)
-            curses.echo()
-            curses.nocbreak()
-            curses.endwin()
+    # Save stdin, stdout and stderr for later restoration
+    orig_stdin = sys.stdin
+    orig_stdout = sys.stdout
+    orig_stderr = sys.stderr
 
-    sys.stdout = orig_stdout
-    if tb:
-        print tb
-        sys.exit(1)
+    try:
+        o = curses_wrapper(main_curses, exec_args, options.interactive,
+                           locals_)
+    finally:
+        sys.stdin = orig_stdin
+        sys.stderr = orig_stderr
+        sys.stdout = orig_stdout
 
 # Fake stdout data so everything's still visible after exiting
-    if OPTS.flush_output:
+    if OPTS.flush_output and not options.quiet:
         sys.stdout.write(o)
     sys.stdout.flush()
 
