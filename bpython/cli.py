@@ -878,8 +878,8 @@ class Repl(object):
             docstring = self.format_docstring(self.docstring, max_w - 2,
                 max_h - height_offset)
             docstring_string = ''.join(docstring)
-            rows = len(docstring) - 1
-            self.list_win.resize(rows + 3, max_w)
+            rows += len(docstring)
+            self.list_win.resize(rows, max_w)
 
         if down:
             self.list_win.mvwin(y + 1, 0)
@@ -898,7 +898,7 @@ class Repl(object):
                 self.list_win.addstr('\n ')
 
         if self.docstring is not None:
-            self.list_win.addstr(docstring_string, get_colpair('comment'))
+            self.list_win.addstr('\n' + docstring_string, get_colpair('comment'))
 # XXX: After all the trouble I had with sizing the list box (I'm not very good
 # at that type of thing) I decided to do this bit of tidying up here just to
 # make sure there's no unnececessary blank lines, it makes things look nicer.
@@ -928,13 +928,16 @@ class Repl(object):
         out = []
         i = 0
         for line in lines:
-            out.append('\n')
             i += 1
+            if not line.strip():
+                out.append('\n')
             for block in textwrap.wrap(line, width):
-                out.append('  ' + block)
+                out.append('  ' + block + '\n')
                 if i >= height:
                     return out
                 i += 1
+        # Drop the last newline
+        out[-1] = out[-1].rstrip()
         return out
 
     def mkargspec(self, topline, down):
