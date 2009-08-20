@@ -112,19 +112,18 @@ def parsekeywordpairs(signature):
         if token is Token.Punctuation:
             if value == u'(':
                 parendepth += 1
-            elif value == u')' and parendepth:
+            elif value == u')':
                 parendepth -= 1
-            elif value == ':':
+            elif value == ':' and parendepth == -1:
                 # End of signature reached
                 break
 
-        if parendepth:
+        if parendepth > 0:
             substack.append(value)
             continue
 
-        if ((token is Token.Punctuation and value == ')')
-             or (token is Token.Punctuation and value == u',')
-             and not parendepth):
+        if (token is Token.Punctuation and
+            (value == ',' or (value == ')' and parendepth == -1))):
             stack.append(substack[:])
             del substack[:]
             continue
