@@ -738,6 +738,9 @@ class Repl(object):
 
         if OPTS.auto_display_list or tab:
             self.list_win_visible = self._complete(tab)
+            if not self.list_win_visible:
+                self.scr.redrawwin()
+                self.scr.refresh()
             return
 
     def _complete(self, tab=False):
@@ -748,18 +751,15 @@ class Repl(object):
 
         if not self.get_args():
             self.argspec = None
+        self.docstring = None
 
         cw = self.cw()
         cs = self.current_string()
-        if not (cw or cs or self.argspec):
-            self.matches_iter.update()
-            self.scr.redrawwin()
-            self.scr.refresh()
-            return False
-
         if not cw:
             self.matches = []
             self.matches_iter.update()
+        if not (cw or cs or self.argspec):
+            return False
 
         if cs and tab:
             # Filename completion
@@ -772,7 +772,11 @@ class Repl(object):
                     filename = '~' + filename[len(user_dir):]
                 self.matches.append(filename)
             self.matches_iter.update(cs, self.matches)
-            return True
+            return bool(self.matches)
+        elif cs:
+            # Do not provide suggestions inside strings, as one cannot tab
+            # them so they would be really confusing.
+            return False
 
         # Check for import completion
         e = False
@@ -780,7 +784,6 @@ class Repl(object):
         if matches is not None and not matches:
             self.matches = []
             self.matches_iter.update()
-            self.scr.redrawwin()
             return False
 
         if matches is None:
@@ -796,13 +799,10 @@ class Repl(object):
             else:
                 matches = self.completer.matches
 
-        self.docstring = None
-
         if e or not matches:
             self.matches = []
             self.matches_iter.update()
             if not self.argspec:
-                self.scr.redrawwin()
                 return False
             if self.current_func is not None:
                 self.docstring = pydoc.getdoc(self.current_func)
