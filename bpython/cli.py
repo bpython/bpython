@@ -283,6 +283,35 @@ def next_token_inside_string(s, inside_string):
                     inside_string = False
     return inside_string
 
+
+class MatchesIterator(object):
+    def __init__(self, current_word='', matches=[]):
+        self.current_word = current_word
+        self.matches = list(matches)
+        self.index = -1
+
+    def __nonzero__(self):
+        return self.index != -1
+
+    def __iter__(self):
+        return self
+
+    def current(self):
+        if self.index == -1:
+            raise ValueError('No current match.')
+        return self.matches[self.index]
+
+    def next(self):
+        self.index = (self.index + 1) % len(self.matches)
+        return self.matches[self.index]
+
+    def update(self, current_word='', matches=[]):
+        if current_word != self.current_word:
+            self.current_word = current_word
+            self.matches = list(matches)
+            self.index = -1
+
+
 class Interpreter(code.InteractiveInterpreter):
 
     def __init__(self, locals=None, encoding=sys.getdefaultencoding()):
@@ -476,6 +505,7 @@ class Repl(object):
         self.idle = idle
         self.f_string = ''
         self.matches = []
+        self.matches_iter = MatchesIterator()
         self.argspec = None
         self.s = ''
         self.inside_string = False
@@ -722,14 +752,17 @@ class Repl(object):
         cw = self.cw()
         cs = self.current_string()
         if not (cw or cs or self.argspec):
+            self.matches_iter.update()
             self.scr.redrawwin()
             self.scr.refresh()
             return False
 
         if not cw:
             self.matches = []
+            self.matches_iter.update()
 
         if cs and tab:
+            # Filename completion
             self.matches = list()
             user_dir = os.path.expanduser('~')
             for filename in glob(os.path.expanduser(cs + '*')):
@@ -738,6 +771,7 @@ class Repl(object):
                 if cs.startswith('~'):
                     filename = '~' + filename[len(user_dir):]
                 self.matches.append(filename)
+            self.matches_iter.update(cs, self.matches)
             return True
 
         # Check for import completion
@@ -745,6 +779,7 @@ class Repl(object):
         matches = importcompletion.complete(self.s, cw)
         if matches is not None and not matches:
             self.matches = []
+            self.matches_iter.update()
             self.scr.redrawwin()
             return False
 
@@ -765,6 +800,7 @@ class Repl(object):
 
         if e or not matches:
             self.matches = []
+            self.matches_iter.update()
             if not self.argspec:
                 self.scr.redrawwin()
                 return False
@@ -782,6 +818,8 @@ class Repl(object):
             self.tab()
             return False
 
+        self.matches_iter.update(cw, self.matches)
+
         try:
             self.show_list(self.matches, self.argspec)
         except curses.error:
@@ -792,7 +830,7 @@ class Repl(object):
             return False
         return True
 
-    def show_list(self, items, topline=None):
+    def show_list(self, items, topline=None, current_item=None):
         shared = Struct()
         shared.cols = 0
         shared.rows = 0
@@ -808,6 +846,8 @@ class Repl(object):
         self.list_win.erase()
         if items and '.' in items[0]:
             items = [x.rsplit('.')[-1] for x in items]
+            if current_item:
+                current_item = current_item.rsplit('.')[-1]
 
         if topline:
             height_offset = self.mkargspec(topline, down) + 1
@@ -891,7 +931,11 @@ class Repl(object):
 
         for ix, i in enumerate(v_items):
             padding = (wl - len(i)) * ' '
-            self.list_win.addstr(i + padding, get_colpair('main'))
+            if i == current_item:
+                color = get_colpair('operator')
+            else:
+                color = get_colpair('main')
+            self.list_win.addstr(i + padding, color)
             if ((cols == 1 or (ix and not (ix+1) % cols))
                     and ix + 1 < len(v_items)):
                 self.list_win.addstr('\n ')
@@ -1641,20 +1685,44 @@ class Repl(object):
             self.print_line(self.s)
             return True
 
-        self.complete(tab=True)
-        if not OPTS.auto_display_list and not self.list_win_visible:
-            return True
+        if not self.matches_iter:
+            self.complete(tab=True)
+            if not OPTS.auto_display_list and not self.list_win_visible:
+                return True
 
-        cw = self.current_string() or self.cw()
-        if not cw:
-            return True
+            cw = self.current_string() or self.cw()
+            if not cw:
+                return True
+        else:
+            cw = self.matches_iter.current_word
 
         b = os.path.commonprefix(self.matches)
         if b:
             self.s += b[len(cw):]
+            expanded = bool(b[len(cw):])
             self.print_line(self.s)
             if len(self.matches) == 1 and OPTS.auto_display_list:
                 self.scr.touchwin()
+            if expanded:
+                self.matches_iter.update(b, self.matches)
+        else:
+            expanded = False
+
+        if not expanded and self.matches:
+            if self.matches_iter:
+                self.s = self.s[:-len(self.matches_iter.current())] + cw
+            current_match = self.matches_iter.next()
+            if current_match:
+                try:
+                    self.show_list(self.matches, self.argspec, current_match)
+                except curses.error:
+                    # XXX: This is a massive hack, it will go away when I get
+                    # cusswords into a good enough state that we can start
+                    # using it.
+                    self.list_win.border()
+                    self.list_win.refresh()
+                self.s += current_match[len(cw):]
+                self.print_line(self.s, True)
         return True
 
     def atbol(self):
