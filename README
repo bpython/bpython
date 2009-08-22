@@ -106,11 +106,11 @@ as you type.
 
 Configuration
 =============
-See the sample.ini file for a list of available options.
-You should save your ini file as ~/.bpython.ini or specify
+See the sample-config file for a list of available options.
+You should save your config file as ~/.bpython/config or specify
 at the command line:
 
-bpython -c /path/to/bpython.ini
+bpython -c /path/to/bpython/config
 
 Known Bugs
 ==========
