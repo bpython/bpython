@@ -56,6 +56,7 @@ def loadini(struct, configfile):
                                               True)
     struct.syntax = config.safeget('general', 'syntax', True)
     struct.arg_spec = config.safeget('general', 'arg_spec', True)
+    struct.paste_time = config.safeget('general', 'paste_time', 0.02)
     struct.hist_file = config.safeget('general', 'hist_file', '~/.pythonhist')
     struct.hist_length = config.safeget('general', 'hist_length', 100)
     struct.flush_output = config.safeget('general', 'flush_output', True)
