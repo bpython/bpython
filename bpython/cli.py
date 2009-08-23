@@ -521,7 +521,7 @@ class Repl(object):
         if not OPTS.arg_spec:
             return
 
-        pythonhist = os.path.expanduser('~/.pythonhist')
+        pythonhist = os.path.expanduser(OPTS.hist_file)
         if os.path.exists(pythonhist):
             with codecs.open(pythonhist, 'r', getpreferredencoding(),
                              'ignore') as hfile:
@@ -2312,7 +2312,7 @@ def main_curses(scr, args, interactive=True, locals_=None):
 
     repl.repl()
     if OPTS.hist_length:
-        histfilename = os.path.expanduser('~/.pythonhist')
+        histfilename = os.path.expanduser(OPTS.hist_file)
         with codecs.open(histfilename, 'w', getpreferredencoding(),
                          'ignore') as hfile:
             hfile.writelines(repl.rl_hist[-OPTS.hist_length:])
