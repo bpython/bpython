@@ -1562,119 +1562,118 @@ class Repl(object):
         self.scr.redrawwin()
         self.scr.refresh()
 
-    def p_key(self):
+    def p_key(self, key):
         """Process a keypress"""
 
-        if self.c is None:
+        if key is None:
             return ''
 
-        if self.c == chr(8): # C-Backspace (on my computer anyway!)
+        if key == chr(8): # C-Backspace (on my computer anyway!)
             self.clrtobol()
-            self.c = '\n'
+            key = '\n'
             # Don't return; let it get handled
-        if self.c == chr(27):
+        if key == chr(27):
             return ''
 
-        if self.c in (chr(127), 'KEY_BACKSPACE'):
+        if key in (chr(127), 'KEY_BACKSPACE'):
             self.bs()
             self.complete()
             return ''
 
-        elif self.c == 'KEY_DC': # Del
+        elif key == 'KEY_DC': # Del
             self.delete()
             self.complete()
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
             return ''
 
-        elif self.c in key_dispatch[OPTS.undo_key]: # C-r
+        elif key in key_dispatch[OPTS.undo_key]: # C-r
             self.undo()
             return ''
 
-        elif self.c in ('KEY_UP', ) + key_dispatch[OPTS.up_one_line_key]: # Cursor Up/C-p
+        elif key in ('KEY_UP', ) + key_dispatch[OPTS.up_one_line_key]: # Cursor Up/C-p
             self.back()
             return ''
 
-        elif self.c in ('KEY_DOWN', ) + key_dispatch[OPTS.down_one_line_key]: # Cursor Down/C-n
+        elif key in ('KEY_DOWN', ) + key_dispatch[OPTS.down_one_line_key]: # Cursor Down/C-n
             self.fwd()
             return ''
 
-        elif self.c == 'KEY_LEFT': # Cursor Left
+        elif key == 'KEY_LEFT': # Cursor Left
             self.mvc(1)
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif self.c == 'KEY_RIGHT': # Cursor Right
+        elif key == 'KEY_RIGHT': # Cursor Right
             self.mvc(-1)
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif self.c in ("KEY_HOME", '^A', chr(1)): # home or ^A
+        elif key in ("KEY_HOME", '^A', chr(1)): # home or ^A
             self.home()
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif self.c in ("KEY_END", '^E', chr(5)): # end or ^E
+        elif key in ("KEY_END", '^E', chr(5)): # end or ^E
             self.end()
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif self.c in key_dispatch[OPTS.cut_to_buffer_key]: # cut to buffer
+        elif key in key_dispatch[OPTS.cut_to_buffer_key]: # cut to buffer
             self.cut_to_buffer()
             return ''
 
-        elif self.c in key_dispatch[OPTS.yank_from_buffer_key]: # yank from buffer
+        elif key in key_dispatch[OPTS.yank_from_buffer_key]: # yank from buffer
             self.yank_from_buffer()
             return ''
 
-        elif self.c in key_dispatch[OPTS.clear_word_key]: 
+        elif key in key_dispatch[OPTS.clear_word_key]:
             self.bs_word()
             self.complete()
             return ''
 
-        elif self.c in key_dispatch[OPTS.clear_line_key]:
+        elif key in key_dispatch[OPTS.clear_line_key]:
             self.clrtobol()
             return ''
 
-        elif self.c in key_dispatch[OPTS.clear_screen_key]: 
+        elif key in key_dispatch[OPTS.clear_screen_key]:
             self.s_hist = [self.s_hist[-1]]
             self.highlighted_paren = None
             self.redraw()
             return ''
 
-        elif self.c in key_dispatch[OPTS.exit_key]: 
+        elif key in key_dispatch[OPTS.exit_key]:
             if not self.s:
                 self.do_exit = True
                 return None
             else:
                 return ''
 
-        elif self.c in key_dispatch[OPTS.save_key]:
+        elif key in key_dispatch[OPTS.save_key]:
             self.write2file()
             return ''
 
-        elif self.c in key_dispatch[OPTS.pastebin_key]:
+        elif key in key_dispatch[OPTS.pastebin_key]:
             self.pastebin()
             return ''
 
-        elif self.c in key_dispatch[OPTS.last_output_key]:
+        elif key in key_dispatch[OPTS.last_output_key]:
             page(self.stdout_hist[self.prev_block_finished:-4])
             return ''
 
-        elif self.c == '\n':
+        elif key == '\n':
             self.lf()
             return None
 
-        elif self.c == '\t':
+        elif key == '\t':
             return self.tab()
 
-        elif len(self.c) == 1 and not unicodedata.category(self.c) == 'Cc':
-            self.addstr(self.c)
+        elif len(key) == 1 and not unicodedata.category(key) == 'Cc':
+            self.addstr(key)
             self.print_line(self.s)
 
         else:
             return ''
-
 
         return True
 
@@ -1924,19 +1923,16 @@ class Repl(object):
 
         if not self.paste_mode:
             for _ in range(indent_spaces // OPTS.tab_length):
-                self.c = '\t'
-                self.p_key()
+                self.p_key('\t')
 
         if indent and not self.paste_mode:
-            self.c = '\t'
-            self.p_key()
+            self.p_key('\t')
 
-        self.c = None
         self.cpos = 0
 
         while True:
-            self.c = self.get_key()
-            if self.p_key() is None:
+            key = self.get_key()
+            if self.p_key(key) is None:
                 return self.s
 
     def clear_current_line(self):
