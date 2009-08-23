@@ -514,7 +514,7 @@ class Repl(object):
         sys.stdin = FakeStdin(self)
         self.paste_mode = False
         self.last_key_press = time.time()
-        self.paste_time = 0.02
+        self.paste_time = float(OPTS.paste_time)
         self.prev_block_finished = 0
         sys.path.insert(0, '.')
 
