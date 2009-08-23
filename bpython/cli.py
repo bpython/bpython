@@ -1487,14 +1487,10 @@ class Repl(object):
 
         n = 1
 
-        if x == 0:
-            y -= 1
-            x = gethw()[1]
-
         # Delete following lines if the current string is greater than the
         # screen width. Curses does not handle that on its own.
         width = self.scr.getmaxyx()[1]
-        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 2):
+        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 1):
             self.scr.move(y, 0)
             self.scr.clrtoeol()
 
@@ -1549,7 +1545,7 @@ class Repl(object):
         # It seems as if curses does not handle this on its own, which
         # makes me sad.
         width = self.scr.getmaxyx()[1]
-        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 2):
+        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 1):
             self.scr.move(y, 0)
             self.scr.clrtoeol()
 
