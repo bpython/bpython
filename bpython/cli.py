@@ -1491,6 +1491,13 @@ class Repl(object):
             y -= 1
             x = gethw()[1]
 
+        # Delete following lines if the current string is greater than the
+        # screen width. Curses does not handle that on its own.
+        width = self.scr.getmaxyx()[1]
+        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 2):
+            self.scr.move(y, 0)
+            self.scr.clrtoeol()
+
         if not self.cpos:
 # I know the nested if blocks look nasty. :(
             if self.atbol() and delete_tabs:
@@ -1502,8 +1509,7 @@ class Repl(object):
         else:
             self.s = self.s[:-self.cpos-1] + self.s[-self.cpos:]
 
-        for _ in range(n):
-            self.scr.delch(y, x - n)
+        self.print_line(self.s, clr=True)
 
         return n
 
@@ -1540,6 +1546,13 @@ class Repl(object):
 
     def clrtobol(self):
         """Clear from cursor to beginning of line; usual C-u behaviour"""
+        # It seems as if curses does not handle this on its own, which
+        # makes me sad.
+        width = self.scr.getmaxyx()[1]
+        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 2):
+            self.scr.move(y, 0)
+            self.scr.clrtoeol()
+
         if not self.cpos:
             self.s = ''
         else:
@@ -1564,9 +1577,6 @@ class Repl(object):
 
         if self.c in (chr(127), 'KEY_BACKSPACE'):
             self.bs()
-            # Redraw (as there might have been highlighted parens)
-            self.print_line('')
-            self.print_line(self.s)
             self.complete()
             return ''
 
