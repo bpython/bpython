@@ -1353,7 +1353,7 @@ class Repl(object):
             if inp:
                 self.rl_hist.append(inp + '\n')
             stdout_position = len(self.stdout_hist)
-            more = self.push(inp) or self.paste_mode
+            more = self.push(inp)
             if not more:
                 self.prev_block_finished = stdout_position
                 self.s = ''
