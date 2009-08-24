@@ -171,20 +171,30 @@ class FakeStdin(object):
 
         self.encoding = getpreferredencoding()
         self.interface = interface
+        self.buffer = list()
+
+    def __iter__(self):
+        return iter(self.readlines())
 
     def isatty(self):
         return True
 
-    def readline(self):
+    def readline(self, size=-1):
         """I can't think of any reason why anything other than readline would
         be useful in the context of an interactive interpreter so this is the
         only one I've done anything with. The others are just there in case
         someone does something weird to stop it from blowing up."""
 
+        if not size:
+            return ''
+        elif self.buffer:
+            buffer = self.buffer.pop(0)
+        else:
+            buffer = ''
+
         curses.raw(True)
-        buffer = ''
         try:
-            while True:
+            while not buffer.endswith('\n'):
                 key = self.interface.get_key()
                 if key in [curses.erasechar(), 'KEY_BACKSPACE']:
                     y, x = self.interface.scr.getyx()
@@ -192,6 +202,9 @@ class FakeStdin(object):
                         self.interface.scr.delch(y, x - 1)
                         buffer = buffer[:-1]
                     continue
+                elif key == chr(4) and not buffer:
+                    # C-d
+                    return ''
                 elif (key != '\n' and
                     (len(key) > 1 or unicodedata.category(key) == 'Cc')):
                     continue
@@ -199,21 +212,37 @@ class FakeStdin(object):
 # Include the \n in the buffer - raw_input() seems to deal with trailing
 # linebreaks and will break if it gets an empty string.
                 buffer += key
-                if key == '\n':
-                    break
         finally:
             curses.raw(False)
+
+        if size > 0:
+            rest = buffer[size:]
+            if rest:
+                self.buffer.append(rest)
+            buffer = buffer[:size]
 
         if py3:
             return buffer
         else:
             return buffer.encode(getpreferredencoding())
 
-    def read(self, x):
-        pass
+    def read(self, size=None):
+        if size == 0:
+            return ''
 
-    def readlines(self, x):
-        pass
+        data = list()
+        while size is None or size > 0:
+            line = self.readline(size or -1)
+            if not line:
+                break
+            if size is not None:
+                size -= len(line)
+            data.append(line)
+
+        return ''.join(data)
+
+    def readlines(self, size=-1):
+        return list(iter(self.readline, ''))
 
 OPTS = Struct()
 DO_RESIZE = False
