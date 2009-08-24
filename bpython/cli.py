@@ -827,6 +827,10 @@ class Repl(object):
             else:
                 matches = self.completer.matches
 
+        if not e and self.argspec:
+            matches.extend(name + '=' for name in self.argspec[1][0]
+                           if name.startswith(cw))
+
         if e or not matches:
             self.matches = []
             self.matches_iter.update()
