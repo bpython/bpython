@@ -9,33 +9,14 @@ class Struct(object):
     """Simple class for instantiating objects we can add arbitrary attributes
     to and use for various arbitrary things."""
 
+def fill_config_with_default_values(config, default_values):
+    for section in default_values.iterkeys():
+        if not config.has_section(section):
+            config.add_section(section)
 
-
-class CP(ConfigParser):
-    def safeget(self, section, option, default):
-        """safet get method using default values"""
-        bools_t = ['true', 'yes', 'y', 'on']
-        bools_f = ['false', 'no', 'n', 'off']
-
-        try:
-            v = self.get(section, option)
-        except NoSectionError:
-            v = default
-        except NoOptionError:
-            v = default
-        if isinstance(v, bool):
-            return v
-        try:
-            if v.lower() in bools_t:
-                return True
-            if v.lower() in bools_f:
-                return False
-        except AttributeError:
-            pass
-        try:
-            return int(v)
-        except ValueError:
-            return v
+        for (opt, val) in default_values[section].iteritems():
+            if not config.has_option(section, opt):
+                config.set(section, opt, str(val))
 
 
 def loadini(struct, configfile):
@@ -48,32 +29,59 @@ def loadini(struct, configfile):
         # eventually please.
         config_path = os.path.expanduser('~/.bpython.ini')
 
-    config = CP()
+    config = ConfigParser()
+    fill_config_with_default_values(config, {
+        'general': {
+            'arg_spec': True,
+            'auto_display_list': True,
+            'color_scheme': 'default',
+            'flush_output': True,
+            'hist_file': '~/.pythonhist',
+            'hist_length': 100,
+            'paste_time': 0.02,
+            'syntax': True,
+            'tab_length': 4
+        },
+        'keyboard': {
+            'clear_line': 'C-u',
+            'clear_screen': 'C-l',
+            'clear_word': 'C-w',
+            'cut_to_buffer': 'C-k',
+            'down_one_line': 'C-n',
+            'exit': 'C-d',
+            'last_output': 'F9',
+            'pastebin': 'F8',
+            'save': 'C-s',
+            'undo': 'C-r',
+            'up_one_line': 'C-p',
+            'yank_from_buffer': 'C-y'
+        }
+    })
     config.read(config_path)
 
-    struct.tab_length = config.safeget('general', 'tab_length', 4)
-    struct.auto_display_list = config.safeget('general', 'auto_display_list',
-                                              True)
-    struct.syntax = config.safeget('general', 'syntax', True)
-    struct.arg_spec = config.safeget('general', 'arg_spec', True)
-    struct.paste_time = config.safeget('general', 'paste_time', 0.02)
-    struct.hist_file = config.safeget('general', 'hist_file', '~/.pythonhist')
-    struct.hist_length = config.safeget('general', 'hist_length', 100)
-    struct.flush_output = config.safeget('general', 'flush_output', True)
-    struct.pastebin_key = config.safeget('keyboard', 'pastebin', 'F8')
-    struct.save_key = config.safeget('keyboard', 'save', 'C-s')
-    struct.undo_key = config.safeget('keyboard', 'undo', 'C-r')
-    struct.up_one_line_key = config.safeget('keyboard', 'up_one_line', 'C-p')
-    struct.down_one_line_key = config.safeget('keyboard', 'down_one_line', 'C-n')
-    struct.cut_to_buffer_key = config.safeget('keyboard', 'cut_to_buffer', 'C-k')
-    struct.yank_from_buffer_key = config.safeget('keybard', 'yank_from_buffer', 'C-y')
-    struct.clear_word_key = config.safeget('keyboard', 'clear_word', 'C-w')
-    struct.clear_line_key = config.safeget('keyboard', 'clear_line', 'C-u')
-    struct.clear_screen_key = config.safeget('keyboard', 'clear_screen', 'C-l')
-    struct.exit_key = config.safeget('keyboard', 'exit', 'C-d')
-    struct.last_output_key = config.safeget('keyboard', 'last_output', 'F9')
- 
-    color_scheme_name = config.safeget('general', 'color_scheme', 'default')
+    struct.tab_length = config.getint('general', 'tab_length')
+    struct.auto_display_list = config.getboolean('general',
+                                                 'auto_display_list')
+    struct.syntax = config.getboolean('general', 'syntax')
+    struct.arg_spec = config.getboolean('general', 'arg_spec')
+    struct.paste_time = config.getfloat('general', 'paste_time')
+    struct.hist_file = config.get('general', 'hist_file')
+    struct.hist_length = config.getint('general', 'hist_length')
+    struct.flush_output = config.getboolean('general', 'flush_output')
+    struct.pastebin_key = config.get('keyboard', 'pastebin')
+    struct.save_key = config.get('keyboard', 'save')
+    struct.undo_key = config.get('keyboard', 'undo')
+    struct.up_one_line_key = config.get('keyboard', 'up_one_line')
+    struct.down_one_line_key = config.get('keyboard', 'down_one_line')
+    struct.cut_to_buffer_key = config.get('keyboard', 'cut_to_buffer')
+    struct.yank_from_buffer_key = config.get('keyboard', 'yank_from_buffer')
+    struct.clear_word_key = config.get('keyboard', 'clear_word')
+    struct.clear_line_key = config.get('keyboard', 'clear_line')
+    struct.clear_screen_key = config.get('keyboard', 'clear_screen')
+    struct.exit_key = config.get('keyboard', 'exit')
+    struct.last_output_key = config.get('keyboard', 'last_output')
+
+    color_scheme_name = config.get('general', 'color_scheme')
 
     if color_scheme_name == 'default':
         struct.color_scheme = {
@@ -102,7 +110,7 @@ def loadini(struct, configfile):
         key_dispatch[key]
 
 def load_theme(struct, path, inipath):
-    theme = CP()
+    theme = ConfigParser()
     try:
         f = open(path, 'r')
     except (IOError, OSError), e:
