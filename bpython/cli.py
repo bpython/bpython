@@ -2170,7 +2170,7 @@ def init_wins(scr, cols):
 # This should show to be configured keys from ~/.bpython/config
 # 
     statusbar = Statusbar(scr, main_win,
-        "<%s> Exit  <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Pager" % 
+        " <%s> Exit  <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager" % 
             (OPTS.exit_key, OPTS.undo_key, OPTS.save_key, OPTS.pastebin_key, 
              OPTS.last_output_key),
             get_colpair('main'))
