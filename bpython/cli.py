@@ -171,20 +171,30 @@ class FakeStdin(object):
 
         self.encoding = getpreferredencoding()
         self.interface = interface
+        self.buffer = list()
+
+    def __iter__(self):
+        return iter(self.readlines())
 
     def isatty(self):
         return True
 
-    def readline(self):
+    def readline(self, size=-1):
         """I can't think of any reason why anything other than readline would
         be useful in the context of an interactive interpreter so this is the
         only one I've done anything with. The others are just there in case
         someone does something weird to stop it from blowing up."""
 
+        if not size:
+            return ''
+        elif self.buffer:
+            buffer = self.buffer.pop(0)
+        else:
+            buffer = ''
+
         curses.raw(True)
-        buffer = ''
         try:
-            while True:
+            while not buffer.endswith('\n'):
                 key = self.interface.get_key()
                 if key in [curses.erasechar(), 'KEY_BACKSPACE']:
                     y, x = self.interface.scr.getyx()
@@ -192,6 +202,9 @@ class FakeStdin(object):
                         self.interface.scr.delch(y, x - 1)
                         buffer = buffer[:-1]
                     continue
+                elif key == chr(4) and not buffer:
+                    # C-d
+                    return ''
                 elif (key != '\n' and
                     (len(key) > 1 or unicodedata.category(key) == 'Cc')):
                     continue
@@ -199,21 +212,37 @@ class FakeStdin(object):
 # Include the \n in the buffer - raw_input() seems to deal with trailing
 # linebreaks and will break if it gets an empty string.
                 buffer += key
-                if key == '\n':
-                    break
         finally:
             curses.raw(False)
+
+        if size > 0:
+            rest = buffer[size:]
+            if rest:
+                self.buffer.append(rest)
+            buffer = buffer[:size]
 
         if py3:
             return buffer
         else:
             return buffer.encode(getpreferredencoding())
 
-    def read(self, x):
-        pass
+    def read(self, size=None):
+        if size == 0:
+            return ''
 
-    def readlines(self, x):
-        pass
+        data = list()
+        while size is None or size > 0:
+            line = self.readline(size or -1)
+            if not line:
+                break
+            if size is not None:
+                size -= len(line)
+            data.append(line)
+
+        return ''.join(data)
+
+    def readlines(self, size=-1):
+        return list(iter(self.readline, ''))
 
 OPTS = Struct()
 DO_RESIZE = False
@@ -514,7 +543,7 @@ class Repl(object):
         sys.stdin = FakeStdin(self)
         self.paste_mode = False
         self.last_key_press = time.time()
-        self.paste_time = float(OPTS.paste_time)
+        self.paste_time = OPTS.paste_time
         self.prev_block_finished = 0
         sys.path.insert(0, '.')
 
@@ -797,6 +826,10 @@ class Repl(object):
                 e = True
             else:
                 matches = self.completer.matches
+
+        if not e and self.argspec:
+            matches.extend(name + '=' for name in self.argspec[1][0]
+                           if name.startswith(cw))
 
         if e or not matches:
             self.matches = []
@@ -1324,7 +1357,7 @@ class Repl(object):
             if inp:
                 self.rl_hist.append(inp + '\n')
             stdout_position = len(self.stdout_hist)
-            more = self.push(inp) or self.paste_mode
+            more = self.push(inp)
             if not more:
                 self.prev_block_finished = stdout_position
                 self.s = ''
@@ -1487,14 +1520,10 @@ class Repl(object):
 
         n = 1
 
-        if x == 0:
-            y -= 1
-            x = gethw()[1]
-
         # Delete following lines if the current string is greater than the
         # screen width. Curses does not handle that on its own.
         width = self.scr.getmaxyx()[1]
-        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 2):
+        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 1):
             self.scr.move(y, 0)
             self.scr.clrtoeol()
 
@@ -1549,7 +1578,7 @@ class Repl(object):
         # It seems as if curses does not handle this on its own, which
         # makes me sad.
         width = self.scr.getmaxyx()[1]
-        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 2):
+        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 1):
             self.scr.move(y, 0)
             self.scr.clrtoeol()
 
@@ -1562,119 +1591,118 @@ class Repl(object):
         self.scr.redrawwin()
         self.scr.refresh()
 
-    def p_key(self):
+    def p_key(self, key):
         """Process a keypress"""
 
-        if self.c is None:
+        if key is None:
             return ''
 
-        if self.c == chr(8): # C-Backspace (on my computer anyway!)
+        if key == chr(8): # C-Backspace (on my computer anyway!)
             self.clrtobol()
-            self.c = '\n'
+            key = '\n'
             # Don't return; let it get handled
-        if self.c == chr(27):
+        if key == chr(27):
             return ''
 
-        if self.c in (chr(127), 'KEY_BACKSPACE'):
+        if key in (chr(127), 'KEY_BACKSPACE'):
             self.bs()
             self.complete()
             return ''
 
-        elif self.c == 'KEY_DC': # Del
+        elif key == 'KEY_DC': # Del
             self.delete()
             self.complete()
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
             return ''
 
-        elif self.c in key_dispatch[OPTS.undo_key]: # C-r
+        elif key in key_dispatch[OPTS.undo_key]: # C-r
             self.undo()
             return ''
 
-        elif self.c in ('KEY_UP', ) + key_dispatch[OPTS.up_one_line_key]: # Cursor Up/C-p
+        elif key in ('KEY_UP', ) + key_dispatch[OPTS.up_one_line_key]: # Cursor Up/C-p
             self.back()
             return ''
 
-        elif self.c in ('KEY_DOWN', ) + key_dispatch[OPTS.down_one_line_key]: # Cursor Down/C-n
+        elif key in ('KEY_DOWN', ) + key_dispatch[OPTS.down_one_line_key]: # Cursor Down/C-n
             self.fwd()
             return ''
 
-        elif self.c == 'KEY_LEFT': # Cursor Left
+        elif key == 'KEY_LEFT': # Cursor Left
             self.mvc(1)
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif self.c == 'KEY_RIGHT': # Cursor Right
+        elif key == 'KEY_RIGHT': # Cursor Right
             self.mvc(-1)
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif self.c in ("KEY_HOME", '^A', chr(1)): # home or ^A
+        elif key in ("KEY_HOME", '^A', chr(1)): # home or ^A
             self.home()
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif self.c in ("KEY_END", '^E', chr(5)): # end or ^E
+        elif key in ("KEY_END", '^E', chr(5)): # end or ^E
             self.end()
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif self.c in key_dispatch[OPTS.cut_to_buffer_key]: # cut to buffer
+        elif key in key_dispatch[OPTS.cut_to_buffer_key]: # cut to buffer
             self.cut_to_buffer()
             return ''
 
-        elif self.c in key_dispatch[OPTS.yank_from_buffer_key]: # yank from buffer
+        elif key in key_dispatch[OPTS.yank_from_buffer_key]: # yank from buffer
             self.yank_from_buffer()
             return ''
 
-        elif self.c in key_dispatch[OPTS.clear_word_key]: 
+        elif key in key_dispatch[OPTS.clear_word_key]:
             self.bs_word()
             self.complete()
             return ''
 
-        elif self.c in key_dispatch[OPTS.clear_line_key]:
+        elif key in key_dispatch[OPTS.clear_line_key]:
             self.clrtobol()
             return ''
 
-        elif self.c in key_dispatch[OPTS.clear_screen_key]: 
+        elif key in key_dispatch[OPTS.clear_screen_key]:
             self.s_hist = [self.s_hist[-1]]
             self.highlighted_paren = None
             self.redraw()
             return ''
 
-        elif self.c in key_dispatch[OPTS.exit_key]: 
+        elif key in key_dispatch[OPTS.exit_key]:
             if not self.s:
                 self.do_exit = True
                 return None
             else:
                 return ''
 
-        elif self.c in key_dispatch[OPTS.save_key]:
+        elif key in key_dispatch[OPTS.save_key]:
             self.write2file()
             return ''
 
-        elif self.c in key_dispatch[OPTS.pastebin_key]:
+        elif key in key_dispatch[OPTS.pastebin_key]:
             self.pastebin()
             return ''
 
-        elif self.c in key_dispatch[OPTS.last_output_key]:
+        elif key in key_dispatch[OPTS.last_output_key]:
             page(self.stdout_hist[self.prev_block_finished:-4])
             return ''
 
-        elif self.c == '\n':
+        elif key == '\n':
             self.lf()
             return None
 
-        elif self.c == '\t':
+        elif key == '\t':
             return self.tab()
 
-        elif len(self.c) == 1 and not unicodedata.category(self.c) == 'Cc':
-            self.addstr(self.c)
+        elif len(key) == 1 and not unicodedata.category(key) == 'Cc':
+            self.addstr(key)
             self.print_line(self.s)
 
         else:
             return ''
-
 
         return True
 
@@ -1924,19 +1952,16 @@ class Repl(object):
 
         if not self.paste_mode:
             for _ in range(indent_spaces // OPTS.tab_length):
-                self.c = '\t'
-                self.p_key()
+                self.p_key('\t')
 
         if indent and not self.paste_mode:
-            self.c = '\t'
-            self.p_key()
+            self.p_key('\t')
 
-        self.c = None
         self.cpos = 0
 
         while True:
-            self.c = self.get_key()
-            if self.p_key() is None:
+            key = self.get_key()
+            if self.p_key(key) is None:
                 return self.s
 
     def clear_current_line(self):
