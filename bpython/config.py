@@ -40,7 +40,8 @@ def loadini(struct, configfile):
             'hist_length': 100,
             'paste_time': 0.02,
             'syntax': True,
-            'tab_length': 4
+            'tab_length': 4,
+            'pastebin_url': 'http://bpaste.net'
         },
         'keyboard': {
             'clear_line': 'C-u',
@@ -80,6 +81,8 @@ def loadini(struct, configfile):
     struct.clear_screen_key = config.get('keyboard', 'clear_screen')
     struct.exit_key = config.get('keyboard', 'exit')
     struct.last_output_key = config.get('keyboard', 'last_output')
+
+    struct.pastebin_url = config.get('general', 'pastebin_url')
 
     color_scheme_name = config.get('general', 'color_scheme')
 
