@@ -1140,7 +1140,7 @@ class Repl(object):
     def pastebin(self):
         """Upload to a pastebin and display the URL in the status bar."""
 
-        pasteservice_url = 'http://bpaste.net/'
+        pasteservice_url = OPTS.pastebin_url 
         pasteservice = ServerProxy(urljoin(pasteservice_url, '/xmlrpc/'))
 
         s = self.getstdout()
