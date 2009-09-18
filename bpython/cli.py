@@ -657,8 +657,30 @@ class Repl(object):
             if not hasattr(f, '__name__') or s.groups()[0] != f.__name__:
                 return None
 
-            args = [i.strip() for i in s.groups()[1].split(',')]
-            return [func, (args, None, None, None)]
+            args = list()
+            defaults = list()
+            varargs = varkwargs = None
+            kwonly_args = list()
+            kwonly_defaults = dict()
+            for arg in s.group(2).split(','):
+                arg = arg.strip()
+                if arg.startswith('**'):
+                    varkwargs = arg[2:]
+                elif arg.startswith('*'):
+                    varargs = arg[1:]
+                else:
+                    arg, _, default = arg.partition('=')
+                    if varargs is not None:
+                        kwonly_args.append(arg)
+                        if default:
+                            kwonly_defaults[arg] = default
+                    else:
+                        args.append(arg)
+                        if default:
+                            defaults.append(default)
+
+            return [func, (args, varargs, varkwargs, defaults,
+                           kwonly_args, kwonly_defaults)]
 
         def getargspec(func):
             try:
@@ -1113,7 +1135,7 @@ class Repl(object):
                 default = kwonly_defaults.get(arg, marker)
                 if default is not marker:
                     self.list_win.addstr('=', get_colpair('punctuation'))
-                    self.list_win.addstr(repr(default), get_colpair('token'))
+                    self.list_win.addstr(default, get_colpair('token'))
 
         if _kwargs:
             if args or _args or (py3 and kwonly):
