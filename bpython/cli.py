@@ -55,6 +55,7 @@ from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 # These are used for syntax hilighting.
 from pygments import format
+from pygments.formatters import TerminalFormatter
 from pygments.lexers import PythonLexer
 from pygments.token import Token
 from bpython.formatter import BPythonFormatter, Parenthesis
@@ -422,6 +423,7 @@ class Repl(object):
         self.matches = []
         self.matches_iter = MatchesIterator()
         self.argspec = None
+        self.current_func = None
         self.s = ''
         self.inside_string = False
         self.highlighted_paren = None
@@ -523,6 +525,12 @@ class Repl(object):
             i += 1
         return self.s[-i +1:]
 
+    def get_object(self, name):
+        if name in self.interp.locals:
+            return self.interp.locals[name]
+        else:
+            return eval(name, self.interp.locals)
+
     def get_args(self):
         """Check if an unclosed parenthesis exists, then attempt to get the
         argspec() for it. On success, update self.argspec and return True,
@@ -533,7 +541,8 @@ class Repl(object):
         if not OPTS.arg_spec:
             return False
 
-        # Find the name of the current function
+        # Get the name of the current function and where we are in
+        # the arguments
         stack = [['', 0, '']]
         try:
             for (token, value) in PythonLexer().get_tokens(self.s):
@@ -560,19 +569,14 @@ class Repl(object):
             func, _, _ = stack.pop()
         except IndexError:
             return False
+        if not func:
+            return False
 
-        # We found a name, now get a function object
         try:
-            if func in self.interp.locals:
-                f = self.interp.locals[func]
-        except TypeError:
-            return None
-        else:
-            try:
-                f = eval(func, self.interp.locals)
-            except Exception:
-                # Same deal with the exceptions :(
-                return None
+            f = self.get_object(func)
+        except (AttributeError, NameError):
+            return False
+
         if inspect.isclass(f):
             try:
                 f = f.__init__
@@ -1563,6 +1567,22 @@ class Repl(object):
 
         elif key in key_dispatch[OPTS.last_output_key]:
             page(self.stdout_hist[self.prev_block_finished:-4])
+            return ''
+
+        elif key in key_dispatch[OPTS.show_source_key]:
+            try:
+                obj = self.current_func
+                if obj is None and inspection.is_eval_safe_name(self.s):
+                    obj = self.get_object(self.s)
+                source = inspect.getsource(obj)
+            except (AttributeError, NameError, TypeError):
+                self.statusbar.message("Cannot show source.")
+                return ''
+            else:
+                if OPTS.highlight_show_source:
+                    source = format(PythonLexer().get_tokens(source),
+                                    TerminalFormatter())
+                page(source)
             return ''
 
         elif key == '\n':

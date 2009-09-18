@@ -34,6 +34,9 @@ from pygments.token import Token
 
 py3 = sys.version_info[0] == 3
 
+if not py3:
+    _name = re.compile(r'[a-zA-Z_]\w*')
+
 
 class AttrCleaner(object):
     """A context manager that tries to make an object not exhibit side-effects
@@ -43,7 +46,7 @@ class AttrCleaner(object):
 
     def __enter__(self):
         """Try to make an object not exhibit side-effects on attribute
-        lookup.""" 
+        lookup."""
         type_ = type(self.obj)
         __getattribute__ = None
         __getattr__ = None
@@ -198,7 +201,7 @@ def getargspec(func, f):
             argspec = inspect.getfullargspec(f)
         else:
             argspec = inspect.getargspec(f)
-                 
+
         argspec = list(argspec)
         fixlongargs(f, argspec)
         argspec = [func, argspec, is_bound_method]
@@ -211,3 +214,10 @@ def getargspec(func, f):
             argspec[1][0].insert(0, 'obj')
         argspec.append(is_bound_method)
     return argspec
+
+
+def is_eval_safe_name(string):
+    if py3:
+        return all(part.isidentifier() for part in string.split('.'))
+    else:
+        return all(_name.match(part) for part in string.split('.'))
