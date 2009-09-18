@@ -1,3 +1,25 @@
+v0.9.5
+======
+
+Fixed issues:
+#25 Problems with DEL, Backspace and C-u over multiple lines
+#49 Sending last output to $PAGER
+#51 Ability to embed bython shell into an existing script
+#52 FakeStdin.readlines() is broken
+#53 Error on printing null character
+#54 Parsing/introspection ncurses viewer neglects parenthesis
+
+The history file is now really configurable. This issue was reported
+in Debian's bugtracker.
+
+bpython has now some basic support for Python 3 (requires Pygments >=1.1.1)
+
+The pastebin URL is now configurable and the default pastebin is now
+bpaste.net
+
+Argument names are now shown as completion suggestions and one can
+tab through the completion list.
+
 v0.9.4
 ======
 
