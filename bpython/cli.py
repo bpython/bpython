@@ -1249,6 +1249,7 @@ class Repl(object):
         if self.h_i < len(self.rl_hist):
             self.h_i += 1
 
+        self.clear_wrapped_lines()
         self.s = self.rl_hist[-self.h_i].rstrip('\n')
         self.print_line(self.s, clr=True)
 
@@ -1258,6 +1259,11 @@ class Repl(object):
         self.enter_hist()
 
         self.cpos = 0
+
+        width = self.scr.getmaxyx()[1]
+        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 1):
+            self.scr.move(y, 0)
+            self.scr.clrtoeol()
 
         if self.h_i > 1:
             self.h_i -= 1
@@ -1549,12 +1555,7 @@ class Repl(object):
 
         n = 1
 
-        # Delete following lines if the current string is greater than the
-        # screen width. Curses does not handle that on its own.
-        width = self.scr.getmaxyx()[1]
-        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 1):
-            self.scr.move(y, 0)
-            self.scr.clrtoeol()
+        self.clear_wrapped_lines()
 
         if not self.cpos:
 # I know the nested if blocks look nasty. :(
@@ -1604,12 +1605,7 @@ class Repl(object):
 
     def clrtobol(self):
         """Clear from cursor to beginning of line; usual C-u behaviour"""
-        # It seems as if curses does not handle this on its own, which
-        # makes me sad.
-        width = self.scr.getmaxyx()[1]
-        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 1):
-            self.scr.move(y, 0)
-            self.scr.clrtoeol()
+        self.clear_wrapped_lines()
 
         if not self.cpos:
             self.s = ''
@@ -1619,6 +1615,15 @@ class Repl(object):
         self.print_line(self.s, clr=True)
         self.scr.redrawwin()
         self.scr.refresh()
+
+    def clear_wrapped_lines(self):
+        """Clear the wrapped lines of the current input."""
+        # curses does not handle this on its own. Sad.
+        width = self.scr.getmaxyx()[1]
+        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 1):
+            self.scr.move(y, 0)
+            self.scr.clrtoeol()
+
 
     def p_key(self, key):
         """Process a keypress"""
