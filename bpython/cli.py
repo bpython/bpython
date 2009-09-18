@@ -574,7 +574,7 @@ class Repl(object):
 
         try:
             f = self.get_object(func)
-        except (AttributeError, NameError):
+        except (AttributeError, NameError, SyntaxError):
             return False
 
         if inspect.isclass(f):
