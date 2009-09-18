@@ -21,7 +21,7 @@
 # THE SOFTWARE.
 #
 
-
+from __future__ import with_statement
 import inspect
 import pydoc
 import re
