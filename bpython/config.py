@@ -1,6 +1,6 @@
 import os
 import sys
-from ConfigParser import ConfigParser, NoSectionError, NoOptionError
+from ConfigParser import ConfigParser
 from itertools import chain
 from bpython.keys import key_dispatch
 import errno
