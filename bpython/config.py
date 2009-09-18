@@ -36,6 +36,7 @@ def loadini(struct, configfile):
             'auto_display_list': True,
             'color_scheme': 'default',
             'flush_output': True,
+            'highlight_show_source': True,
             'hist_file': '~/.pythonhist',
             'hist_length': 100,
             'paste_time': 0.02,
@@ -53,6 +54,7 @@ def loadini(struct, configfile):
             'last_output': 'F9',
             'pastebin': 'F8',
             'save': 'C-s',
+            'show_source': 'F2',
             'undo': 'C-r',
             'up_one_line': 'C-p',
             'yank_from_buffer': 'C-y'
@@ -66,11 +68,14 @@ def loadini(struct, configfile):
     struct.syntax = config.getboolean('general', 'syntax')
     struct.arg_spec = config.getboolean('general', 'arg_spec')
     struct.paste_time = config.getfloat('general', 'paste_time')
+    struct.highlight_show_source = config.getboolean('general',
+                                                     'highlight_show_source')
     struct.hist_file = config.get('general', 'hist_file')
     struct.hist_length = config.getint('general', 'hist_length')
     struct.flush_output = config.getboolean('general', 'flush_output')
     struct.pastebin_key = config.get('keyboard', 'pastebin')
     struct.save_key = config.get('keyboard', 'save')
+    struct.show_source_key = config.get('keyboard', 'show_source')
     struct.undo_key = config.get('keyboard', 'undo')
     struct.up_one_line_key = config.get('keyboard', 'up_one_line')
     struct.down_one_line_key = config.get('keyboard', 'down_one_line')
