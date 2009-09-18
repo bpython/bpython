@@ -679,11 +679,17 @@ class Repl(object):
             try:
                 if inspect.isclass(f):
                     self.current_func = f
-                    argspec = inspect.getargspec(f.__init__)
+                    if py3:
+                        argspec = inspect.getfullargspec(f.__init__)
+                    else:
+                        argspec = inspect.getargspec(f.__init__)
                     self.current_func = f.__init__
                     is_bound_method = True
                 else:
-                    argspec = inspect.getargspec(f)
+                    if py3:
+                        argspec = inspect.getfullargspec(f)
+                    else:
+                        argspec = inspect.getargspec(f)
                     self.current_func = f
                 argspec = list(argspec)
                 fixlongargs(f, argspec)
@@ -830,6 +836,9 @@ class Repl(object):
         if not e and self.argspec:
             matches.extend(name + '=' for name in self.argspec[1][0]
                            if name.startswith(cw))
+            if py3:
+                matches.extend(name + '=' for name in self.argspec[1][4]
+                               if name.startswith(cw))
 
         if e or not matches:
             self.matches = []
@@ -1030,6 +1039,9 @@ class Repl(object):
         _kwargs = topline[1][2]
         is_bound_method = topline[2]
         in_arg = topline[3]
+        if py3:
+            kwonly = topline[1][4]
+            kwonly_defaults = topline[1][5] or dict()
         max_w = int(self.scr.getmaxyx()[1] * 0.6)
         self.list_win.erase()
         self.list_win.resize(3, max_w)
@@ -1086,8 +1098,25 @@ class Repl(object):
                 self.list_win.addstr(', ', get_colpair('punctuation'))
             self.list_win.addstr('*%s' % (_args, ), get_colpair('token'))
 
+        if py3 and kwonly:
+            if not _args:
+                if args:
+                    self.list_win.addstr(', ', get_colpair('punctuation'))
+                self.list_win.addstr('*', get_colpair('punctuation'))
+            marker = object()
+            for arg in kwonly:
+                self.list_win.addstr(', ', get_colpair('punctuation'))
+                color = get_colpair('token')
+                if arg == in_arg:
+                    color |= curses.A_BOLD
+                self.list_win.addstr(arg, color)
+                default = kwonly_defaults.get(arg, marker)
+                if default is not marker:
+                    self.list_win.addstr('=', get_colpair('punctuation'))
+                    self.list_win.addstr(repr(default), get_colpair('token'))
+
         if _kwargs:
-            if args or _args:
+            if args or _args or (py3 and kwonly):
                 self.list_win.addstr(', ', get_colpair('punctuation'))
             self.list_win.addstr('**%s' % (_kwargs, ), get_colpair('token'))
         self.list_win.addstr(')', get_colpair('punctuation'))
