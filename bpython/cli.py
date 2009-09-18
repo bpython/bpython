@@ -33,25 +33,20 @@ import code
 import traceback
 import re
 import time
-import urllib
 import rlcompleter
 import inspect
 import signal
 import struct
 import termios
 import fcntl
-import string
-import socket
 import pydoc
 import unicodedata
 import textwrap
-from cStringIO import StringIO
 from itertools import takewhile
 from locale import LC_ALL, getpreferredencoding, setlocale
 from optparse import OptionParser
 from urlparse import urljoin
 from xmlrpclib import ServerProxy, Error as XMLRPCError
-from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 # These are used for syntax hilighting.
 from pygments import format

@@ -24,10 +24,9 @@
 # Pygments really kicks ass, it made it really easy to
 # get the exact behaviour I wanted, thanks Pygments.:)
 
-import curses
 from pygments.formatter import Formatter
 from pygments.token import Keyword, Name, Comment, String, Error, \
-     Number, Operator, Generic, Token, Whitespace, Literal, Punctuation
+     Number, Operator, Token, Whitespace, Literal, Punctuation
 
 """These format strings are pretty ugly.
 \x01 represents a colour marker, which
