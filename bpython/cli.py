@@ -1716,14 +1716,15 @@ class Repl(object):
                 self.scr.move(lineno, 4)
                 map(self.echo, o.split('\x04'))
 
-            y = self.scr.getyx()[0]
+            max_x = self.scr.getmaxyx()[1]
+            y = self.iy + (len(s) // max_x)
             x = self.ix + len(s) - self.cpos
             if not self.cpos:
                 x -= 1
-            max_x = self.scr.getmaxyx()[1]
             if self.highlighted_paren:
                 # Clear previous highlighted paren
-                reprint_line(*self.highlighted_paren)
+                if self.highlighted_paren[0] < self.iy:
+                    reprint_line(*self.highlighted_paren)
                 self.highlighted_paren = None
             stack = list()
             source = '\n'.join(self.buffer) + '\n%s' % (s, )
@@ -1734,8 +1735,9 @@ class Repl(object):
             parens = dict(zip('{([', '})]'))
             for (token, value) in all_tokens:
                 pos += len(value)
-                if real_pos + len(value) > max_x:
-                    real_line += (real_pos + len(value)) // max_x
+                real_pos += len(value)
+                if real_pos > max_x:
+                    real_line += real_pos // max_x
                     real_pos %= max_x
                 under_cursor = (line == len(self.buffer) and pos == x)
                 if token is Token.Punctuation:
@@ -1745,7 +1747,7 @@ class Repl(object):
                             # Push marker on the stack
                             stack.append((Parenthesis, value))
                         else:
-                            stack.append((real_line, i, value))
+                            stack.append((line, i, value))
                     elif value in parens.itervalues():
                         saved_stack = list(stack)
                         try:
