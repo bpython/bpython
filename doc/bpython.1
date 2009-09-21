@@ -2,7 +2,7 @@
 .\" First parameter, NAME, should be all caps
 .\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
 .\" other parameters are allowed: see man(7), man(1)
-.TH BPYTHON 1 "August 13, 2008"
+.TH BPYTHON 1 "September 21, 2009"
 .\" Please adjust this date whenever revising the manpage.
 .\"
 .\" Some roff macros, for reference:
@@ -19,7 +19,7 @@
 bpython \- a fancy curses interface to the Python interactive interpreter
 .SH SYNOPSIS
 .B bpython
-.I ini file
+[\fIoptions\fR] [\fIfile\fR [\fIargs\fR]]
 .SH DESCRIPTION
 The idea is to provide the user with all the features
 in\-line, much like modern IDEs, but in a simple,
@@ -51,52 +51,54 @@ This posts the current buffer to a pastebin (paste.pocoo.org) or writes it to a 
 Unlike other curses apps, bpython dumps the screen data to stdout when you quit, so you see what you've done in the buffer of your terminal.
 .RE
 
+.SH OPTIONS
+The long and short forms of options, shown here as alternatives, are
+equivalent. If bpython sees an argument it does not know, execution falls
+back to the regular Python interpreter.
+.IP "\fB\-c\fR \fIconfig\fR" 4
+.PD 0
+.IP "\fB\-\-config=\fR\fIconfig\fR" 4
+.PD
+Use \fIconfig\fR instead of default config file.
+.IP "\fB\-h\fR" 4
+.PD 0
+.IP "\fB\-\-help\fR" 4
+.PD
+Show the help message and exit.
+.IP "\fB\-i\fR" 4
+.PD 0
+.IP "\fB\-\-interactive\fR" 4
+.PD
+Drop to bpython shell after running \fIfile\fR instead of exiting.
+.IP "\fB\-q\fR" 4
+.PD 0
+.IP "\fB\-\-quiet\fR" 4
+.PD
+Do not flush the output to stdout.
+.IP "\fB\-V\fR" 4
+.PD 0
+.IP "\fB\-\-version\fR" 4
+.PD
+Print bpython's version and exit.
+
 .SH KEYS
-.B <C\-d>
-Exit
-.RS
-Exits the interpreter, like normal interactive Python.
-.RE
-.B <C\-r>
-Rewind
-.RS
-Rewinds and "undoes" the last statement, read 
-.B DESCRIPTION
-for more info.
-.RE
-.B <F2>
-Save
-.RS
-Saves the current buffer to a file.
-.RE
-.B <F8>
-Pastebin
-.RS
-Posts the current buffer to 
-.B http://paste.pocoo.org/
-(will probably become configurable), and displays the URL.
-.RE
-.B <Tab>
-Autocomplete
-.RS
-If there's an unambigious completion of the expression, fill it in.
-.RE
+bpython's keys are fully configurable. See
+http://docs.bpython-interpreter.org/configuration.html#keyboard
 
 .SH FILES
-~/.bpython.ini
+~/.bpython/config
 .RS
-Your bpython config. See sample.ini (in /usr/share/docs/bpython/examples on Debian) for various options you can use, or read
-.BR bpython.ini (5)
+Your bpython config. See sample-config (in /usr/share/docs/bpython/examples on Debian) for various options you can use, or read
+.BR bpython-config (5)
  .
 .RE
 
-.SH SEE ALSO
-.BR bpython.ini (5),
-.BR python (1).
-
 .SH KNOWN BUGS
-Triple quoted strings over multiple lines work, but they're not highlighted
-properly.
+See http://bitbucket.org/bobf/bpython/issues/ for a list of known issues.
+
+.SH SEE ALSO
+.BR bpython-config (5),
+.BR python (1).
 
 .SH AUTHOR
 bpython was written by Robert Anthony Farrell <robertanthonyfarrel@gmail.com> and his bunch of loyal followers.

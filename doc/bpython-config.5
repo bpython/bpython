@@ -2,7 +2,7 @@
 .\" First parameter, NAME, should be all caps
 .\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
 .\" other parameters are allowed: see man(7), man(1)
-.TH BPYTHON-CONFIG 5 "August 13, 2008"
+.TH BPYTHON-CONFIG 5 "September 21, 2009"
 .\" Please adjust this date whenever revising the manpage.
 .\"
 .\" Some roff macros, for reference:
@@ -22,45 +22,10 @@ config \- user configuration file for bpython
 .SH DESCRIPTION
 The 
 .B config
-contains various options controlling the behaviour of 
-.B bpython
- .
+contains various options controlling the behaviour of \fBbpython\fR.
 
-Boolean values are 
-.B True, False
-
-The various options are:
-
-.B auto_display_list 
-.BI boolean
-(default: True)
-.RS
-Display the autocomplete list as you type. When this is off, you can hit tab to see the suggestions.
-.RE
-
-.B syntax
-.BI boolean
-(default: True)
-.RS
-Syntax highlighting as you type.
-.RE
-
-.B arg_spec
-.BI boolean
-(default: True)
-.RS
-Display the arg spec (list of arguments) for callables, when possible.
-.RE
-
-.B tab_length
-.BI integer
-(default: 4)
-.RS
-The number of spaces a soft tab equals.
-.RE
-
-.SH SEE ALSO
-.BR bpython (1).
+See http://docs.bpython-interpreter.org/configuration.html for a full
+description of the configuration file.
 
 .SH AUTHOR
 bpython was written by Robert Anthony Farrell <robertanthonyfarrel@gmail.com> and his bunch of loyal followers.

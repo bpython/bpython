@@ -15,7 +15,8 @@ function.
 The history file is now really configurable. This issue was reported
 in Debian's bugtracker.
 
-bpython has now some basic support for Python 3 (requires Pygments >=1.1.1)
+bpython has now some basic support for Python 3 (requires Pygments >=1.1.1).
+As a result, setuptools is now optional.
 
 The pastebin URL is now configurable and the default pastebin is now
 bpaste.net
