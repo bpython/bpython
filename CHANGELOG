@@ -9,6 +9,9 @@ Fixed issues:
 #53 Error on printing null character
 #54 Parsing/introspection ncurses viewer neglects parenthesis
 
+bpython has added a view source shortcut to show the source of the current
+function.
+
 The history file is now really configurable. This issue was reported
 in Debian's bugtracker.
 
