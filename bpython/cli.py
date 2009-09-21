@@ -1199,9 +1199,7 @@ class Repl(object):
 
 # Use our own helper function because Python's will use real stdin and
 # stdout instead of our wrapped
-        self.push('from bpython import _internal\n')
-        self.push('help = _internal._help')
-        self.push('del _internal')
+        self.push('from bpython._internal import _help as help\n')
 
         self.iy, self.ix = self.scr.getyx()
         more = False
