@@ -1,7 +1,9 @@
-include .gitignore
 include .pycheckrc
+include AUTHORS
 include CHANGELOG
 include LICENSE
+include data/bpython
 include data/bpython.desktop
 include doc/*.[0-9]
-include sample.rc
+include sample-config
+include *.theme
