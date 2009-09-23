@@ -822,6 +822,8 @@ class Repl(object):
                 color = get_colpair('operator')
             else:
                 color = get_colpair('main')
+            if not py3:
+                i = i.encode(getpreferredencoding())
             self.list_win.addstr(i + padding, color)
             if ((cols == 1 or (ix and not (ix+1) % cols))
                     and ix + 1 < len(v_items)):
