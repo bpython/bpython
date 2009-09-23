@@ -638,12 +638,13 @@ class Repl(object):
         if cs and tab:
             # Filename completion
             self.matches = list()
-            user_dir = os.path.expanduser('~')
+            username = cs.split(os.path.sep, 1)[0]
+            user_dir = os.path.expanduser(username)
             for filename in glob(os.path.expanduser(cs + '*')):
                 if os.path.isdir(filename):
                     filename += os.path.sep
                 if cs.startswith('~'):
-                    filename = '~' + filename[len(user_dir):]
+                    filename = username + filename[len(user_dir):]
                 self.matches.append(filename)
             self.matches_iter.update(cs, self.matches)
             return bool(self.matches)
