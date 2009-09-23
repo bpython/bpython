@@ -650,6 +650,7 @@ class Repl(object):
         elif cs:
             # Do not provide suggestions inside strings, as one cannot tab
             # them so they would be really confusing.
+            self.matches_iter.update()
             return False
 
         # Check for import completion
