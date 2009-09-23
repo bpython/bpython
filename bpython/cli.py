@@ -726,10 +726,15 @@ class Repl(object):
             max_h = y+1
         max_w = int(w * 0.8)
         self.list_win.erase()
-        if items and '.' in items[0]:
-            items = [x.rsplit('.')[-1] for x in items]
-            if current_item:
-                current_item = current_item.rsplit('.')[-1]
+        if items:
+            sep = '.'
+            if os.path.sep in items[0]:
+                # Filename completion
+                sep = os.path.sep
+            if sep in items[0]:
+                items = [x.rstrip(sep).rsplit(sep)[-1] for x in items]
+                if current_item:
+                    current_item = current_item.rstrip(sep).rsplit(sep)[-1]
 
         if topline:
             height_offset = self.mkargspec(topline, down) + 1
