@@ -288,10 +288,11 @@ class Interpreter(code.InteractiveInterpreter):
         code.InteractiveInterpreter.__init__(self, locals)
 
     if not py3:
-        def runsource(self, source):
+        def runsource(self, source, filename='<input>', symbol='single'):
             source = '# coding: %s\n%s' % (self.encoding,
                                            source.encode(self.encoding))
-            return code.InteractiveInterpreter.runsource(self, source)
+            return code.InteractiveInterpreter.runsource(self, source,
+                                                         filename, symbol)
 
     def showsyntaxerror(self, filename=None):
         """Override the regular handler, the code's copied and pasted from
@@ -1201,10 +1202,8 @@ class Repl(object):
 # feature so please notify me of any breakage.
         filename = os.environ.get('PYTHONSTARTUP')
         if filename and os.path.isfile(filename):
-            f = open(filename, 'r')
-            code_obj = compile(f.read(), filename, 'exec')
-            f.close()
-            self.interp.runcode(code_obj)
+            with open(filename, 'r') as f:
+                self.interp.runsource(f.read(), filename, 'exec')
 
 # Use our own helper function because Python's will use real stdin and
 # stdout instead of our wrapped
