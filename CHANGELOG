@@ -1,3 +1,16 @@
+v0.9.5.2
+========
+
+A bugfix release. Fixed issues:
+#60: Filename expansion: Cycling completions and deleting
+#61: Filename expansion: Directory names with '.'s get mangled
+
+Other fixes without opened issues:
+- Encode items in the suggestion list properly
+- Expand usernames in file completion correctly
+- future imports in startup scripts can influence interpreter's behaviour now
+- Show the correct docstring for types without a own __init__ method
+
 v0.9.5.1
 ========
 
