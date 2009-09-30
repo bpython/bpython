@@ -575,7 +575,8 @@ class Repl(object):
 
         if inspect.isclass(f):
             try:
-                f = f.__init__
+                if f.__init__ is not object.__init__:
+                    f = f.__init__
             except AttributeError:
                 return None
         self.current_func = f
