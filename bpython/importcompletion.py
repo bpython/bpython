@@ -50,7 +50,7 @@ def complete(line, cw):
             cw = '%s.%s' % (tokens[1], cw)
         elif len(tokens) == 3:
             return ['import']
-    
+
     matches = list()
     for name in modules:
         if not (name.startswith(cw) and name.find('.', len(cw)) == -1):

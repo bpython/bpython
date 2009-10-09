@@ -60,16 +60,14 @@ theme_map = {
     Comment: 'comment',
     String: 'string',
     Literal: 'string',
-    Literal.String: 'string',
     Error: 'error',
     Number: 'number',
     Token.Literal.Number.Float: 'number',
     Operator: 'operator',
-    Operator.Word: 'operator',
     Punctuation: 'punctuation',
     Token: 'token',
     Whitespace: 'background',
-    Parenthesis: 'punctuation',
+    Parenthesis: 'paren',
     Parenthesis.UnderCursor: 'operator'
 }
 

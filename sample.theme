@@ -13,6 +13,7 @@ string = m
 error = r
 number = G
 operator = Y
+paren = y
 punctuation = y
 token = C
 
