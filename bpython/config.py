@@ -105,6 +105,7 @@ def loadini(struct, configfile):
             'background': 'd',
             'output': 'w',
             'main': 'c',
+            'paren': 'R',
             'prompt': 'c',
             'prompt_more': 'g',
         }
