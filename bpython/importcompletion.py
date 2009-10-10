@@ -77,7 +77,7 @@ def find_modules(path):
         name = os.path.splitext(name)[0]
         try:
             fo, pathname, _ = imp.find_module(name, [path])
-        except ImportError:
+        except (ImportError, SyntaxError):
             continue
         else:
             if fo is not None:
