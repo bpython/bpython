@@ -653,6 +653,8 @@ class Repl(object):
         self.buffer = []
         self.scr.erase()
         self.s_hist = []
+        # Set cursor position to -1 to prevent paren matching
+        self.cpos = -1
 
         self.prompt(False)
 
@@ -671,8 +673,13 @@ class Repl(object):
             self.prompt(more)
             self.iy, self.ix = self.scr.getyx()
 
+        self.cpos = 0
+        indent = next_indentantion(self.s)
         self.s = ''
         self.scr.refresh()
+
+        for _ in xrange(indent):
+            self.tab()
 
         self.evaluating = False
         #map(self.push, self.history)
