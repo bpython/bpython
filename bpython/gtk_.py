@@ -415,7 +415,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
         """
         if OPTS.syntax:
             if self.highlighted_paren is not None:
-                self.reprint_line(self.highlighted_paren)
+                self.reprint_line(*self.highlighted_paren)
                 self.highlighted_paren = None
 
             offset = self.get_cursor_iter().get_offset()
@@ -434,12 +434,6 @@ class ReplWidget(gtk.TextView, repl.Repl):
     def insert_highlighted_tokens(self, iter_, tokens):
         offset = iter_.get_offset()
         buffer = self.text_buffer
-        # Unfortunately, Pygments adds a trailing newline and strings with
-        # no size, so strip them
-        tokens = list(tokens)
-        while not tokens[-1][1]:
-            tokens.pop()
-        tokens[-1] = (tokens[-1][0], tokens[-1][1].rstrip('\n'))
         for (token, value) in tokens:
             while token not in theme_map:
                 token = token.parent
@@ -489,7 +483,8 @@ class ReplWidget(gtk.TextView, repl.Repl):
         self.complete()
 
     def on_buf_mark_set(self, buffer, iter_, textmark):
-        if textmark.get_name() == 'insert':
+        name = textmark.get_name()
+        if name == 'insert':
             line_start = self.get_line_start_iter()
             if line_start.compare(iter_) > 0:
                 # Don't set cursor before the start of line
@@ -538,7 +533,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
         self.highlight()
         return self.push(line + '\n')
 
-    def reprint_line(self, lineno, tokens=None):
+    def reprint_line(self, lineno, tokens):
         """
         Helper function for paren highlighting: Reprint line at offset
         `lineno` in current input buffer.
@@ -552,8 +547,6 @@ class ReplWidget(gtk.TextView, repl.Repl):
         end.forward_to_line_end()
         with self.editing:
             self.text_buffer.delete(start, end)
-            if tokens is None:
-                tokens = PythonLexer().get_tokens(self.buffer[lineno])
             start = self.text_buffer.get_iter_at_mark(mark)
             self.insert_highlighted_tokens(start, tokens)
 
