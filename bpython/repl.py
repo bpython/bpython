@@ -83,13 +83,15 @@ class Interpreter(code.InteractiveInterpreter):
         if filename and type is SyntaxError:
             # Work hard to stuff the correct filename in the exception
             try:
-                msg, (dummy_filename, lineno, offset, line) = value
+                msg, (dummy_filename, lineno, offset, line) = value.args
             except:
                 # Not the format we expect; leave it alone
                 pass
             else:
                 # Stuff in the right filename and right lineno
-                value = SyntaxError(msg, (filename, lineno - 1, offset, line))
+                if not py3:
+                    lineno -= 1
+                value = SyntaxError(msg, (filename, lineno, offset, line))
                 sys.last_value = value
         list = traceback.format_exception_only(type, value)
         self.writetb(list)
@@ -106,7 +108,10 @@ class Interpreter(code.InteractiveInterpreter):
             tblist = traceback.extract_tb(tb)
             del tblist[:1]
             # Set the right lineno (encoding header adds an extra line)
-            tblist[0] = (tblist[0][0], 1) + tblist[0][2:]
+            lineno = tblist[0][1]
+            if not py3:
+                lineno -= 1
+            tblist[0] = (tblist[0][0], lineno) + tblist[0][2:]
 
             l = traceback.format_list(tblist)
             if l:
