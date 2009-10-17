@@ -708,11 +708,9 @@ class Repl(object):
         So I consider this to be a bug in logging, and this is a hack
         to fix it, unfortunately. I'm sure it's not the only module
         to do it."""
-        pass
 
     def close(self):
         """See the flush() method docstring."""
-        pass
 
     def tokenize(self, s, newline=False):
         """Tokenize a line of code."""
