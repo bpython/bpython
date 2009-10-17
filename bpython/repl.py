@@ -33,6 +33,7 @@ import sys
 import textwrap
 import traceback
 from glob import glob
+from itertools import takewhile
 from locale import getpreferredencoding
 from urlparse import urljoin
 from xmlrpclib import ServerProxy, Error as XMLRPCError
@@ -274,7 +275,6 @@ class Repl(object):
         self.matches_iter = MatchesIterator()
         self.argspec = None
         self.current_func = None
-        self.inside_string = False
         self.highlighted_paren = None
         self.list_win_visible = False
         self._C = {}
@@ -334,23 +334,34 @@ class Repl(object):
                 word += '('
         return word
 
-    def current_string(self):
-        """Return the current string.
-        Note: This method will not really work for multiline strings."""
-        line = self.current_line()
-        inside_string = next_token_inside_string(line, self.inside_string)
-        if inside_string:
-            string = list()
-            next_char = ''
-            for (char, next_char) in zip(reversed(line),
-                                         reversed(line[:-1])):
-                if char == inside_string and next_char != '\\':
-                    return ''.join(reversed(string))
-                string.append(char)
+    def current_string(self, concatenate=False):
+        """Return the current string."""
+        tokens = self.tokenize(self.current_line())
+        string_tokens = list(takewhile(token_is_any_of([Token.String,
+                                                        Token.Text]),
+                                       reversed(tokens)))
+        if not string_tokens:
+            return ''
+        opening = string_tokens.pop()[1]
+        string = list()
+        for (token, value) in reversed(string_tokens):
+            if token is Token.Text:
+                continue
+            elif opening is None:
+                opening = value
+            elif token is Token.String.Doc:
+                string.append(value[3:-3])
+                opening = None
+            elif value == opening:
+                opening = None
+                if not concatenate:
+                    string = list()
             else:
-                if next_char == inside_string:
-                    return ''.join(reversed(string))
-        return ''
+                string.append(value)
+
+        if opening is None:
+            return ''
+        return ''.join(string)
 
     def get_object(self, name):
         if name in self.interp.locals:
@@ -602,8 +613,6 @@ class Repl(object):
         if insert_into_history:
             self.rl_history.append(s)
 
-        self.inside_string = next_token_inside_string(s, self.inside_string)
-
         try:
             more = self.interp.runsource('\n'.join(self.buffer))
         except SystemExit:
@@ -707,15 +716,6 @@ class Repl(object):
 
     def tokenize(self, s, newline=False):
         """Tokenize a line of code."""
-        if self.inside_string:
-            # A string started in another line is continued in this
-            # line
-            tokens = PythonLexer().get_tokens(self.inside_string + s)
-            token, value = tokens.next()
-            if token is Token.String.Doc:
-                tokens = [(Token.String, value[3:])] + list(tokens)
-        else:
-            tokens = list(PythonLexer().get_tokens(s))
 
         source = '\n'.join(self.buffer + [s])
         cursor = len(source) - self.cpos
@@ -723,20 +723,38 @@ class Repl(object):
             cursor += 1
         stack = list()
         all_tokens = list(PythonLexer().get_tokens(source))
-        i = line = 0
-        pos = 0
+        # Unfortunately, Pygments adds a trailing newline and strings with
+        # no size, so strip them
+        while not all_tokens[-1][1]:
+            all_tokens.pop()
+        all_tokens[-1] = (all_tokens[-1][0], all_tokens[-1][1].rstrip('\n'))
+        line = pos = 0
         parens = dict(zip('{([', '})]'))
-        for (token, value) in all_tokens:
+        line_tokens = list()
+        saved_tokens = list()
+        search_for_paren = True
+        for (token, value) in split_lines(all_tokens):
             pos += len(value)
+            if token is Token.Text and value == '\n':
+                line += 1
+                # Remove trailing newline
+                line_tokens = list()
+                saved_tokens = list()
+                continue
+            line_tokens.append((token, value))
+            saved_tokens.append((token, value))
+            if not search_for_paren:
+                continue
             under_cursor = (pos == cursor)
             if token is Token.Punctuation:
                 if value in parens:
                     if under_cursor:
-                        tokens[i] = (Parenthesis.UnderCursor, value)
+                        line_tokens[-1] = (Parenthesis.UnderCursor, value)
                         # Push marker on the stack
                         stack.append((Parenthesis, value))
                     else:
-                        stack.append((line, i, value))
+                        stack.append((line, len(line_tokens) - 1,
+                                      line_tokens, value))
                 elif value in parens.itervalues():
                     saved_stack = list(stack)
                     try:
@@ -747,57 +765,44 @@ class Repl(object):
                     except IndexError:
                         # SyntaxError.. more closed parentheses than
                         # opened or a wrong closing paren
+                        opening = None
                         if not saved_stack:
-                            break
+                            search_for_paren = False
                         else:
-                            opening = None
                             stack = saved_stack
                     if opening and opening[0] is Parenthesis:
                         # Marker found
-                        tokens[i] = (Parenthesis, value)
-                        break
+                        line_tokens[-1] = (Parenthesis, value)
+                        search_for_paren = False
                     elif opening and under_cursor and not newline:
                         if self.cpos:
-                            tokens[i] = (Parenthesis.UnderCursor, value)
+                            line_tokens[-1] = (Parenthesis.UnderCursor, value)
                         else:
                             # The cursor is at the end of line and next to
                             # the paren, so it doesn't reverse the paren.
                             # Therefore, we insert the Parenthesis token
                             # here instead of the Parenthesis.UnderCursor
                             # token.
-                            if i < len(tokens):
-                                # XXX This is a bug in our index
-                                # calculation (happens with multiline
-                                # strings)
-                                tokens[i] = (Parenthesis, value)
-                        (lineno, i, opening) = opening
+                            line_tokens[-1] = (Parenthesis, value)
+                        (lineno, i, tokens, opening) = opening
                         if lineno == len(self.buffer):
-                            self.highlighted_paren = lineno
-                            tokens[i] = (Parenthesis, opening)
-                        else:
-                            line = self.buffer[lineno]
-                            self.highlighted_paren = lineno
-                            # We need to redraw a line
-                            line_tokens = list(PythonLexer().get_tokens(line))
+                            self.highlighted_paren = (lineno, saved_tokens)
                             line_tokens[i] = (Parenthesis, opening)
-                            self.reprint_line(lineno, line_tokens)
-                        break
+                        else:
+                            self.highlighted_paren = (lineno, list(tokens))
+                            # We need to redraw a line
+                            tokens[i] = (Parenthesis, opening)
+                            self.reprint_line(lineno, tokens)
+                        search_for_paren = False
                 elif under_cursor:
-                    break
-            elif token is Token.Text and value == '\n':
-                line += 1
-                if line == len(self.buffer):
-                    i = -1
-            elif under_cursor:
-                break
-            i += 1
-        return tokens
+                    search_for_paren = False
+        if line != len(self.buffer):
+            return list()
+        return line_tokens
 
     def clear_current_line(self):
         """This is used as the exception callback for the Interpreter instance.
         It prevents autoindentation from occuring after a traceback."""
-
-        self.inside_string = False
 
 
 def next_indentantion(line):
@@ -821,3 +826,36 @@ def next_token_inside_string(s, inside_string):
                 elif value == inside_string:
                     inside_string = False
     return inside_string
+
+
+def split_lines(tokens):
+    for (token, value) in tokens:
+        if not value:
+            continue
+        while value:
+            head, newline, value = value.partition('\n')
+            yield (token, head)
+            if newline:
+                yield (Token.Text, newline)
+
+def token_is(token_type):
+    """Return a callable object that returns whether a token is of the
+    given type `token_type`."""
+    def token_is_type(token):
+        """Return whether a token is of a certain type or not."""
+        token = token[0]
+        while token is not token_type and token.parent:
+            token = token.parent
+        return token is token_type
+
+    return token_is_type
+
+def token_is_any_of(token_types):
+    """Return a callable object that returns whether a token is any of the
+    given types `token_types`."""
+    is_token_types = map(token_is, token_types)
+
+    def token_is_any_of(token):
+        return any(check(token) for check in is_token_types)
+
+    return token_is_any_of

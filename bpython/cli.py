@@ -829,7 +829,7 @@ class CLIRepl(Repl):
 
         if self.highlighted_paren is not None:
             # Clear previous highlighted paren
-            self.reprint_line(self.highlighted_paren)
+            self.reprint_line(*self.highlighted_paren)
             self.highlighted_paren = None
 
         if OPTS.syntax and (not self.paste_mode or newline):
@@ -937,7 +937,7 @@ class CLIRepl(Repl):
                 self.prev_block_finished = stdout_position
                 self.s = ''
 
-    def reprint_line(self, lineno, tokens=None):
+    def reprint_line(self, lineno, tokens):
         """Helper function for paren highlighting: Reprint line at offset
         `lineno` in current input buffer."""
         if not self.buffer or lineno == len(self.buffer):
@@ -954,8 +954,6 @@ class CLIRepl(Repl):
             return
 
         self.scr.move(real_lineno, 4)
-        if tokens is None:
-            tokens = list(PythonLexer().get_tokens(self.buffer[lineno]))
         line = format(tokens, BPythonFormatter(OPTS.color_scheme))
         for string in line.split('\x04'):
             self.echo(string)
@@ -1124,6 +1122,8 @@ class CLIRepl(Repl):
         in the line or the line is blank then process a normal tab,
         otherwise attempt to autocomplete to the best match of possible
         choices in the match list."""
+
+        print >> sys.__stderr__, 'lala:', repr(self.current_string())
 
         if self.atbol():
             x_pos = len(self.s) - self.cpos
