@@ -870,11 +870,11 @@ class CLIRepl(Repl):
             self.s_hist.append('\x01%s\x03... \x04' %
                 (OPTS.color_scheme['prompt_more'],))
 
-    def push(self, s):
+    def push(self, s, insert_into_history=True):
         # curses.raw(True) prevents C-c from causing a SIGINT
         curses.raw(True)
         try:
-            return Repl.push(self, s)
+            return Repl.push(self, s, insert_into_history)
         finally:
             curses.raw(True)
 
@@ -905,7 +905,7 @@ class CLIRepl(Repl):
 
 # Use our own helper function because Python's will use real stdin and
 # stdout instead of our wrapped
-        self.push('from bpython._internal import _help as help\n')
+        self.push('from bpython._internal import _help as help\n', False)
 
         self.iy, self.ix = self.scr.getyx()
         more = False
