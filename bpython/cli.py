@@ -1123,8 +1123,6 @@ class CLIRepl(Repl):
         otherwise attempt to autocomplete to the best match of possible
         choices in the match list."""
 
-        print >> sys.__stderr__, 'lala:', repr(self.current_string())
-
         if self.atbol():
             x_pos = len(self.s) - self.cpos
             num_spaces = x_pos % OPTS.tab_length
