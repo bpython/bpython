@@ -34,7 +34,6 @@ from locale import LC_ALL, getpreferredencoding, setlocale
 import gobject
 import gtk
 import pango
-from pygments.lexers import PythonLexer
 
 from bpython import importcompletion, repl
 from bpython.config import Struct, loadini
