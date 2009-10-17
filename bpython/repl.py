@@ -678,8 +678,9 @@ class Repl(object):
         self.s = ''
         self.scr.refresh()
 
-        for _ in xrange(indent):
-            self.tab()
+        if self.buffer:
+            for _ in xrange(indent):
+                self.tab()
 
         self.evaluating = False
         #map(self.push, self.history)
