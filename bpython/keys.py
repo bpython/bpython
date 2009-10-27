@@ -25,7 +25,9 @@
 
 import string
 
+
 class KeyMap:
+
     def __init__(self):
         self.map = {}
 
@@ -33,7 +35,8 @@ class KeyMap:
         if key in self.map:
             return self.map[key]
         else:
-            raise Exception('Configured keymap (%s) does not exist in bpython.keys' % key)
+            raise Exception('Configured keymap (%s)\
+does not exist in bpython.keys' % key)
 
     def __setitem__(self, key, value):
         self.map[key] = value
@@ -42,7 +45,7 @@ key_dispatch = KeyMap()
 
 # fill dispatch with letters
 for c in string.ascii_lowercase:
-    key_dispatch['C-%s' % c] = (chr(string.ascii_lowercase.index(c)+1),
+    key_dispatch['C-%s' % c] = (chr(string.ascii_lowercase.index(c) + 1),
                                 '^%s' % c.upper())
 
 # fill dispatch with cool characters
@@ -53,5 +56,5 @@ key_dispatch['C-^'] = (chr(30), '^^')
 key_dispatch['C-_'] = (chr(31), '^_')
 
 # fill dispatch with function keys
-for x in xrange(1,13):
+for x in xrange(1, 13):
     key_dispatch['F%s' % str(x)] = ('KEY_F(%s)' % str(x),)

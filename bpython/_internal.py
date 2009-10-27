@@ -8,6 +8,7 @@ pydoc.pager = page
 
 
 class _Helper(object):
+
     def __init__(self):
         self.helper = pydoc.Helper(sys.stdin, sys.stdout)
 

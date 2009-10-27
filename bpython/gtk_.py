@@ -53,6 +53,7 @@ class ArgspecFormatter(object):
     """
     Format an argspec using Pango markup language.
     """
+
     def format(self, args, varargs, varkw, defaults, in_arg):
         self.args_seen = 0
         self.in_arg = in_arg
@@ -76,6 +77,7 @@ class Nested(object):
     """
     A helper class, inspired by a semaphore.
     """
+
     def __init__(self):
         self.counter = 0
 
@@ -97,6 +99,7 @@ class SuggestionWindow(gtk.Window):
     __gsignals__ = dict(expose_event=None,
                         selection_changed=(gobject.SIGNAL_RUN_LAST, None,
                                            (str, )))
+
     def __init__(self):
         gtk.Window.__init__(self, gtk.WINDOW_POPUP)
         self.set_app_paintable(True)
@@ -213,6 +216,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
                         focus_in_event=None,
                         focus_out_event=None,
                         realize=None)
+
     def __init__(self, interpreter):
         gtk.TextView.__init__(self)
         repl.Repl.__init__(self, interpreter)
@@ -569,13 +573,16 @@ def init_import_completion():
 def on_about(widget):
     pass
 
+
 def on_quit(widget):
     pass
+
 
 def on_button_press_event(widget, event, popup):
     if event.button == 3:
         popup.popup(None, None, None, event.button, event.time)
         return True
+
 
 def main(args=None):
     if args is None:
