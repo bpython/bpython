@@ -64,6 +64,7 @@ class Interpreter(code.InteractiveInterpreter):
         code.InteractiveInterpreter.__init__(self, locals)
 
     if not py3:
+
         def runsource(self, source, filename='<input>', symbol='single'):
             source = '# coding: %s\n%s' % (self.encoding,
                                            source.encode(self.encoding))
@@ -130,6 +131,7 @@ class Interpreter(code.InteractiveInterpreter):
 
 
 class History(object):
+
     def __init__(self, entries=None):
         if entries is None:
             self.entries = ['']
@@ -189,6 +191,7 @@ class History(object):
 
 
 class MatchesIterator(object):
+
     def __init__(self, current_word='', matches=[]):
         self.current_word = current_word
         self.matches = list(matches)
@@ -297,7 +300,6 @@ class Repl(object):
         if filename and os.path.isfile(filename):
             with open(filename, 'r') as f:
                 self.interp.runsource(f.read(), filename, 'exec')
-
 
     def attr_matches(self, text):
         """Taken from rlcompleter.py and bent to my will."""
@@ -586,7 +588,7 @@ class Repl(object):
     def pastebin(self):
         """Upload to a pastebin and display the URL in the status bar."""
 
-        pasteservice_url = OPTS.pastebin_url 
+        pasteservice_url = OPTS.pastebin_url
         pasteservice = ServerProxy(urljoin(pasteservice_url, '/xmlrpc/'))
 
         s = self.getstdout()
@@ -595,7 +597,7 @@ class Repl(object):
         try:
             paste_id = pasteservice.pastes.newPaste('pycon', s)
         except XMLRPCError, e:
-            self.statusbar.message( 'Upload failed: %s' % (str(e), ) )
+            self.statusbar.message('Upload failed: %s' % (str(e), ) )
             return
 
         paste_url = urljoin(pasteservice_url, '/show/%s/' % (paste_id, ))
@@ -849,9 +851,11 @@ def split_lines(tokens):
             if newline:
                 yield (Token.Text, newline)
 
+
 def token_is(token_type):
     """Return a callable object that returns whether a token is of the
     given type `token_type`."""
+
     def token_is_type(token):
         """Return whether a token is of a certain type or not."""
         token = token[0]
@@ -860,6 +864,7 @@ def token_is(token_type):
         return token is token_type
 
     return token_is_type
+
 
 def token_is_any_of(token_types):
     """Return a callable object that returns whether a token is any of the

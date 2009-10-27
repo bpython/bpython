@@ -30,6 +30,7 @@ import sys
 modules = set()
 fully_loaded = False
 
+
 def complete(line, cw):
     """Construct a full list of possibly completions for imports."""
     if not cw:
@@ -102,6 +103,7 @@ def find_all_modules(path=None):
             modules.add(module)
             yield
 
+
 def find_coroutine():
     global fully_loaded
 
@@ -114,6 +116,7 @@ def find_coroutine():
         fully_loaded = True
 
     return True
+
 
 def reload():
     """Refresh the list of known modules."""

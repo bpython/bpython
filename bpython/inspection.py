@@ -41,6 +41,7 @@ if not py3:
 class AttrCleaner(object):
     """A context manager that tries to make an object not exhibit side-effects
        on attribute lookup."""
+
     def __init__(self, obj):
         self.obj = obj
 
@@ -127,6 +128,7 @@ def parsekeywordpairs(signature):
         if len(item) >= 3:
             d[item[0]] = ''.join(item[2:])
     return d
+
 
 def fixlongargs(f, argspec):
     """Functions taking default arguments that are references to other objects

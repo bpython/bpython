@@ -5,9 +5,11 @@ from itertools import chain
 from bpython.keys import key_dispatch
 import errno
 
+
 class Struct(object):
     """Simple class for instantiating objects we can add arbitrary attributes
     to and use for various arbitrary things."""
+
 
 def fill_config_with_default_values(config, default_values):
     for section in default_values.iterkeys():
@@ -42,8 +44,7 @@ def loadini(struct, configfile):
             'paste_time': 0.02,
             'syntax': True,
             'tab_length': 4,
-            'pastebin_url': 'http://bpaste.net'
-        },
+            'pastebin_url': 'http://bpaste.net'},
         'keyboard': {
             'clear_line': 'C-u',
             'clear_screen': 'C-l',
@@ -57,9 +58,7 @@ def loadini(struct, configfile):
             'show_source': 'F2',
             'undo': 'C-r',
             'up_one_line': 'C-p',
-            'yank_from_buffer': 'C-y'
-        }
-    })
+            'yank_from_buffer': 'C-y'}})
     config.read(config_path)
 
     struct.tab_length = config.getint('general', 'tab_length')
@@ -118,6 +117,7 @@ def loadini(struct, configfile):
     for key in (struct.pastebin_key, struct.save_key):
         key_dispatch[key]
 
+
 def load_theme(struct, path, inipath):
     theme = ConfigParser()
     try:
@@ -137,7 +137,8 @@ def load_theme(struct, path, inipath):
 
 
 def migrate_rc(path):
-    """Use the shlex module to convert the old configuration file to the new format.
+    """Use the shlex module to convert the old configuration file to the new
+    format.
     The old configuration file is renamed but not removed by now."""
     import shlex
     f = open(path)
@@ -149,8 +150,7 @@ def migrate_rc(path):
         'on': True,
         'false': False,
         'no': False,
-        'off': False
-    }
+        'off': False}
 
     config = ConfigParser()
     config.add_section('general')

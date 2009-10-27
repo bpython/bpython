@@ -412,11 +412,11 @@ class CLIRepl(Repl):
             return
 
         i = 1
-        while i < l+1:
+        while i < l + 1:
             if not self.s[-i].isalnum() and self.s[-i] not in ('.', '_'):
                 break
             i += 1
-        return self.s[-i +1:]
+        return self.s[-i + 1:]
 
     def delete(self):
         """Process a del"""
@@ -597,17 +597,17 @@ class CLIRepl(Repl):
             y, x = self.list_win.getyx()
             ln = len(str(i))
             kw = None
-            if kwargs and k+1 > len(args) - len(kwargs):
+            if kwargs and k + 1 > len(args) - len(kwargs):
                 kw = str(kwargs[k - (len(args) - len(kwargs))])
                 ln += len(kw) + 1
 
             if ln + x >= w:
                 ty = self.list_win.getbegyx()[0]
                 if not down and ty > 0:
-                    h +=1
+                    h += 1
                     self.list_win.mvwin(ty-1, 1)
                     self.list_win.resize(h, w)
-                elif down and h + r < maxh-ty:
+                elif down and h + r < maxh - ty:
                     h += 1
                     self.list_win.resize(h, w)
                 else:
@@ -985,7 +985,7 @@ class CLIRepl(Repl):
         if down:
             max_h = h - y
         else:
-            max_h = y+1
+            max_h = y + 1
         max_w = int(w * 0.8)
         self.list_win.erase()
         if items:
@@ -1057,7 +1057,7 @@ class CLIRepl(Repl):
             w = t
 
 
-        if height_offset and display_rows+5 >= max_h:
+        if height_offset and display_rows + 5 >= max_h:
             del v_items[-(cols * (height_offset)):]
 
         if self.docstring is None:
@@ -1087,7 +1087,7 @@ class CLIRepl(Repl):
             if not py3:
                 i = i.encode(getpreferredencoding())
             self.list_win.addstr(i + padding, color)
-            if ((cols == 1 or (ix and not (ix+1) % cols))
+            if ((cols == 1 or (ix and not (ix + 1) % cols))
                     and ix + 1 < len(v_items)):
                 self.list_win.addstr('\n ')
 
@@ -1392,7 +1392,8 @@ def gethw():
 
     """
     h, w = struct.unpack(
-        "hhhh", fcntl.ioctl(sys.__stdout__, termios.TIOCGWINSZ, "\000"*8))[0:2]
+        "hhhh",
+        fcntl.ioctl(sys.__stdout__, termios.TIOCGWINSZ, "\000" * 8))[0:2]
     return h, w
 
 

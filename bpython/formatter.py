@@ -68,8 +68,7 @@ theme_map = {
     Token: 'token',
     Whitespace: 'background',
     Parenthesis: 'paren',
-    Parenthesis.UnderCursor: 'operator'
-}
+    Parenthesis.UnderCursor: 'operator'}
 
 
 class BPythonFormatter(Formatter):
@@ -104,7 +103,7 @@ class BPythonFormatter(Formatter):
 
             while token not in self.f_strings:
                 token = token.parent
-            o +=  "%s\x03%s\x04" % (self.f_strings[token], text)
+            o += "%s\x03%s\x04" % (self.f_strings[token], text)
         outfile.write(o.rstrip())
 
 # vim: sw=4 ts=4 sts=4 ai et
