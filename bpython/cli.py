@@ -200,35 +200,38 @@ def DEBUG(s):
 def get_color(name):
     return colors[OPTS.color_scheme[name].lower()]
 
+
 def get_colpair(name):
     return curses.color_pair(get_color(name) + 1)
+
 
 def make_colors():
     """Init all the colours in curses and bang them into a dictionary"""
 
     # blacK, Red, Green, Yellow, Blue, Magenta, Cyan, White, Default:
     c = {
-        'k' : 0,
-        'r' : 1,
-        'g' : 2,
-        'y' : 3,
-        'b' : 4,
-        'm' : 5,
-        'c' : 6,
-        'w' : 7,
-        'd' : -1,
+        'k': 0,
+        'r': 1,
+        'g': 2,
+        'y': 3,
+        'b': 4,
+        'm': 5,
+        'c': 6,
+        'w': 7,
+        'd': -1,
     }
     for i in range(63):
         if i > 7:
             j = i // 8
         else:
             j = c[OPTS.color_scheme['background']]
-        curses.init_pair(i+1, i % 8, j)
+        curses.init_pair(i + 1, i % 8, j)
 
     return c
 
 
 class CLIRepl(Repl):
+
     def __init__(self, scr, interp, statusbar=None, idle=None):
         Repl.__init__(self, interp, idle)
         interp.writetb = self.writetb
@@ -357,7 +360,8 @@ class CLIRepl(Repl):
                     self.show_list(self.matches, self.argspec)
                 except curses.error:
                     # XXX: This is a massive hack, it will go away when I get
-                    # cusswords into a good enough state that we can start using it.
+                    # cusswords into a good enough state that we can start
+                    # using it.
                     self.list_win.border()
                     self.list_win.refresh()
                     self.list_win_visible = False
@@ -464,8 +468,8 @@ class CLIRepl(Repl):
         self.scr.move(y, x)
         if refresh:
             self.scr.refresh()
-        return True
 
+        return True
 
     def fwd(self):
         """Same as back() but, well, forward"""
@@ -718,11 +722,13 @@ class CLIRepl(Repl):
             self.undo()
             return ''
 
-        elif key in ('KEY_UP', ) + key_dispatch[OPTS.up_one_line_key]: # Cursor Up/C-p
+        elif key in ('KEY_UP', ) + key_dispatch[OPTS.up_one_line_key]:
+            # Cursor Up/C-p
             self.back()
             return ''
 
-        elif key in ('KEY_DOWN', ) + key_dispatch[OPTS.down_one_line_key]: # Cursor Down/C-n
+        elif key in ('KEY_DOWN', ) + key_dispatch[OPTS.down_one_line_key]:
+            # Cursor Down/C-n
             self.fwd()
             return ''
 
@@ -1086,7 +1092,8 @@ class CLIRepl(Repl):
                 self.list_win.addstr('\n ')
 
         if self.docstring is not None:
-            self.list_win.addstr('\n' + docstring_string, get_colpair('comment'))
+            self.list_win.addstr('\n' + docstring_string,
+                                 get_colpair('comment'))
 # XXX: After all the trouble I had with sizing the list box (I'm not very good
 # at that type of thing) I decided to do this bit of tidying up here just to
 # make sure there's no unnececessary blank lines, it makes things look nicer.
@@ -1352,9 +1359,9 @@ def init_wins(scr, cols):
 # problems that needed dirty hackery to fix. :)
 
 # TODO:
-# 
+#
 # This should show to be configured keys from ~/.bpython/config
-# 
+#
     statusbar = Statusbar(scr, main_win,
         " <%s> Exit  <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager" %
             (OPTS.exit_key, OPTS.undo_key, OPTS.save_key, OPTS.pastebin_key,
@@ -1426,14 +1433,18 @@ def do_resize(caller):
     caller.resize()
 # The list win resizes itself every time it appears so no need to do it here.
 
+
 class FakeDict(object):
     """Very simple dict-alike that returns a constant value for any key -
     used as a hacky solution to using a colours dict containing colour codes if
     colour initialisation fails."""
+
     def __init__(self, val):
         self._val = val
+
     def __getitem__(self, k):
         return self._val
+
 
 def newwin(*args):
     """Wrapper for curses.newwin to automatically set background colour on any
@@ -1578,7 +1589,8 @@ def main(args=None, locals_=None):
 
     setlocale(LC_ALL, '')
 
-    path = os.path.expanduser('~/.bpythonrc')   # migrating old configuration file
+    path = os.path.expanduser('~/.bpythonrc')
+    # migrating old configuration file
     if os.path.isfile(path):
         migrate_rc(path)
     loadini(OPTS, options.config)
