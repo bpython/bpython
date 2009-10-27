@@ -302,7 +302,7 @@ class CLIRepl(Repl):
 
             self.s = self.s[:-n]
         else:
-            self.s = self.s[:-self.cpos-1] + self.s[-self.cpos:]
+            self.s = self.s[:-self.cpos - 1] + self.s[-self.cpos:]
 
         self.print_line(self.s, clr=True)
 
@@ -407,8 +407,8 @@ class CLIRepl(Repl):
         l = len(self.s)
 
         if (not self.s or
-            (not self.s[l-1].isalnum() and
-             self.s[l-1] not in ('.', '_'))):
+            (not self.s[l - 1].isalnum() and
+             self.s[l - 1] not in ('.', '_'))):
             return
 
         i = 1
@@ -605,7 +605,7 @@ class CLIRepl(Repl):
                 ty = self.list_win.getbegyx()[0]
                 if not down and ty > 0:
                     h += 1
-                    self.list_win.mvwin(ty-1, 1)
+                    self.list_win.mvwin(ty - 1, 1)
                     self.list_win.resize(h, w)
                 elif down and h + r < maxh - ty:
                     h += 1
@@ -699,7 +699,7 @@ class CLIRepl(Repl):
         if key is None:
             return ''
 
-        if key == chr(8): # C-Backspace (on my computer anyway!)
+        if key == chr(8):  # C-Backspace (on my computer anyway!)
             self.clrtobol()
             key = '\n'
             # Don't return; let it get handled
@@ -711,14 +711,14 @@ class CLIRepl(Repl):
             self.complete()
             return ''
 
-        elif key == 'KEY_DC': # Del
+        elif key == 'KEY_DC':  # Del
             self.delete()
             self.complete()
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
             return ''
 
-        elif key in key_dispatch[OPTS.undo_key]: # C-r
+        elif key in key_dispatch[OPTS.undo_key]:  # C-r
             self.undo()
             return ''
 
@@ -732,31 +732,31 @@ class CLIRepl(Repl):
             self.fwd()
             return ''
 
-        elif key == 'KEY_LEFT': # Cursor Left
+        elif key == 'KEY_LEFT':  # Cursor Left
             self.mvc(1)
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif key == 'KEY_RIGHT': # Cursor Right
+        elif key == 'KEY_RIGHT':  # Cursor Right
             self.mvc(-1)
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif key in ("KEY_HOME", '^A', chr(1)): # home or ^A
+        elif key in ("KEY_HOME", '^A', chr(1)):  # home or ^A
             self.home()
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif key in ("KEY_END", '^E', chr(5)): # end or ^E
+        elif key in ("KEY_END", '^E', chr(5)):  # end or ^E
             self.end()
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif key in key_dispatch[OPTS.cut_to_buffer_key]: # cut to buffer
+        elif key in key_dispatch[OPTS.cut_to_buffer_key]:  # cut to buffer
             self.cut_to_buffer()
             return ''
 
-        elif key in key_dispatch[OPTS.yank_from_buffer_key]: # yank from buffer
+        elif key in key_dispatch[OPTS.yank_from_buffer_key]:  # yank from buffer
             self.yank_from_buffer()
             return ''
 
@@ -1024,13 +1024,13 @@ class CLIRepl(Repl):
 
         if items:
 # visible items (we'll append until we can't fit any more in)
-            v_items = [items[0][:max_w-3]]
+            v_items = [items[0][:max_w - 3]]
             lsize()
         else:
             v_items = []
 
         for i in items[1:]:
-            v_items.append(i[:max_w-3])
+            v_items.append(i[:max_w - 3])
             if not lsize():
                 del v_items[-1]
                 v_items[-1] = '...'
@@ -1056,7 +1056,6 @@ class CLIRepl(Repl):
                 t = max_w
             w = t
 
-
         if height_offset and display_rows + 5 >= max_h:
             del v_items[-(cols * (height_offset)):]
 
@@ -1076,7 +1075,6 @@ class CLIRepl(Repl):
 
         if v_items:
             self.list_win.addstr('\n ')
-
 
         for ix, i in enumerate(v_items):
             padding = (wl - len(i)) * ' '
@@ -1121,7 +1119,7 @@ class CLIRepl(Repl):
         h, w = stdscr.getmaxyx()
         self.y = 0
         self.w = w
-        self.h = h-1
+        self.h = h - 1
         self.x = 0
 
     def tab(self):
@@ -1236,7 +1234,7 @@ class Statusbar(object):
         """Set instance attributes for x and y top left corner coordinates
         and width and heigth for the window."""
         h, w = gethw()
-        self.y = h-1
+        self.y = h - 1
         self.w = w
         self.h = 1
         self.x = 0
@@ -1285,8 +1283,8 @@ class Statusbar(object):
             if x == ix:
                 return s
             s = s[:-1]
-            self.win.delch(y, x-1)
-            self.win.move(y, x-1)
+            self.win.delch(y, x - 1)
+            self.win.move(y, x - 1)
             return s
 
         o = ''
@@ -1322,7 +1320,7 @@ class Statusbar(object):
 
         self.win.erase()
         if len(s) >= self.w:
-            s = s[:self.w-1]
+            s = s[:self.w - 1]
 
         self.s = s
         if c:
@@ -1352,7 +1350,7 @@ def init_wins(scr, cols):
 
     h, w = gethw()
 
-    main_win = newwin(h-1, w, 0, 0)
+    main_win = newwin(h - 1, w, 0, 0)
     main_win.scrollok(True)
     main_win.keypad(1)
 # Thanks to Angus Gibson for pointing out this missing line which was causing

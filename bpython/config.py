@@ -112,7 +112,6 @@ def loadini(struct, configfile):
         path = os.path.expanduser('~/.bpython/%s.theme' % (color_scheme_name,))
         load_theme(struct, path, config_path)
 
-
     # checks for valid key configuration this part still sucks
     for key in (struct.pastebin_key, struct.save_key):
         key_dispatch[key]

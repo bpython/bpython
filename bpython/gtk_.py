@@ -211,7 +211,7 @@ class SuggestionWindow(gtk.Window):
 
 
 class ReplWidget(gtk.TextView, repl.Repl):
-    __gsignals__ = dict(#key_press_event=None,
+    __gsignals__ = dict(  # key_press_event=None,
                         button_press_event=None,
                         focus_in_event=None,
                         focus_out_event=None,
