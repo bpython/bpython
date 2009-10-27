@@ -756,7 +756,8 @@ class CLIRepl(Repl):
             self.cut_to_buffer()
             return ''
 
-        elif key in key_dispatch[OPTS.yank_from_buffer_key]:  # yank from buffer
+        elif key in key_dispatch[OPTS.yank_from_buffer_key]:
+            # yank from buffer
             self.yank_from_buffer()
             return ''
 

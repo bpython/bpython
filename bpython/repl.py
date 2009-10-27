@@ -390,7 +390,8 @@ class Repl(object):
         # the arguments
         stack = [['', 0, '']]
         try:
-            for (token, value) in PythonLexer().get_tokens(self.current_line()):
+            for (token, value) in PythonLexer().get_tokens(
+                self.current_line()):
                 if token is Token.Punctuation:
                     if value in '([{':
                         stack.append(['', 0, value])
