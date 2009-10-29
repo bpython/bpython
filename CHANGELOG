@@ -1,31 +1,37 @@
+Changelog
+=========
+
 v0.9.5.2
-========
+--------
 
 A bugfix release. Fixed issues:
-#60: Filename expansion: Cycling completions and deleting
-#61: Filename expansion: Directory names with '.'s get mangled
+
+* #60: Filename expansion: Cycling completions and deleting
+* #61: Filename expansion: Directory names with '.'s get mangled
 
 Other fixes without opened issues:
-- Encode items in the suggestion list properly
-- Expand usernames in file completion correctly
-- future imports in startup scripts can influence interpreter's behaviour now
-- Show the correct docstring for types without a own __init__ method
+
+* Encode items in the suggestion list properly
+* Expand usernames in file completion correctly
+* future imports in startup scripts can influence interpreter's behaviour now
+* Show the correct docstring for types without a own __init__ method
 
 v0.9.5.1
-========
+--------
 
 Added missing data files to the tarball.
 
-v0.9.5
-======
 
+v0.9.5
+------
 Fixed issues:
-#25 Problems with DEL, Backspace and C-u over multiple lines
-#49 Sending last output to $PAGER
-#51 Ability to embed bython shell into an existing script
-#52 FakeStdin.readlines() is broken
-#53 Error on printing null character
-#54 Parsing/introspection ncurses viewer neglects parenthesis
+
+* #25 Problems with DEL, Backspace and C-u over multiple lines
+* #49 Sending last output to $PAGER
+* #51 Ability to embed bpython shell into an existing script
+* #52 FakeStdin.readlines() is broken
+* #53 Error on printing null character
+* #54 Parsing/introspection ncurses viewer neglects parenthesis
 
 bpython has added a view source shortcut to show the source of the current
 function.
@@ -36,141 +42,96 @@ in Debian's bugtracker.
 bpython has now some basic support for Python 3 (requires Pygments >=1.1.1).
 As a result, setuptools is now optional.
 
-The pastebin URL is now configurable and the default pastebin is now
+The pastebin URL is now configurable and the default pastebin is now 
 bpaste.net
 
-Argument names are now shown as completion suggestions and one can
+Argument names are now shown as completion suggestions and one can 
 tab through the completion list.
 
 v0.9.4
-======
+------
+Bugfix release (mostly)
 
-Fixed issues:
-#36 when typing a float literal bpython autocompletes int methods
-#40 Autocompletion for file names
-#27 Indenting doesn't reset
-
-bpython configuration has moved from ~/.bpython.ini to ~/.bpython/config (currently
-still supporting fallback)
-
-leftovers of statusbar when exiting bpython cleaned up
-
-bpython now does not crash when a 'popup' goes out of window bounds
-
-numerous fixes and improvements to parentheses highlighting
-
-made *all* keys configurable (except for arrow keys/pgup/pgdown)
+* when typing a float literal bpython autocompletes int methods (#36)
+* Autocompletion for file names (#40)
+* Indenting doesn't reset (#27)
+* bpython configuration has moved from ~/.bpython.ini to ~/.bpython/config (currently still supporting fallback)
+* leftovers of statusbar when exiting bpython cleaned up
+* bpython now does not crash when a 'popup' goes out of window bounds
+* numerous fixes and improvements to parentheses highlighting
+* made *all* keys configurable (except for arrow keys/pgup/pgdown)
 
 v0.9.3
-======
+------
+This release was a true whopper!
 
-Full unicode support
-
-Configurable hotkey support
-
-Theming support
-
-Pastemode, disables syntax highlighting during a paste for faster pasting, highlights when done
-
-Parentheses matching
-
-Argument highlighting
+* Full unicode support
+* Configurable hotkey support
+* Theming support
+* Pastemode, disables syntax highlighting during a paste for faster pasting, highlights when done
+* Parentheses matching
+* Argument highlighting
 
 v0.9.2
-======
-help() now uses an external pager if available.
-
-Fix for highlighting prefixed strings.
-
-Fix to reset string highlighting after a SyntaxError.
-
-bpython now uses optparse for option parsing and it supports --version now.
-Configuration files are no longer passed by the first command line argument
-but by the -c command line switch.
-
-Fix for problem related to editing lines in the history:
-http://bitbucket.org/bobf/bpython/issue/10/odd-behaviour-when-editing-commands-in-the-history
+------
+* help() now uses an external pager if available.
+* Fix for highlighting prefixed strings.
+* Fix to reset string highlighting after a SyntaxError.
+* bpython now uses optparse for option parsing and it supports --version now.
+* Configuration files are no longer passed by the first command line argument but by the -c command line switch.
+* Fix for problem related to editing lines in the history: http://bitbucket.org/bobf/bpython/issue/10/odd-behaviour-when-editing-commands-in-the-history
 
 v0.9.1
-======
-Fixed a small but annoying bug with sys.argv ini file passing
-
-Fix for Python 2.6 to monkeypatch they way it detects callables in rlcompleter
-
-Config file conversion fix
+------
+* Fixed a small but annoying bug with sys.argv ini file passing
+* Fix for Python 2.6 to monkeypatch they way it detects callables in rlcompleter
+* Config file conversion fix
 
 v0.9.0
-======
-Module import completion added.
-
-Changed to paste.pocoo.org due to rafb.net no longer offering a pastebin
-service.
-
-Switched to .ini file format for config file.
-
-White background-friendly colour scheme added.
-
-C-l now clears the screen.
-
-SyntaxError now correctly added to history to prevent it garbling up on a
-redraw.
+------
+* Module import completion added.
+* Changed to paste.pocoo.org due to rafb.net no longer offering a pastebin service.
+* Switched to .ini file format for config file.
+* White background-friendly colour scheme added.
+* C-l now clears the screen.
+* SyntaxError now correctly added to history to prevent it garbling up on a redraw.
 
 Probably some other things, but I hate changelogs. :)
 
 v0.8.0
-======
+------
+
 It's been a long while since the last release and there've been numerous little
 bugfixes and extras here and there so I'm putting this out as 0.8.0. Check the
 hg commit history if you want more info:
 http://bitbucket.org/bobf/bpython/
 
 v0.7.2
-======
+------
 Menno sent me some patches to fix some stuff:
-    * Socket error handled when submitting to a pastebin.
-    * Resizing could crash if you resize small enough.
 
-'self' in arg list is now highlighted a different colour.
+* Socket error handled when submitting to a pastebin.
+* Resizing could crash if you resize small enough.
 
-flush_output option added to config to control whether output is flushed to
-stdout or not on exit.
+Other stuff:
 
-Piping something to bpython made it lock up as stdin was not the keyboard -
-bpython just executes stdin and exits instead of trying to do something clever.
-
-Mark Florisson (eggy) gave me a patch that stops weird breakage when unicode
-objects get added into the output buffer - they now get encoded into the output
-encoding.
-
-Bohdan Vlasyuk sent me a patch that fixes a problem with the above patch from
-Mark if sys.__stdout__.encoding didn't exist.
-
-Save to file now outputs executable code (i.e. without the >>> and ... and with
-"# OUT: " prepended to all output lines). I never used this feature much but
-someone asked for this behaviour.
+* 'self' in arg list is now highlighted a different colour.
+* flush_output option added to config to control whether output is flushed to stdout or not on exit.
+* Piping something to bpython made it lock up as stdin was not the keyboard - bpython just executes stdin and exits instead of trying to do something clever.
+* Mark Florisson (eggy) gave me a patch that stops weird breakage when unicode objects get added into the output buffer - they now get encoded into the output encoding.
+* Bohdan Vlasyuk sent me a patch that fixes a problem with the above patch from Mark if sys.__stdout__.encoding didn't exist.
+* Save to file now outputs executable code (i.e. without the >>> and ... and with "# OUT: " prepended to all output lines). I never used this feature much but someone asked for this behaviour.
 
 v0.7.1
-======
-Added support for a history file, defaults to ~/.pythonhist and 100 lines but
-is configurable from the rc file (see sample-rc).
-
-Charles Duffy has added a yank/put thing - C-k and C-y. He also ran the code
-through some PEP-8 checker thing and fixed up a few old habits I manage to
-break but didn't manage to fix the code to reflect this - thank you!
-
-Jørgen Tjernø has fixed up the autoindentation issues we encountered when
-bringing soft tabs in.
-
-SyntaxError, ValueError and OverflowError are now caught properly
-(code.InteractiveInterpreter treats these as different to other exceptions as
-it doesn't print the whole traceback, so a different handler is called). This
-was discovered as I was trying to stop autoindentation from occurring on a
-SyntaxError, which has also been fixed.
-
-'.' now in sys.path on startup.
+------
+* Added support for a history file, defaults to ~/.pythonhist and 100 lines but is configurable from the rc file (see sample-rc).
+* Charles Duffy has added a yank/put thing - C-k and C-y. He also ran the code through some PEP-8 checker thing and fixed up a few old habits I manage to break but didn't manage to fix the code to reflect this - thank you!
+* Jørgen Tjernø has fixed up the autoindentation issues we encountered when bringing soft tabs in.
+* SyntaxError, ValueError and OverflowError are now caught properly (code.InteractiveInterpreter treats these as different to other exceptions as it doesn't print the whole traceback, so a different handler is called). This was discovered as I was trying to stop autoindentation from occurring on a SyntaxError, which has also been fixed.
+* '.' now in sys.path on startup.
 
 v0.7.0
-======
+------
 C-d behaviour changed so it no longer exits if the current line isn't empty.
 
 Extra linebreak added to end of stdout flush.
@@ -187,15 +148,15 @@ PYTHONSTARTUP handled without blowing up on stupid errors (it now parses the
 file at once instead of feeding it to the repl line-by-line).
 
 v0.6.4
-======
+------
 KeyboardInterrupt handler clears the list window properly now.
 
 v0.6.3
-======
+------
 Forgot to switch rpartition to split for 2.4 compat.
 
 v0.6.2
-======
+------
 The help() now works (as far as I can see) exactly the same
 as the vanilla help() in the regular interpreter. I copied some
 code from pydoc.py to make it handle the special cases, e.g.
@@ -204,7 +165,7 @@ help('modules')
 etc.
 
 v0.6.1
-======
+------
 Somehow it escaped my attention that the list window was never
 fully using the rightmost column, except for the first row. This
 is because me and numbers don't have the best relationship. I think
@@ -212,7 +173,7 @@ stability is really improving with the latest spat of bugfixes,
 keep me informed of any bugs.
 
 v0.6.0
-======
+------
 No noticeable changes except that bpython should now work with
 Python 2.4. Personally I think it's silly to make a development
 tool work with an out of date version of Python but some people
@@ -221,23 +182,23 @@ horrible version of all() using reduce(), otherwise there's no
 real differences in the code.
 
 v0.5.3
-======
+------
 Now you can configure a ~/.bpythonrc file (or pass a rc file at the
 command line (bpython /foo/bar). See README for details.
 
 v0.5.2
-======
+------
 help() actually displays the full help page, and I fixed up the
 ghetto pager a little.
 
 v0.5.1
-======
+------
 Now you can hit tab to display the autocomplete list, rather than
 have it pop up automatically as you type which, apparently, annoys
 Brendogg.
 
 v0.5.0
-======
+------
 A few people have commented that the help() built-in function
 doesn't work so well with bpython, since Python will try to output
 the help string to PAGER (usually "less") which obviously makes
@@ -248,7 +209,7 @@ As such, it's pretty untested but it seems to be working okay for me.
 Suggestions/bug reports/patches are welcome regarding this.
 
 v0.4.2
-======
+------
 Well, hopefully we're one step closer to making the list sizing
 stuff work. I really hate doing code for that kind of thing as I
 never get it quite right, but with perseverence it should end up
@@ -262,13 +223,13 @@ PYTHONSTARTUP is now dealt with and used properly, as per the vanilla
 interpreter.
 
 v0.4.1
-======
+------
 It looks like the last release was actually pretty bug-free, aside
 from one tiny bug that NEVER ACTUALLY HAPPENS but someone was bugging
 me about it anyway, oh well.
 
 v0.4.0
-======
+------
 It's been quite a long time since the last update, due to several
 uninteresting and invalid excuses, but I finally reworked the list
 drawing procedures so the crashing seems to have been taken care of
@@ -276,23 +237,23 @@ to an extent. If it still crashes, the way I've written it will hopefully
 allow a much more robust way of fixing it, one that might actually work.
 
 v0.3.2
-======
+------
 Thanks to Aaron Gallagher for pointing out a case where the hugely
 inefficient list generation routines were actually making a significant
 issue; they're much more efficient now and should hopefully not cause
 any more problems.
 
 v0.3.1
-======
+------
 Thanks to Klaus Alexander Seis for the expanduser() patch.
 Auto indent works on multiple levels now.
 
 v0.3.0
-======
+------
 Now with auto-indent. Let me know if it's annoying.
 
 v0.2.4
-======
+------
 Thanks a lot to Angus Gibson for submitting a patch to fix a problem
 I was having with initialising the keyboard stuff in curses properly.
 
@@ -311,17 +272,17 @@ of the reevaluating and resizing code so that a lot of the strange
 output seen on Rewind/resize seems to be gone.
 
 v0.2.3
-======
+------
 The fix for the last bug broke the positioning of the autocomplete
 box, whoops.
 
 v0.2.2
-======
+------
 That pesky bug keeps coming up. I think it's finally nailed but
 it's just a matter of testing and hoping. I hate numbers.
 
 v0.2.1
-======
+------
 I'm having a bit of trouble with some integer division that's
 causing trouble when a certain set of circumstances arise,
 and I think I've taken care of that little bug, since it's
@@ -330,7 +291,7 @@ doing something useful, so I'll test it for a bit and release
 it as hopefully a bug fixed version.
 
 v0.2.0
-======
+------
 A little late in the day to start a changelog, but here goes...
 This version fixed another annoying little bug that was causing
 crashes given certain exact circumstances. I always find it's the
