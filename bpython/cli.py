@@ -1582,7 +1582,7 @@ def main(args=None, locals_=None):
         print '(C) 2008-2009 Bob Farrell et al. See AUTHORS for detail.'
         return
 
-    if not os.isatty(sys.stdin.fileno()):
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
         interpreter = code.InteractiveInterpreter()
         interpreter.runsource(sys.stdin.read())
         return
