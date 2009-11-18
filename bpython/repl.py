@@ -35,7 +35,8 @@ import traceback
 from glob import glob
 from itertools import takewhile
 from locale import getpreferredencoding
-from urlparse import urljoin
+from string import Template
+from urllib import quote as urlquote
 from xmlrpclib import ServerProxy, Error as XMLRPCError
 
 from pygments.lexers import PythonLexer
@@ -589,8 +590,7 @@ class Repl(object):
     def pastebin(self):
         """Upload to a pastebin and display the URL in the status bar."""
 
-        pasteservice_url = OPTS.pastebin_url
-        pasteservice = ServerProxy(urljoin(pasteservice_url, '/xmlrpc/'))
+        pasteservice = ServerProxy(OPTS.pastebin_url)
 
         s = self.getstdout()
 
@@ -601,7 +601,9 @@ class Repl(object):
             self.statusbar.message('Upload failed: %s' % (str(e), ) )
             return
 
-        paste_url = urljoin(pasteservice_url, '/show/%s/' % (paste_id, ))
+        paste_url_template = Template(OPTS.pastebin_show_url)
+        paste_id = urlquote(paste_id)
+        paste_url = paste_url_template.safe_substitute(paste_id=paste_id)
         self.statusbar.message('Pastebin URL: %s' % (paste_url, ), 10)
 
     def make_list(self, items):
