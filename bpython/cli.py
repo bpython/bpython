@@ -41,6 +41,7 @@ import unicodedata
 from itertools import takewhile
 from locale import LC_ALL, getpreferredencoding, setlocale
 from optparse import OptionParser
+from types import ModuleType
 
 # These are used for syntax hilighting.
 from pygments import format
@@ -1512,7 +1513,8 @@ def main_curses(scr, args, interactive=True, locals_=None):
     main_win, statusbar = init_wins(scr, cols)
 
     if locals_ is None:
-        locals_ = dict(__name__='__main__', __doc__=None)
+        sys.modules['__main__'] = ModuleType('__main__')
+        locals_ = sys.modules['__main__'].__dict__
     interpreter = Interpreter(locals_, getpreferredencoding())
 
     repl = CLIRepl(main_win, interpreter, statusbar, idle)
