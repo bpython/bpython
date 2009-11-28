@@ -38,6 +38,8 @@ import struct
 import termios
 import fcntl
 import unicodedata
+import errno
+
 from itertools import takewhile
 from locale import LC_ALL, getpreferredencoding, setlocale
 from optparse import OptionParser
@@ -102,6 +104,11 @@ class FakeStdin(object):
 
     def __iter__(self):
         return iter(self.readlines())
+
+    def write(self, value):
+        # XXX IPython expects sys.stdin.write to exist, there will no doubt be
+        # others, so here's a hack to keep them happy
+        raise IOError(errno.EBADF, "sys.stdin is read-only")
 
     def isatty(self):
         return True
