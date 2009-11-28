@@ -105,6 +105,10 @@ class FakeStdin(object):
     def __iter__(self):
         return iter(self.readlines())
 
+    def flush(self):
+        """Flush the internal buffer. This is a no-op. Flushing stdin
+        doesn't make any sense anyway."""
+
     def write(self, value):
         # XXX IPython expects sys.stdin.write to exist, there will no doubt be
         # others, so here's a hack to keep them happy
