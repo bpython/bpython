@@ -213,6 +213,10 @@ class MatchesIterator(object):
         self.index = (self.index + 1) % len(self.matches)
         return self.matches[self.index]
 
+    def previous(self):
+        self.index = (self.index - 1) % len(self.matches)
+        return self.matches[self.index]
+
     def update(self, current_word='', matches=[]):
         if current_word != self.current_word:
             self.current_word = current_word
