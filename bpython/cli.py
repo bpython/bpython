@@ -830,6 +830,9 @@ class CLIRepl(Repl):
         elif key == '\t':
             return self.tab()
 
+        elif key == 'KEY_BTAB':
+            return self.tab(back=True)
+
         elif len(key) == 1 and not unicodedata.category(key) == 'Cc':
             self.addstr(key)
             self.print_line(self.s)
@@ -1135,13 +1138,15 @@ class CLIRepl(Repl):
         self.h = h - 1
         self.x = 0
 
-    def tab(self):
+    def tab(self, back=False):
         """Process the tab key being hit. If there's only whitespace
         in the line or the line is blank then process a normal tab,
         otherwise attempt to autocomplete to the best match of possible
-        choices in the match list."""
+        choices in the match list.
+        If `back` is True, walk backwards through the list of suggestions
+        and don't indent if there are only whitespace in the line."""
 
-        if self.atbol():
+        if self.atbol() and not back:
             x_pos = len(self.s) - self.cpos
             num_spaces = x_pos % OPTS.tab_length
             if not num_spaces:
@@ -1177,7 +1182,10 @@ class CLIRepl(Repl):
         if not expanded and self.matches:
             if self.matches_iter:
                 self.s = self.s[:-len(self.matches_iter.current())] + cw
-            current_match = self.matches_iter.next()
+            if back:
+                current_match = self.matches_iter.previous()
+            else:
+                current_match = self.matches_iter.next()
             if current_match:
                 try:
                     self.show_list(self.matches, self.argspec, current_match)
