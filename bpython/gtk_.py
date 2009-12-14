@@ -406,6 +406,11 @@ class ReplWidget(gtk.TextView, repl.Repl):
                         self.change_line(self.rl_history.forward())
                         self.place_cursor(self.get_line_end_iter())
                 return True
+        elif state & gtk.gdk.SHIFT_MASK:
+            if (event.keyval == gtk.keysyms.ISO_Left_Tab and
+                self.list_win_visible):
+                self.list_win.back()
+                return True
         return gtk.TextView.do_key_press_event(self, event)
 
     def do_realize(self):
