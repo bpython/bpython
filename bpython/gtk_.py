@@ -597,3 +597,7 @@ def main(args=None):
     window.show_all()
     window.connect('delete-event', lambda widget, event: gtk.main_quit())
     gtk.main()
+
+
+if __name__ == '__main__':
+    main()
