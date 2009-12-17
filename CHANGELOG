@@ -1,6 +1,25 @@
 Changelog
 =========
 
+v0.9.5.3
+--------
+A bugfix/feature release (and a start at gtk). Happy Christmas everyone!
+
+* #67: Make pastebin URL really configurable. 
+* #68: Set a__main__ module and set interpreter's namespace to that module.
+* #70: Implement backward completion on backward tab. 
+* #62: Hide matches starting with a _ unless explicitly typed.
+* #72: Auto dedentation
+
+- add a hack to add a write() method to our fake stdin object
+- Don't use curses interface when stdout is not attached to a terminal. 
+- PEP-8 conformance.
+- Only restore indentation when inside a block. 
+- Do not decrease the lineno in tracebacks for Py3 
+- Do not add internal code to history. 
+- Make paren highlighting more accurate. 
+- Catch SyntaxError in import completion.
+
 v0.9.5.2
 --------
 
