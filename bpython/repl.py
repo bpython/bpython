@@ -610,14 +610,6 @@ class Repl(object):
         paste_url = paste_url_template.safe_substitute(paste_id=paste_id)
         self.statusbar.message('Pastebin URL: %s' % (paste_url, ), 10)
 
-    def make_list(self, items):
-        """Compile a list of items. At the moment this simply returns
-        the list; it's here in case I decide to add any more functionality.
-        I originally had this method return a list of items where each item
-        was prepended with a number/letter so the user could choose an option
-        but it doesn't seem appropriate for readline-like behaviour."""
-        return items
-
     def push(self, s, insert_into_history=True):
         """Push a line of code onto the buffer so it can process it all
         at once when a code block ends"""
