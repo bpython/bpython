@@ -1,8 +1,8 @@
 Changelog
 =========
 
-v0.9.5.3
---------
+v0.9.6
+------
 A bugfix/feature release (and a start at gtk). Happy Christmas everyone!
 
 * #67: Make pastebin URL really configurable. 
