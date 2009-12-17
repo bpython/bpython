@@ -568,6 +568,20 @@ class Repl(object):
         out[-1] = out[-1].rstrip()
         return out
 
+    def next_indentation(self):
+        """Return the indentation of the next line based on the current
+        input buffer."""
+        if self.buffer:
+            indentation = next_indentation(self.buffer[-1])
+            if indentation and OPTS.dedent_after > 0:
+                line_is_empty = lambda line: not line.strip()
+                empty_lines = takewhile(line_is_empty, reversed(self.buffer))
+                if sum(1 for _ in empty_lines) >= OPTS.dedent_after:
+                    indentation -= 1
+        else:
+            indentation = 0
+        return indentation
+
     def getstdout(self):
         """This method returns the 'spoofed' stdout buffer, for writing to a
         file or sending to a pastebin or whatever."""
@@ -695,7 +709,7 @@ class Repl(object):
             self.iy, self.ix = self.scr.getyx()
 
         self.cpos = 0
-        indent = next_indentantion(self.s)
+        indent = next_indentation(self.s)
         self.s = ''
         self.scr.refresh()
 
@@ -837,7 +851,7 @@ class Repl(object):
         It prevents autoindentation from occuring after a traceback."""
 
 
-def next_indentantion(line):
+def next_indentation(line):
     """Given a code line, return the indentation of the next line."""
     line = line.expandtabs(OPTS.tab_length)
     indentation = (len(line) - len(line.lstrip(' '))) // OPTS.tab_length

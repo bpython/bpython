@@ -377,7 +377,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
                 if self.reset_indent:
                     self.reset_indent = False
                 else:
-                    indentation = repl.next_indentantion(line)
+                    indentation = self.next_indentation()
                     if indentation:
                         with self.editing:
                             self.text_buffer.insert(self.get_cursor_iter(),

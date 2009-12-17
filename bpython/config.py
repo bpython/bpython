@@ -37,6 +37,7 @@ def loadini(struct, configfile):
             'arg_spec': True,
             'auto_display_list': True,
             'color_scheme': 'default',
+            'dedent_after': 1,
             'flush_output': True,
             'highlight_show_source': True,
             'hist_file': '~/.pythonhist',
@@ -63,6 +64,7 @@ def loadini(struct, configfile):
             'yank_from_buffer': 'C-y'}})
     config.read(config_path)
 
+    struct.dedent_after = config.getint('general', 'dedent_after')
     struct.tab_length = config.getint('general', 'tab_length')
     struct.auto_display_list = config.getboolean('general',
                                                  'auto_display_list')

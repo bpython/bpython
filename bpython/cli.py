@@ -64,7 +64,7 @@ from bpython.keys import key_dispatch
 
 from bpython import __version__
 from bpython.pager import page
-from bpython.repl import Interpreter, Repl, next_indentantion
+from bpython.repl import Interpreter, Repl, next_indentation
 
 
 def log(x):
@@ -538,13 +538,12 @@ class CLIRepl(Repl):
         which returns None if Enter is pressed (that means "Return",
         idiot)."""
 
-        indentation = next_indentantion(self.s)
         self.s = ''
         self.rl_history.reset()
         self.iy, self.ix = self.scr.getyx()
 
         if not self.paste_mode:
-            for _ in xrange(indentation):
+            for _ in xrange(self.next_indentation()):
                 self.p_key('\t')
 
         self.cpos = 0
