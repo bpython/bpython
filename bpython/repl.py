@@ -517,9 +517,15 @@ class Repl(object):
             if not self.argspec:
                 return False
         else:
+# unless the first character is a _ filter out all attributes starting with a _
+            if not cw.split('.')[-1].startswith('_'):
+                matches = [match for match in matches if not
+                             match.split('.')[-1].startswith('_')]
+
 # remove duplicates and restore order
             self.matches = sorted(set(matches), self.cmp_matches,
                                   self.key_matches)
+
 
         if len(self.matches) == 1 and not OPTS.auto_display_list:
             self.list_win_visible = True
