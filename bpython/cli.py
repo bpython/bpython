@@ -812,7 +812,7 @@ class CLIRepl(Repl):
                 if obj is None and inspection.is_eval_safe_name(self.s):
                     obj = self.get_object(self.s)
                 source = inspect.getsource(obj)
-            except (AttributeError, NameError, TypeError):
+            except (AttributeError, IOError, NameError, TypeError):
                 self.statusbar.message("Cannot show source.")
                 return ''
             else:
