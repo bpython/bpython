@@ -64,7 +64,7 @@ class AttrCleaner(object):
             __getattr__ = getattr(type_, '__getattr__', None)
             if __getattr__ is not None:
                 try:
-                    setattr(type_, '__getattr__', (lambda _: None))
+                    setattr(type_, '__getattr__', (lambda *_, **__: None))
                 except TypeError:
                     __getattr__ = None
             __getattribute__ = getattr(type_, '__getattribute__', None)

@@ -376,10 +376,12 @@ class Repl(object):
         return ''.join(string)
 
     def get_object(self, name):
-        if name in self.interp.locals:
-            return self.interp.locals[name]
-        else:
-            return eval(name, self.interp.locals)
+        attributes = name.split('.')
+        obj = eval(attributes.pop(0), self.interp.locals)
+        while attributes:
+            with inspection.AttrCleaner(obj):
+                obj = getattr(obj, attributes.pop(0))
+        return obj
 
     def get_args(self):
         """Check if an unclosed parenthesis exists, then attempt to get the
