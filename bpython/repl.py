@@ -513,17 +513,17 @@ class Repl(object):
                 matches.extend(name + '=' for name in self.argspec[1][4]
                                if name.startswith(cw))
 
+# unless the first character is a _ filter out all attributes starting with a _
+        if not e and not cw.split('.')[-1].startswith('_'):
+            matches = [match for match in matches
+                       if not match.split('.')[-1].startswith('_')]
+
         if e or not matches:
             self.matches = []
             self.matches_iter.update()
             if not self.argspec:
                 return False
         else:
-# unless the first character is a _ filter out all attributes starting with a _
-            if not cw.split('.')[-1].startswith('_'):
-                matches = [match for match in matches if not
-                             match.split('.')[-1].startswith('_')]
-
 # remove duplicates and restore order
             self.matches = sorted(set(matches), self.cmp_matches,
                                   self.key_matches)
