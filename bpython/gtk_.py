@@ -244,12 +244,6 @@ class ReplWidget(gtk.TextView, repl.Repl):
         self.text_buffer.connect('insert-text', self.on_buf_insert_text)
         self.text_buffer.connect('mark-set', self.on_buf_mark_set)
 
-        # Provide our own cursor
-        buffer = self.text_buffer
-        cursor = buffer.create_mark('cursor', buffer.get_start_iter(), True)
-        cursor.set_visible(True)
-        buffer.get_insert().set_visible(False)
-
     def change_line(self, line):
         """
         Replace the current input line with `line`.
@@ -315,7 +309,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
         """
         Return an iter where the cursor currently is.
         """
-        cursor_marker = self.text_buffer.get_mark('cursor')
+        cursor_marker = self.text_buffer.get_insert()
         return self.text_buffer.get_iter_at_mark(cursor_marker)
 
     def get_line_start_iter(self):
@@ -349,13 +343,11 @@ class ReplWidget(gtk.TextView, repl.Repl):
         return gtk.TextView.do_button_press_event(self, event)
 
     def do_focus_in_event(self, event):
-        self.text_buffer.get_mark('cursor').set_visible(True)
         if self.list_win_visible:
             self.list_win.show()
         return gtk.TextView.do_focus_in_event(self, event)
 
     def do_focus_out_event(self, event):
-        self.text_buffer.get_mark('cursor').set_visible(False)
         if self.list_win_visible:
             self.list_win.hide()
         return gtk.TextView.do_focus_out_event(self, event)
@@ -394,7 +386,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
                     if not self.rl_history.is_at_end():
                         self.rl_history.enter(self.current_line())
                         self.change_line(self.rl_history.back())
-                        self.place_cursor(self.get_line_end_iter())
+                        self.text_buffer.place_cursor(self.get_line_end_iter())
                 return True
             elif event.keyval == gtk.keysyms.Down:
                 if self.list_win_visible:
@@ -403,7 +395,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
                     if not self.rl_history.is_at_start():
                         self.rl_history.enter(self.current_line())
                         self.change_line(self.rl_history.forward())
-                        self.place_cursor(self.get_line_end_iter())
+                        self.text_buffer.place_cursor(self.get_line_end_iter())
                 return True
         elif state & gtk.gdk.SHIFT_MASK:
             if (event.keyval == gtk.keysyms.ISO_Left_Tab and
@@ -470,7 +462,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
         """
         iter_ = self.get_cursor_iter()
         iter_.forward_chars(offset)
-        self.place_cursor(iter_)
+        self.text_buffer.place_cursor(iter_)
         return iter_
 
     def on_buf_delete_range(self, buffer, start, end):
@@ -491,38 +483,24 @@ class ReplWidget(gtk.TextView, repl.Repl):
     def on_buf_insert_text(self, buffer, iter_, text, length):
         if self.editing:
             return
+        self.set_cursor_to_valid_insert_position()
         buffer.emit_stop_by_name('insert-text')
-        iter_ = self.get_cursor_iter()
         for (i, line) in enumerate(text.splitlines()):
             if i:
                 self.prompt(self.push_line())
-                iter_ = self.get_cursor_iter()
             with self.editing:
-                buffer.insert(iter_, line)
-            iter_ = self.move_cursor(len(line))
+                buffer.insert_at_cursor(line)
         self.highlight_current_line()
         self.complete()
 
     def on_buf_mark_set(self, buffer, iter_, textmark):
-        name = textmark.get_name()
-        if name == 'insert':
-            line_start = self.get_line_start_iter()
-            if line_start.compare(iter_) > 0:
-                # Don't set cursor before the start of line
-                self.text_buffer.move_mark_by_name('cursor', line_start)
-            else:
-                self.text_buffer.move_mark_by_name('cursor', iter_)
+        pass
 
     def on_suggestion_selection_changed(self, selection, word):
         with self.editing:
             self.text_buffer.delete(self.get_word_start_iter(),
                                     self.get_cursor_iter())
-            self.text_buffer.insert(self.get_cursor_iter(), word)
-        self.move_cursor(len(word))
-
-    def place_cursor(self, iter_):
-        self.text_buffer.place_cursor(iter_)
-        self.text_buffer.move_mark_by_name('cursor', iter_)
+            self.text_buffer.insert_at_cursor(word)
 
     def prompt(self, more):
         """
@@ -537,7 +515,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
                                                       text, 'prompt')
         iter_ = self.move_cursor(len(text))
         mark = self.text_buffer.create_mark('line_start', iter_, True)
-        self.place_cursor(iter_)
+        self.text_buffer.place_cursor(iter_)
         self.scroll_to_mark(mark, 0.2)
 
     def push_line(self):
@@ -547,7 +525,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
                                      self.get_line_start_iter(), True)
         self.rl_history.append(line)
         iter_ = self.get_line_end_iter()
-        self.place_cursor(iter_)
+        self.text_buffer.place_cursor(iter_)
         with self.editing:
             self.text_buffer.insert(iter_, '\n')
         self.move_cursor(1)
@@ -568,6 +546,12 @@ class ReplWidget(gtk.TextView, repl.Repl):
         end.forward_to_line_end()
         self.text_buffer.remove_all_tags(start, end)
         self.highlight(start, tokens)
+
+    def set_cursor_to_valid_insert_position(self):
+        cursor_iter = self.get_cursor_iter()
+        line_start_iter = self.get_line_start_iter()
+        if line_start_iter.compare(cursor_iter) > 0:
+            self.text_buffer.place_cursor(line_start_iter)
 
     def writetb(self, lines):
         string = ''.join(lines)
