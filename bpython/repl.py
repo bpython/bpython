@@ -524,9 +524,8 @@ class Repl(object):
             if not self.argspec:
                 return False
         else:
-# remove duplicates and restore order
-            self.matches = sorted(set(matches), self.cmp_matches,
-                                  self.key_matches)
+# remove duplicates
+            self.matches = matches
 
 
         if len(self.matches) == 1 and not OPTS.auto_display_list:
@@ -536,19 +535,6 @@ class Repl(object):
 
         self.matches_iter.update(cw, self.matches)
         return True
-
-    @staticmethod
-    def cmp_matches(a, b):
-        if a.startswith(('__', '_')) and not b.startswith(('__', '_')):
-            return 1
-        elif b.startswith(('__', '_')) and not a.startswith(('__', '_')):
-            return -1
-        else:
-            return cmp(a, b)
-
-    @staticmethod
-    def key_matches(name):
-        return name.rsplit('.')[-1]
 
     def format_docstring(self, docstring, width, height):
         """Take a string and try to format it into a sane list of strings to be
