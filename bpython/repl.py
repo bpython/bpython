@@ -536,19 +536,6 @@ class Repl(object):
         self.matches_iter.update(cw, self.matches)
         return True
 
-    @staticmethod
-    def cmp_matches(a, b):
-        if a.startswith(('__', '_')) and not b.startswith(('__', '_')):
-            return 1
-        elif b.startswith(('__', '_')) and not a.startswith(('__', '_')):
-            return -1
-        else:
-            return cmp(a, b)
-
-    @staticmethod
-    def key_matches(name):
-        return name.rsplit('.')[-1]
-
     def format_docstring(self, docstring, width, height):
         """Take a string and try to format it into a sane list of strings to be
         put into the suggestion box."""
