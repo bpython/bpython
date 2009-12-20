@@ -524,9 +524,8 @@ class Repl(object):
             if not self.argspec:
                 return False
         else:
-# remove duplicates and restore order
-            self.matches = sorted(set(matches), self.cmp_matches,
-                                  self.key_matches)
+# remove duplicates
+            self.matches = matches
 
 
         if len(self.matches) == 1 and not OPTS.auto_display_list:
