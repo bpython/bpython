@@ -1,0 +1,13 @@
+Roadmap
+=======
+
+v0.9.7
+------
+- Create ~/.bpython on install (#17)
+  - With a wizard
+
+- support for invoking with environment/namespace setup (#76)
+
+v1.0
+----
+- GTK support
