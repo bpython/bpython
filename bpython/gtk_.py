@@ -416,7 +416,21 @@ class ReplWidget(gtk.TextView, repl.Repl):
         gtk.TextView.do_realize(self)
         self.prompt(False)
 
-    def highlight(self):
+    def highlight(self, start_iter, tokens):
+        """
+        Highlight the text starting at `start_iter` using `tokens`.
+        """
+        token_start_iter = start_iter.copy()
+        token_end_iter = start_iter.copy()
+        for (token, value) in tokens:
+            while token not in theme_map:
+                token = token.parent
+            token_end_iter.forward_chars(len(value))
+            self.text_buffer.apply_tag_by_name(theme_map[token],
+                                               token_start_iter, token_end_iter)
+            token_start_iter.forward_chars(len(value))
+
+    def highlight_current_line(self):
         """
         Highlight the current line.
         """
@@ -425,9 +439,9 @@ class ReplWidget(gtk.TextView, repl.Repl):
                 self.reprint_line(*self.highlighted_paren)
                 self.highlighted_paren = None
 
-            offset = self.get_cursor_iter().get_offset()
-            self.change_line(self.current_line())
-            self.place_cursor(self.text_buffer.get_iter_at_offset(offset))
+            start = self.get_line_start_iter()
+            self.text_buffer.remove_all_tags(start, self.get_line_end_iter())
+            self.highlight(start, self.tokenize(self.current_line()))
 
     def insert_highlighted(self, iter_, string):
         offset = iter_.get_offset()
@@ -471,7 +485,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
             start = line_start
         with self.editing:
             buffer.delete(start, end)
-        self.highlight()
+        self.highlight_current_line()
         self.complete()
 
     def on_buf_insert_text(self, buffer, iter_, text, length):
@@ -486,7 +500,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
             with self.editing:
                 buffer.insert(iter_, line)
             iter_ = self.move_cursor(len(line))
-        self.highlight()
+        self.highlight_current_line()
         self.complete()
 
     def on_buf_mark_set(self, buffer, iter_, textmark):
@@ -537,7 +551,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
         with self.editing:
             self.text_buffer.insert(iter_, '\n')
         self.move_cursor(1)
-        self.highlight()
+        self.highlight_current_line()
         return self.push(line + '\n')
 
     def reprint_line(self, lineno, tokens):
@@ -552,10 +566,8 @@ class ReplWidget(gtk.TextView, repl.Repl):
         start = self.text_buffer.get_iter_at_mark(mark)
         end = start.copy()
         end.forward_to_line_end()
-        with self.editing:
-            self.text_buffer.delete(start, end)
-            start = self.text_buffer.get_iter_at_mark(mark)
-            self.insert_highlighted_tokens(start, tokens)
+        self.text_buffer.remove_all_tags(start, end)
+        self.highlight(start, tokens)
 
     def writetb(self, lines):
         string = ''.join(lines)
