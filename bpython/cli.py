@@ -64,7 +64,7 @@ from bpython.keys import key_dispatch
 
 from bpython import __version__
 from bpython.pager import page
-from bpython.repl import Interpreter, Repl, next_indentation
+from bpython.repl import Interpreter, Repl
 
 
 def log(x):
