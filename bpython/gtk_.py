@@ -282,8 +282,11 @@ class ReplWidget(gtk.TextView, repl.Repl):
 
     @property
     def cpos(self):
-        return (self.get_line_end_iter().get_offset() -
+        cpos = (self.get_line_end_iter().get_offset() -
                 self.get_cursor_iter().get_offset())
+        if cpos and not self.get_overwrite():
+            cpos += 1
+        return cpos
 
     def cw(self):
         """
@@ -494,7 +497,9 @@ class ReplWidget(gtk.TextView, repl.Repl):
         self.complete()
 
     def on_buf_mark_set(self, buffer, iter_, textmark):
-        pass
+        if (textmark.get_name() == 'insert' and
+            self.get_line_start_iter().compare(iter_) < 0):
+            self.highlight_current_line()
 
     def on_suggestion_selection_changed(self, selection, word):
         with self.editing:
