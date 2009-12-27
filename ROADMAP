@@ -6,7 +6,8 @@ v0.9.7
 - Create ~/.bpython on install (#17)
   - With a wizard
 
-- support for invoking with environment/namespace setup (#76)
+- Support for invoking with environment/namespace setup (#76)
+- Argument parsing and options needs to be done
 
 v1.0
 ----
