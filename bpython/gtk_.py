@@ -21,6 +21,7 @@
 # THE SOFTWARE.
 #
 
+
 # This module is called "bpython.gtk_" to avoid name clashes with the
 # "original" gtk module. I first had used an absolute_import import from
 # the future to avoid that, but people are stupid and add the package path
@@ -38,11 +39,6 @@ import pango
 from bpython import importcompletion, repl
 from bpython.config import Struct, loadini
 from bpython.formatter import theme_map
-
-
-OPTS = Struct()
-# HACK
-repl.OPTS = OPTS
 
 
 _COLORS = dict(b='blue', c='cyan', g='green', m='magenta', r='red',
@@ -120,9 +116,9 @@ class SuggestionWindow(gtk.Window):
         self.docstring_label = gtk.Label()
         self.docstring_label.set_alignment(0, 0)
         style = self.docstring_label.get_style()
-        color = _COLORS[OPTS.color_scheme['comment'].lower()]
-        color = gtk.gdk.color_parse(color)
-        style.fg[gtk.STATE_NORMAL] = color
+        #color = _COLORS[self.config.color_scheme['comment'].lower()]
+        #color = gtk.gdk.color_parse(color)
+        #style.fg[gtk.STATE_NORMAL] = color
         self.docstring_label.set_style(style)
         vbox.pack_start(self.docstring_label, expand=False)
 
@@ -216,9 +212,9 @@ class ReplWidget(gtk.TextView, repl.Repl):
                         focus_out_event=None,
                         realize=None)
 
-    def __init__(self, interpreter):
+    def __init__(self, interpreter, config):
         gtk.TextView.__init__(self)
-        repl.Repl.__init__(self, interpreter)
+        repl.Repl.__init__(self, interpreter, config)
         interpreter.writetb = self.writetb
         self.editing = Nested()
         self.reset_indent = False
@@ -230,7 +226,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
         self.list_win.hide()
         self.text_buffer = self.get_buffer()
         tags = dict()
-        for (name, value) in OPTS.color_scheme.iteritems():
+        for (name, value) in self.config.color_scheme.iteritems():
             tag = tags[name] = self.text_buffer.create_tag(name)
             for (char, prop) in zip(value, ['foreground', 'background']):
                 if char.lower() == 'd':
@@ -251,7 +247,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
         with self.editing:
             self.text_buffer.delete(self.get_line_start_iter(),
                                     self.get_line_end_iter())
-        if OPTS.syntax:
+        if self.config.syntax:
             self.insert_highlighted(self.get_line_start_iter(), line)
         else:
             self.text_buffer.insert(self.get_line_start_iter(), line)
@@ -264,7 +260,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
         self.reset_indent = True
 
     def complete(self):
-        if OPTS.auto_display_list:
+        if self.config.auto_display_list:
             self.list_win_visible = repl.Repl.complete(self)
             if self.list_win_visible:
                 self.list_win.update_argspec(self.argspec)
@@ -429,7 +425,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
         """
         Highlight the current line.
         """
-        if OPTS.syntax:
+        if self.config.syntax:
             if self.highlighted_paren is not None:
                 self.reprint_line(*self.highlighted_paren)
                 self.highlighted_paren = None
@@ -580,10 +576,11 @@ def main(args=None):
         args = sys.argv[1:]
 
     setlocale(LC_ALL, '')
-    loadini(OPTS, '~/.bpython/config')
+    config = Struct()
+    loadini(config, '~/.bpython/config')
 
     interpreter = repl.Interpreter(None, getpreferredencoding())
-    repl_widget = ReplWidget(interpreter)
+    repl_widget = ReplWidget(interpreter, config)
 
     sys.stderr = repl_widget
     sys.stdout = repl_widget

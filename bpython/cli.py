@@ -182,12 +182,7 @@ class FakeStdin(object):
     def readlines(self, size=-1):
         return list(iter(self.readline, ''))
 
-OPTS = Struct()
 DO_RESIZE = False
-# HACK
-from bpython import repl
-repl.OPTS = OPTS
-del repl
 
 # TODO:
 #
@@ -209,15 +204,15 @@ def DEBUG(s):
     open('/tmp/bpython-debug', 'a').write("%s\n" % (str(s), ))
 
 
-def get_color(name):
-    return colors[OPTS.color_scheme[name].lower()]
+def get_color(config, name):
+    return colors[config.color_scheme[name].lower()]
 
 
-def get_colpair(name):
-    return curses.color_pair(get_color(name) + 1)
+def get_colpair(config, name):
+    return curses.color_pair(get_color(config, name) + 1)
 
 
-def make_colors():
+def make_colors(config):
     """Init all the colours in curses and bang them into a dictionary"""
 
     # blacK, Red, Green, Yellow, Blue, Magenta, Cyan, White, Default:
@@ -236,7 +231,7 @@ def make_colors():
         if i > 7:
             j = i // 8
         else:
-            j = c[OPTS.color_scheme['background']]
+            j = c[config.color_scheme['background']]
         curses.init_pair(i + 1, i % 8, j)
 
     return c
@@ -244,11 +239,11 @@ def make_colors():
 
 class CLIRepl(Repl):
 
-    def __init__(self, scr, interp, statusbar=None, idle=None):
-        Repl.__init__(self, interp, idle)
+    def __init__(self, scr, interp, statusbar, config, idle=None):
+        Repl.__init__(self, interp, config, idle)
         interp.writetb = self.writetb
         self.scr = scr
-        self.list_win = newwin(1, 1, 1, 1)
+        self.list_win = newwin(get_colpair(config, 'background'), 1, 1, 1, 1)
         self.cpos = 0
         self.do_exit = False
         self.f_string = ''
@@ -256,7 +251,6 @@ class CLIRepl(Repl):
         self.in_hist = False
         self.paste_mode = False
         self.last_key_press = time.time()
-        self.paste_time = OPTS.paste_time
         self.s = ''
         self.statusbar = statusbar
 
@@ -308,9 +302,9 @@ class CLIRepl(Repl):
         if not self.cpos:
 # I know the nested if blocks look nasty. :(
             if self.atbol() and delete_tabs:
-                n = len(self.s) % OPTS.tab_length
+                n = len(self.s) % self.config.tab_length
                 if not n:
-                    n = OPTS.tab_length
+                    n = self.config.tab_length
 
             self.s = self.s[:-n]
         else:
@@ -334,7 +328,7 @@ class CLIRepl(Repl):
         it and force syntax highlighting."""
 
         if (self.paste_mode
-            and time.time() - self.last_key_press > self.paste_time):
+            and time.time() - self.last_key_press > self.config.paste_time):
             self.paste_mode = False
             self.print_line(self.s)
 
@@ -360,12 +354,12 @@ class CLIRepl(Repl):
         if self.paste_mode:
             return
 
-        if self.list_win_visible and not OPTS.auto_display_list:
+        if self.list_win_visible and not self.config.auto_display_list:
             self.scr.touchwin()
             self.list_win_visible = False
             return
 
-        if OPTS.auto_display_list or tab:
+        if self.config.auto_display_list or tab:
             self.list_win_visible = Repl.complete(self, tab)
             if self.list_win_visible:
                 try:
@@ -446,7 +440,7 @@ class CLIRepl(Repl):
         if not py3 and isinstance(s, unicode):
             s = s.encode(getpreferredencoding())
 
-        a = get_colpair('output')
+        a = get_colpair(self.config, 'output')
         if '\x01' in s:
             rx = re.search('\x01([A-Za-z])([A-Za-z]?)', s)
             if rx:
@@ -522,7 +516,9 @@ class CLIRepl(Repl):
                     return key
             else:
                 t = time.time()
-                self.paste_mode = (t - self.last_key_press <= self.paste_time)
+                self.paste_mode = (
+                    t - self.last_key_press <= self.config.paste_time
+                )
                 self.last_key_press = t
                 return key
             finally:
@@ -597,12 +593,14 @@ class CLIRepl(Repl):
 
         self.list_win.addstr('\n  ')
         self.list_win.addstr(fn,
-            get_colpair('name') | curses.A_BOLD)
-        self.list_win.addstr(': (', get_colpair('name'))
+            get_colpair(self.config, 'name') | curses.A_BOLD)
+        self.list_win.addstr(': (', get_colpair(self.config, 'name'))
         maxh = self.scr.getmaxyx()[0]
 
         if is_bound_method and isinstance(in_arg, int):
             in_arg += 1
+
+        punctuation_colpair = get_colpair(self.config, 'punctuation')
 
         for k, i in enumerate(args):
             y, x = self.list_win.getyx()
@@ -627,47 +625,50 @@ class CLIRepl(Repl):
                 self.list_win.addstr('\n\t')
 
             if str(i) == 'self' and k == 0:
-                color = get_colpair('name')
+                color = get_colpair(self.config, 'name')
             else:
-                color = get_colpair('token')
+                color = get_colpair(self.config, 'token')
 
             if k == in_arg or i == in_arg:
                 color |= curses.A_BOLD
 
             self.list_win.addstr(str(i), color)
             if kw:
-                self.list_win.addstr('=', get_colpair('punctuation'))
-                self.list_win.addstr(kw, get_colpair('token'))
+                self.list_win.addstr('=', punctuation_colpair)
+                self.list_win.addstr(kw, get_colpair(self.config, 'token'))
             if k != len(args) -1:
-                self.list_win.addstr(', ', get_colpair("punctuation"))
+                self.list_win.addstr(', ', punctuation_colpair)
 
         if _args:
             if args:
-                self.list_win.addstr(', ', get_colpair('punctuation'))
-            self.list_win.addstr('*%s' % (_args, ), get_colpair('token'))
+                self.list_win.addstr(', ', punctuation_colpair)
+            self.list_win.addstr('*%s' % (_args, ),
+                                 get_colpair(self.config, 'token'))
 
         if py3 and kwonly:
             if not _args:
                 if args:
-                    self.list_win.addstr(', ', get_colpair('punctuation'))
-                self.list_win.addstr('*', get_colpair('punctuation'))
+                    self.list_win.addstr(', ', punctuation_colpair)
+                self.list_win.addstr('*', punctuation_colpair)
             marker = object()
             for arg in kwonly:
-                self.list_win.addstr(', ', get_colpair('punctuation'))
-                color = get_colpair('token')
+                self.list_win.addstr(', ', punctuation_colpair)
+                color = get_colpair(self.config, 'token')
                 if arg == in_arg:
                     color |= curses.A_BOLD
                 self.list_win.addstr(arg, color)
                 default = kwonly_defaults.get(arg, marker)
                 if default is not marker:
-                    self.list_win.addstr('=', get_colpair('punctuation'))
-                    self.list_win.addstr(default, get_colpair('token'))
+                    self.list_win.addstr('=', punctuation_colpair)
+                    self.list_win.addstr(default,
+                                         get_colpair(self.config, 'token'))
 
         if _kwargs:
             if args or _args or (py3 and kwonly):
-                self.list_win.addstr(', ', get_colpair('punctuation'))
-            self.list_win.addstr('**%s' % (_kwargs, ), get_colpair('token'))
-        self.list_win.addstr(')', get_colpair('punctuation'))
+                self.list_win.addstr(', ', punctuation_colpair)
+            self.list_win.addstr('**%s' % (_kwargs, ),
+                                 get_colpair(self.config, 'token'))
+        self.list_win.addstr(')', punctuation_colpair)
 
         return r
 
@@ -710,6 +711,8 @@ class CLIRepl(Repl):
         if key is None:
             return ''
 
+        config = self.config
+
         if key == chr(8):  # C-Backspace (on my computer anyway!)
             self.clrtobol()
             key = '\n'
@@ -729,16 +732,16 @@ class CLIRepl(Repl):
             self.print_line(self.s)
             return ''
 
-        elif key in key_dispatch[OPTS.undo_key]:  # C-r
+        elif key in key_dispatch[config.undo_key]:  # C-r
             self.undo()
             return ''
 
-        elif key in ('KEY_UP', ) + key_dispatch[OPTS.up_one_line_key]:
+        elif key in ('KEY_UP', ) + key_dispatch[config.up_one_line_key]:
             # Cursor Up/C-p
             self.back()
             return ''
 
-        elif key in ('KEY_DOWN', ) + key_dispatch[OPTS.down_one_line_key]:
+        elif key in ('KEY_DOWN', ) + key_dispatch[config.down_one_line_key]:
             # Cursor Down/C-n
             self.fwd()
             return ''
@@ -763,50 +766,50 @@ class CLIRepl(Repl):
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif key in key_dispatch[OPTS.cut_to_buffer_key]:  # cut to buffer
+        elif key in key_dispatch[config.cut_to_buffer_key]:  # cut to buffer
             self.cut_to_buffer()
             return ''
 
-        elif key in key_dispatch[OPTS.yank_from_buffer_key]:
+        elif key in key_dispatch[config.yank_from_buffer_key]:
             # yank from buffer
             self.yank_from_buffer()
             return ''
 
-        elif key in key_dispatch[OPTS.clear_word_key]:
+        elif key in key_dispatch[config.clear_word_key]:
             self.bs_word()
             self.complete()
             return ''
 
-        elif key in key_dispatch[OPTS.clear_line_key]:
+        elif key in key_dispatch[config.clear_line_key]:
             self.clrtobol()
             return ''
 
-        elif key in key_dispatch[OPTS.clear_screen_key]:
+        elif key in key_dispatch[config.clear_screen_key]:
             self.s_hist = [self.s_hist[-1]]
             self.highlighted_paren = None
             self.redraw()
             return ''
 
-        elif key in key_dispatch[OPTS.exit_key]:
+        elif key in key_dispatch[config.exit_key]:
             if not self.s:
                 self.do_exit = True
                 return None
             else:
                 return ''
 
-        elif key in key_dispatch[OPTS.save_key]:
+        elif key in key_dispatch[config.save_key]:
             self.write2file()
             return ''
 
-        elif key in key_dispatch[OPTS.pastebin_key]:
+        elif key in key_dispatch[config.pastebin_key]:
             self.pastebin()
             return ''
 
-        elif key in key_dispatch[OPTS.last_output_key]:
+        elif key in key_dispatch[config.last_output_key]:
             page(self.stdout_hist[self.prev_block_finished:-4])
             return ''
 
-        elif key in key_dispatch[OPTS.show_source_key]:
+        elif key in key_dispatch[config.show_source_key]:
             try:
                 obj = self.current_func
                 if obj is None and inspection.is_eval_safe_name(self.s):
@@ -816,7 +819,7 @@ class CLIRepl(Repl):
                 self.statusbar.message("Cannot show source.")
                 return ''
             else:
-                if OPTS.highlight_show_source:
+                if config.highlight_show_source:
                     source = format(PythonLexer().get_tokens(source),
                                     TerminalFormatter())
                 page(source)
@@ -853,9 +856,9 @@ class CLIRepl(Repl):
             self.reprint_line(*self.highlighted_paren)
             self.highlighted_paren = None
 
-        if OPTS.syntax and (not self.paste_mode or newline):
+        if self.config.syntax and (not self.paste_mode or newline):
             o = format(self.tokenize(s, newline),
-                       BPythonFormatter(OPTS.color_scheme))
+                       BPythonFormatter(self.config.color_scheme))
         else:
             o = s
 
@@ -881,15 +884,15 @@ class CLIRepl(Repl):
     def prompt(self, more):
         """Show the appropriate Python prompt"""
         if not more:
-            self.echo("\x01%s\x03>>> " % (OPTS.color_scheme['prompt'],))
+            self.echo("\x01%s\x03>>> " % (self.config.color_scheme['prompt'],))
             self.stdout_hist += '>>> '
             self.s_hist.append('\x01%s\x03>>> \x04' %
-                               (OPTS.color_scheme['prompt'],))
+                               (self.config.color_scheme['prompt'],))
         else:
-            self.echo("\x01%s\x03... " % (OPTS.color_scheme['prompt_more'],))
+            prompt_more_color = self.config.color_scheme['prompt_more']
+            self.echo("\x01%s\x03... " % (prompt_more_color, ))
             self.stdout_hist += '... '
-            self.s_hist.append('\x01%s\x03... \x04' %
-                (OPTS.color_scheme['prompt_more'],))
+            self.s_hist.append('\x01%s\x03... \x04' % (prompt_more_color, ))
 
     def push(self, s, insert_into_history=True):
         # curses.raw(True) prevents C-c from causing a SIGINT
@@ -975,7 +978,7 @@ class CLIRepl(Repl):
             return
 
         self.scr.move(real_lineno, 4)
-        line = format(tokens, BPythonFormatter(OPTS.color_scheme))
+        line = format(tokens, BPythonFormatter(self.config.color_scheme))
         for string in line.split('\x04'):
             self.echo(string)
 
@@ -1094,9 +1097,9 @@ class CLIRepl(Repl):
         for ix, i in enumerate(v_items):
             padding = (wl - len(i)) * ' '
             if i == current_item:
-                color = get_colpair('operator')
+                color = get_colpair(self.config, 'operator')
             else:
-                color = get_colpair('main')
+                color = get_colpair(self.config, 'main')
             if not py3:
                 i = i.encode(getpreferredencoding())
             self.list_win.addstr(i + padding, color)
@@ -1106,7 +1109,7 @@ class CLIRepl(Repl):
 
         if self.docstring is not None:
             self.list_win.addstr('\n' + docstring_string,
-                                 get_colpair('comment'))
+                                 get_colpair(self.config, 'comment'))
 # XXX: After all the trouble I had with sizing the list box (I'm not very good
 # at that type of thing) I decided to do this bit of tidying up here just to
 # make sure there's no unnececessary blank lines, it makes things look nicer.
@@ -1116,7 +1119,7 @@ class CLIRepl(Repl):
 
         self.statusbar.win.touchwin()
         self.statusbar.win.noutrefresh()
-        self.list_win.attron(get_colpair('main'))
+        self.list_win.attron(get_colpair(self.config, 'main'))
         self.list_win.border()
         self.scr.touchwin()
         self.scr.cursyncup()
@@ -1147,9 +1150,9 @@ class CLIRepl(Repl):
 
         if self.atbol() and not back:
             x_pos = len(self.s) - self.cpos
-            num_spaces = x_pos % OPTS.tab_length
+            num_spaces = x_pos % self.config.tab_length
             if not num_spaces:
-                num_spaces = OPTS.tab_length
+                num_spaces = self.config.tab_length
 
             self.addstr(' ' * num_spaces)
             self.print_line(self.s)
@@ -1157,7 +1160,7 @@ class CLIRepl(Repl):
 
         if not self.matches_iter:
             self.complete(tab=True)
-            if not OPTS.auto_display_list and not self.list_win_visible:
+            if not self.config.auto_display_list and not self.list_win_visible:
                 return True
 
             cw = self.current_string() or self.cw()
@@ -1171,7 +1174,7 @@ class CLIRepl(Repl):
             self.s += b[len(cw):]
             expanded = bool(b[len(cw):])
             self.print_line(self.s)
-            if len(self.matches) == 1 and OPTS.auto_display_list:
+            if len(self.matches) == 1 and self.config.auto_display_list:
                 self.scr.touchwin()
             if expanded:
                 self.matches_iter.update(b, self.matches)
@@ -1206,7 +1209,8 @@ class CLIRepl(Repl):
 
     def writetb(self, lines):
         for line in lines:
-            self.echo('\x01%s\x03%s' % (OPTS.color_scheme['error'], line))
+            self.echo('\x01%s\x03%s' % (self.config.color_scheme['error'],
+                                        line))
 
     def yank_from_buffer(self):
         """Paste the text from the cut buffer at the current cursor location"""
@@ -1238,10 +1242,10 @@ class Statusbar(object):
 
     """
 
-    def __init__(self, scr, pwin, s=None, c=None):
+    def __init__(self, scr, pwin, background, s=None, c=None):
         """Initialise the statusbar and display the initial text (if any)"""
         self.size()
-        self.win = newwin(self.h, self.w, self.y, self.x)
+        self.win = newwin(background, self.h, self.w, self.y, self.x)
 
         self.s = s or ''
         self._s = self.s
@@ -1325,7 +1329,7 @@ class Statusbar(object):
             if c == '\n':
                 break
 
-            self.win.addstr(c, get_colpair('prompt'))
+            self.win.addstr(c, get_colpair(self.config, 'prompt'))
             o += c
 
         self.settext(self._s)
@@ -1363,14 +1367,15 @@ class Statusbar(object):
         self.win.clear()
 
 
-def init_wins(scr, cols):
+def init_wins(scr, colors, config):
     """Initialise the two windows (the main repl interface and the little
     status bar at the bottom with some stuff in it)"""
 #TODO: Document better what stuff is on the status bar.
 
+    background = get_colpair(config, 'background')
     h, w = gethw()
 
-    main_win = newwin(h - 1, w, 0, 0)
+    main_win = newwin(background, h - 1, w, 0, 0)
     main_win.scrollok(True)
     main_win.keypad(1)
 # Thanks to Angus Gibson for pointing out this missing line which was causing
@@ -1380,11 +1385,11 @@ def init_wins(scr, cols):
 #
 # This should show to be configured keys from ~/.bpython/config
 #
-    statusbar = Statusbar(scr, main_win,
+    statusbar = Statusbar(scr, main_win, background,
         " <%s> Exit  <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager" %
-            (OPTS.exit_key, OPTS.undo_key, OPTS.save_key, OPTS.pastebin_key,
-             OPTS.last_output_key),
-            get_colpair('main'))
+            (config.exit_key, config.undo_key, config.save_key,
+             config.pastebin_key, config.last_output_key),
+            get_colpair(config, 'main'))
 
     return main_win, statusbar
 
@@ -1465,12 +1470,11 @@ class FakeDict(object):
         return self._val
 
 
-def newwin(*args):
+def newwin(background, *args):
     """Wrapper for curses.newwin to automatically set background colour on any
     newly created window."""
     win = curses.newwin(*args)
-    colpair = get_colpair('background')
-    win.bkgd(' ', colpair)
+    win.bkgd(' ', background)
     return win
 
 
@@ -1497,7 +1501,7 @@ def curses_wrapper(func, *args, **kwargs):
         curses.endwin()
 
 
-def main_curses(scr, args, interactive=True, locals_=None):
+def main_curses(scr, args, config, interactive=True, locals_=None):
     """main function for the curses convenience wrapper
 
     Initialise the two main objects: the interpreter
@@ -1512,13 +1516,14 @@ def main_curses(scr, args, interactive=True, locals_=None):
     global colors
     DO_RESIZE = False
 
-    signal.signal(signal.SIGWINCH, lambda *_: sigwinch(scr))
+    old_sigwinch_handler = signal.signal(signal.SIGWINCH,
+                                         lambda *_: sigwinch(scr))
 
     stdscr = scr
     try:
         curses.start_color()
         curses.use_default_colors()
-        cols = make_colors()
+        cols = make_colors(config)
     except curses.error:
         cols = FakeDict(-1)
 
@@ -1528,14 +1533,14 @@ def main_curses(scr, args, interactive=True, locals_=None):
     scr.timeout(300)
 
     curses.raw(True)
-    main_win, statusbar = init_wins(scr, cols)
+    main_win, statusbar = init_wins(scr, cols, config)
 
     if locals_ is None:
         sys.modules['__main__'] = ModuleType('__main__')
         locals_ = sys.modules['__main__'].__dict__
     interpreter = Interpreter(locals_, getpreferredencoding())
 
-    repl = CLIRepl(main_win, interpreter, statusbar, idle)
+    repl = CLIRepl(main_win, interpreter, statusbar, config, idle)
     repl._C = cols
 
     sys.stdin = FakeStdin(repl)
@@ -1553,8 +1558,8 @@ def main_curses(scr, args, interactive=True, locals_=None):
             return repl.getstdout()
 
     repl.repl()
-    if OPTS.hist_length:
-        histfilename = os.path.expanduser(OPTS.hist_file)
+    if config.hist_length:
+        histfilename = os.path.expanduser(config.hist_file)
         repl.rl_history.save(histfilename, getpreferredencoding())
 
     main_win.erase()
@@ -1562,6 +1567,10 @@ def main_curses(scr, args, interactive=True, locals_=None):
     statusbar.win.clear()
     statusbar.win.refresh()
     curses.raw(False)
+
+    # Restore SIGWINCH handler
+    signal.signal(signal.SIGWINCH, old_sigwinch_handler)
+
     return repl.getstdout()
 
 
@@ -1613,7 +1622,8 @@ def main(args=None, locals_=None):
     # migrating old configuration file
     if os.path.isfile(path):
         migrate_rc(path)
-    loadini(OPTS, options.config)
+    config = Struct()
+    loadini(config, options.config)
 
     # Save stdin, stdout and stderr for later restoration
     orig_stdin = sys.stdin
@@ -1621,15 +1631,15 @@ def main(args=None, locals_=None):
     orig_stderr = sys.stderr
 
     try:
-        o = curses_wrapper(main_curses, exec_args, options.interactive,
-                           locals_)
+        o = curses_wrapper(main_curses, exec_args, config,
+                           options.interactive, locals_)
     finally:
         sys.stdin = orig_stdin
         sys.stderr = orig_stderr
         sys.stdout = orig_stdout
 
 # Fake stdout data so everything's still visible after exiting
-    if OPTS.flush_output and not options.quiet:
+    if config.flush_output and not options.quiet:
         sys.stdout.write(o)
     sys.stdout.flush()
 
