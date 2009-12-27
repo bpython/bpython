@@ -19,6 +19,8 @@ A bugfix/feature release (and a start at gtk). Happy Christmas everyone!
 - Do not add internal code to history. 
 - Make paren highlighting more accurate. 
 - Catch SyntaxError in import completion.
+- Remove globals for configuration.
+- rl_history now stays the same, also after undo.
 
 v0.9.5.2
 --------
