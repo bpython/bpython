@@ -257,7 +257,7 @@ class Repl(object):
     XXX Subclasses should implement echo, current_line, cw
     """
 
-    def __init__(self, interp, idle=None):
+    def __init__(self, interp, config, idle=None):
         """Initialise the repl with, unfortunately, a curses screen passed to
         it.  This needs to be split up so the curses crap isn't in here.
 
@@ -267,6 +267,7 @@ class Repl(object):
         it's blocking (waiting for keypresses). This, again, should be in a
         different class"""
 
+        self.config = config
         self.cut_buffer = ''
         self.buffer = []
         self.interp = interp
@@ -294,7 +295,7 @@ class Repl(object):
         self.prev_block_finished = 0
         sys.path.insert(0, '.')
 
-        pythonhist = os.path.expanduser(OPTS.hist_file)
+        pythonhist = os.path.expanduser(self.config.hist_file)
         if os.path.exists(pythonhist):
             self.rl_history.load(pythonhist, getpreferredencoding())
 
@@ -390,7 +391,7 @@ class Repl(object):
 
         self.current_func = None
 
-        if not OPTS.arg_spec:
+        if not self.config.arg_spec:
             return False
 
         # Get the name of the current function and where we are in
@@ -528,7 +529,7 @@ class Repl(object):
             self.matches = matches
 
 
-        if len(self.matches) == 1 and not OPTS.auto_display_list:
+        if len(self.matches) == 1 and not self.config.auto_display_list:
             self.list_win_visible = True
             self.tab()
             return False
@@ -560,11 +561,12 @@ class Repl(object):
         """Return the indentation of the next line based on the current
         input buffer."""
         if self.buffer:
-            indentation = next_indentation(self.buffer[-1])
-            if indentation and OPTS.dedent_after > 0:
+            indentation = next_indentation(self.buffer[-1],
+                                           self.config.tab_length)
+            if indentation and self.config.dedent_after > 0:
                 line_is_empty = lambda line: not line.strip()
                 empty_lines = takewhile(line_is_empty, reversed(self.buffer))
-                if sum(1 for _ in empty_lines) >= OPTS.dedent_after:
+                if sum(1 for _ in empty_lines) >= self.config.dedent_after:
                     indentation -= 1
         else:
             indentation = 0
@@ -616,7 +618,7 @@ class Repl(object):
     def pastebin(self):
         """Upload to a pastebin and display the URL in the status bar."""
 
-        pasteservice = ServerProxy(OPTS.pastebin_url)
+        pasteservice = ServerProxy(self.config.pastebin_url)
 
         s = self.getstdout()
 
@@ -627,7 +629,7 @@ class Repl(object):
             self.statusbar.message('Upload failed: %s' % (str(e), ) )
             return
 
-        paste_url_template = Template(OPTS.pastebin_show_url)
+        paste_url_template = Template(self.config.pastebin_show_url)
         paste_id = urlquote(paste_id)
         paste_url = paste_url_template.safe_substitute(paste_id=paste_id)
         self.statusbar.message('Pastebin URL: %s' % (paste_url, ), 10)
@@ -697,7 +699,7 @@ class Repl(object):
             self.iy, self.ix = self.scr.getyx()
 
         self.cpos = 0
-        indent = next_indentation(self.s)
+        indent = next_indentation(self.s, self.config.tab_length)
         self.s = ''
         self.scr.refresh()
 
@@ -839,10 +841,10 @@ class Repl(object):
         It prevents autoindentation from occuring after a traceback."""
 
 
-def next_indentation(line):
+def next_indentation(line, tab_length):
     """Given a code line, return the indentation of the next line."""
-    line = line.expandtabs(OPTS.tab_length)
-    indentation = (len(line) - len(line.lstrip(' '))) // OPTS.tab_length
+    line = line.expandtabs(tab_length)
+    indentation = (len(line) - len(line.lstrip(' '))) // tab_length
     if line.rstrip().endswith(':'):
         indentation += 1
     return indentation
