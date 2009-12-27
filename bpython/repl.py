@@ -666,8 +666,13 @@ class Repl(object):
         if len(self.history) < n:
             n = len(self.history)
 
+        entries = list(self.rl_history.entries)
+
         self.history = self.history[:-n]
+
         self.reevaluate()
+
+        self.rl_history.entries = entries
 
     def reevaluate(self):
         """Clear the buffer, redraw the screen and re-evaluate the history"""
