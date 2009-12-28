@@ -95,8 +95,7 @@ def loadini(struct, configfile):
 
     color_scheme_name = config.get('general', 'color_scheme')
 
-    if color_scheme_name == 'default':
-        struct.color_scheme = {
+    default_colors = {
             'keyword': 'y',
             'name': 'c',
             'comment': 'b',
@@ -113,16 +112,19 @@ def loadini(struct, configfile):
             'prompt': 'c',
             'prompt_more': 'g',
         }
+ 
+    if color_scheme_name == 'default':
+        struct.color_scheme = default_colors
     else:
         path = os.path.expanduser('~/.bpython/%s.theme' % (color_scheme_name,))
-        load_theme(struct, path, config_path)
+        load_theme(struct, path, config_path, default_colors)
 
     # checks for valid key configuration this part still sucks
     for key in (struct.pastebin_key, struct.save_key):
         key_dispatch[key]
 
 
-def load_theme(struct, path, inipath):
+def load_theme(struct, path, inipath, default_colors):
     theme = ConfigParser()
     try:
         f = open(path, 'r')
@@ -137,6 +139,11 @@ def load_theme(struct, path, inipath):
             struct.color_scheme[k] = theme.get('syntax', k)
         else:
             struct.color_scheme[k] = theme.get('interface', k)
+
+    # Check against default theme to see if all values are defined
+    for k, v in default_colors.iteritems():
+        if k not in chain(theme.items('syntax'), theme.items('interface')):
+            struct.color_scheme[k] = v
     f.close()
 
 
