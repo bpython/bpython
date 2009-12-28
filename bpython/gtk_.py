@@ -42,7 +42,7 @@ from bpython.formatter import theme_map
 
 
 _COLORS = dict(b='blue', c='cyan', g='green', m='magenta', r='red',
-               w='white', y='yellow')
+               w='white', y='yellow', k='black')
 
 
 class ArgspecFormatter(object):
