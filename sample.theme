@@ -3,7 +3,7 @@
 # which stands for:
 #   blacK, Red, Green, Yellow, Blue, Magenta, Cyan, White, Default
 # Capital letters represent bold
-# Copy to ~/.bpython/foo.theme and set "color_scheme = foo" in ~/.bpython.ini
+# Copy to ~/.bpython/foo.theme and set "color_scheme = foo" in ~/.bython/config
 
 [syntax]
 keyword = y
