@@ -142,7 +142,7 @@ def load_theme(struct, path, inipath, default_colors):
 
     # Check against default theme to see if all values are defined
     for k, v in default_colors.iteritems():
-        if k not in chain(theme.items('syntax'), theme.items('interface')):
+        if k not in struct.color_scheme:
             struct.color_scheme[k] = v
     f.close()
 
