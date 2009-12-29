@@ -30,7 +30,7 @@ else:
 setup(
     name="bpython",
     version = __version__,
-    author = "Robert Anthony Farrell et al.",
+    author = "Robert Anthony Farrell, Andreas Stuehrk et al.",
     author_email = "robertanthonyfarrell@gmail.com",
     description = "Fancy Interface to the Python Interpreter",
     license = "MIT/X",
