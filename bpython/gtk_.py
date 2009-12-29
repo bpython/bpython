@@ -640,6 +640,8 @@ def main(args=None):
 
     window.set_icon(icon)
 
+    window.resize(600, 300)
+
     sw = gtk.ScrolledWindow()
     sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
     sw.add(repl_widget)
