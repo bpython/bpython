@@ -28,7 +28,6 @@ from __future__ import division, with_statement
 import os
 import sys
 import curses
-import code
 import math
 import re
 import time
@@ -40,9 +39,7 @@ import fcntl
 import unicodedata
 import errno
 
-from itertools import takewhile
 from locale import LC_ALL, getpreferredencoding, setlocale
-from optparse import OptionParser
 from types import ModuleType
 
 # These are used for syntax hilighting.
@@ -57,7 +54,7 @@ from bpython import inspection
 from bpython import importcompletion
 
 # This for config
-from bpython.config import Struct, migrate_rc
+from bpython.config import Struct
 
 # This for keys
 from bpython.keys import key_dispatch
