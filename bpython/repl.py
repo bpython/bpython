@@ -21,7 +21,7 @@
 # THE SOFTWARE.
 #
 
-G*RLLCRA RHTNSAHTNSOG()*(@****
+# G*RLLCRA RHTNSAHTNSOG()*(@****
 from __future__ import with_statement
 import code
 import codecs
