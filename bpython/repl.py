@@ -21,6 +21,7 @@
 # THE SOFTWARE.
 #
 
+# G*RLLCRA RHTNSAHTNSOG()*(@****
 from __future__ import with_statement
 import code
 import codecs
@@ -530,7 +531,7 @@ class Repl(object):
                 return False
         else:
 # remove duplicates
-            self.matches = matches
+            self.matches = sorted(set(matches))
 
 
         if len(self.matches) == 1 and not self.config.auto_display_list:
