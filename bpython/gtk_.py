@@ -129,7 +129,7 @@ class Nested(object):
 
 class SuggestionWindow(gtk.Window):
     """
-    The window where suggestiosn are displayed.
+    The window where suggestions are displayed.
     """
     __gsignals__ = dict(expose_event=None,
                         selection_changed=(gobject.SIGNAL_RUN_LAST, None,
