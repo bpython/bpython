@@ -1,6 +1,7 @@
 """
 Module to handle command line argument parsing, for all front-ends.
 """
+from __future__ import with_statement
 
 import os
 import sys
