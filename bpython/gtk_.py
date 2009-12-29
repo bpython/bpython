@@ -632,6 +632,10 @@ def main(args=None):
     gobject.idle_add(init_import_completion)
 
     window = gtk.Window()
+
+    # branding
+    window.set_title('bpython')
+
     sw = gtk.ScrolledWindow()
     sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
     sw.add(repl_widget)
