@@ -3,7 +3,9 @@ include AUTHORS
 include CHANGELOG
 include LICENSE
 include data/bpython
+include data/bpython-gtk
 include data/bpython.desktop
 include doc/*.[0-9]
 include sample-config
 include *.theme
+include bpython/logo.png
