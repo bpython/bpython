@@ -112,10 +112,10 @@ class Interpreter(code.InteractiveInterpreter):
             tblist = traceback.extract_tb(tb)
             del tblist[:1]
             # Set the right lineno (encoding header adds an extra line)
-            lineno = tblist[0][1]
             if not py3:
-                lineno -= 1
-            tblist[0] = (tblist[0][0], lineno) + tblist[0][2:]
+                for i, (filename, lineno, module, something) in enumerate(tblist):
+                    if filename == '<input>':
+                        tblist[i] = (filename, lineno - 1, module, something)
 
             l = traceback.format_list(tblist)
             if l:
@@ -301,9 +301,11 @@ class Repl(object):
         if os.path.exists(pythonhist):
             self.rl_history.load(pythonhist, getpreferredencoding())
 
-# This was a feature request to have the PYTHONSTARTUP
-# file executed on startup - I personally don't use this
-# feature so please notify me of any breakage.
+    def startup(self):
+        """
+        Execute PYTHONSTARTUP file if it exits. Call this after front
+        end-specific initialisation.
+        """
         filename = os.environ.get('PYTHONSTARTUP')
         if filename and os.path.isfile(filename):
             with open(filename, 'r') as f:

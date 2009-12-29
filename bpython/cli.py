@@ -1548,6 +1548,8 @@ def main_curses(scr, args, config, interactive=True, locals_=None):
     sys.stdout = repl
     sys.stderr = repl
 
+    repl.startup()
+
     if args:
         with open(args[0], 'r') as sourcefile:
             code_obj = compile(sourcefile.read(), args[0], 'exec')
