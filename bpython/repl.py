@@ -66,9 +66,11 @@ class Interpreter(code.InteractiveInterpreter):
 
     if not py3:
 
-        def runsource(self, source, filename='<input>', symbol='single'):
-            source = '# coding: %s\n%s' % (self.encoding,
-                                           source.encode(self.encoding))
+        def runsource(self, source, filename='<input>', symbol='single',
+                      encode=True):
+            if encode:
+                source = '# coding: %s\n%s' % (self.encoding,
+                                               source.encode(self.encoding))
             return code.InteractiveInterpreter.runsource(self, source,
                                                          filename, symbol)
 
@@ -305,7 +307,7 @@ class Repl(object):
         filename = os.environ.get('PYTHONSTARTUP')
         if filename and os.path.isfile(filename):
             with open(filename, 'r') as f:
-                self.interp.runsource(f.read(), filename, 'exec')
+                self.interp.runsource(f.read(), filename, 'exec', encode=False)
 
     def attr_matches(self, text):
         """Taken from rlcompleter.py and bent to my will."""
