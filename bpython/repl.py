@@ -526,7 +526,7 @@ class Repl(object):
                 return False
         else:
 # remove duplicates
-            self.matches = matches
+            self.matches = sorted(set(matches))
 
 
         if len(self.matches) == 1 and not self.config.auto_display_list:
