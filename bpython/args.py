@@ -2,6 +2,7 @@
 Module to handle command line argument parsing, for all front-ends.
 """
 
+from __future__ import with_statement
 import os
 import sys
 import code
@@ -27,7 +28,7 @@ def parse(args, extras=None):
           'A full description of what these options are for',
           [optparse.Option('-f', action='store_true', dest='f', help='Explode'),
            optparse.Option('-l', action='store_true', dest='l', help='Love')]))
-            
+
 
     Return a tuple of (config, options, exec_args) wherein "config" is the
     config object either parsed from a default/specified config file or default
