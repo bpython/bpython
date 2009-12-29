@@ -634,13 +634,13 @@ def main(args=None):
     window = gtk.Window()
 
     # branding
-    window.set_title('bpython')
-
     icon = gtk.gdk.pixbuf_new_from_file('/home/simon/src/bpython/data/logo.png')
 
+    window.set_title('bpython')
     window.set_icon(icon)
-
     window.resize(600, 300)
+
+    repl_widget.modify_base('normal', gtk.gdk.Color(0, 0, 0))
 
     sw = gtk.ScrolledWindow()
     sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
