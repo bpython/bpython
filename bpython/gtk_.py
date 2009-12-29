@@ -30,6 +30,7 @@
 from __future__ import with_statement
 import inspect
 import sys
+import os
 from locale import LC_ALL, getpreferredencoding, setlocale
 
 import gobject
@@ -639,7 +640,8 @@ def main(args=None):
     # branding
 
     # fix icon to be distributed and loaded from the correct path
-    icon = gtk.gdk.pixbuf_new_from_file('/home/simon/src/bpython/data/logo.png')
+    icon = gtk.gdk.pixbuf_new_from_file(os.path.join(os.path.dirname(__file__),
+                                                     'logo.png'))
 
     window.set_title('bpython')
     window.set_icon(icon)
