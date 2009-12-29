@@ -46,12 +46,15 @@ setup(
         (os.path.join(man_dir, 'man5'), ['doc/bpython-config.5']),
         ('share/applications', ['data/bpython.desktop'])
     ],
+    package_data = {'bpython': ['logo.png']},
     entry_points = {
         'console_scripts': [
             'bpython = bpython.cli:main',
+            'bpython-gtk = bpython.gtk_:main',
         ],
     },
-    scripts = ([] if using_setuptools else ['data/bpython']),
+    scripts = ([] if using_setuptools else ['data/bpython', 
+                                            'data/bpython-gtk']),
     cmdclass=dict(build_py=build_py)
 )
 
