@@ -29,8 +29,9 @@
 
 from __future__ import with_statement
 import inspect
-import sys
+import optparse
 import os
+import sys
 from locale import LC_ALL, getpreferredencoding, setlocale
 
 import gobject
@@ -38,7 +39,6 @@ import gtk
 import pango
 
 from bpython import importcompletion, repl
-from bpython.config import Struct, loadini
 from bpython.formatter import theme_map
 import bpython.args
 
@@ -623,40 +623,49 @@ def init_import_completion():
 def main(args=None):
 
     setlocale(LC_ALL, '')
-    config = Struct()
 
-    config, options, exec_args = bpython.args.parse(args)
-
-    loadini(config, '~/.bpython/config', options.config)
+    gtk_options = ('gtk-specific options',
+                   "Options specific to bpython's Gtk+ front end",
+                   [optparse.Option('--socket-id', dest='socket_id',
+                                    type='int', help='Embed bpython')])
+    config, options, exec_args = bpython.args.parse(args, gtk_options)
 
     interpreter = repl.Interpreter(None, getpreferredencoding())
     repl_widget = ReplWidget(interpreter, config)
 
-    # sys.stderr = repl_widget
+    sys.stderr = repl_widget
     sys.stdout = repl_widget
+
+#    repl.startup()
 
     gobject.idle_add(init_import_completion)
 
-    window = gtk.Window()
+    if not options.socket_id:
+        print options.socket_id
+        parent = gtk.Window()
+        parent.connect('delete-event', lambda widget, event: gtk.main_quit())
 
-    # branding
+        # branding
+        # fix icon to be distributed and loaded from the correct path
+        icon = gtk.gdk.pixbuf_new_from_file(os.path.join(os.path.dirname(__file__),
+                                                         'logo.png'))
 
-    # fix icon to be distributed and loaded from the correct path
-    icon = gtk.gdk.pixbuf_new_from_file(os.path.join(os.path.dirname(__file__),
-                                                     'logo.png'))
-
-    window.set_title('bpython')
-    window.set_icon(icon)
-    window.resize(600, 300)
+        parent.set_title('bpython')
+        parent.set_icon(icon)
+        parent.resize(600, 300)
+    else:
+        parent = gtk.Plug(options.socket_id)
+        parent.connect('destroy', gtk.main_quit)
 
     # read from config
 
     sw = gtk.ScrolledWindow()
     sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
     sw.add(repl_widget)
-    window.add(sw)
-    window.show_all()
-    window.connect('delete-event', lambda widget, event: gtk.main_quit())
+    parent.add(sw)
+    parent.show_all()
+    parent.connect('delete-event', lambda widget, event: gtk.main_quit())
+
     gtk.main()
 
 

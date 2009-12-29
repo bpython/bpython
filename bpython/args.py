@@ -28,7 +28,7 @@ def parse(args, extras=None):
           'A full description of what these options are for',
           [optparse.Option('-f', action='store_true', dest='f', help='Explode'),
            optparse.Option('-l', action='store_true', dest='l', help='Love')]))
-            
+
 
     Return a tuple of (config, options, exec_args) wherein "config" is the
     config object either parsed from a default/specified config file or default
@@ -56,16 +56,17 @@ def parse(args, extras=None):
     if extras is not None:
         extras_group = OptionGroup(parser, extras[0], extras[1])
         for option in extras[2]:
-            extras_group.option_list.append(option)
+            extras_group.add_option(option)
         parser.add_option_group(extras_group)
 
     all_args = set(parser._short_opt.keys() + parser._long_opt.keys())
-    if args and not all_args.intersection(args):
+    if args and not all_args.intersection(arg.split('=')[0] for arg in args):
         # Just let Python handle this
         os.execv(sys.executable, [sys.executable] + args)
     else:
         # Split args in bpython args and args for the executed file
-        real_args = list(takewhile(lambda arg: arg in all_args, args))
+        real_args = list(takewhile(lambda arg: arg.split('=')[0] in all_args,
+                                   args))
         exec_args = args[len(real_args):]
 
     options, args = parser.parse_args(real_args)
