@@ -57,14 +57,14 @@ from bpython import inspection
 from bpython import importcompletion
 
 # This for config
-from bpython.config import Struct, loadini, migrate_rc
+from bpython.config import Struct, migrate_rc
 
 # This for keys
 from bpython.keys import key_dispatch
 
-from bpython import __version__
 from bpython.pager import page
 from bpython.repl import Interpreter, Repl
+import bpython.args
 
 
 def log(x):
@@ -1551,11 +1551,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None):
     repl.startup()
 
     if args:
-        with open(args[0], 'r') as sourcefile:
-            code_obj = compile(sourcefile.read(), args[0], 'exec')
-        old_argv, sys.argv = sys.argv, args
-        interpreter.runcode(code_obj)
-        sys.argv = old_argv
+        bpython.args.exec_code(interpreter, args)
         if not interactive:
             curses.raw(False)
             return repl.getstdout()
@@ -1580,53 +1576,9 @@ def main_curses(scr, args, config, interactive=True, locals_=None):
 def main(args=None, locals_=None):
     global stdscr
 
-    if args is None:
-        args = sys.argv[1:]
-
-    parser = OptionParser(usage='Usage: %prog [options] [file [args]]\n'
-                                'NOTE: If bpython sees an argument it does '
-                                 'not know, execution falls back to the '
-                                 'regular Python interpreter.')
-    parser.add_option('--config', '-c', default='~/.bpython/config',
-                      help='use CONFIG instead of default config file')
-    parser.add_option('--interactive', '-i', action='store_true',
-                      help='Drop to bpython shell after running file '
-                           'instead of exiting')
-    parser.add_option('--quiet', '-q', action='store_true',
-                      help="Don't flush the output to stdout.")
-    parser.add_option('--version', '-V', action='store_true',
-                      help='print version and exit')
-
-    all_args = set(parser._short_opt.keys() + parser._long_opt.keys())
-    if args and not all_args.intersection(args):
-        # Just let Python handle this
-        os.execv(sys.executable, [sys.executable] + args)
-    else:
-        # Split args in bpython args and args for the executed file
-        real_args = list(takewhile(lambda arg: arg in all_args, args))
-        exec_args = args[len(real_args):]
-
-    options, args = parser.parse_args(real_args)
-
-    if options.version:
-        print 'bpython version', __version__,
-        print 'on top of Python', sys.version.split()[0]
-        print '(C) 2008-2009 Bob Farrell et al. See AUTHORS for detail.'
-        return
-
-    if not (sys.stdin.isatty() and sys.stdout.isatty()):
-        interpreter = code.InteractiveInterpreter()
-        interpreter.runsource(sys.stdin.read())
-        return
-
     setlocale(LC_ALL, '')
 
-    path = os.path.expanduser('~/.bpythonrc')
-    # migrating old configuration file
-    if os.path.isfile(path):
-        migrate_rc(path)
-    config = Struct()
-    loadini(config, options.config)
+    config, options, exec_args = bpython.args.parse(args)
 
     # Save stdin, stdout and stderr for later restoration
     orig_stdin = sys.stdin

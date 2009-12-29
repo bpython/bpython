@@ -30,6 +30,7 @@
 from __future__ import with_statement
 import inspect
 import sys
+import os
 from locale import LC_ALL, getpreferredencoding, setlocale
 
 import gobject
@@ -39,10 +40,11 @@ import pango
 from bpython import importcompletion, repl
 from bpython.config import Struct, loadini
 from bpython.formatter import theme_map
+import bpython.args
 
 
 _COLORS = dict(b='blue', c='cyan', g='green', m='magenta', r='red',
-               w='white', y='yellow', k='black')
+               w='white', y='yellow', k='black', d='black')
 
 
 class ArgspecFormatter(object):
@@ -129,7 +131,7 @@ class Nested(object):
 
 class SuggestionWindow(gtk.Window):
     """
-    The window where suggestiosn are displayed.
+    The window where suggestions are displayed.
     """
     __gsignals__ = dict(expose_event=None,
                         selection_changed=(gobject.SIGNAL_RUN_LAST, None,
@@ -263,6 +265,9 @@ class ReplWidget(gtk.TextView, repl.Repl):
         self.list_win.connect('selection-changed',
                               self.on_suggestion_selection_changed)
         self.list_win.hide()
+
+        self.modify_base('normal', gtk.gdk.color_parse(_COLORS[self.config.color_scheme['background']]))
+
         self.text_buffer = self.get_buffer()
         tags = dict()
         for (name, value) in self.config.color_scheme.iteritems():
@@ -616,17 +621,18 @@ def init_import_completion():
 
 
 def main(args=None):
-    if args is None:
-        args = sys.argv[1:]
 
     setlocale(LC_ALL, '')
     config = Struct()
-    loadini(config, '~/.bpython/config')
+
+    config, options, exec_args = bpython.args.parse(args)
+
+    loadini(config, '~/.bpython/config', options.config)
 
     interpreter = repl.Interpreter(None, getpreferredencoding())
     repl_widget = ReplWidget(interpreter, config)
 
-    sys.stderr = repl_widget
+    # sys.stderr = repl_widget
     sys.stdout = repl_widget
 
 #    repl.startup()
@@ -636,7 +642,16 @@ def main(args=None):
     window = gtk.Window()
 
     # branding
+
+    # fix icon to be distributed and loaded from the correct path
+    icon = gtk.gdk.pixbuf_new_from_file(os.path.join(os.path.dirname(__file__),
+                                                     'logo.png'))
+
     window.set_title('bpython')
+    window.set_icon(icon)
+    window.resize(600, 300)
+
+    # read from config
 
     sw = gtk.ScrolledWindow()
     sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)

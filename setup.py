@@ -30,7 +30,7 @@ else:
 setup(
     name="bpython",
     version = __version__,
-    author = "Robert Anthony Farrell et al.",
+    author = "Bob Farrell, Andreas Stuehrk et al.",
     author_email = "robertanthonyfarrell@gmail.com",
     description = "Fancy Interface to the Python Interpreter",
     license = "MIT/X",
@@ -46,12 +46,15 @@ setup(
         (os.path.join(man_dir, 'man5'), ['doc/bpython-config.5']),
         ('share/applications', ['data/bpython.desktop'])
     ],
+    package_data = {'bpython': ['logo.png']},
     entry_points = {
         'console_scripts': [
             'bpython = bpython.cli:main',
+            'bpython-gtk = bpython.gtk_:main',
         ],
     },
-    scripts = ([] if using_setuptools else ['data/bpython']),
+    scripts = ([] if using_setuptools else ['data/bpython', 
+                                            'data/bpython-gtk']),
     cmdclass=dict(build_py=build_py)
 )
 
