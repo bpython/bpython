@@ -42,7 +42,7 @@ from bpython.formatter import theme_map
 
 
 _COLORS = dict(b='blue', c='cyan', g='green', m='magenta', r='red',
-               w='white', y='yellow', k='black')
+               w='white', y='yellow', k='black', d='black')
 
 
 class ArgspecFormatter(object):
@@ -263,6 +263,9 @@ class ReplWidget(gtk.TextView, repl.Repl):
         self.list_win.connect('selection-changed',
                               self.on_suggestion_selection_changed)
         self.list_win.hide()
+
+        self.modify_base('normal', gtk.gdk.color_parse(_COLORS[self.config.color_scheme['background']]))
+
         self.text_buffer = self.get_buffer()
         tags = dict()
         for (name, value) in self.config.color_scheme.iteritems():
@@ -634,13 +637,15 @@ def main(args=None):
     window = gtk.Window()
 
     # branding
+
+    # fix icon to be distributed and loaded from the correct path
     icon = gtk.gdk.pixbuf_new_from_file('/home/simon/src/bpython/data/logo.png')
 
     window.set_title('bpython')
     window.set_icon(icon)
     window.resize(600, 300)
 
-    repl_widget.modify_base('normal', gtk.gdk.Color(0, 0, 0))
+    # read from config
 
     sw = gtk.ScrolledWindow()
     sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
