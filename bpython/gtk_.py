@@ -626,7 +626,7 @@ def main(args=None):
     interpreter = repl.Interpreter(None, getpreferredencoding())
     repl_widget = ReplWidget(interpreter, config)
 
-    sys.stderr = repl_widget
+    # sys.stderr = repl_widget
     sys.stdout = repl_widget
 
     gobject.idle_add(init_import_completion)
@@ -635,6 +635,10 @@ def main(args=None):
 
     # branding
     window.set_title('bpython')
+
+    icon = gtk.gdk.pixbuf_new_from_file('/home/simon/src/bpython/data/logo.png')
+
+    window.set_icon(icon)
 
     sw = gtk.ScrolledWindow()
     sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
