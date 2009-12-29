@@ -69,6 +69,45 @@ class ArgspecFormatter(object):
         return '=%s' % (value, )
 
 
+class ExceptionDialog(gtk.MessageDialog):
+    def __init__(self, exc_type, exc_value, tb, text='An error occurred.'):
+        gtk.MessageDialog.__init__(self, buttons=gtk.BUTTONS_CLOSE,
+                                   type=gtk.MESSAGE_ERROR,
+                                   message_format=text)
+        self.set_resizable(True)
+        import cgitb
+        text = cgitb.text((exc_type, exc_value, tb), 5)
+        expander = gtk.Expander('Exception details')
+        self.vbox.pack_start(expander)
+        textview = gtk.TextView()
+        textview.get_buffer().set_text(text)
+        scrolled_window = gtk.ScrolledWindow()
+        scrolled_window.add(textview)
+        expander.add(scrolled_window)
+        self.show_all()
+
+
+class ExceptionManager(object):
+    """
+    A context manager which runs the dialog `DialogType` on error, with
+    the exception's type, value, a traceback and a text to display as
+    arguments.
+    """
+    def __init__(self, DialogType, text='An error occurred.'):
+        self.DialogType = DialogType
+        self.text = text
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if not (exc_value is None or
+                issubclass(exc_type, (KeyboardInterrupt, SystemExit))):
+            dialog = self.DialogType(exc_type, exc_value, traceback, self.text)
+            dialog.run()
+            dialog.destroy()
+
+
 class Nested(object):
     """
     A helper class, inspired by a semaphore.
@@ -555,11 +594,16 @@ class ReplWidget(gtk.TextView, repl.Repl):
             self.text_buffer.place_cursor(line_start_iter)
 
     def writetb(self, lines):
-        string = ''.join(lines)
-        with self.editing:
-            self.text_buffer.insert_with_tags_by_name(self.get_cursor_iter(),
-                                                      string, 'error')
-        self.move_cursor(len(string))
+        with ExceptionManager(ExceptionDialog,
+                              'An error occured while trying to display '
+                              'an error. Please contact the bpython '
+                              'developers.'):
+            string = ''.join(lines)
+            with self.editing:
+                self.text_buffer.insert_with_tags_by_name(
+                    self.get_cursor_iter(), string, 'error'
+                )
+            self.move_cursor(len(string))
 
 
 def init_import_completion():
