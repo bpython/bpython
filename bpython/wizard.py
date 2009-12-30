@@ -53,11 +53,13 @@ questions['general']['syntax'] = {'question': 'Do you want syntax highlighting a
                                   'answers': positive_negative}
 
 filename = os.path.expanduser('~/.bpython/config')
+dirname  = os.path.expanduser('~/.bpython/')
 
 def is_first_run():
-    return not os.path.isfile(filename)
+    return not os.path.isdir(dirname)
 
 def create_empty_file():
+    os.mkdir(dirname)
     f = open(filename, 'w')
     f.write('')
     f.close()
@@ -76,14 +78,18 @@ wizard and just have me create an empty configuration file for you you can
 answer no to the following question.
 """
 
+    # Always create an empty file to prevent the wizard from running the next
+    # time
+    create_empty_file()
+
     answer = raw_input('Do you want to run the wizard: ')
 
-    if answer.lower() in negative_answers:
-        create_empty_file()
-    else:
+    # If the answer is positive, start wizard
+    if answer.lower() in positive_answers:
         config = ConfigParser()
 
         for section_name, section in questions.iteritems():
+            # Create sections on the fly
             config.add_section(section_name)
 
             print
@@ -102,6 +108,7 @@ answer no to the following question.
                         print
                         print "I couldn't understand the answer you provided, please try again"
 
+        # Write the config file
         config.write(open(filename, 'w'))
 
 def main():
