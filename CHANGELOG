@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v0.9.6.1
+--------
+A quick bugfix release (this should not become a habit).
+
+* #82: Crash on saving file.
+
 v0.9.6
 ------
 A bugfix/feature release (and a start at gtk). Happy Christmas everyone!
