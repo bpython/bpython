@@ -11,6 +11,8 @@ A bugfix/feature release (and a start at gtk). Happy Christmas everyone!
 * #62: Hide matches starting with a _ unless explicitly typed.
 * #72: Auto dedentation
 
+- add the possibility for a banner to be shown on bpython startup (when
+  embedded or in code) written by Caio Ramao.
 - add a hack to add a write() method to our fake stdin object
 - Don't use curses interface when stdout is not attached to a terminal. 
 - PEP-8 conformance.
