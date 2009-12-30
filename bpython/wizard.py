@@ -25,19 +25,28 @@
 
 import os
 import sys
+from ConfigParser import ConfigParser
 
 # questions asked by the wizard (keys are the config values, followed by text
 # and answers and defaults
 positive_answers = ('Y', 'y', 'yes', 'ja',)
 negative_answers = ('N', 'n', 'no', 'nein',)
 
-questions = {'arg_spec': {'question': 'Do you want to show the argspec (y/n): ',
+# FIXME find a better abstraction/representation
+questions = {'auto_display_list': {'question': 'Do you want to show the autocomplete list as you type (y/n):',
+                                   'answers': {positive_answers: 'True',
+                                               negative_answers: 'False'},
+                                   'section': 'general'
+                                  },
+             'arg_spec': {'question': 'Do you want to show the argspec (y/n):',
                           'answers': {positive_answers: 'True',
-                                      negative_answers: 'False'}
+                                      negative_answers: 'False'},
+                          'section': 'general'
                          },
-             'syntax':   {'question': 'Do you want syntax highlighting as you type (y/n): ',
+             'syntax':   {'question': 'Do you want syntax highlighting as you type (y/n):',
                           'answers':  {positive_answers: 'True',
-                                       negative_answers: 'False'}
+                                       negative_answers: 'False'},
+                          'section': 'general'
                          }
              }
 
@@ -70,7 +79,11 @@ answer no to the following question.
     if answer.lower() in negative_answers:
         create_empty_file()
     else:
-        answers = {}
+        config = ConfigParser()
+
+        # FIXME hacks
+        config.add_section('general')
+        config.add_section('keyboard')
 
         # Ask the questions
         print
@@ -80,16 +93,16 @@ answer no to the following question.
                 answer = raw_input()
 
                 if answer in positive_answers:
-                    answers[config_value] = question['answers'][positive_answers]
+                    config.set(['section'], config_value, question['answers'][positive_answers])
                     break
                 elif answer in negative_answers:
-                    answers[config_value] = question['answers'][negative_answers]
+                    config.set(question['section'], config_value, question['answers'][negative_answers])
                     break
                 else:
                     print
                     print 'I couldn\'t understand the answer you provided, please try again'
 
-        print answers
+        config.write(open(filename, 'w'))
 
 def main():
     if is_first_run():
