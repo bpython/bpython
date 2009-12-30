@@ -641,7 +641,7 @@ def main(args=None):
     gobject.idle_add(init_import_completion)
 
     if not options.socket_id:
-        print options.socket_id
+        # print options.socket_id
         parent = gtk.Window()
         parent.connect('delete-event', lambda widget, event: gtk.main_quit())
 
