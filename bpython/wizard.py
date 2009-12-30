@@ -24,13 +24,73 @@
 #
 
 import os
+import sys
 
-def check_first_run():
-    if not os.path.isfile(os.path.expanduser('~/.bpython/config')):
-        return False
-    else:
-        return True
+# questions asked by the wizard (keys are the config values, followed by text
+# and answers and defaults
+positive_answers = ('Y', 'y', 'yes', 'ja',)
+negative_answers = ('N', 'n', 'no', 'nein',)
+
+questions = {'arg_spec': {'question': 'Do you want to show the argspec (y/n): ',
+                          'answers': {positive_answers: 'True',
+                                      negative_answers: 'False'}
+                         },
+             'syntax':   {'question': 'Do you want syntax highlighting as you type (y/n): ',
+                          'answers':  {positive_answers: 'True',
+                                       negative_answers: 'False'}
+                         }
+             }
+
+filename = os.path.expanduser('~/.bpython/config')
+
+def is_first_run():
+    return not os.path.isfile(filename)
+
+def create_empty_file():
+    f = open(filename, 'w')
+    f.write('')
+    f.close()
 
 def run_wizard():
     """Run an interactive wizard asking a few questions about the users'
     enviroment and write the answers to the configuration file."""
+
+
+    print """Hi there. It seems this is the first time you run bpython. I can
+tell because you do not have a configuration file yet. There are a few
+options I am going to give you.
+
+I am ready to run the wizard for you now. If you do not want to run the
+wizard and just have me create an empty configuration file for you you can
+answer no to the following question.
+"""
+
+    answer = raw_input('Do you want to run the wizard: ')
+
+    if answer.lower() in negative_answers:
+        create_empty_file()
+    else:
+        answers = {}
+
+        # Ask the questions
+        print
+        for config_value, question in questions.iteritems():
+            while 1:
+                print question['question'],
+                answer = raw_input()
+
+                if answer in positive_answers:
+                    answers[config_value] = question['answers'][positive_answers]
+                    break
+                elif answer in negative_answers:
+                    answers[config_value] = question['answers'][negative_answers]
+                    break
+                else:
+                    print
+                    print 'I couldn\'t understand the answer you provided, please try again'
+
+        print answers
+
+if __name__ == '__main__':
+    if is_first_run():
+        run_wizard()
