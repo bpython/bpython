@@ -114,3 +114,6 @@ answer no to the following question.
 def main():
     if is_first_run():
         run_wizard()
+
+if __name__ == '__main__':
+    main()
