@@ -32,23 +32,25 @@ from ConfigParser import ConfigParser
 positive_answers = ('Y', 'y', 'yes', 'ja',)
 negative_answers = ('N', 'n', 'no', 'nein',)
 
-# FIXME find a better abstraction/representation
-questions = {'auto_display_list': {'question': 'Do you want to show the autocomplete list as you type (y/n):',
-                                   'answers': {positive_answers: 'True',
-                                               negative_answers: 'False'},
-                                   'section': 'general'
-                                  },
-             'arg_spec': {'question': 'Do you want to show the argspec (y/n):',
-                          'answers': {positive_answers: 'True',
-                                      negative_answers: 'False'},
-                          'section': 'general'
-                         },
-             'syntax':   {'question': 'Do you want syntax highlighting as you type (y/n):',
-                          'answers':  {positive_answers: 'True',
-                                       negative_answers: 'False'},
-                          'section': 'general'
-                         }
-             }
+# Create default answer
+positive_negative = {positive_answers: 'True',
+                     negative_answers: 'False'}
+
+# Create dict for storing everythin
+questions = {}
+
+# Create sections
+questions['general'] = {}
+questions['keyboard'] = {}
+
+questions['general']['auto_display_list'] = {'question': 'Do you want to show the autocomplete list as you type (y/n):',
+                                             'answers': positive_negative}
+
+questions['general']['arg_spec'] = {'question': 'Do you want to show the argspec (y/n):',
+                                    'answers': positive_negative} 
+
+questions['general']['syntax'] = {'question': 'Do you want syntax highlighting as you type (y/n):',
+                                  'answers': positive_negative}
 
 filename = os.path.expanduser('~/.bpython/config')
 
@@ -81,26 +83,24 @@ answer no to the following question.
     else:
         config = ConfigParser()
 
-        # FIXME hacks
-        config.add_section('general')
-        config.add_section('keyboard')
+        for section_name, section in questions.iteritems():
+            config.add_section(section_name)
 
-        # Ask the questions
-        print
-        for config_value, question in questions.iteritems():
-            while 1:
-                print question['question'],
-                answer = raw_input()
+            print
+            for config_value, q in section.iteritems():
+                while 1:
+                    print q['question'],
+                    answer = raw_input()
 
-                if answer in positive_answers:
-                    config.set(['section'], config_value, question['answers'][positive_answers])
-                    break
-                elif answer in negative_answers:
-                    config.set(question['section'], config_value, question['answers'][negative_answers])
-                    break
-                else:
-                    print
-                    print 'I couldn\'t understand the answer you provided, please try again'
+                    if answer in positive_answers:
+                        config.set(section_name, config_value, q['answers'][positive_answers])
+                        break
+                    elif answer in negative_answers:
+                        config.set(section_name, config_value, q['answers'][negative_answers])
+                        break
+                    else:
+                        print
+                        print "I couldn't understand the answer you provided, please try again"
 
         config.write(open(filename, 'w'))
 
