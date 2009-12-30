@@ -59,6 +59,9 @@ from bpython.config import Struct
 # This for keys
 from bpython.keys import key_dispatch
 
+# This for the wizard
+from bpython import wizard
+
 from bpython.pager import page
 from bpython.repl import Interpreter, Repl
 import bpython.args
@@ -1580,6 +1583,8 @@ def main(args=None, locals_=None, banner=None):
     setlocale(LC_ALL, '')
 
     config, options, exec_args = bpython.args.parse(args)
+
+    wizard.main()
 
     # Save stdin, stdout and stderr for later restoration
     orig_stdin = sys.stdin
