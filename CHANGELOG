@@ -10,6 +10,7 @@ A bugfix/feature release (and a start at gtk). Happy Christmas everyone!
 * #70: Implement backward completion on backward tab. 
 * #62: Hide matches starting with a _ unless explicitly typed.
 * #72: Auto dedentation
+* #78: Theme without a certain value raises exception
 
 - add the possibility for a banner to be shown on bpython startup (when
   embedded or in code) written by Caio Ramao.
