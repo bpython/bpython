@@ -1239,10 +1239,12 @@ class Statusbar(object):
 
     """
 
-    def __init__(self, scr, pwin, background, s=None, c=None):
+    def __init__(self, scr, pwin, background, config, s=None, c=None):
         """Initialise the statusbar and display the initial text (if any)"""
         self.size()
         self.win = newwin(background, self.h, self.w, self.y, self.x)
+
+        self.config = config
 
         self.s = s or ''
         self._s = self.s
@@ -1382,7 +1384,7 @@ def init_wins(scr, colors, config):
 #
 # This should show to be configured keys from ~/.bpython/config
 #
-    statusbar = Statusbar(scr, main_win, background,
+    statusbar = Statusbar(scr, main_win, background, config,
         " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager <%s> Show Source " %
             (config.undo_key, config.save_key,
              config.pastebin_key, config.last_output_key,
