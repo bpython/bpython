@@ -3,11 +3,20 @@ Roadmap
 
 v0.9.7
 ------
+
+bpython
+
 - Create ~/.bpython on install (#17)
   - With a wizard
 
 - Support for invoking with environment/namespace setup (#76)
-- Argument parsing and options needs to be done
+- Windows support (it segfaults with sys.stderr being redirected)
+
+bpython.gtk_
+
+- Fix fonts in bpython.gtk_ (default monospace, etc)
+- Add shortcut keys to bpython.gtk_ 
+- Show a status bar thingy in bpython.gtk_
 
 v1.0
 ----
