@@ -636,6 +636,8 @@ def main(args=None):
     sys.stderr = repl_widget
     sys.stdout = repl_widget
 
+#    repl.startup()
+
     gobject.idle_add(init_import_completion)
 
     if not options.socket_id:

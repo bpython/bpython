@@ -1545,6 +1545,8 @@ def main_curses(scr, args, config, interactive=True, locals_=None):
     sys.stdout = repl
     sys.stderr = repl
 
+    repl.startup()
+
     if args:
         bpython.args.exec_code(interpreter, args)
         if not interactive:
