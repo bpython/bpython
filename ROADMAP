@@ -10,14 +10,12 @@ bpython
   - With a wizard
 
 - Support for invoking with environment/namespace setup (#76)
-- Windows support (it segfaults with sys.stderr being redirected)
+- Official windows support (it segfaults with sys.stderr being redirected)
+- Import completion advanced (#48)
 
 bpython.gtk_
 
 - Fix fonts in bpython.gtk_ (default monospace, etc)
 - Add shortcut keys to bpython.gtk_ 
 - Show a status bar thingy in bpython.gtk_
-
-v1.0
-----
-- GTK support
+- Colourise docstring (#80)
