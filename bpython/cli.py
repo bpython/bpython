@@ -1499,7 +1499,8 @@ def curses_wrapper(func, *args, **kwargs):
         curses.endwin()
 
 
-def main_curses(scr, args, config, interactive=True, locals_=None):
+def main_curses(scr, args, config, interactive=True, locals_=None,
+                banner=None):
     """main function for the curses convenience wrapper
 
     Initialise the two main objects: the interpreter
@@ -1553,6 +1554,9 @@ def main_curses(scr, args, config, interactive=True, locals_=None):
             curses.raw(False)
             return repl.getstdout()
 
+    if banner is not None:
+        repl.write(banner)
+        repl.write('\n')
     repl.repl()
     if config.hist_length:
         histfilename = os.path.expanduser(config.hist_file)
@@ -1570,7 +1574,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None):
     return repl.getstdout()
 
 
-def main(args=None, locals_=None):
+def main(args=None, locals_=None, banner=None):
     global stdscr
 
     setlocale(LC_ALL, '')
@@ -1584,7 +1588,8 @@ def main(args=None, locals_=None):
 
     try:
         o = curses_wrapper(main_curses, exec_args, config,
-                           options.interactive, locals_)
+                           options.interactive, locals_,
+                           banner=banner)
     finally:
         sys.stdin = orig_stdin
         sys.stderr = orig_stderr

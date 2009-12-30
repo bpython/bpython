@@ -24,6 +24,6 @@
 __version__ = '0.9.5.2'
 
 
-def embed(locals_=None, args=['-i', '-q']):
+def embed(locals_=None, args=['-i', '-q'], banner=None):
     from bpython.cli import main
     return main(args, locals_)
