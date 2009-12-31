@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.9.6.2
+--------
+Unfortunately another bugfix release as I (Bob) broke py3 support.
+
+* #84: bpython doesn't work with Python 3
+       Thanks very much to Henry Prêcheur for both the bug report and the
+       patch.
+
 v0.9.6.1
 --------
 A quick bugfix release (this should not become a habit).
