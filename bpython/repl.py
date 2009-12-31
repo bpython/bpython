@@ -310,7 +310,10 @@ class Repl(object):
         filename = os.environ.get('PYTHONSTARTUP')
         if filename and os.path.isfile(filename):
             with open(filename, 'r') as f:
-                self.interp.runsource(f.read(), filename, 'exec', encode=False)
+                if py3:
+                    self.interp.runsource(f.read(), filename, 'exec')
+                else:
+                    self.interp.runsource(f.read(), filename, 'exec', encode=False)
 
     def attr_matches(self, text):
         """Taken from rlcompleter.py and bent to my will."""
