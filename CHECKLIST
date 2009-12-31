@@ -1,0 +1,33 @@
+Check that all of the following work before a release:
+
+* Runs under Python 2.5, 2.6 and 3.1 (after 2to3).
+
+* Save
+
+* Rewind
+
+* Pastebin
+
+* Pager
+
+* Inspect source
+
+* History
+
+* Tab completion
+
+* Argument inspection
+
+* All keybinds
+
+* All packaged themes
+
+* Command line arguments correctly passed to scripts
+
+* Delegate to standard Python appropriately
+
+* GTK port (and, when implemented, all of the above for GTK port)
+
+* Update CHANGELOG
+
+* Update __version__
