@@ -636,12 +636,10 @@ def main(args=None):
     sys.stderr = repl_widget
     sys.stdout = repl_widget
 
-#    repl.startup()
-
     gobject.idle_add(init_import_completion)
+    gobject.idle_add(repl_widget.startup)
 
     if not options.socket_id:
-        # print options.socket_id
         parent = gtk.Window()
         parent.connect('delete-event', lambda widget, event: gtk.main_quit())
 
