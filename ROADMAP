@@ -19,3 +19,6 @@ bpython.gtk_
 - Add shortcut keys to bpython.gtk_ 
 - Show a status bar thingy in bpython.gtk_
 - Colourise docstring (#80)
+
+common
+- test suite
