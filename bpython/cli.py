@@ -893,7 +893,7 @@ class CLIRepl(Repl):
 
     def push(self, s, insert_into_history=True):
         # curses.raw(True) prevents C-c from causing a SIGINT
-        curses.raw(True)
+        curses.raw(False)
         try:
             return Repl.push(self, s, insert_into_history)
         finally:
