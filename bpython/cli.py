@@ -1548,13 +1548,14 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     sys.stdout = repl
     sys.stderr = repl
 
-    repl.startup()
-
     if args:
         bpython.args.exec_code(interpreter, args)
         if not interactive:
             curses.raw(False)
             return repl.getstdout()
+    else:
+        sys.path.insert(0, '')
+        repl.startup()
 
     if banner is not None:
         repl.write(banner)

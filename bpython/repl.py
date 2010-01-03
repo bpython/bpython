@@ -296,7 +296,6 @@ class Repl(object):
         self.list_win_visible = False
         self._C = {}
         self.prev_block_finished = 0
-        sys.path.insert(0, '.')
 
         pythonhist = os.path.expanduser(self.config.hist_file)
         if os.path.exists(pythonhist):

@@ -101,5 +101,6 @@ def exec_code(interpreter, args):
     with open(args[0], 'r') as sourcefile:
         code_obj = compile(sourcefile.read(), args[0], 'exec')
     old_argv, sys.argv = sys.argv, args
+    sys.path.insert(0, os.path.abspath(os.path.dirname(args[0])))
     interpreter.runcode(code_obj)
     sys.argv = old_argv

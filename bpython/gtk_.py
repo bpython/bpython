@@ -637,7 +637,10 @@ def main(args=None):
     sys.stdout = repl_widget
 
     gobject.idle_add(init_import_completion)
-    gobject.idle_add(repl_widget.startup)
+
+    if not args:
+        sys.path.insert(0, '')
+        gobject.idle_add(repl_widget.startup)
 
     if not options.socket_id:
         parent = gtk.Window()
