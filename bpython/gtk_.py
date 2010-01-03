@@ -633,14 +633,20 @@ def main(args=None):
     interpreter = repl.Interpreter(None, getpreferredencoding())
     repl_widget = ReplWidget(interpreter, config)
 
-    sys.stderr = repl_widget
-    sys.stdout = repl_widget
-
     gobject.idle_add(init_import_completion)
 
-    if not args:
+    if not exec_args:
         sys.path.insert(0, '')
         gobject.idle_add(repl_widget.startup)
+    else:
+        if options.interactive:
+            gobject.idle_add(bpython.args.exec_code, interpreter, exec_args)
+        else:
+            bpython.args.exec_code(interpreter, exec_args)
+            return 0
+
+    sys.stderr = repl_widget
+    sys.stdout = repl_widget
 
     if not options.socket_id:
         parent = gtk.Window()
