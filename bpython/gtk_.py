@@ -251,7 +251,8 @@ class ReplWidget(gtk.TextView, repl.Repl):
     __gsignals__ = dict(button_press_event=None,
                         focus_in_event=None,
                         focus_out_event=None,
-                        realize=None)
+                        realize=None,
+                        exit_event=(gobject.SIGNAL_RUN_LAST, None, ()))
 
     def __init__(self, interpreter, config):
         gtk.TextView.__init__(self)
@@ -445,6 +446,9 @@ class ReplWidget(gtk.TextView, repl.Repl):
                 self.list_win_visible):
                 self.list_win.back()
                 return True
+        elif state & gtk.gdk.CONTROL_MASK and event.string == chr(4):
+            self.emit('exit-event')
+            return True
         return gtk.TextView.do_key_press_event(self, event)
 
     def do_realize(self):
@@ -575,7 +579,11 @@ class ReplWidget(gtk.TextView, repl.Repl):
             self.text_buffer.insert(iter_, '\n')
         self.move_cursor(1)
         self.highlight_current_line()
-        return self.push(line + '\n')
+        try:
+            return self.push(line + '\n')
+        except SystemExit:
+            self.emit('exit-event')
+            return False
 
     def reprint_line(self, lineno, tokens):
         """
@@ -632,6 +640,7 @@ def main(args=None):
 
     interpreter = repl.Interpreter(None, getpreferredencoding())
     repl_widget = ReplWidget(interpreter, config)
+    repl_widget.connect('exit-event', gtk.main_quit)
 
     gobject.idle_add(init_import_completion)
 
@@ -673,7 +682,15 @@ def main(args=None):
     parent.show_all()
     parent.connect('delete-event', lambda widget, event: gtk.main_quit())
 
-    gtk.main()
+    try:
+        gtk.main()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        if config.hist_length:
+            histfilename = os.path.expanduser(config.hist_file)
+            repl_widget.rl_history.save(histfilename, getpreferredencoding())
+    return 0
 
 
 if __name__ == '__main__':
