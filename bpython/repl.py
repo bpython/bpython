@@ -650,12 +650,7 @@ class Repl(object):
         if insert_into_history:
             self.rl_history.append(s)
 
-        try:
-            more = self.interp.runsource('\n'.join(self.buffer))
-        except SystemExit:
-            # Avoid a traceback on e.g. quit()
-            self.do_exit = True
-            return False
+        more = self.interp.runsource('\n'.join(self.buffer))
 
         if not more:
             self.buffer = []

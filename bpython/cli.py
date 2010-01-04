@@ -896,6 +896,10 @@ class CLIRepl(Repl):
         curses.raw(False)
         try:
             return Repl.push(self, s, insert_into_history)
+        except SystemExit:
+            # Avoid a traceback on e.g. quit()
+            self.do_exit = True
+            return False
         finally:
             curses.raw(True)
 
