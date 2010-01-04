@@ -446,9 +446,10 @@ class ReplWidget(gtk.TextView, repl.Repl):
                 self.list_win_visible):
                 self.list_win.back()
                 return True
-        elif state & gtk.gdk.CONTROL_MASK and event.string == chr(4):
-            self.emit('exit-event')
-            return True
+        elif state & gtk.gdk.CONTROL_MASK:
+            if event.string == chr(4) and not self.current_line():
+                self.emit('exit-event')
+                return True
         return gtk.TextView.do_key_press_event(self, event)
 
     def do_realize(self):
