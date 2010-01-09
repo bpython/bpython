@@ -722,7 +722,12 @@ class CLIRepl(Repl):
             self.complete()
             return ''
 
-        elif key == 'KEY_DC':  # Del
+        elif key in key_dispatch[config.delete_key] and not self.s:
+            # Delete on empty line exits
+            self.do_exit = True
+            return None
+
+        elif key in ('KEY_DC', ) + key_dispatch[config.delete_key]:
             self.delete()
             self.complete()
             # Redraw (as there might have been highlighted parens)
@@ -743,12 +748,12 @@ class CLIRepl(Repl):
             self.fwd()
             return ''
 
-        elif key == 'KEY_LEFT':  # Cursor Left
+        elif key in ("KEY_LEFT",' ^B', chr(2)):  # Cursor Left or ^B
             self.mvc(1)
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif key == 'KEY_RIGHT':  # Cursor Right
+        elif key in ("KEY_RIGHT", '^F', chr(6)):  # Cursor Right or ^F
             self.mvc(-1)
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
