@@ -32,7 +32,10 @@ class KeyMap:
         self.map = {}
 
     def __getitem__(self, key):
-        if key in self.map:
+        if not key:
+            # Unbound key
+            return str()
+        elif key in self.map:
             return self.map[key]
         else:
             raise Exception('Configured keymap (%s)\

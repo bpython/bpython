@@ -53,8 +53,9 @@ def loadini(struct, configfile):
             'clear_screen': 'C-l',
             'clear_word': 'C-w',
             'cut_to_buffer': 'C-k',
+            'delete': 'C-d',
             'down_one_line': 'C-n',
-            'exit': 'C-d',
+            'exit': '',
             'last_output': 'F9',
             'pastebin': 'F8',
             'save': 'C-s',
@@ -87,6 +88,7 @@ def loadini(struct, configfile):
     struct.clear_word_key = config.get('keyboard', 'clear_word')
     struct.clear_line_key = config.get('keyboard', 'clear_line')
     struct.clear_screen_key = config.get('keyboard', 'clear_screen')
+    struct.delete_key = config.get('keyboard', 'delete')
     struct.exit_key = config.get('keyboard', 'exit')
     struct.last_output_key = config.get('keyboard', 'last_output')
 
