@@ -40,7 +40,7 @@ setup(
     install_requires = [
         'pygments'
     ],
-    packages = ["bpython"],
+    packages = ["bpython", "bpdb"],
     data_files = [
         (os.path.join(man_dir, 'man1'), ['doc/bpython.1']),
         (os.path.join(man_dir, 'man5'), ['doc/bpython-config.5']),
