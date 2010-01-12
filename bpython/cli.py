@@ -725,7 +725,12 @@ class CLIRepl(Repl):
             self.complete()
             return ''
 
-        elif key == 'KEY_DC':  # Del
+        elif key in key_dispatch[config.delete_key] and not self.s:
+            # Delete on empty line exits
+            self.do_exit = True
+            return None
+
+        elif key in ('KEY_DC', ) + key_dispatch[config.delete_key]:
             self.delete()
             self.complete()
             # Redraw (as there might have been highlighted parens)
@@ -746,12 +751,12 @@ class CLIRepl(Repl):
             self.fwd()
             return ''
 
-        elif key == 'KEY_LEFT':  # Cursor Left
+        elif key in ("KEY_LEFT",' ^B', chr(2)):  # Cursor Left or ^B
             self.mvc(1)
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif key == 'KEY_RIGHT':  # Cursor Right
+        elif key in ("KEY_RIGHT", '^F', chr(6)):  # Cursor Right or ^F
             self.mvc(-1)
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
@@ -896,9 +901,13 @@ class CLIRepl(Repl):
 
     def push(self, s, insert_into_history=True):
         # curses.raw(True) prevents C-c from causing a SIGINT
-        curses.raw(True)
+        curses.raw(False)
         try:
             return Repl.push(self, s, insert_into_history)
+        except SystemExit:
+            # Avoid a traceback on e.g. quit()
+            self.do_exit = True
+            return False
         finally:
             curses.raw(True)
 
@@ -1242,10 +1251,12 @@ class Statusbar(object):
 
     """
 
-    def __init__(self, scr, pwin, background, s=None, c=None):
+    def __init__(self, scr, pwin, background, config, s=None, c=None):
         """Initialise the statusbar and display the initial text (if any)"""
         self.size()
         self.win = newwin(background, self.h, self.w, self.y, self.x)
+
+        self.config = config
 
         self.s = s or ''
         self._s = self.s
@@ -1385,7 +1396,7 @@ def init_wins(scr, colors, config):
 #
 # This should show to be configured keys from ~/.bpython/config
 #
-    statusbar = Statusbar(scr, main_win, background,
+    statusbar = Statusbar(scr, main_win, background, config,
         " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager <%s> Show Source " %
             (config.undo_key, config.save_key,
              config.pastebin_key, config.last_output_key,
@@ -1549,13 +1560,14 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     sys.stdout = repl
     sys.stderr = repl
 
-    repl.startup()
-
     if args:
         bpython.args.exec_code(interpreter, args)
         if not interactive:
             curses.raw(False)
             return repl.getstdout()
+    else:
+        sys.path.insert(0, '')
+        repl.startup()
 
     if banner is not None:
         repl.write(banner)

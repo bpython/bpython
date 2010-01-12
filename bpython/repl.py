@@ -1,6 +1,6 @@
 # The MIT License
 #
-# Copyright (c) 2009 the bpython authors.
+# Copyright (c) 2009-2010 the bpython authors.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -296,7 +296,6 @@ class Repl(object):
         self.list_win_visible = False
         self._C = {}
         self.prev_block_finished = 0
-        sys.path.insert(0, '.')
 
         pythonhist = os.path.expanduser(self.config.hist_file)
         if os.path.exists(pythonhist):
@@ -310,7 +309,10 @@ class Repl(object):
         filename = os.environ.get('PYTHONSTARTUP')
         if filename and os.path.isfile(filename):
             with open(filename, 'r') as f:
-                self.interp.runsource(f.read(), filename, 'exec', encode=False)
+                if py3:
+                    self.interp.runsource(f.read(), filename, 'exec')
+                else:
+                    self.interp.runsource(f.read(), filename, 'exec', encode=False)
 
     def attr_matches(self, text):
         """Taken from rlcompleter.py and bent to my will."""
@@ -648,12 +650,7 @@ class Repl(object):
         if insert_into_history:
             self.rl_history.append(s)
 
-        try:
-            more = self.interp.runsource('\n'.join(self.buffer))
-        except SystemExit:
-            # Avoid a traceback on e.g. quit()
-            self.do_exit = True
-            return False
+        more = self.interp.runsource('\n'.join(self.buffer))
 
         if not more:
             self.buffer = []

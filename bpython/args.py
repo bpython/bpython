@@ -1,7 +1,6 @@
 """
 Module to handle command line argument parsing, for all front-ends.
 """
-from __future__ import with_statement
 
 from __future__ import with_statement
 import os
@@ -75,7 +74,7 @@ def parse(args, extras=None):
     if options.version:
         print 'bpython version', __version__,
         print 'on top of Python', sys.version.split()[0]
-        print ('(C) 2008-2009 Bob Farrell, Andreas Stuehrk et al. '
+        print ('(C) 2008-2010 Bob Farrell, Andreas Stuehrk et al. '
                'See AUTHORS for detail.')
         raise SystemExit
 
@@ -102,5 +101,6 @@ def exec_code(interpreter, args):
     with open(args[0], 'r') as sourcefile:
         code_obj = compile(sourcefile.read(), args[0], 'exec')
     old_argv, sys.argv = sys.argv, args
+    sys.path.insert(0, os.path.abspath(os.path.dirname(args[0])))
     interpreter.runcode(code_obj)
     sys.argv = old_argv
