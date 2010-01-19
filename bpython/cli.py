@@ -1215,8 +1215,8 @@ class CLIRepl(Repl):
 
     def writetb(self, lines):
         for line in lines:
-            self.echo('\x01%s\x03%s' % (self.config.color_scheme['error'],
-                                        line))
+            self.write('\x01%s\x03%s' % (self.config.color_scheme['error'],
+                                         line))
 
     def yank_from_buffer(self):
         """Paste the text from the cut buffer at the current cursor location"""
