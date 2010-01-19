@@ -1526,8 +1526,9 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     global colors
     DO_RESIZE = False
 
-    old_sigwinch_handler = signal.signal(signal.SIGWINCH,
-                                         lambda *_: sigwinch(scr))
+    # FIXME: Handle window resize without signals
+    #old_sigwinch_handler = signal.signal(signal.SIGWINCH,
+    #                                     lambda *_: sigwinch(scr))
 
     stdscr = scr
     try:
@@ -1581,7 +1582,8 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     curses.raw(False)
 
     # Restore SIGWINCH handler
-    signal.signal(signal.SIGWINCH, old_sigwinch_handler)
+    # FIXME: handle window resizes without signals
+    # signal.signal(signal.SIGWINCH, old_sigwinch_handler)
 
     return repl.getstdout()
 
