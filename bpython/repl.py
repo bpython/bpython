@@ -625,6 +625,12 @@ class Repl(object):
     def pastebin(self):
         """Upload to a pastebin and display the URL in the status bar."""
 
+        if not self.statusbar.prompt("Pastebin buffer? (y/N) "
+            ).lower().startswith('y'
+            ):
+            self.statusbar.message("Pastebin aborted")
+            return
+
         pasteservice = ServerProxy(self.config.pastebin_url)
 
         s = self.getstdout()
