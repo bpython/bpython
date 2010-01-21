@@ -625,9 +625,10 @@ class Repl(object):
     def pastebin(self):
         """Upload to a pastebin and display the URL in the status bar."""
 
-        if not self.statusbar.prompt("Pastebin buffer? (y/N) "
+        if (self.config.pastebin_confirm and
+            not self.statusbar.prompt("Pastebin buffer? (y/N) "
             ).lower().startswith('y'
-            ):
+            )):
             self.statusbar.message("Pastebin aborted")
             return
 
