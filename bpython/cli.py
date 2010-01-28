@@ -342,8 +342,9 @@ class CLIRepl(Repl):
     def clear_wrapped_lines(self):
         """Clear the wrapped lines of the current input."""
         # curses does not handle this on its own. Sad.
-        width = self.scr.getmaxyx()[1]
-        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 1):
+        height, width = self.scr.getmaxyx()
+        max_y = min(self.iy + (self.ix + len(self.s)) // width + 1, height)
+        for y in xrange(self.iy + 1, max_y):
             self.scr.move(y, 0)
             self.scr.clrtoeol()
 
@@ -461,6 +462,13 @@ class CLIRepl(Repl):
         # Replace NUL bytes, as addstr raises an exception otherwise
         s = s.replace('\x00', '')
 
+        screen_height, screen_width = self.scr.getmaxyx()
+        if self.iy >= (screen_height - 1):
+            lines = (self.ix + len(s)) // screen_width
+            if lines > 0:
+                self.scr.scroll(lines)
+                self.iy -= lines
+                self.scr.move(self.iy, self.ix)
         self.scr.addstr(s, a)
 
         if redraw and not self.evaluating:
@@ -481,12 +489,7 @@ class CLIRepl(Repl):
         """Same as back() but, well, forward"""
 
         self.cpos = 0
-
-        width = self.scr.getmaxyx()[1]
-        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 1):
-            self.scr.move(y, 0)
-            self.scr.clrtoeol()
-
+        self.clear_wrapped_lines()
         self.rl_history.enter(self.s)
         self.s = self.rl_history.forward()
         self.print_line(self.s, clr=True)
@@ -1397,7 +1400,7 @@ def init_wins(scr, colors, config):
 # This should show to be configured keys from ~/.bpython/config
 #
     statusbar = Statusbar(scr, main_win, background, config,
-        " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager <%s> Show Source " %
+        " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source " %
             (config.undo_key, config.save_key,
              config.pastebin_key, config.last_output_key,
              config.show_source_key),
