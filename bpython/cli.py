@@ -339,8 +339,9 @@ class CLIRepl(Repl):
     def clear_wrapped_lines(self):
         """Clear the wrapped lines of the current input."""
         # curses does not handle this on its own. Sad.
-        width = self.scr.getmaxyx()[1]
-        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 1):
+        height, width = self.scr.getmaxyx()
+        max_y = min(self.iy + len(self.s) // width + 1, height)
+        for y in xrange(self.iy + 1, max_y):
             self.scr.move(y, 0)
             self.scr.clrtoeol()
 
@@ -478,12 +479,7 @@ class CLIRepl(Repl):
         """Same as back() but, well, forward"""
 
         self.cpos = 0
-
-        width = self.scr.getmaxyx()[1]
-        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 1):
-            self.scr.move(y, 0)
-            self.scr.clrtoeol()
-
+        self.clear_wrapped_lines()
         self.rl_history.enter(self.s)
         self.s = self.rl_history.forward()
         self.print_line(self.s, clr=True)
