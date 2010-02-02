@@ -45,6 +45,8 @@ def loadini(struct, configfile):
             'paste_time': 0.02,
             'syntax': True,
             'tab_length': 4,
+            'pastebin_confirm': True,
+            'pastebin_private': False,
             'pastebin_url': 'http://bpaste.net/xmlrpc/',
             'pastebin_show_url': 'http://bpaste.net/show/$paste_id/',
         },
@@ -92,6 +94,8 @@ def loadini(struct, configfile):
     struct.exit_key = config.get('keyboard', 'exit')
     struct.last_output_key = config.get('keyboard', 'last_output')
 
+    struct.pastebin_confirm = config.getboolean('general', 'pastebin_confirm')
+    struct.pastebin_private = config.getboolean('general', 'pastebin_private')
     struct.pastebin_url = config.get('general', 'pastebin_url')
     struct.pastebin_show_url = config.get('general', 'pastebin_show_url')
 
