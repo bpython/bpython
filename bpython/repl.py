@@ -46,6 +46,16 @@ from pygments.token import Token
 from bpython import importcompletion, inspection
 from bpython.formatter import Parenthesis
 
+# Needed for special handling of __abstractmethods__
+# abc only exists since 2.6, so check both that it exists and that it's
+# the one we're expecting
+try:
+    import abc
+    abc.ABCMeta
+    has_abc = True
+except (ImportError, AttributeError):
+    has_abc = False
+
 py3 = sys.version_info[0] == 3
 
 
@@ -339,6 +349,11 @@ class Repl(object):
         if hasattr(obj, '__class__'):
             words.append('__class__')
             words = words + rlcompleter.get_class_members(obj.__class__)
+            if has_abc and not isinstance(obj.__class__, abc.ABCMeta):
+                try:
+                    words.remove('__abstractmethods__')
+                except ValueError:
+                    pass
 
         matches = []
         n = len(attr)
@@ -624,6 +639,13 @@ class Repl(object):
 
     def pastebin(self):
         """Upload to a pastebin and display the URL in the status bar."""
+
+        if (self.config.pastebin_confirm and
+            not self.statusbar.prompt("Pastebin buffer? (y/N) "
+            ).lower().startswith('y'
+            )):
+            self.statusbar.message("Pastebin aborted")
+            return
 
         pasteservice = ServerProxy(self.config.pastebin_url)
 

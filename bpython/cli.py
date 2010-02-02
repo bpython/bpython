@@ -339,8 +339,9 @@ class CLIRepl(Repl):
     def clear_wrapped_lines(self):
         """Clear the wrapped lines of the current input."""
         # curses does not handle this on its own. Sad.
-        width = self.scr.getmaxyx()[1]
-        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 1):
+        height, width = self.scr.getmaxyx()
+        max_y = min(self.iy + (self.ix + len(self.s)) // width + 1, height)
+        for y in xrange(self.iy + 1, max_y):
             self.scr.move(y, 0)
             self.scr.clrtoeol()
 
@@ -478,12 +479,7 @@ class CLIRepl(Repl):
         """Same as back() but, well, forward"""
 
         self.cpos = 0
-
-        width = self.scr.getmaxyx()[1]
-        for y in xrange(self.iy + 1, self.iy + len(self.s) // width + 1):
-            self.scr.move(y, 0)
-            self.scr.clrtoeol()
-
+        self.clear_wrapped_lines()
         self.rl_history.enter(self.s)
         self.s = self.rl_history.forward()
         self.print_line(self.s, clr=True)
@@ -1215,8 +1211,8 @@ class CLIRepl(Repl):
 
     def writetb(self, lines):
         for line in lines:
-            self.echo('\x01%s\x03%s' % (self.config.color_scheme['error'],
-                                        line))
+            self.write('\x01%s\x03%s' % (self.config.color_scheme['error'],
+                                         line))
 
     def yank_from_buffer(self):
         """Paste the text from the cut buffer at the current cursor location"""
@@ -1394,7 +1390,7 @@ def init_wins(scr, colors, config):
 # This should show to be configured keys from ~/.bpython/config
 #
     statusbar = Statusbar(scr, main_win, background, config,
-        " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager <%s> Show Source " %
+        " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source " %
             (config.undo_key, config.save_key,
              config.pastebin_key, config.last_output_key,
              config.show_source_key),
