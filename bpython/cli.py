@@ -459,13 +459,6 @@ class CLIRepl(Repl):
         # Replace NUL bytes, as addstr raises an exception otherwise
         s = s.replace('\x00', '')
 
-        screen_height, screen_width = self.scr.getmaxyx()
-        if self.iy >= (screen_height - 1):
-            lines = (self.ix + len(s)) // screen_width
-            if lines > 0:
-                self.scr.scroll(lines)
-                self.iy -= lines
-                self.scr.move(self.iy, self.ix)
         self.scr.addstr(s, a)
 
         if redraw and not self.evaluating:
