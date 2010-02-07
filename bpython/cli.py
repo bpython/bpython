@@ -237,7 +237,7 @@ def make_colors(config):
 class CLIRepl(Repl):
 
     def __init__(self, scr, interp, statusbar, config, idle=None):
-        Repl.__init__(self, interp, config, idle)
+        Repl.__init__(self, interp, config)
         interp.writetb = self.writetb
         self.scr = scr
         self.list_win = newwin(get_colpair(config, 'background'), 1, 1, 1, 1)
