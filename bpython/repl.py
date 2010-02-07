@@ -270,15 +270,13 @@ class Repl(object):
     XXX Subclasses should implement echo, current_line, cw
     """
 
-    def __init__(self, interp, config, idle=None):
-        """Initialise the repl with, unfortunately, a curses screen passed to
-        it.  This needs to be split up so the curses crap isn't in here.
+    def __init__(self, interp, config):
+        """Initialise the repl.
 
         interp is a Python code.InteractiveInterpreter instance
 
-        The optional 'idle' parameter is a function that the repl call while
-        it's blocking (waiting for keypresses). This, again, should be in a
-        different class"""
+        config is a populated bpython.config.Struct.
+        """
 
         self.config = config
         self.cut_buffer = ''
