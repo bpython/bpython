@@ -83,16 +83,14 @@ class BPythonFormatter(Formatter):
     See the Pygments source for more info; it's pretty
     straightforward."""
 
-    f_strings = {}
-
     def __init__(self, color_scheme, **options):
-        if not self.f_strings:
-            for k, v in theme_map.iteritems():
-                self.f_strings[k] = '\x01%s' % (color_scheme[v],)
-                if k is Parenthesis:
-                    # FIXME: Find a way to make this the inverse of the current
-                    # background colour
-                    self.f_strings[k] += 'I'
+        self.f_strings = {}
+        for k, v in theme_map.iteritems():
+            self.f_strings[k] = '\x01%s' % (color_scheme[v],)
+            if k is Parenthesis:
+                # FIXME: Find a way to make this the inverse of the current
+                # background colour
+                self.f_strings[k] += 'I'
         Formatter.__init__(self, **options)
 
     def format(self, tokensource, outfile):
