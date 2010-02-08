@@ -250,6 +250,7 @@ class CLIRepl(Repl):
         self.last_key_press = time.time()
         self.s = ''
         self.statusbar = statusbar
+        self.formatter = BPythonFormatter(config.color_scheme)
 
     def addstr(self, s):
         """Add a string to the current input line and figure out
@@ -855,8 +856,7 @@ class CLIRepl(Repl):
             self.highlighted_paren = None
 
         if self.config.syntax and (not self.paste_mode or newline):
-            o = format(self.tokenize(s, newline),
-                       BPythonFormatter(self.config.color_scheme))
+            o = format(self.tokenize(s, newline), self.formatter)
         else:
             o = s
 
