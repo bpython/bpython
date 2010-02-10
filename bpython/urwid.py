@@ -43,7 +43,7 @@ from optparse import Option
 
 from pygments.token import Token
 
-from bpython import inspection, importcompletion, args as bpargs, repl
+from bpython import args as bpargs, repl
 from bpython.formatter import theme_map
 
 import urwid
