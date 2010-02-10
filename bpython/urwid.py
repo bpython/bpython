@@ -397,8 +397,8 @@ def main(args=None, locals_=None, banner=None):
         def start(main_loop, user_data):
             if exec_args:
                 bpargs.exec_code(interpreter, exec_args)
-            if not options.interactive:
-                raise urwid.ExitMainLoop()
+                if not options.interactive:
+                    raise urwid.ExitMainLoop()
             if not exec_args:
                 sys.path.insert(0, '')
                 # this is CLIRepl.startup inlined.
