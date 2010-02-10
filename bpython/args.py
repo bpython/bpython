@@ -12,6 +12,16 @@ from itertools import takewhile
 from bpython import __version__
 from bpython.config import loadini, Struct, migrate_rc
 
+
+class OptionParserFailed(ValueError):
+    """Raised by the RaisingOptionParser for a bogus commandline."""
+
+
+class RaisingOptionParser(OptionParser):
+    def error(self, msg):
+        raise OptionParserFailed()
+
+
 def parse(args, extras=None):
     """Receive an argument list - if None, use sys.argv - parse all args and
     take appropriate action. Also receive optional extra options: this should
@@ -39,10 +49,16 @@ def parse(args, extras=None):
     if args is None:
         args = sys.argv[1:]
 
-    parser = OptionParser(usage='Usage: %prog [options] [file [args]]\n'
-                                'NOTE: If bpython sees an argument it does '
-                                 'not know, execution falls back to the '
-                                 'regular Python interpreter.')
+    parser = RaisingOptionParser(
+        usage='Usage: %prog [options] [file [args]]\n'
+        'NOTE: If bpython sees an argument it does '
+        'not know, execution falls back to the '
+        'regular Python interpreter.')
+    # This is not sufficient if bpython gains its own -m support
+    # (instead of falling back to Python itself for that).
+    # That's probably fixable though, for example by having that
+    # option swallow all remaining arguments in a callback.
+    parser.disable_interspersed_args()
     parser.add_option('--config', '-c', default='~/.bpython/config',
                       help='use CONFIG instead of default config file')
     parser.add_option('--interactive', '-i', action='store_true',
@@ -59,17 +75,11 @@ def parse(args, extras=None):
             extras_group.add_option(option)
         parser.add_option_group(extras_group)
 
-    all_args = set(parser._short_opt.keys() + parser._long_opt.keys())
-    if args and not all_args.intersection(arg.split('=')[0] for arg in args):
+    try:
+        options, args = parser.parse_args(args)
+    except OptionParserFailed:
         # Just let Python handle this
         os.execv(sys.executable, [sys.executable] + args)
-    else:
-        # Split args in bpython args and args for the executed file
-        real_args = list(takewhile(lambda arg: arg.split('=')[0] in all_args,
-                                   args))
-        exec_args = args[len(real_args):]
-
-    options, args = parser.parse_args(real_args)
 
     if options.version:
         print 'bpython version', __version__,
@@ -91,7 +101,7 @@ def parse(args, extras=None):
 
     loadini(config, options.config)
 
-    return config, options, exec_args
+    return config, options, args
 
 def exec_code(interpreter, args):
     """
