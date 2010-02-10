@@ -1610,6 +1610,7 @@ def main(args=None, locals_=None, banner=None):
 
 
 if __name__ == '__main__':
+    from bpython.cli import main
     main()
 
 # vim: sw=4 ts=4 sts=4 ai et

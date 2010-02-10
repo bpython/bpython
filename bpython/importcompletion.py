@@ -75,6 +75,10 @@ def find_modules(path):
             # Possibly a package
             if '.' in name:
                 continue
+        elif os.path.isdir(os.path.join(path, name)):
+            # Unfortunately, CPython just crashes if there is a directory
+            # which ends with a python extension, so work around.
+            continue
         name = os.path.splitext(name)[0]
         try:
             fo, pathname, _ = imp.find_module(name, [path])
@@ -99,6 +103,8 @@ def find_all_modules(path=None):
         path = sys.path
 
     for p in path:
+        if not path:
+            path = os.curdir
         for module in find_modules(p):
             modules.add(module)
             yield
