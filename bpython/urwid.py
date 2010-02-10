@@ -215,13 +215,12 @@ class Tooltip(urwid.Overlay):
 class URWIDRepl(repl.Repl):
 
     # XXX this is getting silly, need to split this up somehow
-    def __init__(self, main_loop, frame, listbox, listwalker, overlay,
-                 tooltip, interpreter, statusbar, config):
+    def __init__(self, main_loop, frame, listbox, overlay, tooltip,
+                 interpreter, statusbar, config):
         repl.Repl.__init__(self, interpreter, config)
         self.main_loop = main_loop
         self.frame = frame
         self.listbox = listbox
-        self.listwalker = listwalker
         self.overlay = overlay
         self.tooltip = tooltip
         self.edits = []
@@ -236,12 +235,12 @@ class URWIDRepl(repl.Repl):
         if s:
             text = urwid.Text(('output', s))
             if self.edit is None:
-                self.listwalker.append(text)
+                self.listbox.body.append(text)
             else:
-                self.listwalker.insert(-1, text)
+                self.listbox.body.insert(-1, text)
                 # The edit widget should be focused and *stay* focused.
                 # XXX TODO: make sure the cursor stays in the same spot.
-                self.listbox.set_focus(len(self.listwalker) - 1)
+                self.listbox.set_focus(len(self.listbox.body) - 1)
         # TODO: maybe do the redraw after a short delay
         # (for performance)
         self.main_loop.draw_screen()
@@ -324,8 +323,8 @@ class URWIDRepl(repl.Repl):
 
         urwid.connect_signal(self.edit, 'change', self.on_input_change)
         self.edits.append(self.edit)
-        self.listwalker.append(self.edit)
-        self.listbox.set_focus(len(self.listwalker) - 1)
+        self.listbox.body.append(self.edit)
+        self.listbox.set_focus(len(self.listbox.body) - 1)
         # Hide the tooltip
         self.frame.body = self.listbox
 
@@ -423,8 +422,7 @@ def main(args=None, locals_=None, banner=None):
         event_loop = None
     # TODO: there is also a glib event loop. Do we want that one?
 
-    listwalker = urwid.SimpleListWalker([])
-    listbox = urwid.ListBox(listwalker)
+    listbox = urwid.ListBox(urwid.SimpleListWalker([]))
 
     # String is straight from bpython.cli
     statusbar = Statusbar(
@@ -452,7 +450,7 @@ def main(args=None, locals_=None, banner=None):
     loop = urwid.MainLoop(frame, palette, event_loop=event_loop)
 
     # TODO: hook up idle callbacks somewhere.
-    myrepl = URWIDRepl(loop, frame, listbox, listwalker, overlay, tooltip,
+    myrepl = URWIDRepl(loop, frame, listbox, overlay, tooltip,
                        interpreter, statusbar, config)
 
     # XXX HACK: circular dependency between the event loop and repl.
