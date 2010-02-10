@@ -297,6 +297,13 @@ class URWIDRepl(repl.Repl):
         else:
             self.frame.body = self.listbox
 
+        if self.docstring:
+            # TODO: use self.format_docstring? needs a width/height...
+            docstring = self.docstring
+        else:
+            docstring = ''
+        widget_list[2].set_text(('comment', docstring))
+
     def reprint_line(self, lineno, tokens):
         edit = self.edits[-len(self.buffer) + lineno - 1]
         edit.set_edit_markup(list(format_tokens(tokens)))
@@ -434,7 +441,7 @@ def main(args=None, locals_=None, banner=None):
          config.show_source_key))
 
     tooltip = urwid.ListBox(urwid.SimpleListWalker([
-                urwid.Text(''), urwid.Text('')]))
+                urwid.Text(''), urwid.Text(''), urwid.Text('')]))
     # TODO: this linebox should use the 'main' color.
     overlay = Tooltip(urwid.LineBox(tooltip), listbox,
                       'left', ('relative', 100),
