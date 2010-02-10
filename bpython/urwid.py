@@ -469,9 +469,9 @@ def main(args=None, locals_=None, banner=None):
                 if filename and os.path.isfile(filename):
                     with open(filename, 'r') as f:
                         if py3:
-                            self.interp.runsource(f.read(), filename, 'exec')
+                            interpreter.runsource(f.read(), filename, 'exec')
                         else:
-                            self.interp.runsource(f.read(), filename, 'exec',
+                            interpreter.runsource(f.read(), filename, 'exec',
                                                   encode=False)
 
             if banner is not None:
