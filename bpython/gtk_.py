@@ -695,4 +695,5 @@ def main(args=None):
 
 
 if __name__ == '__main__':
+    from bpython.gtk_ import main
     main()

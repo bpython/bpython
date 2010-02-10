@@ -363,7 +363,7 @@ class Repl(object):
     def _callable_postfix(self, value, word):
         """rlcompleter's _callable_postfix done right."""
         with inspection.AttrCleaner(value):
-            if hasattr(value, '__call__'):
+            if inspection.is_callable(value):
                 word += '('
         return word
 
