@@ -287,7 +287,8 @@ class URWIDRepl(repl.Repl):
             else:
                 text = ''
             if self.matches:
-                texts = [urwid.Text(match) for match in self.matches]
+                texts = [urwid.Text(('main', match))
+                         for match in self.matches]
                 width = max(text.pack()[0] for text in texts)
                 gridflow = urwid.GridFlow(texts, width, 1, 0, 'left')
                 widget_list[1] = gridflow
@@ -434,6 +435,7 @@ def main(args=None, locals_=None, banner=None):
 
     tooltip = urwid.ListBox(urwid.SimpleListWalker([
                 urwid.Text(''), urwid.Text('')]))
+    # TODO: this linebox should use the 'main' color.
     overlay = Tooltip(urwid.LineBox(tooltip), listbox,
                       'left', ('relative', 100),
                       ('fixed top', 0), ('fixed bottom', 0))
