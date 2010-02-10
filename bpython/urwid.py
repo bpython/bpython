@@ -114,13 +114,35 @@ def format_tokens(tokensource):
 
 class BPythonEdit(urwid.Edit):
 
-    """Customized editor *very* tightly interwoven with URWIDRepl."""
+    """Customized editor *very* tightly interwoven with URWIDRepl.
+
+    Changes include:
+
+    - The edit text supports markup, not just the caption.
+      This works by calling set_edit_markup from the change event
+      as well as whenever markup changes while text does not.
+
+    - The widget can be made readonly, which currently just means
+      it is no longer selectable and stops drawing the cursor.
+
+      This is currently a one-way operation, but that is just because
+      I only need and test the readwrite->readonly transition.
+    """
 
     def __init__(self, *args, **kwargs):
         self._bpy_text = ''
         self._bpy_attr = []
         self._bpy_selectable = True
         urwid.Edit.__init__(self, *args, **kwargs)
+
+    def make_readonly(self):
+        self._bpy_selectable = False
+        # This is necessary to prevent the listbox we are in getting
+        # fresh cursor coords of None from get_cursor_coords
+        # immediately after we go readonly and then getting a cached
+        # canvas that still has the cursor set. It spots that
+        # inconsistency and raises.
+        self._invalidate()
 
     def set_edit_markup(self, markup):
         """Call this when markup changes but the underlying text does not.
@@ -143,6 +165,14 @@ class BPythonEdit(urwid.Edit):
         if not self._bpy_selectable:
             return None
         return urwid.Edit.get_cursor_coords(self, *args, **kwargs)
+
+    def render(self, size, focus=False):
+        # XXX I do not want to have to do this, but listbox gets confused
+        # if I do not (getting None out of get_cursor_coords because
+        # we just became unselectable, then having this render a cursor)
+        if not self._bpy_selectable:
+            focus = False
+        return urwid.Edit.render(self, size, focus=focus)
 
     def get_pref_col(self, size):
         # Need to make this deal with us being nonselectable
@@ -183,12 +213,15 @@ class Tooltip(urwid.Overlay):
 
 class URWIDRepl(repl.Repl):
 
-    def __init__(self, main_loop, listbox, listwalker, tooltiptext,
-                 interpreter, statusbar, config):
+    # XXX this is getting silly, need to split this up somehow
+    def __init__(self, main_loop, frame, listbox, listwalker, overlay,
+                 tooltiptext, interpreter, statusbar, config):
         repl.Repl.__init__(self, interpreter, config)
         self.main_loop = main_loop
+        self.frame = frame
         self.listbox = listbox
         self.listwalker = listwalker
+        self.overlay = overlay
         self.tooltiptext = tooltiptext
         self.edits = []
         self.edit = None
@@ -251,8 +284,9 @@ class URWIDRepl(repl.Repl):
             if self.argspec:
                 text = '%s\n\n%r' % (text, self.argspec)
             self.tooltiptext.set_text(text)
+            self.frame.body = self.overlay
         else:
-            self.tooltiptext.set_text('NOPE')
+            self.frame.body = self.listbox
 
     def reprint_line(self, lineno, tokens):
         edit = self.edits[-len(self.buffer) + lineno - 1]
@@ -283,6 +317,8 @@ class URWIDRepl(repl.Repl):
         self.edits.append(self.edit)
         self.listwalker.append(self.edit)
         self.listbox.set_focus(len(self.listwalker) - 1)
+        # Hide the tooltip
+        self.frame.body = self.listbox
 
     def on_input_change(self, edit, text):
         tokens = self.tokenize(text, False)
@@ -290,12 +326,34 @@ class URWIDRepl(repl.Repl):
         # If we call this synchronously the get_edit_text() in repl.cw
         # still returns the old text...
         self.main_loop.set_alarm_in(0, self._populate_completion)
+        self._reposition_tooltip()
+
+    def _reposition_tooltip(self):
+        # Reposition the tooltip based on cursor position.
+        screen_cols, screen_rows = self.main_loop.screen.get_cols_rows()
+        # XXX this should use self.listbox.get_cursor_coords
+        # but that doesn't exist (urwid oversight)
+        offset, inset = self.listbox.get_focus_offset_inset(
+            (screen_cols, screen_rows))
+        rel_x, rel_y = self.edit.get_cursor_coords((screen_cols,))
+        y = offset + rel_y
+        if y < 0:
+            # Cursor off the screen (no clue if this can happen).
+            # Just clamp to 0.
+            y = 0
+        # XXX not sure if these overlay attributes are meant to be public...
+        if y * 2 < screen_rows:
+            self.overlay.valign_type = 'fixed top'
+            self.overlay.valign_amount = y + 1
+        else:
+            self.overlay.valign_type = 'fixed bottom'
+            self.overlay.valign_amount = screen_rows - y - 1
 
     def handle_input(self, event):
         if event == 'enter':
             inp = self.edit.get_edit_text()
             self.history.append(inp)
-            self.edit._bpy_selectable = False
+            self.edit.make_readonly()
             # XXX what is this s_hist thing?
             self.stdout_hist += inp + '\n'
             self.edit = None
@@ -374,7 +432,7 @@ def main(args=None, locals_=None, banner=None):
     loop = urwid.MainLoop(frame, palette, event_loop=event_loop)
 
     # TODO: hook up idle callbacks somewhere.
-    myrepl = URWIDRepl(loop, listbox, listwalker, tooltiptext,
+    myrepl = URWIDRepl(loop, frame, listbox, listwalker, overlay, tooltiptext,
                        interpreter, statusbar, config)
 
     # XXX HACK: circular dependency between the event loop and repl.
