@@ -116,18 +116,21 @@ class BPythonEdit(urwid.Edit):
 
     """Customized editor *very* tightly interwoven with URWIDRepl."""
 
-    def __init__(self, myrepl, *args, **kwargs):
-        self.repl = myrepl
+    def __init__(self, *args, **kwargs):
         self._bpy_text = ''
         self._bpy_attr = []
         self._bpy_selectable = True
         urwid.Edit.__init__(self, *args, **kwargs)
-        urwid.connect_signal(self, 'change', self.on_input_change)
 
-    def on_input_change(self, edit, text):
-        tokens = self.repl.tokenize(text, False)
-        markup = list(format_tokens(tokens))
+    def set_edit_markup(self, markup):
+        """Call this when markup changes but the underlying text does not.
+
+        You should arrange for this to be called from the 'change' signal.
+        """
         self._bpy_text, self._bpy_attr = urwid.decompose_tagmarkup(markup)
+        # This is redundant when we're called off the 'change' signal.
+        # I'm assuming this is cheap, making that ok.
+        self._invalidate()
 
     def get_text(self):
         return self._caption + self._bpy_text, self._attrib + self._bpy_attr
@@ -187,6 +190,7 @@ class URWIDRepl(repl.Repl):
         self.listbox = listbox
         self.listwalker = listwalker
         self.tooltiptext = tooltiptext
+        self.edits = []
         self.edit = None
         self.statusbar = statusbar
         # XXX repl.Repl uses this? What is it?
@@ -251,10 +255,8 @@ class URWIDRepl(repl.Repl):
             self.tooltiptext.set_text('NOPE')
 
     def reprint_line(self, lineno, tokens):
-        # repl calls this.
-        # Trundle says it is responsible for paren unhighlighting.
-        # So who cares!
-        pass
+        edit = self.edits[-len(self.buffer) + lineno - 1]
+        edit.set_edit_markup(list(format_tokens(tokens)))
 
     def push(self, s, insert_into_history=True):
         # Pretty blindly adapted from bpython.cli
@@ -271,17 +273,20 @@ class URWIDRepl(repl.Repl):
     def prompt(self, more):
         # XXX what is s_hist?
         if not more:
-            self.edit = BPythonEdit(self, caption=('prompt', '>>> '))
+            self.edit = BPythonEdit(caption=('prompt', '>>> '))
             self.stdout_hist += '>>> '
         else:
-            self.edit = BPythonEdit(self, caption=('prompt_more', '... '))
+            self.edit = BPythonEdit(caption=('prompt_more', '... '))
             self.stdout_hist += '... '
 
         urwid.connect_signal(self.edit, 'change', self.on_input_change)
+        self.edits.append(self.edit)
         self.listwalker.append(self.edit)
         self.listbox.set_focus(len(self.listwalker) - 1)
 
     def on_input_change(self, edit, text):
+        tokens = self.tokenize(text, False)
+        edit.set_edit_markup(list(format_tokens(tokens)))
         # If we call this synchronously the get_edit_text() in repl.cw
         # still returns the old text...
         self.main_loop.set_alarm_in(0, self._populate_completion)
