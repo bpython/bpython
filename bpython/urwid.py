@@ -449,7 +449,6 @@ def main(args=None, locals_=None, banner=None):
     # This constructs a raw_display.Screen, which nabs sys.stdin/out.
     loop = urwid.MainLoop(frame, palette, event_loop=event_loop)
 
-    # TODO: hook up idle callbacks somewhere.
     myrepl = URWIDRepl(loop, frame, listbox, overlay, tooltip,
                        interpreter, statusbar, config)
 
