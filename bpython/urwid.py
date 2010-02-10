@@ -417,9 +417,13 @@ def main(args=None, locals_=None, banner=None):
          config.pastebin_key, config.last_output_key,
          config.show_source_key))
 
+    # XXX this is not great: if the tooltip is too large the bottom line
+    # of the LineBox gets eaten. That should not happen, and there
+    # should be a nice indicator that the Edit widget is truncated.
     tooltiptext = urwid.Text('')
-    overlay = Tooltip(urwid.LineBox(tooltiptext), listbox,
-                      'left', ('relative', 100), ('fixed top', 0), None)
+    overlay = Tooltip(urwid.Filler(urwid.LineBox(tooltiptext)), listbox,
+                      'left', ('relative', 100),
+                      ('fixed top', 0), ('relative', 50))
 
     frame = urwid.Frame(overlay, footer=statusbar.widget)
 
