@@ -216,14 +216,14 @@ class URWIDRepl(repl.Repl):
 
     # XXX this is getting silly, need to split this up somehow
     def __init__(self, main_loop, frame, listbox, listwalker, overlay,
-                 tooltiptext, interpreter, statusbar, config):
+                 tooltip, interpreter, statusbar, config):
         repl.Repl.__init__(self, interpreter, config)
         self.main_loop = main_loop
         self.frame = frame
         self.listbox = listbox
         self.listwalker = listwalker
         self.overlay = overlay
-        self.tooltiptext = tooltiptext
+        self.tooltip = tooltip
         self.edits = []
         self.edit = None
         self.statusbar = statusbar
@@ -279,12 +279,20 @@ class URWIDRepl(repl.Repl):
         return text[-i:]
 
     def _populate_completion(self, main_loop, user_data):
+        widget_list = self.tooltip.body
+        widget_list[1] = urwid.Text('')
         # This is just me flailing around wildly. TODO: actually write.
         if self.complete():
-            text = '  '.join(self.matches)
             if self.argspec:
-                text = '%s\n\n%r' % (text, self.argspec)
-            self.tooltiptext.set_text(text)
+                text = repr(self.argspec)
+            else:
+                text = ''
+            if self.matches:
+                texts = [urwid.Text(match) for match in self.matches]
+                width = max(text.pack()[0] for text in texts)
+                gridflow = urwid.GridFlow(texts, width, 1, 0, 'left')
+                widget_list[1] = gridflow
+            widget_list[0].set_text(text)
             self.frame.body = self.overlay
         else:
             self.frame.body = self.listbox
@@ -342,13 +350,22 @@ class URWIDRepl(repl.Repl):
             # Cursor off the screen (no clue if this can happen).
             # Just clamp to 0.
             y = 0
+
+        # XXX the tooltip is displayed way too huge now. The easiest way
+        # to fix that is probably to figure out how much size the
+        # listbox actually needs here and adjust height_amount.
+
         # XXX not sure if these overlay attributes are meant to be public...
         if y * 2 < screen_rows:
             self.overlay.valign_type = 'fixed top'
             self.overlay.valign_amount = y + 1
+            self.overlay.height_type = 'fixed bottom'
+            self.overlay.height_amount = 0
         else:
             self.overlay.valign_type = 'fixed bottom'
             self.overlay.valign_amount = screen_rows - y - 1
+            self.overlay.height_type = 'fixed top'
+            self.overlay.height_amount = 0
 
     def handle_input(self, event):
         if event == 'enter':
@@ -417,13 +434,11 @@ def main(args=None, locals_=None, banner=None):
          config.pastebin_key, config.last_output_key,
          config.show_source_key))
 
-    # XXX this is not great: if the tooltip is too large the bottom line
-    # of the LineBox gets eaten. That should not happen, and there
-    # should be a nice indicator that the Edit widget is truncated.
-    tooltiptext = urwid.Text('')
-    overlay = Tooltip(urwid.Filler(urwid.LineBox(tooltiptext)), listbox,
+    tooltip = urwid.ListBox(urwid.SimpleListWalker([
+                urwid.Text(''), urwid.Text('')]))
+    overlay = Tooltip(urwid.LineBox(tooltip), listbox,
                       'left', ('relative', 100),
-                      ('fixed top', 0), ('relative', 50))
+                      ('fixed top', 0), ('fixed bottom', 0))
 
     frame = urwid.Frame(overlay, footer=statusbar.widget)
 
@@ -437,7 +452,7 @@ def main(args=None, locals_=None, banner=None):
     loop = urwid.MainLoop(frame, palette, event_loop=event_loop)
 
     # TODO: hook up idle callbacks somewhere.
-    myrepl = URWIDRepl(loop, frame, listbox, listwalker, overlay, tooltiptext,
+    myrepl = URWIDRepl(loop, frame, listbox, listwalker, overlay, tooltip,
                        interpreter, statusbar, config)
 
     # XXX HACK: circular dependency between the event loop and repl.
