@@ -7,7 +7,6 @@ import os
 import sys
 import code
 from optparse import OptionParser, OptionGroup
-from itertools import takewhile
 
 from bpython import __version__
 from bpython.config import loadini, Struct, migrate_rc
