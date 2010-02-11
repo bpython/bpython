@@ -183,33 +183,64 @@ class BPythonEdit(urwid.Edit):
         return urwid.Edit.get_pref_col(self, size)
 
 
-class Tooltip(urwid.Overlay):
+class Tooltip(urwid.BoxWidget):
 
-    """Exactly like Overlay but passes events to the bottom window.
+    """Container inspired by Overlay to position our tooltip.
 
-    Also uses the cursor position from the bottom window
-    (even if this cursor ends up on top of the top window!)
+    This passes keyboard events to the bottom instead of the top window.
 
-    This is a quick and dirty hack.
+    It also positions the top window relative to the cursor position
+    from the bottom window and hides it if there is no cursor.
     """
 
-    # TODO: mouse events
+    def __init__(self, bottom_w, top_w):
+        self.__super.__init__()
+
+        self.bottom_w = bottom_w
+        self.top_w = top_w
+
     def selectable(self):
         return self.bottom_w.selectable()
 
     def keypress(self, size, key):
-        # XXX is just passing size along correct?
         return self.bottom_w.keypress(size, key)
+
+    def mouse_event(self, size, event, button, col, row, focus):
+        # TODO: pass to top widget if visible and inside it.
+        if not hasattr(self.bottom_w, 'mouse_event'):
+            return False
+
+        return self.bottom_w.mouse_event(
+            size, event, button, col, row, focus)
 
     def get_cursor_coords(self, size):
         return self.bottom_w.get_cursor_coords(size)
 
     def render(self, size, focus=False):
-        canvas = urwid.Overlay.render(self, size, focus)
-        # XXX HACK: re-render the bottom and steal its cursor coords
+        maxcol, maxrow = size
         bottom_c = self.bottom_w.render(size, focus)
-        canvas = urwid.CompositeCanvas(canvas)
-        canvas.cursor = bottom_c.cursor
+        cursor = bottom_c.cursor
+        if not cursor:
+            # Hide the tooltip if there is no cursor.
+            return bottom_c
+
+        # TODO: deal with the tooltip not needing all the space we have.
+        cursor_x, cursor_y = cursor
+        if cursor_y * 2 < maxrow:
+            # Cursor is in the top half. Tooltip goes below it:
+            y = cursor_y + 1
+            rows = maxrow - y
+        else:
+            # Cursor is in the bottom half. Tooltip fills the area above:
+            y = 0
+            rows = cursor_y
+        # The top window never gets focus.
+        top_c = self.top_w.render((maxcol, rows))
+
+        combi_c = urwid.CanvasOverlay(top_c, bottom_c, 0, y)
+        # Use the cursor coordinates from the bottom canvas.
+        canvas = urwid.CompositeCanvas(combi_c)
+        canvas.cursor = cursor
         return canvas
 
 
@@ -360,37 +391,6 @@ class URWIDRepl(repl.Repl):
         # If we call this synchronously the get_edit_text() in repl.cw
         # still returns the old text...
         self.main_loop.set_alarm_in(0, self._populate_completion)
-        self._reposition_tooltip()
-
-    def _reposition_tooltip(self):
-        # Reposition the tooltip based on cursor position.
-        screen_cols, screen_rows = self.main_loop.screen.get_cols_rows()
-        # XXX this should use self.listbox.get_cursor_coords
-        # but that doesn't exist (urwid oversight)
-        offset, inset = self.listbox.get_focus_offset_inset(
-            (screen_cols, screen_rows))
-        rel_x, rel_y = self.edit.get_cursor_coords((screen_cols,))
-        y = offset + rel_y
-        if y < 0:
-            # Cursor off the screen (no clue if this can happen).
-            # Just clamp to 0.
-            y = 0
-
-        # XXX the tooltip is displayed way too huge now. The easiest way
-        # to fix that is probably to figure out how much size the
-        # listbox actually needs here and adjust height_amount.
-
-        # XXX not sure if these overlay attributes are meant to be public...
-        if y * 2 < screen_rows:
-            self.overlay.valign_type = 'fixed top'
-            self.overlay.valign_amount = y + 1
-            self.overlay.height_type = 'fixed bottom'
-            self.overlay.height_amount = 0
-        else:
-            self.overlay.valign_type = 'fixed bottom'
-            self.overlay.valign_amount = screen_rows - y - 1
-            self.overlay.height_type = 'fixed top'
-            self.overlay.height_amount = 0
 
     def handle_input(self, event):
         if event == 'enter':
@@ -469,9 +469,7 @@ def main(args=None, locals_=None, banner=None):
     tooltip = urwid.ListBox(urwid.SimpleListWalker([
                 urwid.Text(''), urwid.Text(''), urwid.Text('')]))
     # TODO: this linebox should use the 'main' color.
-    overlay = Tooltip(urwid.LineBox(tooltip), listbox,
-                      'left', ('relative', 100),
-                      ('fixed top', 0), ('fixed bottom', 0))
+    overlay = Tooltip(listbox, urwid.LineBox(tooltip))
 
     frame = urwid.Frame(overlay, footer=statusbar.widget)
 
