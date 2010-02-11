@@ -502,75 +502,79 @@ def main(args=None, locals_=None, banner=None):
     orig_stdin = sys.stdin
     orig_stdout = sys.stdout
     orig_stderr = sys.stderr
-    try:
-        # XXX aargh, we have to leave sys.stdin alone for now:
-        # urwid.display_common.RealTerminal.tty_signal_keys calls
-        # sys.stdin.fileno() instead of getting stdin passed in as
-        # raw_display.Screen._term_input_file :(
+    # urwid's screen start() and stop() calls currently hit sys.stdin
+    # directly (via RealTerminal.tty_signal_keys), so start the screen
+    # before swapping sys.std*, and swap them back before restoring
+    # the screen. This also avoids crashes if our redirected sys.std*
+    # are called before we get around to starting the mainloop
+    # (urwid raises an exception if we try to draw to the screen
+    # before starting it).
+    def run_with_screen_before_mainloop():
+        try:
+            # XXX no stdin for you! What to do here?
+            sys.stdin = None #FakeStdin(myrepl)
+            sys.stdout = myrepl
+            sys.stderr = myrepl
 
-        # XXX no stdin for you! What to do here?
-        #sys.stdin = None #FakeStdin(myrepl)
-        sys.stdout = myrepl
-        sys.stderr = myrepl
+            loop.set_alarm_in(0, start)
 
-        # This needs more thought. What needs to happen inside the mainloop?
-        # Note that we need the mainloop started before our stdio
-        # redirection is hit.
-        def start(main_loop, user_data):
-            if exec_args:
-                bpargs.exec_code(interpreter, exec_args)
-                if not options.interactive:
-                    raise urwid.ExitMainLoop()
-            if not exec_args:
-                sys.path.insert(0, '')
-                # this is CLIRepl.startup inlined.
-                filename = os.environ.get('PYTHONSTARTUP')
-                if filename and os.path.isfile(filename):
-                    with open(filename, 'r') as f:
-                        if py3:
-                            interpreter.runsource(f.read(), filename, 'exec')
-                        else:
-                            interpreter.runsource(f.read(), filename, 'exec',
-                                                  encode=False)
+            while True:
+                try:
+                    loop.run()
+                except KeyboardInterrupt:
+                    # HACK: if we run under a twisted mainloop this should
+                    # never happen: we have a SIGINT handler set.
+                    # If we use the urwid select-based loop we just restart
+                    # that loop if interrupted, instead of trying to cook
+                    # up an equivalent to reactor.callFromThread (which
+                    # is what our Twisted sigint handler does)
+                    loop.set_alarm_in(
+                        0, lambda *args: myrepl.keyboard_interrupt())
+                    continue
+                break
 
-            if banner is not None:
-                repl.write(banner)
-                repl.write('\n')
-            myrepl.start()
+            if config.hist_length:
+                histfilename = os.path.expanduser(config.hist_file)
+                myrepl.rl_history.save(histfilename,
+                                       locale.getpreferredencoding())
 
-            # This bypasses main_loop.set_alarm_in because we must *not*
-            # hit the draw_screen call (it's unnecessary and slow).
-            def run_find_coroutine():
-                if find_coroutine():
-                    main_loop.event_loop.alarm(0, run_find_coroutine)
+        finally:
+            sys.stdin = orig_stdin
+            sys.stderr = orig_stderr
+            sys.stdout = orig_stdout
 
-            run_find_coroutine()
+    # This needs more thought. What needs to happen inside the mainloop?
+    def start(main_loop, user_data):
+        if exec_args:
+            bpargs.exec_code(interpreter, exec_args)
+            if not options.interactive:
+                raise urwid.ExitMainLoop()
+        if not exec_args:
+            sys.path.insert(0, '')
+            # this is CLIRepl.startup inlined.
+            filename = os.environ.get('PYTHONSTARTUP')
+            if filename and os.path.isfile(filename):
+                with open(filename, 'r') as f:
+                    if py3:
+                        interpreter.runsource(f.read(), filename, 'exec')
+                    else:
+                        interpreter.runsource(f.read(), filename, 'exec',
+                                              encode=False)
 
-        loop.set_alarm_in(0, start)
+        if banner is not None:
+            repl.write(banner)
+            repl.write('\n')
+        myrepl.start()
 
-        while True:
-            try:
-                loop.run()
-            except KeyboardInterrupt:
-                # HACK: if we run under a twisted mainloop this should
-                # never happen: we have a SIGINT handler set.
-                # If we use the urwid select-based loop we just restart
-                # that loop if interrupted, instead of trying to cook
-                # up an equivalent to reactor.callFromThread (which
-                # is what our Twisted sigint handler does)
-                loop.set_alarm_in(0,
-                                  lambda *args: myrepl.keyboard_interrupt())
-                continue
-            break
+        # This bypasses main_loop.set_alarm_in because we must *not*
+        # hit the draw_screen call (it's unnecessary and slow).
+        def run_find_coroutine():
+            if find_coroutine():
+                main_loop.event_loop.alarm(0, run_find_coroutine)
 
-        if config.hist_length:
-            histfilename = os.path.expanduser(config.hist_file)
-            myrepl.rl_history.save(histfilename,
-                                   locale.getpreferredencoding())
-    finally:
-        sys.stdin = orig_stdin
-        sys.stderr = orig_stderr
-        sys.stdout = orig_stdout
+        run_find_coroutine()
+
+    loop.screen.run_wrapper(run_with_screen_before_mainloop)
 
     if config.flush_output and not options.quiet:
         sys.stdout.write(myrepl.getstdout())
