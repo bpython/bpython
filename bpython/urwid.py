@@ -38,6 +38,7 @@ from __future__ import absolute_import, with_statement, division
 import sys
 import os
 import locale
+import signal
 from types import ModuleType
 from optparse import Option
 
@@ -309,16 +310,33 @@ class URWIDRepl(repl.Repl):
         edit.set_edit_markup(list(format_tokens(tokens)))
 
     def push(self, s, insert_into_history=True):
+        # Restore the original SIGINT handler. This is needed to be able
+        # to break out of infinite loops. If the interpreter itself
+        # sees this it prints 'KeyboardInterrupt' and returns (good).
+        orig_handler = signal.getsignal(signal.SIGINT)
+        signal.signal(signal.SIGINT, signal.default_int_handler)
         # Pretty blindly adapted from bpython.cli
         try:
             return repl.Repl.push(self, s, insert_into_history)
         except SystemExit:
             raise urwid.ExitMainLoop()
+        except KeyboardInterrupt:
+            # KeyboardInterrupt happened between the except block around
+            # user code execution and this code. This should be rare,
+            # but make sure to not kill bpython here, so leaning on
+            # ctrl+c to kill buggy code running inside bpython is safe.
+            self.keyboard_interrupt()
+        finally:
+            signal.signal(signal.SIGINT, orig_handler)
 
     def start(self):
         # Stolen from bpython.cli again
         self.push('from bpython._internal import _help as help\n', False)
         self.prompt(False)
+
+    def keyboard_interrupt(self):
+        # Do we need to do more here? Break out of multiline input perhaps?
+        self.echo('KeyboardInterrupt')
 
     def prompt(self, more):
         # XXX what is s_hist?
@@ -382,8 +400,16 @@ class URWIDRepl(repl.Repl):
             # XXX what is this s_hist thing?
             self.stdout_hist += inp + '\n'
             self.edit = None
+            # This may take a while, so force a redraw first:
+            self.main_loop.draw_screen()
             more = self.push(inp)
             self.prompt(more)
+        elif event == 'ctrl d':
+            # ctrl+d on an empty line exits
+            if self.edit is not None and not self.edit.get_edit_text():
+                raise urwid.ExitMainLoop()
+        #else:
+        #    self.echo(repr(event))
 
 
 def main(args=None, locals_=None, banner=None):
@@ -461,6 +487,13 @@ def main(args=None, locals_=None, banner=None):
     myrepl = URWIDRepl(loop, frame, listbox, overlay, tooltip,
                        interpreter, statusbar, config)
 
+    if options.reactor:
+        # Twisted sets a sigInt handler that stops the reactor unless
+        # it sees a different custom signal handler.
+        def sigint(*args):
+            reactor.callFromThread(myrepl.keyboard_interrupt)
+        signal.signal(signal.SIGINT, sigint)
+
     # XXX HACK: circular dependency between the event loop and repl.
     # Fix by not using unhandled_input?
     loop._unhandled_input = myrepl.handle_input
@@ -515,7 +548,20 @@ def main(args=None, locals_=None, banner=None):
 
         loop.set_alarm_in(0, start)
 
-        loop.run()
+        while True:
+            try:
+                loop.run()
+            except KeyboardInterrupt:
+                # HACK: if we run under a twisted mainloop this should
+                # never happen: we have a SIGINT handler set.
+                # If we use the urwid select-based loop we just restart
+                # that loop if interrupted, instead of trying to cook
+                # up an equivalent to reactor.callFromThread (which
+                # is what our Twisted sigint handler does)
+                loop.set_alarm_in(0,
+                                  lambda *args: myrepl.keyboard_interrupt())
+                continue
+            break
 
         if config.hist_length:
             histfilename = os.path.expanduser(config.hist_file)
