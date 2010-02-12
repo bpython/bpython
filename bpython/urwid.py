@@ -187,17 +187,21 @@ class Tooltip(urwid.BoxWidget):
 
     """Container inspired by Overlay to position our tooltip.
 
+    bottom_w should be a BoxWidget.
+    The top window currently has to be a listbox to support shrinkwrapping.
+
     This passes keyboard events to the bottom instead of the top window.
 
     It also positions the top window relative to the cursor position
     from the bottom window and hides it if there is no cursor.
     """
 
-    def __init__(self, bottom_w, top_w):
+    def __init__(self, bottom_w, listbox):
         self.__super.__init__()
 
         self.bottom_w = bottom_w
-        self.top_w = top_w
+        self.listbox = listbox
+        self.top_w = urwid.LineBox(listbox)
 
     def selectable(self):
         return self.bottom_w.selectable()
@@ -224,7 +228,6 @@ class Tooltip(urwid.BoxWidget):
             # Hide the tooltip if there is no cursor.
             return bottom_c
 
-        # TODO: deal with the tooltip not needing all the space we have.
         cursor_x, cursor_y = cursor
         if cursor_y * 2 < maxrow:
             # Cursor is in the top half. Tooltip goes below it:
@@ -234,6 +237,20 @@ class Tooltip(urwid.BoxWidget):
             # Cursor is in the bottom half. Tooltip fills the area above:
             y = 0
             rows = cursor_y
+
+        # HACK: shrink-wrap the tooltip. This is ugly in multiple ways:
+        # - It only works on a listbox.
+        # - It assumes the wrapping LineBox eats one char on each edge.
+        # - It is a loop.
+        #   (ideally it would check how much free space there is,
+        #   instead of repeatedly trying smaller sizes)
+        while 'bottom' in self.listbox.ends_visible((maxcol - 2, rows - 3)):
+            rows -= 1
+
+        # If we're displaying above the cursor move the top edge down:
+        if not y:
+            y = cursor_y - rows
+
         # The top window never gets focus.
         top_c = self.top_w.render((maxcol, rows))
 
@@ -469,7 +486,7 @@ def main(args=None, locals_=None, banner=None):
     tooltip = urwid.ListBox(urwid.SimpleListWalker([
                 urwid.Text(''), urwid.Text(''), urwid.Text('')]))
     # TODO: this linebox should use the 'main' color.
-    overlay = Tooltip(listbox, urwid.LineBox(tooltip))
+    overlay = Tooltip(listbox, tooltip)
 
     frame = urwid.Frame(overlay, footer=statusbar.widget)
 
