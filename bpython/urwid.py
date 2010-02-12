@@ -201,6 +201,7 @@ class Tooltip(urwid.BoxWidget):
 
         self.bottom_w = bottom_w
         self.listbox = listbox
+        # TODO: this linebox should use the 'main' color.
         self.top_w = urwid.LineBox(listbox)
 
     def selectable(self):
@@ -485,7 +486,6 @@ def main(args=None, locals_=None, banner=None):
 
     tooltip = urwid.ListBox(urwid.SimpleListWalker([
                 urwid.Text(''), urwid.Text(''), urwid.Text('')]))
-    # TODO: this linebox should use the 'main' color.
     overlay = Tooltip(listbox, tooltip)
 
     frame = urwid.Frame(overlay, footer=statusbar.widget)
