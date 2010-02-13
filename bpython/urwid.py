@@ -333,16 +333,79 @@ class URWIDRepl(repl.Repl):
         # This is just me flailing around wildly. TODO: actually write.
         if self.complete():
             if self.argspec:
-                text = repr(self.argspec)
+                # This is mostly just stolen from the cli module.
+                func_name, args, is_bound, in_arg = self.argspec
+                args, varargs, varkw, defaults = args[:4]
+                if py3:
+                    kwonly, kwonly_defaults = args[4:]
+                else:
+                    kwonly, kwonly_defaults = [], {}
+                markup = [('bold name', func_name),
+                          ('name', ': (')]
+
+                # the isinstance checks if we're in a positional arg
+                # (instead of a keyword arg), I think
+                if is_bound and isinstance(in_arg, int):
+                    in_arg += 1
+
+                # bpython.cli checks if this goes off the edge and
+                # does clever wrapping. I do not (yet).
+                for k, i in enumerate(args):
+                    if defaults and k + 1 > len(args) - len(defaults):
+                        kw = str(defaults[k - (len(args) - len(defaults))])
+                    else:
+                        kw = None
+
+                    if not k and str(i) == 'self':
+                        color = 'name'
+                    else:
+                        color = 'token'
+
+                    if k == in_arg or i == in_arg:
+                        color = 'bold ' + color
+
+                    markup.append((color, str(i)))
+                    if kw:
+                        markup.extend([('punctuation', '='),
+                                       ('token', kw)])
+                    if k != len(args) - 1:
+                        markup.append(('punctuation', ', '))
+
+                if varargs:
+                    if args:
+                        markup.append(('punctuation', ', '))
+                    markup.append(('token', '*' + varargs))
+
+                if kwonly:
+                    if not varargs:
+                        if args:
+                            markup.append(('punctuation', ', '))
+                        markup.append(('punctuation', '*'))
+                    for arg in kwonly:
+                        if arg == in_arg:
+                            color = 'bold token'
+                        else:
+                            color = 'token'
+                        markup.extend([('punctuation', ', '),
+                                       (color, arg)])
+                        if arg in kwonly_defaults:
+                            markup.extend([('punctuation', '='),
+                                           ('token', kwonly_defaults[arg])])
+
+                if varkw:
+                    if args or varargs or kwonly:
+                        markup.append(('punctuation', ', '))
+                    markup.append(('token', '**' + varkw))
+                markup.append(('punctuation', ')'))
             else:
-                text = ''
+                markup = ''
+            widget_list[0].set_text(markup)
             if self.matches:
                 texts = [urwid.Text(('main', match))
                          for match in self.matches]
                 width = max(text.pack()[0] for text in texts)
                 gridflow = urwid.GridFlow(texts, width, 1, 0, 'left')
                 widget_list[1] = gridflow
-            widget_list[0].set_text(text)
             self.frame.body = self.overlay
         else:
             self.frame.body = self.listbox
@@ -455,6 +518,9 @@ def main(args=None, locals_=None, banner=None):
         (name, COLORMAP[color.lower()], 'default',
          'bold' if color.isupper() else 'default')
         for name, color in config.color_scheme.iteritems()]
+    palette.extend([
+            ('bold ' + name, color + ',bold', background, monochrome)
+            for name, color, background, monochrome in palette])
 
     if options.reactor:
         from twisted.application import reactors
