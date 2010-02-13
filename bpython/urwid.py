@@ -129,12 +129,16 @@ class BPythonEdit(urwid.Edit):
 
       This is currently a one-way operation, but that is just because
       I only need and test the readwrite->readonly transition.
+
+    - move_cursor_to_coords is ignored
+      (except for internal calls from keypress or mouse_event).
     """
 
     def __init__(self, *args, **kwargs):
         self._bpy_text = ''
         self._bpy_attr = []
         self._bpy_selectable = True
+        self._bpy_may_move_cursor = False
         urwid.Edit.__init__(self, *args, **kwargs)
 
     def make_readonly(self):
@@ -181,6 +185,25 @@ class BPythonEdit(urwid.Edit):
         if not self._bpy_selectable:
             return 'left'
         return urwid.Edit.get_pref_col(self, size)
+
+    def move_cursor_to_coords(self, *args):
+        if self._bpy_may_move_cursor:
+            return urwid.Edit.move_cursor_to_coords(self, *args)
+        return False
+
+    def keypress(self, *args):
+        self._bpy_may_move_cursor = True
+        try:
+            return urwid.Edit.keypress(self, *args)
+        finally:
+            self._bpy_may_move_cursor = False
+
+    def mouse_event(self, *args):
+        self._bpy_may_move_cursor = True
+        try:
+            return urwid.Edit.mouse_event(self, *args)
+        finally:
+            self._bpy_may_move_cursor = False
 
 
 class Tooltip(urwid.BoxWidget):
@@ -460,6 +483,8 @@ class URWIDRepl(repl.Repl):
             self.stdout_hist += '... '
 
         urwid.connect_signal(self.edit, 'change', self.on_input_change)
+        # Do this after connecting the change signal handler:
+        self.edit.insert_text(4 * self.next_indentation() * ' ')
         self.edits.append(self.edit)
         self.listbox.body.append(self.edit)
         self.listbox.set_focus(len(self.listbox.body) - 1)
