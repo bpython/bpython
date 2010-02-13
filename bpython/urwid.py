@@ -132,6 +132,8 @@ class BPythonEdit(urwid.Edit):
 
     - move_cursor_to_coords is ignored
       (except for internal calls from keypress or mouse_event).
+
+    - arrow up/down are ignored.
     """
 
     def __init__(self, *args, **kwargs):
@@ -191,10 +193,13 @@ class BPythonEdit(urwid.Edit):
             return urwid.Edit.move_cursor_to_coords(self, *args)
         return False
 
-    def keypress(self, *args):
+    def keypress(self, size, key):
         self._bpy_may_move_cursor = True
         try:
-            return urwid.Edit.keypress(self, *args)
+            # Do not handle up/down arrow, leave them for the repl.
+            if urwid.command_map[key] in ('cursor up', 'cursor down'):
+                return key
+            return urwid.Edit.keypress(self, size, key)
         finally:
             self._bpy_may_move_cursor = False
 
@@ -474,6 +479,8 @@ class URWIDRepl(repl.Repl):
         self.echo('KeyboardInterrupt')
 
     def prompt(self, more):
+        # XXX is this the right place?
+        self.rl_history.reset()
         # XXX what is s_hist?
         if not more:
             self.edit = BPythonEdit(caption=('prompt', '>>> '))
@@ -514,6 +521,18 @@ class URWIDRepl(repl.Repl):
             # ctrl+d on an empty line exits
             if self.edit is not None and not self.edit.get_edit_text():
                 raise urwid.ExitMainLoop()
+        elif urwid.command_map[event] == 'cursor up':
+            # "back" from bpython.cli
+            self.cpos = 0
+            self.rl_history.enter(self.edit.get_edit_text())
+            self.edit.set_edit_text('')
+            self.edit.insert_text(self.rl_history.back())
+        elif urwid.command_map[event] == 'cursor down':
+            # "fwd" from bpython.cli
+            self.cpos = 0
+            self.rl_history.enter(self.edit.get_edit_text())
+            self.edit.set_edit_text('')
+            self.edit.insert_text(self.rl_history.forward())
         #else:
         #    self.echo(repr(event))
 
