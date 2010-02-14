@@ -636,7 +636,16 @@ def main(args=None, locals_=None, banner=None):
     # before starting it).
     def run_with_screen_before_mainloop():
         try:
-            # XXX no stdin for you! What to do here?
+            # Currently we just set this to None because I do not
+            # expect code hitting stdin to work. For example: exit()
+            # (not sys.exit, site.py's exit) tries to close sys.stdin,
+            # which breaks urwid's shutdown. bpython.cli sets this to
+            # a fake object that reads input through curses and
+            # returns it. When using twisted I do not think we can do
+            # that because sys.stdin.read and friends block, and we
+            # cannot re-enter the reactor. If using urwid's own
+            # mainloop we *might* be able to do something similar and
+            # re-enter its mainloop.
             sys.stdin = None #FakeStdin(myrepl)
             sys.stdout = myrepl
             sys.stderr = myrepl
