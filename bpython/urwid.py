@@ -649,7 +649,7 @@ def main(args=None, locals_=None, banner=None):
 
     if options.server:
         factory = EvalFactory(myrepl)
-        reactor.listenTCP(options.server, factory)
+        reactor.listenTCP(options.server, factory, interface='127.0.0.1')
 
     if options.reactor:
         # Twisted sets a sigInt handler that stops the reactor unless
