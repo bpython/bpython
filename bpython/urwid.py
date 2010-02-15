@@ -90,7 +90,10 @@ else:
             self.repl = myrepl
 
         def lineReceived(self, line):
-            self.repl.push(line)
+            # HACK!
+            # TODO: deal with encoding issues here...
+            self.repl.main_loop.process_input(line)
+            self.repl.main_loop.process_input(['enter'])
 
 
     class EvalFactory(protocol.ServerFactory):
