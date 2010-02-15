@@ -75,6 +75,33 @@ COLORMAP = {
     }
 
 
+try:
+    from twisted.internet import protocol
+    from twisted.protocols import basic
+except ImportError:
+    pass
+else:
+
+    class EvalProtocol(basic.LineOnlyReceiver):
+
+        delimiter = '\n'
+
+        def __init__(self, myrepl):
+            self.repl = myrepl
+
+        def lineReceived(self, line):
+            self.repl.push(line)
+
+
+    class EvalFactory(protocol.ServerFactory):
+
+        def __init__(self, myrepl):
+            self.repl = myrepl
+
+        def buildProtocol(self, addr):
+            return EvalProtocol(self.repl)
+
+
 class Statusbar(object):
 
     """Statusbar object, ripped off from bpython.cli.
@@ -549,6 +576,8 @@ def main(args=None, locals_=None, banner=None):
                        help='Run a reactor (see --help-reactors)'),
                 Option('--help-reactors', action='store_true',
                        help='List available reactors for -r'),
+                Option('--server', '-s', type='int',
+                       help='Port to run an eval server on (forces Twisted)'),
                 ]))
 
     if options.help_reactors:
@@ -565,6 +594,9 @@ def main(args=None, locals_=None, banner=None):
     palette.extend([
             ('bold ' + name, color + ',bold', background, monochrome)
             for name, color, background, monochrome in palette])
+
+    if options.server and not options.reactor:
+        options.reactor = 'select'
 
     if options.reactor:
         from twisted.application import reactors
@@ -611,6 +643,10 @@ def main(args=None, locals_=None, banner=None):
 
     myrepl = URWIDRepl(loop, frame, listbox, overlay, tooltip,
                        interpreter, statusbar, config)
+
+    if options.server:
+        factory = EvalFactory(myrepl)
+        reactor.listenTCP(options.server, factory)
 
     if options.reactor:
         # Twisted sets a sigInt handler that stops the reactor unless
