@@ -240,7 +240,7 @@ def make_colors(config):
 class CLIRepl(Repl):
 
     def __init__(self, scr, interp, statusbar, config, idle=None):
-        Repl.__init__(self, interp, config, idle)
+        Repl.__init__(self, interp, config)
         interp.writetb = self.writetb
         self.scr = scr
         self.list_win = newwin(get_colpair(config, 'background'), 1, 1, 1, 1)
@@ -253,6 +253,7 @@ class CLIRepl(Repl):
         self.last_key_press = time.time()
         self.s = ''
         self.statusbar = statusbar
+        self.formatter = BPythonFormatter(config.color_scheme)
 
     def addstr(self, s):
         """Add a string to the current input line and figure out
@@ -462,13 +463,6 @@ class CLIRepl(Repl):
         # Replace NUL bytes, as addstr raises an exception otherwise
         s = s.replace('\x00', '')
 
-        screen_height, screen_width = self.scr.getmaxyx()
-        if self.iy >= (screen_height - 1):
-            lines = (self.ix + len(s)) // screen_width
-            if lines > 0:
-                self.scr.scroll(lines)
-                self.iy -= lines
-                self.scr.move(self.iy, self.ix)
         self.scr.addstr(s, a)
 
         if redraw and not self.evaluating:
@@ -865,8 +859,7 @@ class CLIRepl(Repl):
             self.highlighted_paren = None
 
         if self.config.syntax and (not self.paste_mode or newline):
-            o = format(self.tokenize(s, newline),
-                       BPythonFormatter(self.config.color_scheme))
+            o = format(self.tokenize(s, newline), self.formatter)
         else:
             o = s
 
@@ -1622,6 +1615,7 @@ def main(args=None, locals_=None, banner=None):
 
 
 if __name__ == '__main__':
+    from bpython.cli import main
     main()
 
 # vim: sw=4 ts=4 sts=4 ai et
