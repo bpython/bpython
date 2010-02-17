@@ -231,6 +231,7 @@ class Tooltip(urwid.BoxWidget):
         self.listbox = listbox
         # TODO: this linebox should use the 'main' color.
         self.top_w = urwid.LineBox(listbox)
+        self.tooltip_focus = False
 
     def selectable(self):
         return self.bottom_w.selectable()
@@ -280,8 +281,10 @@ class Tooltip(urwid.BoxWidget):
         if not y:
             y = cursor_y - rows
 
-        # The top window never gets focus.
-        top_c = self.top_w.render((maxcol, rows))
+        # Render *both* windows focused. This is probably not normal in urwid,
+        # but it works nicely.
+        top_c = self.top_w.render((maxcol, rows),
+                                  focus and self.tooltip_focus)
 
         combi_c = urwid.CanvasOverlay(top_c, bottom_c, 0, y)
         # Use the cursor coordinates from the bottom canvas.
@@ -306,6 +309,7 @@ class URWIDRepl(repl.Repl):
         self.statusbar = statusbar
         # XXX repl.Repl uses this? What is it?
         self.cpos = 0
+        self._completion_update_suppressed = False
 
     # Subclasses of Repl need to implement echo, current_line, cw
     def echo(self, s):
@@ -355,7 +359,7 @@ class URWIDRepl(repl.Repl):
         # Return everything to the right of the non-identifier.
         return text[-i:]
 
-    def _populate_completion(self, main_loop, user_data):
+    def _populate_completion(self):
         widget_list = self.tooltip.body
         widget_list[1] = urwid.Text('')
         # This is just me flailing around wildly. TODO: actually write.
@@ -429,11 +433,15 @@ class URWIDRepl(repl.Repl):
                 markup = ''
             widget_list[0].set_text(markup)
             if self.matches:
-                texts = [urwid.Text(('main', match))
+                attr_map = {}
+                focus_map = {'main': 'operator'}
+                texts = [urwid.AttrMap(urwid.Text(('main', match)),
+                                       attr_map, focus_map)
                          for match in self.matches]
-                width = max(text.pack()[0] for text in texts)
+                width = max(text.original_widget.pack()[0] for text in texts)
                 gridflow = urwid.GridFlow(texts, width, 1, 0, 'left')
                 widget_list[1] = gridflow
+                self.overlay.tooltip_focus = False
             self.frame.body = self.overlay
         else:
             self.frame.body = self.listbox
@@ -501,9 +509,11 @@ class URWIDRepl(repl.Repl):
     def on_input_change(self, edit, text):
         tokens = self.tokenize(text, False)
         edit.set_edit_markup(list(format_tokens(tokens)))
-        # If we call this synchronously the get_edit_text() in repl.cw
-        # still returns the old text...
-        self.main_loop.set_alarm_in(0, self._populate_completion)
+        if not self._completion_update_suppressed:
+            # If we call this synchronously the get_edit_text() in repl.cw
+            # still returns the old text...
+            self.main_loop.set_alarm_in(
+                0, lambda *args: self._populate_completion())
 
     def handle_input(self, event):
         if event == 'enter':
@@ -533,9 +543,71 @@ class URWIDRepl(repl.Repl):
             self.rl_history.enter(self.edit.get_edit_text())
             self.edit.set_edit_text('')
             self.edit.insert_text(self.rl_history.forward())
+        elif urwid.command_map[event] == 'next selectable':
+            self.tab()
+        elif urwid.command_map[event] == 'prev selectable':
+            self.tab(True)
         #else:
         #    self.echo(repr(event))
 
+    def tab(self, back=False):
+        """Process the tab key being hit.
+
+        If the line is blank or has only whitespace: indent.
+
+        If there is text before the cursor: cycle completions.
+
+        If `back` is True cycle backwards through completions, and return
+        instead of indenting.
+
+        Returns True if the key was handled.
+        """
+        self._completion_update_suppressed = True
+        try:
+            # Heavily inspired by cli's tab.
+            text = self.edit.get_edit_text()
+            if not text.lstrip() and not back:
+                x_pos = len(text) - self.cpos
+                num_spaces = x_pos % self.config.tab_length
+                if not num_spaces:
+                    num_spaces = self.config.tab_length
+
+                self.edit.insert_text(' ' * num_spaces)
+                return True
+
+            if not self.matches_iter:
+                self.complete(tab=True)
+                cw = self.current_string() or self.cw()
+                if not cw:
+                    return True
+            else:
+                cw = self.matches_iter.current_word
+
+            b = os.path.commonprefix(self.matches)
+            if b:
+                insert = b[len(cw):]
+                self.edit.insert_text(insert)
+                expanded = bool(insert)
+                if expanded:
+                    self.matches_iter.update(b, self.matches)
+            else:
+                expanded = False
+
+            if not expanded and self.matches:
+                if self.matches_iter:
+                    self.edit.set_edit_text(
+                        text[:-len(self.matches_iter.current())] + cw)
+                if back:
+                    current_match = self.matches_iter.previous()
+                else:
+                    current_match = self.matches_iter.next()
+                if current_match:
+                    self.overlay.tooltip_focus = True
+                    self.tooltip.body[1].set_focus(self.matches_iter.index)
+                    self.edit.insert_text(current_match[len(cw):])
+            return True
+        finally:
+            self._completion_update_suppressed = False
 
 def main(args=None, locals_=None, banner=None):
     # Err, somewhat redundant. There is a call to this buried in urwid.util.
@@ -596,6 +668,7 @@ def main(args=None, locals_=None, banner=None):
 
     tooltip = urwid.ListBox(urwid.SimpleListWalker([
                 urwid.Text(''), urwid.Text(''), urwid.Text('')]))
+    tooltip.set_focus(1)
     overlay = Tooltip(listbox, tooltip)
 
     frame = urwid.Frame(overlay, footer=statusbar.widget)
