@@ -295,18 +295,33 @@ class Tooltip(urwid.BoxWidget):
 
 class URWIDRepl(repl.Repl):
 
-    # XXX this is getting silly, need to split this up somehow
-    def __init__(self, main_loop, frame, listbox, overlay, tooltip,
-                 interpreter, statusbar, config):
+    def __init__(self, event_loop, palette, interpreter, config):
         repl.Repl.__init__(self, interpreter, config)
-        self.main_loop = main_loop
-        self.frame = frame
-        self.listbox = listbox
-        self.overlay = overlay
-        self.tooltip = tooltip
+
+        self.listbox = urwid.ListBox(urwid.SimpleListWalker([]))
+
+        # String is straight from bpython.cli
+        self.statusbar = Statusbar(
+            config,
+            " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source " %
+            (config.undo_key, config.save_key,
+             config.pastebin_key, config.last_output_key,
+             config.show_source_key))
+
+        self.tooltip = urwid.ListBox(urwid.SimpleListWalker([
+                urwid.Text(''), urwid.Text(''), urwid.Text('')]))
+        self.tooltip.set_focus(1)
+        self.overlay = Tooltip(self.listbox, self.tooltip)
+
+        self.frame = urwid.Frame(self.overlay, footer=self.statusbar.widget)
+
+        # This constructs a raw_display.Screen, which nabs sys.stdin/out.
+        self.main_loop = urwid.MainLoop(
+            self.frame, palette,
+            event_loop=event_loop, unhandled_input=self.handle_input)
+
         self.edits = []
         self.edit = None
-        self.statusbar = statusbar
         # XXX repl.Repl uses this? What is it?
         self.cpos = 0
         self._completion_update_suppressed = False
@@ -656,34 +671,14 @@ def main(args=None, locals_=None, banner=None):
         event_loop = None
     # TODO: there is also a glib event loop. Do we want that one?
 
-    listbox = urwid.ListBox(urwid.SimpleListWalker([]))
-
-    # String is straight from bpython.cli
-    statusbar = Statusbar(
-        config,
-        " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source " %
-        (config.undo_key, config.save_key,
-         config.pastebin_key, config.last_output_key,
-         config.show_source_key))
-
-    tooltip = urwid.ListBox(urwid.SimpleListWalker([
-                urwid.Text(''), urwid.Text(''), urwid.Text('')]))
-    tooltip.set_focus(1)
-    overlay = Tooltip(listbox, tooltip)
-
-    frame = urwid.Frame(overlay, footer=statusbar.widget)
-
     # __main__ construction from bpython.cli
     if locals_ is None:
         main_mod = sys.modules['__main__'] = ModuleType('__main__')
         locals_ = main_mod.__dict__
     interpreter = repl.Interpreter(locals_, locale.getpreferredencoding())
 
-    # This constructs a raw_display.Screen, which nabs sys.stdin/out.
-    loop = urwid.MainLoop(frame, palette, event_loop=event_loop)
-
-    myrepl = URWIDRepl(loop, frame, listbox, overlay, tooltip,
-                       interpreter, statusbar, config)
+    # This nabs sys.stdin/out via urwid.MainLoop
+    myrepl = URWIDRepl(event_loop, palette, interpreter, config)
 
     if options.reactor:
         # Twisted sets a sigInt handler that stops the reactor unless
@@ -691,10 +686,6 @@ def main(args=None, locals_=None, banner=None):
         def sigint(*args):
             reactor.callFromThread(myrepl.keyboard_interrupt)
         signal.signal(signal.SIGINT, sigint)
-
-    # XXX HACK: circular dependency between the event loop and repl.
-    # Fix by not using unhandled_input?
-    loop._unhandled_input = myrepl.handle_input
 
     # Save stdin, stdout and stderr for later restoration
     orig_stdin = sys.stdin
@@ -723,11 +714,11 @@ def main(args=None, locals_=None, banner=None):
             sys.stdout = myrepl
             sys.stderr = myrepl
 
-            loop.set_alarm_in(0, start)
+            myrepl.main_loop.set_alarm_in(0, start)
 
             while True:
                 try:
-                    loop.run()
+                    myrepl.main_loop.run()
                 except KeyboardInterrupt:
                     # HACK: if we run under a twisted mainloop this should
                     # never happen: we have a SIGINT handler set.
@@ -735,7 +726,7 @@ def main(args=None, locals_=None, banner=None):
                     # that loop if interrupted, instead of trying to cook
                     # up an equivalent to reactor.callFromThread (which
                     # is what our Twisted sigint handler does)
-                    loop.set_alarm_in(
+                    myrepl.main_loop.set_alarm_in(
                         0, lambda *args: myrepl.keyboard_interrupt())
                     continue
                 break
@@ -781,7 +772,7 @@ def main(args=None, locals_=None, banner=None):
 
         run_find_coroutine()
 
-    loop.screen.run_wrapper(run_with_screen_before_mainloop)
+    myrepl.main_loop.screen.run_wrapper(run_with_screen_before_mainloop)
 
     if config.flush_output and not options.quiet:
         sys.stdout.write(myrepl.getstdout())
