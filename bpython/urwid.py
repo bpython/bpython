@@ -522,6 +522,9 @@ class URWIDRepl(repl.Repl):
         self.frame.body = self.listbox
 
     def on_input_change(self, edit, text):
+        # TODO: we get very confused here if "text" contains newlines,
+        # so we cannot put our edit widget in multiline mode yet.
+        # That is probably fixable...
         tokens = self.tokenize(text, False)
         edit.set_edit_markup(list(format_tokens(tokens)))
         if not self._completion_update_suppressed:
