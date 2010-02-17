@@ -75,6 +75,36 @@ COLORMAP = {
     }
 
 
+try:
+    from twisted.internet import protocol
+    from twisted.protocols import basic
+except ImportError:
+    pass
+else:
+
+    class EvalProtocol(basic.LineOnlyReceiver):
+
+        delimiter = '\n'
+
+        def __init__(self, myrepl):
+            self.repl = myrepl
+
+        def lineReceived(self, line):
+            # HACK!
+            # TODO: deal with encoding issues here...
+            self.repl.main_loop.process_input(line)
+            self.repl.main_loop.process_input(['enter'])
+
+
+    class EvalFactory(protocol.ServerFactory):
+
+        def __init__(self, myrepl):
+            self.repl = myrepl
+
+        def buildProtocol(self, addr):
+            return EvalProtocol(self.repl)
+
+
 class Statusbar(object):
 
     """Statusbar object, ripped off from bpython.cli.
@@ -639,6 +669,8 @@ def main(args=None, locals_=None, banner=None):
                        help='Run a reactor (see --help-reactors)'),
                 Option('--help-reactors', action='store_true',
                        help='List available reactors for -r'),
+                Option('--server', '-s', type='int',
+                       help='Port to run an eval server on (forces Twisted)'),
                 ]))
 
     if options.help_reactors:
@@ -655,6 +687,9 @@ def main(args=None, locals_=None, banner=None):
     palette.extend([
             ('bold ' + name, color + ',bold', background, monochrome)
             for name, color, background, monochrome in palette])
+
+    if options.server and not options.reactor:
+        options.reactor = 'select'
 
     if options.reactor:
         from twisted.application import reactors
@@ -682,6 +717,10 @@ def main(args=None, locals_=None, banner=None):
 
     # This nabs sys.stdin/out via urwid.MainLoop
     myrepl = URWIDRepl(event_loop, palette, interpreter, config)
+
+    if options.server:
+        factory = EvalFactory(myrepl)
+        reactor.listenTCP(options.server, factory, interface='127.0.0.1')
 
     if options.reactor:
         # Twisted sets a sigInt handler that stops the reactor unless
