@@ -128,6 +128,9 @@ class Nested(object):
     def __nonzero__(self):
         return bool(self.counter)
 
+class StatusBar(gtk.Statusbar):
+    def __init__(self):
+        gtk.Statusbar.__init__(self)
 
 class SuggestionWindow(gtk.Window):
     """
@@ -674,12 +677,18 @@ def main(args=None):
         parent = gtk.Plug(options.socket_id)
         parent.connect('destroy', gtk.main_quit)
 
-    # read from config
+    container = gtk.VBox()
+    parent.add(container)
 
+    # read from config
     sw = gtk.ScrolledWindow()
     sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
     sw.add(repl_widget)
-    parent.add(sw)
+    container.add(sw)
+
+    sb = StatusBar()
+    container.add(sb)
+
     parent.show_all()
     parent.connect('delete-event', lambda widget, event: gtk.main_quit())
 
