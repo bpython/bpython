@@ -67,7 +67,8 @@ def loadini(struct, configfile):
             'up_one_line': 'C-p',
             'yank_from_buffer': 'C-y'},
         'gtk': {
-            'font': 'monospace 10'}})
+            'font': 'monospace 10',
+            'color_scheme': 'default'}})
     config.read(config_path)
 
     struct.dedent_after = config.getint('general', 'dedent_after')
@@ -106,6 +107,7 @@ def loadini(struct, configfile):
     struct.gtk_font = config.get('gtk', 'font')
 
     color_scheme_name = config.get('general', 'color_scheme')
+    color_gtk_scheme_name = config.get('gtk', 'color_scheme')
 
     default_colors = {
             'keyword': 'y',
@@ -125,18 +127,44 @@ def loadini(struct, configfile):
             'prompt_more': 'g',
         }
  
+    default_gtk_colors = {
+            'keyword': 'b',
+            'name': 'k',
+            'comment': 'b',
+            'string': 'm',
+            'error': 'r',
+            'number': 'G',
+            'operator': 'B',
+            'punctuation': 'g',
+            'token': 'C',
+            'background': 'w',
+            'output': 'k',
+            'main': 'c',
+            'paren': 'R',
+            'prompt': 'b',
+            'prompt_more': 'g',
+        }
+
+    # TODO consolidate
     if color_scheme_name == 'default':
         struct.color_scheme = default_colors
     else:
         path = os.path.expanduser('~/.bpython/%s.theme' % (color_scheme_name,))
         load_theme(struct, path, config_path, default_colors)
 
+    if color_gtk_scheme_name == 'default':
+        struct.color_gtk_scheme = default_gtk_colors
+    else:
+        path = os.path.expanduser('~/.bpython/%s.theme' % (color_gtk_scheme_name,))
+        load_gtk_theme(struct, path, config_path, default_gtk_colors)
+
+
     # checks for valid key configuration this part still sucks
     for key in (struct.pastebin_key, struct.save_key):
         key_dispatch[key]
 
-
-def load_theme(struct, path, inipath, default_colors):
+# TODO consolidate
+def load_gtk_theme(struct, path, inipath, default_colors):
     theme = ConfigParser()
     try:
         f = open(path, 'r')
@@ -145,7 +173,7 @@ def load_theme(struct, path, inipath, default_colors):
                          (inipath, e))
         sys.exit(1)
     theme.readfp(f)
-    struct.color_scheme = {}
+    struct.color_gtk_scheme = {}
     for k, v in chain(theme.items('syntax'), theme.items('interface')):
         if theme.has_option('syntax', k):
             struct.color_scheme[k] = theme.get('syntax', k)
@@ -157,6 +185,7 @@ def load_theme(struct, path, inipath, default_colors):
         if k not in struct.color_scheme:
             struct.color_scheme[k] = v
     f.close()
+
 
 
 def migrate_rc(path):

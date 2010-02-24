@@ -267,11 +267,11 @@ class ReplWidget(gtk.TextView, repl.Repl):
                               self.on_suggestion_selection_changed)
         self.list_win.hide()
 
-        self.modify_base('normal', gtk.gdk.color_parse(_COLORS[self.config.color_scheme['background']]))
+        self.modify_base('normal', gtk.gdk.color_parse(_COLORS[self.config.color_gtk_scheme['background']]))
 
         self.text_buffer = self.get_buffer()
         tags = dict()
-        for (name, value) in self.config.color_scheme.iteritems():
+        for (name, value) in self.config.color_gtk_scheme.iteritems():
             tag = tags[name] = self.text_buffer.create_tag(name)
             for (char, prop) in zip(value, ['foreground', 'background']):
                 if char.lower() == 'd':
