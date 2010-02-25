@@ -164,7 +164,11 @@ class BPythonEdit(urwid.Edit):
       (except for internal calls from keypress or mouse_event).
 
     - arrow up/down are ignored.
+
+    - an "edit-pos-changed" signal is emitted when edit_pos changes.
     """
+
+    signals = ['edit-pos-changed']
 
     def __init__(self, *args, **kwargs):
         self._bpy_text = ''
@@ -172,6 +176,15 @@ class BPythonEdit(urwid.Edit):
         self._bpy_selectable = True
         self._bpy_may_move_cursor = False
         urwid.Edit.__init__(self, *args, **kwargs)
+
+    def set_edit_pos(self, pos):
+        urwid.Edit.set_edit_pos(self, pos)
+        self._emit("edit-pos-changed", self.edit_pos)
+
+    def get_edit_pos(self):
+        return self._edit_pos
+
+    edit_pos = property(get_edit_pos, set_edit_pos)
 
     def make_readonly(self):
         self._bpy_selectable = False
@@ -351,8 +364,6 @@ class URWIDRepl(repl.Repl):
 
         self.edits = []
         self.edit = None
-        # XXX repl.Repl uses this? What is it?
-        self.cpos = 0
         self._completion_update_suppressed = False
 
     # Subclasses of Repl need to implement echo, current_line, cw
@@ -402,6 +413,12 @@ class URWIDRepl(repl.Repl):
             return text
         # Return everything to the right of the non-identifier.
         return text[-i:]
+
+    @property
+    def cpos(self):
+        if self.edit is not None:
+            return len(self.current_line()) - self.edit.edit_pos
+        return 0
 
     def _populate_completion(self):
         widget_list = self.tooltip.body
@@ -543,6 +560,8 @@ class URWIDRepl(repl.Repl):
             self.stdout_hist += '... '
 
         urwid.connect_signal(self.edit, 'change', self.on_input_change)
+        urwid.connect_signal(self.edit, 'edit-pos-changed',
+                             self.on_edit_pos_changed)
         # Do this after connecting the change signal handler:
         self.edit.insert_text(4 * self.next_indentation() * ' ')
         self.edits.append(self.edit)
@@ -562,6 +581,13 @@ class URWIDRepl(repl.Repl):
             # still returns the old text...
             self.main_loop.set_alarm_in(
                 0, lambda *args: self._populate_completion())
+
+    def on_edit_pos_changed(self, edit, position):
+        """Gets called when the cursor position inside the edit changed.
+        Rehighlight the current line because there might be a paren under
+        the cursor now."""
+        tokens = self.tokenize(self.current_line(), False)
+        edit.set_edit_markup(list(format_tokens(tokens)))
 
     def handle_input(self, event):
         if event == 'enter':
@@ -584,13 +610,11 @@ class URWIDRepl(repl.Repl):
                     self.main_loop.process_input(['delete'])
         elif urwid.command_map[event] == 'cursor up':
             # "back" from bpython.cli
-            self.cpos = 0
             self.rl_history.enter(self.edit.get_edit_text())
             self.edit.set_edit_text('')
             self.edit.insert_text(self.rl_history.back())
         elif urwid.command_map[event] == 'cursor down':
             # "fwd" from bpython.cli
-            self.cpos = 0
             self.rl_history.enter(self.edit.get_edit_text())
             self.edit.set_edit_text('')
             self.edit.insert_text(self.rl_history.forward())
