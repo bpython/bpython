@@ -26,4 +26,3 @@ common
 v1.0
 ----
 - Ditch curses for an urwid/twisted loop
-- Jesus
