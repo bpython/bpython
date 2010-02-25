@@ -338,9 +338,8 @@ class URWIDRepl(repl.Repl):
              config.pastebin_key, config.last_output_key,
              config.show_source_key))
 
-        self.tooltip = urwid.ListBox(urwid.SimpleListWalker([
-                urwid.Text(''), urwid.Text(''), urwid.Text('')]))
-        self.tooltip.set_focus(1)
+        self.tooltip = urwid.ListBox(urwid.SimpleListWalker([]))
+        self.tooltip.grid = None
         self.overlay = Tooltip(self.listbox, self.tooltip)
 
         self.frame = urwid.Frame(self.overlay, footer=self.statusbar.widget)
@@ -406,7 +405,8 @@ class URWIDRepl(repl.Repl):
 
     def _populate_completion(self):
         widget_list = self.tooltip.body
-        widget_list[1] = urwid.Text('')
+        while widget_list:
+            widget_list.pop()
         # This is just me flailing around wildly. TODO: actually write.
         if self.complete():
             if self.argspec:
@@ -474,9 +474,7 @@ class URWIDRepl(repl.Repl):
                         markup.append(('punctuation', ', '))
                     markup.append(('token', '**' + varkw))
                 markup.append(('punctuation', ')'))
-            else:
-                markup = ''
-            widget_list[0].set_text(markup)
+                widget_list.append(urwid.Text(markup))
             if self.matches:
                 attr_map = {}
                 focus_map = {'main': 'operator'}
@@ -485,18 +483,20 @@ class URWIDRepl(repl.Repl):
                          for match in self.matches]
                 width = max(text.original_widget.pack()[0] for text in texts)
                 gridflow = urwid.GridFlow(texts, width, 1, 0, 'left')
-                widget_list[1] = gridflow
+                widget_list.append(gridflow)
+                self.tooltip.grid = gridflow
                 self.overlay.tooltip_focus = False
+            else:
+                self.tooltip.grid = None
             self.frame.body = self.overlay
         else:
             self.frame.body = self.listbox
+            self.tooltip.grid = None
 
         if self.docstring:
             # TODO: use self.format_docstring? needs a width/height...
             docstring = self.docstring
-        else:
-            docstring = ''
-        widget_list[2].set_text(('comment', docstring))
+            widget_list.append(urwid.Text(('comment', docstring)))
 
     def reprint_line(self, lineno, tokens):
         edit = self.edits[-len(self.buffer) + lineno - 1]
@@ -651,7 +651,8 @@ class URWIDRepl(repl.Repl):
                     current_match = self.matches_iter.next()
                 if current_match:
                     self.overlay.tooltip_focus = True
-                    self.tooltip.body[1].set_focus(self.matches_iter.index)
+                    if self.tooltip.grid:
+                        self.tooltip.grid.set_focus(self.matches_iter.index)
                     self.edit.insert_text(current_match[len(cw):])
             return True
         finally:
