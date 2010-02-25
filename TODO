@@ -1,0 +1,7 @@
+bpython.gtk_
+- make font configurable (pango.FontDescription)
+- make gtk have a seperate config/theme from the cli version
+
+bpython.urwid
+
+bpython.cli
