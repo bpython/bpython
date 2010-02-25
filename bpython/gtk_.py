@@ -109,6 +109,9 @@ class ExceptionManager(object):
             dialog.run()
             dialog.destroy()
 
+class MenuBar(gtk.MenuBar):
+    def __init__(self):
+        gtk.MenuBar.__init__(self)
 
 class Nested(object):
     """
@@ -128,9 +131,14 @@ class Nested(object):
     def __nonzero__(self):
         return bool(self.counter)
 
-class StatusBar(gtk.Statusbar):
+class Statusbar(gtk.Statusbar):
+    """Contains feedback messages"""
     def __init__(self):
         gtk.Statusbar.__init__(self)
+        
+        context_id = self.get_context_id('StatusBar')
+        # self.push(context_id, text)
+
 
 class SuggestionWindow(gtk.Window):
     """
@@ -658,7 +666,7 @@ def main(args=None):
             bpython.args.exec_code(interpreter, exec_args)
             return 0
 
-    sys.stderr = repl_widget
+    # sys.stderr = repl_widget
     sys.stdout = repl_widget
 
     if not options.socket_id:
@@ -686,7 +694,7 @@ def main(args=None):
     sw.add(repl_widget)
     container.add(sw)
 
-    sb = StatusBar()
+    sb = Statusbar()
     container.pack_end(sb, expand=False)
 
     parent.show_all()
