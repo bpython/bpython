@@ -64,7 +64,9 @@ def loadini(struct, configfile):
             'show_source': 'F2',
             'undo': 'C-r',
             'up_one_line': 'C-p',
-            'yank_from_buffer': 'C-y'}})
+            'yank_from_buffer': 'C-y'},
+        'gtk': {
+            'font': 'monospace 10'}})
     config.read(config_path)
 
     struct.dedent_after = config.getint('general', 'dedent_after')
@@ -98,6 +100,8 @@ def loadini(struct, configfile):
     struct.pastebin_private = config.getboolean('general', 'pastebin_private')
     struct.pastebin_url = config.get('general', 'pastebin_url')
     struct.pastebin_show_url = config.get('general', 'pastebin_show_url')
+
+    struct.gtk_font = config.get('gtk', 'font')
 
     color_scheme_name = config.get('general', 'color_scheme')
 
