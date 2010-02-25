@@ -31,5 +31,3 @@ Check that all of the following work before a release:
 * Update CHANGELOG
 
 * Update __version__
-
-* Jesus
