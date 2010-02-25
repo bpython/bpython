@@ -148,7 +148,7 @@ class SuggestionWindow(gtk.Window):
         self.set_name('gtk-tooltips')
         self.argspec_formatter = ArgspecFormatter()
 
-        vbox = gtk.VBox()
+        vbox = gtk.VBox(homogeneous=False)
         vbox.set_style(self.get_style())
 
         self.argspec_label = gtk.Label()
@@ -687,7 +687,7 @@ def main(args=None):
     container.add(sw)
 
     sb = StatusBar()
-    container.add(sb)
+    container.pack_end(sb, expand=False)
 
     parent.show_all()
     parent.connect('delete-event', lambda widget, event: gtk.main_quit())
