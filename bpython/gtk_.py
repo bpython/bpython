@@ -260,7 +260,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
         interpreter.writetb = self.writetb
         self.editing = Nested()
         self.reset_indent = False
-        self.modify_font(pango.FontDescription('terminus'))
+        self.modify_font(pango.FontDescription('monospace 10'))
         self.set_wrap_mode(gtk.WRAP_CHAR)
         self.list_win = SuggestionWindow()
         self.list_win.connect('selection-changed',
