@@ -576,9 +576,12 @@ class URWIDRepl(repl.Repl):
             more = self.push(inp)
             self.prompt(more)
         elif event == 'ctrl d':
-            # ctrl+d on an empty line exits
-            if self.edit is not None and not self.edit.get_edit_text():
-                raise urwid.ExitMainLoop()
+            # ctrl+d on an empty line exits, otherwise deletes
+            if self.edit is not None:
+                if not self.edit.get_edit_text():
+                    raise urwid.ExitMainLoop()
+                else:
+                    self.main_loop.process_input(['delete'])
         elif urwid.command_map[event] == 'cursor up':
             # "back" from bpython.cli
             self.cpos = 0
