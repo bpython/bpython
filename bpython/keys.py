@@ -38,7 +38,7 @@ class KeyMap:
         elif key in self.map:
             return self.map[key]
         else:
-            raise Exception('Configured keymap (%s)\
+            raise KeyError('Configured keymap (%s)\
 does not exist in bpython.keys' % key)
 
     def __setitem__(self, key, value):
