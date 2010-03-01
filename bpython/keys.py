@@ -39,7 +39,7 @@ class KeyMap:
             return self.map[key]
         else:
             raise KeyError('Configured keymap (%s)' % key +
-                           'does not exist in bpython.keys')
+                           ' does not exist in bpython.keys')
 
     def __delitem__(self, key):
         del self.map[key]
