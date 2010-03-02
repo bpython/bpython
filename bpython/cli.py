@@ -834,6 +834,10 @@ class CLIRepl(Repl):
         elif key == 'KEY_BTAB':
             return self.tab(back=True)
 
+        elif key in key_dispatch[config.suspend_key]:
+            self.suspend()
+            return ''
+
         elif len(key) == 1 and not unicodedata.category(key) == 'Cc':
             self.addstr(key)
             self.print_line(self.s)
@@ -1142,6 +1146,11 @@ class CLIRepl(Repl):
         self.h = h - 1
         self.x = 0
 
+    def suspend(self):
+        """Suspend the current process for shell job control."""
+        curses.endwin()
+        os.kill(os.getpid(), signal.SIGSTOP)
+
     def tab(self, back=False):
         """Process the tab key being hit. If there's only whitespace
         in the line or the line is blank then process a normal tab,
@@ -1403,6 +1412,10 @@ def sigwinch(unused_scr):
     global DO_RESIZE
     DO_RESIZE = True
 
+def sigcont(unused_scr):
+    sigwinch(unused_scr)
+    # Forces the redraw
+    curses.ungetch('')
 
 def gethw():
     """I found this code on a usenet post, and snipped out the bit I needed,
@@ -1524,6 +1537,8 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
 
     old_sigwinch_handler = signal.signal(signal.SIGWINCH,
                                          lambda *_: sigwinch(scr))
+    # redraw window after being suspended
+    old_sigcont_handler = signal.signal(signal.SIGCONT, lambda *_: sigcont(scr))
 
     stdscr = scr
     try:
@@ -1576,8 +1591,9 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     statusbar.win.refresh()
     curses.raw(False)
 
-    # Restore SIGWINCH handler
+    # Restore signal handlers
     signal.signal(signal.SIGWINCH, old_sigwinch_handler)
+    signal.signal(signal.SIGCONT, old_sigcont_handler)
 
     return repl.getstdout()
 
