@@ -170,11 +170,12 @@ class BPythonEdit(urwid.Edit):
 
     signals = ['edit-pos-changed']
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, tab_length, *args, **kwargs):
         self._bpy_text = ''
         self._bpy_attr = []
         self._bpy_selectable = True
         self._bpy_may_move_cursor = False
+        self.tab_length = tab_length
         urwid.Edit.__init__(self, *args, **kwargs)
 
     def set_edit_pos(self, pos):
@@ -242,6 +243,12 @@ class BPythonEdit(urwid.Edit):
             # Do not handle up/down arrow, leave them for the repl.
             if urwid.command_map[key] in ('cursor up', 'cursor down'):
                 return key
+            elif key == 'backspace':
+                line = self.get_edit_text()
+                cpos = len(line) - self.edit_pos
+                if not (cpos or len(line) % self.tab_length or line.strip()):
+                    self.set_edit_text(line[:-self.tab_length])
+                    return None
             return urwid.Edit.keypress(self, size, key)
         finally:
             self._bpy_may_move_cursor = False
@@ -553,10 +560,12 @@ class URWIDRepl(repl.Repl):
         self.rl_history.reset()
         # XXX what is s_hist?
         if not more:
-            self.edit = BPythonEdit(caption=('prompt', '>>> '))
+            self.edit = BPythonEdit(self.config.tab_length,
+                                    caption=('prompt', '>>> '))
             self.stdout_hist += '>>> '
         else:
-            self.edit = BPythonEdit(caption=('prompt_more', '... '))
+            self.edit = BPythonEdit(self.config.tab_length,
+                                    caption=('prompt_more', '... '))
             self.stdout_hist += '... '
 
         urwid.connect_signal(self.edit, 'change', self.on_input_change)
