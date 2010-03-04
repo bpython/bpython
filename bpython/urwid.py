@@ -132,6 +132,11 @@ class Statusbar(object):
         # XXX wrap in AttrMap for wrapping?
         self.widget = urwid.Text(('main', self.s))
 
+def decoding_input_filter(keys, raw):
+    """Input filter for urwid which decodes each key with the locale's
+    preferred encoding.'"""
+    encoding = locale.getpreferredencoding()
+    return [key.decode(encoding) for key in keys]
 
 def format_tokens(tokensource):
     for token, text in tokensource:
@@ -364,10 +369,16 @@ class URWIDRepl(repl.Repl):
 
         self.frame = urwid.Frame(self.overlay, footer=self.statusbar.widget)
 
+        if urwid.get_encoding_mode() == 'narrow':
+            input_filter = decoding_input_filter
+        else:
+            input_filter = None
+
         # This constructs a raw_display.Screen, which nabs sys.stdin/out.
         self.main_loop = urwid.MainLoop(
             self.frame, palette,
-            event_loop=event_loop, unhandled_input=self.handle_input)
+            event_loop=event_loop, unhandled_input=self.handle_input,
+            input_filter=input_filter)
 
         self.edits = []
         self.edit = None
@@ -604,7 +615,7 @@ class URWIDRepl(repl.Repl):
             self.history.append(inp)
             self.edit.make_readonly()
             # XXX what is this s_hist thing?
-            self.stdout_hist += inp + '\n'
+            self.stdout_hist += inp.encode(locale.getpreferredencoding()) + '\n'
             self.edit = None
             # This may take a while, so force a redraw first:
             self.main_loop.draw_screen()
