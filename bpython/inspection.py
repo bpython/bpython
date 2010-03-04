@@ -47,7 +47,7 @@ except AttributeError:
 py3 = sys.version_info[0] == 3
 
 if not py3:
-    _name = re.compile(r'[a-zA-Z_]\w*')
+    _name = re.compile(r'[a-zA-Z_]\w*$')
 
 
 class AttrCleaner(object):
