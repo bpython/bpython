@@ -50,7 +50,7 @@ def complete(line, cw):
             completing_from = True
             cw = '%s.%s' % (tokens[1], cw)
         elif len(tokens) == 3:
-            return ['import']
+            return ['import ']
 
     matches = list()
     for name in modules:
