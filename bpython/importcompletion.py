@@ -59,6 +59,25 @@ def complete(line, cw):
         if completing_from:
             name = name[len(tokens[1]) + 1:]
         matches.append(name)
+    if completing_from and tokens[1] in sys.modules:
+        # from x import y -> search for attributes starting with y if
+        # x is in sys.modules
+        _, _, cw = cw.rpartition('.')
+        module = sys.modules[tokens[1]]
+        matches.extend(name for name in dir(module) if name.startswith(cw))
+    elif len(tokens) == 2:
+        # from x.y or import x.y -> search for attributes starting
+        # with y if x is in sys.modules and the attribute is also in
+        # sys.modules
+        module_name, _, cw = cw.rpartition('.')
+        if module_name in sys.modules:
+            module = sys.modules[module_name]
+            for name in dir(module):
+                if not name.startswith(cw):
+                    continue
+                submodule_name = '%s.%s' % (module_name, name)
+                if submodule_name in sys.modules:
+                    matches.append(submodule_name)
     if not matches:
         return []
     return matches
