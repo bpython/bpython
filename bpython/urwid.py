@@ -717,6 +717,9 @@ def main(args=None, locals_=None, banner=None):
                        help='Run a reactor (see --help-reactors)'),
                 Option('--help-reactors', action='store_true',
                        help='List available reactors for -r'),
+                Option('--plugin', '-p',
+                       help='twistd plugin to run (use twistd for a list). '
+                       'Use "--" to pass further options to the plugin.'),
                 Option('--server', '-s', type='int',
                        help='Port to run an eval server on (forces Twisted)'),
                 ]))
@@ -736,7 +739,7 @@ def main(args=None, locals_=None, banner=None):
             ('bold ' + name, color + ',bold', background, monochrome)
             for name, color, background, monochrome in palette])
 
-    if options.server and not options.reactor:
+    if (options.server or options.plugin) and not options.reactor:
         options.reactor = 'select'
 
     if options.reactor:
@@ -761,6 +764,22 @@ def main(args=None, locals_=None, banner=None):
     if locals_ is None:
         main_mod = sys.modules['__main__'] = ModuleType('__main__')
         locals_ = main_mod.__dict__
+
+    if options.plugin:
+        from twisted import plugin
+        from twisted.application import service
+        for plug in plugin.getPlugins(service.IServiceMaker):
+            if plug.tapname == options.plugin:
+                break
+        else:
+            sys.stderr.write('Plugin %s does not exist\n' % (options.plugin,))
+            return
+        plugopts = plug.options()
+        plugopts.parseOptions(exec_args)
+        serv = plug.makeService(plugopts)
+        locals_['service'] = serv
+        reactor.callWhenRunning(serv.startService)
+        exec_args = []
     interpreter = repl.Interpreter(locals_, locale.getpreferredencoding())
 
     # This nabs sys.stdin/out via urwid.MainLoop
