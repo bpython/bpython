@@ -303,6 +303,10 @@ class Repl(object):
         self.list_win_visible = False
         self._C = {}
         self.prev_block_finished = 0
+        # previous pastebin content to prevent duplicate pastes, filled on call
+        # to repl.pastebin
+        self.prev_pastebin_content = ''
+        self.prev_pastebin_url = ''
 
         pythonhist = os.path.expanduser(self.config.hist_file)
         if os.path.exists(pythonhist):
@@ -648,6 +652,13 @@ class Repl(object):
 
         s = self.getstdout()
 
+        if s == self.prev_pastebin_content:
+            self.statusbar.message('Duplicate pastebin. Previous URL: ' +
+                                    self.prev_pastebin_url)
+            return
+
+        self.prev_pastebin_content = s
+
         self.statusbar.message('Posting data to pastebin...')
         try:
             paste_id = pasteservice.pastes.newPaste('pycon', s)
@@ -658,6 +669,7 @@ class Repl(object):
         paste_url_template = Template(self.config.pastebin_show_url)
         paste_id = urlquote(paste_id)
         paste_url = paste_url_template.safe_substitute(paste_id=paste_id)
+        self.prev_pastebin_url = paste_url
         self.statusbar.message('Pastebin URL: %s' % (paste_url, ), 10)
 
     def push(self, s, insert_into_history=True):
