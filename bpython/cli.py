@@ -1100,6 +1100,8 @@ class CLIRepl(Repl):
         if v_items:
             self.list_win.addstr('\n ')
 
+        if not py3:
+            encoding = getpreferredencoding()
         for ix, i in enumerate(v_items):
             padding = (wl - len(i)) * ' '
             if i == current_item:
@@ -1107,13 +1109,15 @@ class CLIRepl(Repl):
             else:
                 color = get_colpair(self.config, 'main')
             if not py3:
-                i = i.encode(getpreferredencoding())
+                i = i.encode(encoding)
             self.list_win.addstr(i + padding, color)
             if ((cols == 1 or (ix and not (ix + 1) % cols))
                     and ix + 1 < len(v_items)):
                 self.list_win.addstr('\n ')
 
         if self.docstring is not None:
+            if not py3:
+                docstring_string = docstring_string.encode(encoding, 'ignore')
             self.list_win.addstr('\n' + docstring_string,
                                  get_colpair(self.config, 'comment'))
 # XXX: After all the trouble I had with sizing the list box (I'm not very good
