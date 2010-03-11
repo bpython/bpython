@@ -307,6 +307,9 @@ class Repl(object):
         # to repl.pastebin
         self.prev_pastebin_content = ''
         self.prev_pastebin_url = ''
+        # Necessary to fix mercurial.ui.ui expecting sys.stderr to have this
+        # attribute
+        self.closed = False
 
         pythonhist = os.path.expanduser(self.config.hist_file)
         if os.path.exists(pythonhist):
