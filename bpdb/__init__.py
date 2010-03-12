@@ -20,8 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import sys
 
 import bpython
+from bpdb.debugger import BPdb
 
 
 __version__ = bpython.__version__
@@ -30,9 +32,5 @@ __version__ = bpython.__version__
 def set_trace():
     """ Just like pdb.set_trace(), a helper function that creates
     a debugger instance and sets the trace. """
-    import sys
-    from bpdb.debugger import BPdb
-    BPdb().set_trace(sys._getframe().f_back)
-
-
-go = set_trace
+    debugger = BPdb()
+    debugger.set_trace(sys._getframe().f_back)
