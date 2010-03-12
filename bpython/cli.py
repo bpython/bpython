@@ -1539,6 +1539,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     global colors
     DO_RESIZE = False
 
+    # FIXME: Handle window resize without signals
     old_sigwinch_handler = signal.signal(signal.SIGWINCH,
                                          lambda *_: sigwinch(scr))
     # redraw window after being suspended
@@ -1596,6 +1597,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     curses.raw(False)
 
     # Restore signal handlers
+    # FIXME: handle window resizes without signals
     signal.signal(signal.SIGWINCH, old_sigwinch_handler)
     signal.signal(signal.SIGCONT, old_sigcont_handler)
 
