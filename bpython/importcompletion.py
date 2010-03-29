@@ -50,7 +50,11 @@ def complete(line, cw):
             completing_from = True
             cw = '%s.%s' % (tokens[1], cw)
         elif len(tokens) == 3:
-            return ['import']
+            if 'import '.startswith(cw):
+                return ['import ']
+            else:
+                # Will result in a SyntaxError
+                return None
 
     matches = list()
     for name in modules:
@@ -59,6 +63,25 @@ def complete(line, cw):
         if completing_from:
             name = name[len(tokens[1]) + 1:]
         matches.append(name)
+    if completing_from and tokens[1] in sys.modules:
+        # from x import y -> search for attributes starting with y if
+        # x is in sys.modules
+        _, _, cw = cw.rpartition('.')
+        module = sys.modules[tokens[1]]
+        matches.extend(name for name in dir(module) if name.startswith(cw))
+    elif len(tokens) == 2:
+        # from x.y or import x.y -> search for attributes starting
+        # with y if x is in sys.modules and the attribute is also in
+        # sys.modules
+        module_name, _, cw = cw.rpartition('.')
+        if module_name in sys.modules:
+            module = sys.modules[module_name]
+            for name in dir(module):
+                if not name.startswith(cw):
+                    continue
+                submodule_name = '%s.%s' % (module_name, name)
+                if submodule_name in sys.modules:
+                    matches.append(submodule_name)
     if not matches:
         return []
     return matches
@@ -75,6 +98,10 @@ def find_modules(path):
             # Possibly a package
             if '.' in name:
                 continue
+        elif os.path.isdir(os.path.join(path, name)):
+            # Unfortunately, CPython just crashes if there is a directory
+            # which ends with a python extension, so work around.
+            continue
         name = os.path.splitext(name)[0]
         try:
             fo, pathname, _ = imp.find_module(name, [path])
@@ -99,6 +126,8 @@ def find_all_modules(path=None):
         path = sys.path
 
     for p in path:
+        if not path:
+            path = os.curdir
         for module in find_modules(p):
             modules.add(module)
             yield

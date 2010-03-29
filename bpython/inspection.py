@@ -22,6 +22,7 @@
 #
 
 from __future__ import with_statement
+import collections
 import inspect
 import pydoc
 import re
@@ -31,11 +32,22 @@ import types
 from pygments.lexers import PythonLexer
 from pygments.token import Token
 
+try:
+    collections.Callable
+    has_collections_callable = True
+    try:
+        import types
+        types.InstanceType
+        has_instance_type = True
+    except AttributeError:
+        has_instance_type = False
+except AttributeError:
+    has_collections_callable = False
 
 py3 = sys.version_info[0] == 3
 
 if not py3:
-    _name = re.compile(r'[a-zA-Z_]\w*')
+    _name = re.compile(r'[a-zA-Z_]\w*$')
 
 
 class AttrCleaner(object):
@@ -223,3 +235,13 @@ def is_eval_safe_name(string):
         return all(part.isidentifier() for part in string.split('.'))
     else:
         return all(_name.match(part) for part in string.split('.'))
+
+
+def is_callable(obj):
+    if has_instance_type and isinstance(obj, types.InstanceType):
+        # Work around a Python bug, see issue 7624
+        return callable(obj)
+    elif has_collections_callable:
+        return isinstance(obj, collections.Callable)
+    else:
+        return callable(obj)

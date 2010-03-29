@@ -21,7 +21,6 @@
 # THE SOFTWARE.
 #
 
-# G*RLLCRA RHTNSAHTNSOG()*(@****
 from __future__ import with_statement
 import code
 import codecs
@@ -270,15 +269,13 @@ class Repl(object):
     XXX Subclasses should implement echo, current_line, cw
     """
 
-    def __init__(self, interp, config, idle=None):
-        """Initialise the repl with, unfortunately, a curses screen passed to
-        it.  This needs to be split up so the curses crap isn't in here.
+    def __init__(self, interp, config):
+        """Initialise the repl.
 
         interp is a Python code.InteractiveInterpreter instance
 
-        The optional 'idle' parameter is a function that the repl call while
-        it's blocking (waiting for keypresses). This, again, should be in a
-        different class"""
+        config is a populated bpython.config.Struct.
+        """
 
         self.config = config
         self.cut_buffer = ''
@@ -306,6 +303,13 @@ class Repl(object):
         self.list_win_visible = False
         self._C = {}
         self.prev_block_finished = 0
+        # previous pastebin content to prevent duplicate pastes, filled on call
+        # to repl.pastebin
+        self.prev_pastebin_content = ''
+        self.prev_pastebin_url = ''
+        # Necessary to fix mercurial.ui.ui expecting sys.stderr to have this
+        # attribute
+        self.closed = False
 
         pythonhist = os.path.expanduser(self.config.hist_file)
         if os.path.exists(pythonhist):
@@ -365,7 +369,7 @@ class Repl(object):
     def _callable_postfix(self, value, word):
         """rlcompleter's _callable_postfix done right."""
         with inspection.AttrCleaner(value):
-            if hasattr(value, '__call__'):
+            if inspection.is_callable(value):
                 word += '('
         return word
 
@@ -651,6 +655,13 @@ class Repl(object):
 
         s = self.getstdout()
 
+        if s == self.prev_pastebin_content:
+            self.statusbar.message('Duplicate pastebin. Previous URL: ' +
+                                    self.prev_pastebin_url)
+            return
+
+        self.prev_pastebin_content = s
+
         self.statusbar.message('Posting data to pastebin...')
         try:
             paste_id = pasteservice.pastes.newPaste('pycon', s)
@@ -661,6 +672,7 @@ class Repl(object):
         paste_url_template = Template(self.config.pastebin_show_url)
         paste_id = urlquote(paste_id)
         paste_url = paste_url_template.safe_substitute(paste_id=paste_id)
+        self.prev_pastebin_url = paste_url
         self.statusbar.message('Pastebin URL: %s' % (paste_url, ), 10)
 
     def push(self, s, insert_into_history=True):
