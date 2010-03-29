@@ -237,7 +237,7 @@ def make_colors(config):
 class CLIRepl(Repl):
 
     def __init__(self, scr, interp, statusbar, config, idle=None):
-        Repl.__init__(self, interp, config, idle)
+        Repl.__init__(self, interp, config)
         interp.writetb = self.writetb
         self.scr = scr
         self.list_win = newwin(get_colpair(config, 'background'), 1, 1, 1, 1)
@@ -250,6 +250,7 @@ class CLIRepl(Repl):
         self.last_key_press = time.time()
         self.s = ''
         self.statusbar = statusbar
+        self.formatter = BPythonFormatter(config.color_scheme)
 
     def addstr(self, s):
         """Add a string to the current input line and figure out
@@ -833,6 +834,10 @@ class CLIRepl(Repl):
         elif key == 'KEY_BTAB':
             return self.tab(back=True)
 
+        elif key in key_dispatch[config.suspend_key]:
+            self.suspend()
+            return ''
+
         elif len(key) == 1 and not unicodedata.category(key) == 'Cc':
             self.addstr(key)
             self.print_line(self.s)
@@ -855,8 +860,7 @@ class CLIRepl(Repl):
             self.highlighted_paren = None
 
         if self.config.syntax and (not self.paste_mode or newline):
-            o = format(self.tokenize(s, newline),
-                       BPythonFormatter(self.config.color_scheme))
+            o = format(self.tokenize(s, newline), self.formatter)
         else:
             o = s
 
@@ -1096,6 +1100,8 @@ class CLIRepl(Repl):
         if v_items:
             self.list_win.addstr('\n ')
 
+        if not py3:
+            encoding = getpreferredencoding()
         for ix, i in enumerate(v_items):
             padding = (wl - len(i)) * ' '
             if i == current_item:
@@ -1103,13 +1109,15 @@ class CLIRepl(Repl):
             else:
                 color = get_colpair(self.config, 'main')
             if not py3:
-                i = i.encode(getpreferredencoding())
+                i = i.encode(encoding)
             self.list_win.addstr(i + padding, color)
             if ((cols == 1 or (ix and not (ix + 1) % cols))
                     and ix + 1 < len(v_items)):
                 self.list_win.addstr('\n ')
 
         if self.docstring is not None:
+            if not py3:
+                docstring_string = docstring_string.encode(encoding, 'ignore')
             self.list_win.addstr('\n' + docstring_string,
                                  get_colpair(self.config, 'comment'))
 # XXX: After all the trouble I had with sizing the list box (I'm not very good
@@ -1141,6 +1149,11 @@ class CLIRepl(Repl):
         self.w = w
         self.h = h - 1
         self.x = 0
+
+    def suspend(self):
+        """Suspend the current process for shell job control."""
+        curses.endwin()
+        os.kill(os.getpid(), signal.SIGSTOP)
 
     def tab(self, back=False):
         """Process the tab key being hit. If there's only whitespace
@@ -1403,6 +1416,10 @@ def sigwinch(unused_scr):
     global DO_RESIZE
     DO_RESIZE = True
 
+def sigcont(unused_scr):
+    sigwinch(unused_scr)
+    # Forces the redraw
+    curses.ungetch('')
 
 def gethw():
     """I found this code on a usenet post, and snipped out the bit I needed,
@@ -1522,9 +1539,10 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     global colors
     DO_RESIZE = False
 
-    # FIXME: Handle window resize without signals
-    #old_sigwinch_handler = signal.signal(signal.SIGWINCH,
-    #                                     lambda *_: sigwinch(scr))
+    old_sigwinch_handler = signal.signal(signal.SIGWINCH,
+                                         lambda *_: sigwinch(scr))
+    # redraw window after being suspended
+    old_sigcont_handler = signal.signal(signal.SIGCONT, lambda *_: sigcont(scr))
 
     stdscr = scr
     try:
@@ -1577,9 +1595,9 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     statusbar.win.refresh()
     curses.raw(False)
 
-    # Restore SIGWINCH handler
-    # FIXME: handle window resizes without signals
-    # signal.signal(signal.SIGWINCH, old_sigwinch_handler)
+    # Restore signal handlers
+    signal.signal(signal.SIGWINCH, old_sigwinch_handler)
+    signal.signal(signal.SIGCONT, old_sigcont_handler)
 
     return repl.getstdout()
 
@@ -1612,6 +1630,7 @@ def main(args=None, locals_=None, banner=None):
 
 
 if __name__ == '__main__':
+    from bpython.cli import main
     main()
 
 # vim: sw=4 ts=4 sts=4 ai et

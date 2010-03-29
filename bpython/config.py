@@ -62,9 +62,12 @@ def loadini(struct, configfile):
             'pastebin': 'F8',
             'save': 'C-s',
             'show_source': 'F2',
+            'suspend': 'C-z',
             'undo': 'C-r',
             'up_one_line': 'C-p',
-            'yank_from_buffer': 'C-y'}})
+            'yank_from_buffer': 'C-y'},
+        'gtk': {
+            'font': 'monospace 10'}})
     config.read(config_path)
 
     struct.dedent_after = config.getint('general', 'dedent_after')
@@ -82,6 +85,7 @@ def loadini(struct, configfile):
     struct.pastebin_key = config.get('keyboard', 'pastebin')
     struct.save_key = config.get('keyboard', 'save')
     struct.show_source_key = config.get('keyboard', 'show_source')
+    struct.suspend_key = config.get('keyboard', 'suspend')
     struct.undo_key = config.get('keyboard', 'undo')
     struct.up_one_line_key = config.get('keyboard', 'up_one_line')
     struct.down_one_line_key = config.get('keyboard', 'down_one_line')
@@ -98,6 +102,8 @@ def loadini(struct, configfile):
     struct.pastebin_private = config.getboolean('general', 'pastebin_private')
     struct.pastebin_url = config.get('general', 'pastebin_url')
     struct.pastebin_show_url = config.get('general', 'pastebin_show_url')
+
+    struct.gtk_font = config.get('gtk', 'font')
 
     color_scheme_name = config.get('general', 'color_scheme')
 
