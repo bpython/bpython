@@ -561,9 +561,9 @@ class ReplWidget(gtk.TextView, repl.Repl):
         else:
             text = '>>> '
         with self.editing:
-            self.text_buffer.insert_with_tags_by_name(self.get_cursor_iter(),
-                                                      text, 'prompt')
-        iter_ = self.move_cursor(len(text))
+            iter_ = self.get_cursor_iter()
+            self.text_buffer.insert_with_tags_by_name(iter_, text, 'prompt')
+        iter_.forward_chars(4)
         mark = self.text_buffer.create_mark('line_start', iter_, True)
         self.text_buffer.place_cursor(iter_)
         self.scroll_to_mark(mark, 0.2)
