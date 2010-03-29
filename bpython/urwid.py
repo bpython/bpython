@@ -167,7 +167,13 @@ def decoding_input_filter(keys, raw):
     """Input filter for urwid which decodes each key with the locale's
     preferred encoding.'"""
     encoding = locale.getpreferredencoding()
-    return [key.decode(encoding) for key in keys]
+    converted_keys = list()
+    for key in keys:
+        if isinstance(keys, basestring):
+            converted_keys.append(key.decode(encoding))
+        else:
+            converted_keys.append(key)
+    return converted_keys
 
 def format_tokens(tokensource):
     for token, text in tokensource:
