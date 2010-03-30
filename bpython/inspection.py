@@ -35,14 +35,14 @@ from pygments.token import Token
 try:
     collections.Callable
     has_collections_callable = True
-    try:
-        import types
-        types.InstanceType
-        has_instance_type = True
-    except AttributeError:
-        has_instance_type = False
 except AttributeError:
     has_collections_callable = False
+try:
+    import types
+    types.InstanceType
+    has_instance_type = True
+except AttributeError:
+    has_instance_type = False
 
 py3 = sys.version_info[0] == 3
 
