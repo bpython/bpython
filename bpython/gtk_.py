@@ -109,6 +109,9 @@ class ExceptionManager(object):
             dialog.run()
             dialog.destroy()
 
+class MenuBar(gtk.MenuBar):
+    def __init__(self):
+        gtk.MenuBar.__init__(self)
 
 class Nested(object):
     """
@@ -128,6 +131,14 @@ class Nested(object):
     def __nonzero__(self):
         return bool(self.counter)
 
+class Statusbar(gtk.Statusbar):
+    """Contains feedback messages"""
+    def __init__(self):
+        gtk.Statusbar.__init__(self)
+        
+        context_id = self.get_context_id('StatusBar')
+        # self.push(context_id, text)
+
 
 class SuggestionWindow(gtk.Window):
     """
@@ -145,7 +156,7 @@ class SuggestionWindow(gtk.Window):
         self.set_name('gtk-tooltips')
         self.argspec_formatter = ArgspecFormatter()
 
-        vbox = gtk.VBox()
+        vbox = gtk.VBox(homogeneous=False)
         vbox.set_style(self.get_style())
 
         self.argspec_label = gtk.Label()
@@ -655,7 +666,7 @@ def main(args=None):
             bpython.args.exec_code(interpreter, exec_args)
             return 0
 
-    sys.stderr = repl_widget
+    # sys.stderr = repl_widget
     sys.stdout = repl_widget
 
     if not options.socket_id:
@@ -674,12 +685,35 @@ def main(args=None):
         parent = gtk.Plug(options.socket_id)
         parent.connect('destroy', gtk.main_quit)
 
-    # read from config
+    container = gtk.VBox()
+    parent.add(container)
 
+    mb = gtk.MenuBar()
+    filemenu = gtk.Menu()
+
+    filem = gtk.MenuItem("File")
+    filem.set_submenu(filemenu)
+       
+    exit = gtk.MenuItem("Exit")
+    exit.connect("activate", gtk.main_quit)
+    filemenu.append(exit)
+
+    mb.append(filem)
+    vbox = gtk.VBox(False, 2)
+    vbox.pack_start(mb, False, False, 0)
+
+    container.pack_start(vbox, expand=False)
+
+
+    # read from config
     sw = gtk.ScrolledWindow()
     sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
     sw.add(repl_widget)
-    parent.add(sw)
+    container.add(sw)
+
+    sb = Statusbar()
+    container.pack_end(sb, expand=False)
+
     parent.show_all()
     parent.connect('delete-event', lambda widget, event: gtk.main_quit())
 
