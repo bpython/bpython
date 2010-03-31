@@ -634,19 +634,18 @@ class Repl(object):
         else:
             self.statusbar.message('Saved to %s' % (fn, ))
 
-    def pastebin(self):
+    def pastebin(self, s=None):
         """Upload to a pastebin and display the URL in the status bar."""
 
+        if s is None:
+            s = self.getstdout()
+
         if (self.config.pastebin_confirm and
-            not self.statusbar.prompt("Pastebin buffer? (y/N) "
-            ).lower().startswith('y'
-            )):
+            not self.ask_confirmation("Pastebin buffer? (y/N) ")):
             self.statusbar.message("Pastebin aborted")
             return
 
         pasteservice = ServerProxy(self.config.pastebin_url)
-
-        s = self.getstdout()
 
         if s == self.prev_pastebin_content:
             self.statusbar.message('Duplicate pastebin. Previous URL: ' +

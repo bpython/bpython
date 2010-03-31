@@ -573,48 +573,15 @@ class ReplWidget(gtk.TextView, repl.Repl):
                                     self.get_cursor_iter())
             self.text_buffer.insert_at_cursor(word)
 
-    def pastebin(self, widget):
-        """Upload to a pastebin and display the URL in the status bar."""
+   
+    def ask_confirmation(self, q):
+        dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_YES_NO, q)
+        response = True if dialog.run() == gtk.RESPONSE_YES else False
+        dialog.destroy()
+        return response
 
-        # FIXME cleanup
-        response = False
-
-        if self.config.pastebin_confirm:
-            dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_YES_NO,
-                                       "Pastebin buffer?")
-            response = True if dialog.run() == gtk.RESPONSE_YES else False
-            dialog.destroy()
-        else:
-            response = True
-         
-        if not response:
-            self.statusbar.message("Pastebin aborted")
-            return 
-        # end FIXME
-
-        pasteservice = ServerProxy(self.config.pastebin_url)
-
-        s = self.stdout_hist
-
-        if s == self.prev_pastebin_content:
-            self.statusbar.message('Duplicate pastebin. Previous URL: ' +
-                                    self.prev_pastebin_url)
-            return
-
-        self.prev_pastebin_content = s
-
-        self.statusbar.message('Posting data to pastebin...')
-        try:
-            paste_id = pasteservice.pastes.newPaste('pycon', s)
-        except XMLRPCError, e:
-            self.statusbar.message('Upload failed: %s' % (str(e), ) )
-            return
-
-        paste_url_template = Template(self.config.pastebin_show_url)
-        paste_id = urlquote(paste_id)
-        paste_url = paste_url_template.safe_substitute(paste_id=paste_id)
-        self.prev_pastebin_url = paste_url
-        self.statusbar.message('Pastebin URL: %s' % (paste_url, ), 10)
+    def do_paste(self, widget):
+        self.pastebin()
 
     def write(self, s):
         """For overriding stdout defaults"""
@@ -690,8 +657,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
         if line_start_iter.compare(cursor_iter) > 0:
             self.text_buffer.place_cursor(line_start_iter)
 
-    @property
-    def stdout_hist(self):
+    def getstdout(self):
         bounds = self.text_buffer.get_bounds()
         text = self.text_buffer.get_text(bounds[0], bounds[1])
         return text
@@ -773,7 +739,7 @@ def main(args=None):
     filem.set_submenu(filemenu)
       
     pastebin = gtk.MenuItem("Pastebin")
-    pastebin.connect("activate", repl_widget.pastebin)
+    pastebin.connect("activate", repl_widget.do_paste)
     filemenu.append(pastebin)
  
     exit = gtk.MenuItem("Exit")
