@@ -1,7 +1,9 @@
 bpython.gtk_
-- make font configurable (pango.FontDescription)
-- make gtk have a seperate config/theme from the cli version
+- add pastebin url to clipboard (or show a popup) instead of status bar
+- make statusbar only show aborted paste for a few seconds
+- add a selection only paste
 
 bpython.urwid
+- make keys work
 
 bpython.cli
