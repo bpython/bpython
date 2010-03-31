@@ -581,7 +581,10 @@ class URWIDRepl(repl.Repl):
 
         return self.stdout_hist + '\n'
 
-
+    def ask_confirmation(self, q):
+        """Ask for yes or no and return boolean"""
+        return self.statusbar.prompt(q).lower().startswith('y')
+ 
     def reevaluate(self):
         """Clear the buffer, redraw the screen and re-evaluate the history"""
 

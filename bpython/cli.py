@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-#
+
 # The MIT License
 #
 # Copyright (c) 2008 Bob Farrell
@@ -999,6 +998,10 @@ class CLIRepl(Repl):
         self.statusbar.resize(refresh=False)
         self.redraw()
 
+    def ask_confirmation(self, q):
+        """Ask for yes or no and return boolean"""
+        return self.statusbar.prompt(q).lower().startswith('y')
+ 
     def getstdout(self):
         """This method returns the 'spoofed' stdout buffer, for writing to a
         file or sending to a pastebin or whatever."""
