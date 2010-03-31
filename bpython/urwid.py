@@ -403,6 +403,7 @@ class URWIDRepl(repl.Repl):
         self.tooltip = urwid.ListBox(urwid.SimpleListWalker([]))
         self.tooltip.grid = None
         self.overlay = Tooltip(self.listbox, self.tooltip)
+        self.stdout_hist = ''
 
         self.frame = urwid.Frame(self.overlay, footer=self.statusbar.widget)
 
@@ -573,6 +574,78 @@ class URWIDRepl(repl.Repl):
     def reprint_line(self, lineno, tokens):
         edit = self.edits[-len(self.buffer) + lineno - 1]
         edit.set_edit_markup(list(format_tokens(tokens)))
+
+    def getstdout(self):
+        """This method returns the 'spoofed' stdout buffer, for writing to a
+        file or sending to a pastebin or whatever."""
+
+        return self.stdout_hist + '\n'
+
+
+    def reevaluate(self):
+        """Clear the buffer, redraw the screen and re-evaluate the history"""
+
+        self.evaluating = True
+        self.stdout_hist = ''
+        self.f_string = ''
+        self.buffer = []
+        self.scr.erase()
+        self.s_hist = []
+        # Set cursor position to -1 to prevent paren matching
+        self.cpos = -1
+
+        self.prompt(False)
+
+        self.iy, self.ix = self.scr.getyx()
+        for line in self.history:
+            if py3:
+                self.stdout_hist += line + '\n'
+            else:
+                self.stdout_hist += line.encode(getpreferredencoding()) + '\n'
+            self.print_line(line)
+            self.s_hist[-1] += self.f_string
+# I decided it was easier to just do this manually
+# than to make the print_line and history stuff more flexible.
+            self.scr.addstr('\n')
+            more = self.push(line)
+            self.prompt(more)
+            self.iy, self.ix = self.scr.getyx()
+
+        self.cpos = 0
+        indent = next_indentation(self.s, self.config.tab_length)
+        self.s = ''
+        self.scr.refresh()
+
+        if self.buffer:
+            for _ in xrange(indent):
+                self.tab()
+
+        self.evaluating = False
+        #map(self.push, self.history)
+        #^-- That's how simple this method was at first :(
+
+    def write(self, s):
+        """For overriding stdout defaults"""
+        if '\x04' in s:
+            for block in s.split('\x04'):
+                self.write(block)
+            return
+        if s.rstrip() and '\x03' in s:
+            t = s.split('\x03')[1]
+        else:
+            t = s
+
+        if not py3 and isinstance(t, unicode):
+            t = t.encode(getpreferredencoding())
+
+        if not self.stdout_hist:
+            self.stdout_hist = t
+        else:
+            self.stdout_hist += t
+
+        self.echo(s)
+        self.s_hist.append(s.rstrip())
+
 
     def push(self, s, insert_into_history=True):
         # Restore the original SIGINT handler. This is needed to be able

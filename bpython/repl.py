@@ -284,7 +284,6 @@ class Repl(object):
         self.interp.syntaxerror_callback = self.clear_current_line
         self.match = False
         self.rl_history = History()
-        self.stdout_hist = ''
         self.s_hist = []
         self.history = []
         self.evaluating = False
@@ -598,12 +597,6 @@ class Repl(object):
             indentation = 0
         return indentation
 
-    def getstdout(self):
-        """This method returns the 'spoofed' stdout buffer, for writing to a
-        file or sending to a pastebin or whatever."""
-
-        return self.stdout_hist + '\n'
-
     def formatforfile(self, s):
         """Format the stdout buffer to something suitable for writing to disk,
         i.e. without >>> and ... at input lines and with "# OUT: " prepended to
@@ -709,70 +702,6 @@ class Repl(object):
         self.reevaluate()
 
         self.rl_history.entries = entries
-
-    def reevaluate(self):
-        """Clear the buffer, redraw the screen and re-evaluate the history"""
-
-        self.evaluating = True
-        self.stdout_hist = ''
-        self.f_string = ''
-        self.buffer = []
-        self.scr.erase()
-        self.s_hist = []
-        # Set cursor position to -1 to prevent paren matching
-        self.cpos = -1
-
-        self.prompt(False)
-
-        self.iy, self.ix = self.scr.getyx()
-        for line in self.history:
-            if py3:
-                self.stdout_hist += line + '\n'
-            else:
-                self.stdout_hist += line.encode(getpreferredencoding()) + '\n'
-            self.print_line(line)
-            self.s_hist[-1] += self.f_string
-# I decided it was easier to just do this manually
-# than to make the print_line and history stuff more flexible.
-            self.scr.addstr('\n')
-            more = self.push(line)
-            self.prompt(more)
-            self.iy, self.ix = self.scr.getyx()
-
-        self.cpos = 0
-        indent = next_indentation(self.s, self.config.tab_length)
-        self.s = ''
-        self.scr.refresh()
-
-        if self.buffer:
-            for _ in xrange(indent):
-                self.tab()
-
-        self.evaluating = False
-        #map(self.push, self.history)
-        #^-- That's how simple this method was at first :(
-
-    def write(self, s):
-        """For overriding stdout defaults"""
-        if '\x04' in s:
-            for block in s.split('\x04'):
-                self.write(block)
-            return
-        if s.rstrip() and '\x03' in s:
-            t = s.split('\x03')[1]
-        else:
-            t = s
-
-        if not py3 and isinstance(t, unicode):
-            t = t.encode(getpreferredencoding())
-
-        if not self.stdout_hist:
-            self.stdout_hist = t
-        else:
-            self.stdout_hist += t
-
-        self.echo(s)
-        self.s_hist.append(s.rstrip())
 
     def flush(self):
         """Olivier Grisel brought it to my attention that the logging

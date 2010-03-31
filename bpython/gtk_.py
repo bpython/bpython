@@ -33,6 +33,9 @@ import optparse
 import os
 import sys
 from locale import LC_ALL, getpreferredencoding, setlocale
+from xmlrpclib import ServerProxy, Error as XMLRPCError
+from string import Template
+from urllib import quote as urlquote
 
 import gobject
 import gtk
@@ -42,6 +45,7 @@ from bpython import importcompletion, repl
 from bpython.formatter import theme_map
 import bpython.args
 
+py3 = sys.version_info[0] == 3
 
 _COLORS = dict(b='blue', c='cyan', g='green', m='magenta', r='red',
                w='white', y='yellow', k='black', d='black')
@@ -136,8 +140,13 @@ class Statusbar(gtk.Statusbar):
     def __init__(self):
         gtk.Statusbar.__init__(self)
         
-        context_id = self.get_context_id('StatusBar')
-        # self.push(context_id, text)
+        self.context_id = self.get_context_id('StatusBar')
+
+    def message(self, s, n=3):
+        self.push(self.context_id, s)
+
+    def prompt(self, s):
+        pass
 
 
 class SuggestionWindow(gtk.Window):
@@ -281,6 +290,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
         self.modify_base('normal', gtk.gdk.color_parse(_COLORS[self.config.color_gtk_scheme['background']]))
 
         self.text_buffer = self.get_buffer()
+        self.statusbar = Statusbar()
         tags = dict()
         for (name, value) in self.config.color_gtk_scheme.iteritems():
             tag = tags[name] = self.text_buffer.create_tag(name)
@@ -563,6 +573,68 @@ class ReplWidget(gtk.TextView, repl.Repl):
                                     self.get_cursor_iter())
             self.text_buffer.insert_at_cursor(word)
 
+    def pastebin(self, widget):
+        """Upload to a pastebin and display the URL in the status bar."""
+
+        # FIXME cleanup
+        response = False
+
+        if self.config.pastebin_confirm:
+            dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_YES_NO,
+                                       "Pastebin buffer?")
+            response = True if dialog.run() == gtk.RESPONSE_YES else False
+            dialog.destroy()
+        else:
+            response = True
+         
+        if not response:
+            self.statusbar.message("Pastebin aborted")
+            return 
+        # end FIXME
+
+        pasteservice = ServerProxy(self.config.pastebin_url)
+
+        s = self.stdout_hist
+
+        if s == self.prev_pastebin_content:
+            self.statusbar.message('Duplicate pastebin. Previous URL: ' +
+                                    self.prev_pastebin_url)
+            return
+
+        self.prev_pastebin_content = s
+
+        self.statusbar.message('Posting data to pastebin...')
+        try:
+            paste_id = pasteservice.pastes.newPaste('pycon', s)
+        except XMLRPCError, e:
+            self.statusbar.message('Upload failed: %s' % (str(e), ) )
+            return
+
+        paste_url_template = Template(self.config.pastebin_show_url)
+        paste_id = urlquote(paste_id)
+        paste_url = paste_url_template.safe_substitute(paste_id=paste_id)
+        self.prev_pastebin_url = paste_url
+        self.statusbar.message('Pastebin URL: %s' % (paste_url, ), 10)
+
+    def write(self, s):
+        """For overriding stdout defaults"""
+        if '\x04' in s:
+            for block in s.split('\x04'):
+                self.write(block)
+            return
+        if s.rstrip() and '\x03' in s:
+            t = s.split('\x03')[1]
+        else:
+            t = s
+
+        if not py3 and isinstance(t, unicode):
+            t = t.encode(getpreferredencoding())
+
+        self.echo(s)
+        self.s_hist.append(s.rstrip())
+
+
+
     def prompt(self, more):
         """
         Show the appropriate Python prompt.
@@ -617,6 +689,12 @@ class ReplWidget(gtk.TextView, repl.Repl):
         line_start_iter = self.get_line_start_iter()
         if line_start_iter.compare(cursor_iter) > 0:
             self.text_buffer.place_cursor(line_start_iter)
+
+    @property
+    def stdout_hist(self):
+        bounds = self.text_buffer.get_bounds()
+        text = self.text_buffer.get_text(bounds[0], bounds[1])
+        return text
 
     def writetb(self, lines):
         with ExceptionManager(ExceptionDialog,
@@ -693,7 +771,11 @@ def main(args=None):
 
     filem = gtk.MenuItem("File")
     filem.set_submenu(filemenu)
-       
+      
+    pastebin = gtk.MenuItem("Pastebin")
+    pastebin.connect("activate", repl_widget.pastebin)
+    filemenu.append(pastebin)
+ 
     exit = gtk.MenuItem("Exit")
     exit.connect("activate", gtk.main_quit)
     filemenu.append(exit)
@@ -711,7 +793,7 @@ def main(args=None):
     sw.add(repl_widget)
     container.add(sw)
 
-    sb = Statusbar()
+    sb = repl_widget.statusbar
     container.pack_end(sb, expand=False)
 
     parent.show_all()
