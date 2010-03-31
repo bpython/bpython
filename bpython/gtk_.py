@@ -583,6 +583,15 @@ class ReplWidget(gtk.TextView, repl.Repl):
     def do_paste(self, widget):
         self.pastebin()
 
+    def do_partial_paste(self, widget):
+        bounds = self.text_buffer.get_selection_bounds()
+        if bounds == ():
+            # FIXME show a nice status bar message
+            pass
+        else:
+            self.pastebin(self.text_buffer.get_text(bounds[0], bounds[1]))
+                                               
+
     def write(self, s):
         """For overriding stdout defaults"""
         if '\x04' in s:
@@ -741,6 +750,10 @@ def main(args=None):
     pastebin = gtk.MenuItem("Pastebin")
     pastebin.connect("activate", repl_widget.do_paste)
     filemenu.append(pastebin)
+
+    pastebin_partial = gtk.MenuItem("Pastebin selection")
+    pastebin_partial.connect("activate", repl_widget.do_partial_paste)
+    filemenu.append(pastebin_partial)
  
     exit = gtk.MenuItem("Exit")
     exit.connect("activate", gtk.main_quit)
