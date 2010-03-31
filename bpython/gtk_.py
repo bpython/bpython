@@ -688,6 +688,23 @@ def main(args=None):
     container = gtk.VBox()
     parent.add(container)
 
+    mb = gtk.MenuBar()
+    filemenu = gtk.Menu()
+
+    filem = gtk.MenuItem("File")
+    filem.set_submenu(filemenu)
+       
+    exit = gtk.MenuItem("Exit")
+    exit.connect("activate", gtk.main_quit)
+    filemenu.append(exit)
+
+    mb.append(filem)
+    vbox = gtk.VBox(False, 2)
+    vbox.pack_start(mb, False, False, 0)
+
+    container.pack_start(vbox, expand=False)
+
+
     # read from config
     sw = gtk.ScrolledWindow()
     sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
