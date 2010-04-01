@@ -236,6 +236,23 @@ class MatchesIterator(object):
             self.index = -1
 
 
+class Interaction(object):
+    def __init__(self, config, statusbar=None):
+        self.config = config
+
+        if statusbar:
+            self.statusbar = statusbar
+
+    def confirm(self, s):
+        raise NotImplementedError
+
+    def notify(self, s, n=10):
+        raise NotImplementedError
+
+    def file_prompt(self, s):
+        raise NotImplementedError
+
+
 class Repl(object):
     """Implements the necessary guff for a Python-repl-alike interface
 
@@ -302,6 +319,7 @@ class Repl(object):
         self.list_win_visible = False
         self._C = {}
         self.prev_block_finished = 0
+        self.interact = Interaction(self.config)
         # previous pastebin content to prevent duplicate pastes, filled on call
         # to repl.pastebin
         self.prev_pastebin_content = ''
@@ -615,9 +633,9 @@ class Repl(object):
         buffer to disk."""
 
         try:
-            fn = self.statusbar.prompt('Save to file (Esc to cancel): ')
+            fn = self.interact.file_prompt('Save to file (Esc to cancel): ')
         except ValueError:
-            self.statusbar.message("Save cancelled.")
+            self.interact.notify("Save cancelled.")
             return
 
         if fn.startswith('~'):
@@ -630,9 +648,9 @@ class Repl(object):
             f.write(s)
             f.close()
         except IOError:
-            self.statusbar.message("Disk write error for file '%s'." % (fn, ))
+            self.interact.notify("Disk write error for file '%s'." % (fn, ))
         else:
-            self.statusbar.message('Saved to %s' % (fn, ))
+            self.interact.notify('Saved to %s' % (fn, ))
 
     def pastebin(self, s=None):
         """Upload to a pastebin and display the URL in the status bar."""
@@ -641,31 +659,31 @@ class Repl(object):
             s = self.getstdout()
 
         if (self.config.pastebin_confirm and
-            not self.ask_confirmation("Pastebin buffer? (y/N) ")):
-            self.statusbar.message("Pastebin aborted")
+            not self.interact.confirm("Pastebin buffer? (y/N) ")):
+            self.interact.notify("Pastebin aborted")
             return
 
         pasteservice = ServerProxy(self.config.pastebin_url)
 
         if s == self.prev_pastebin_content:
-            self.statusbar.message('Duplicate pastebin. Previous URL: ' +
-                                    self.prev_pastebin_url)
+            self.interact.notify('Duplicate pastebin. Previous URL: ' +
+                                  self.prev_pastebin_url)
             return
 
         self.prev_pastebin_content = s
 
-        self.statusbar.message('Posting data to pastebin...')
+        self.interact.notify('Posting data to pastebin...')
         try:
             paste_id = pasteservice.pastes.newPaste('pycon', s)
         except XMLRPCError, e:
-            self.statusbar.message('Upload failed: %s' % (str(e), ) )
+            self.interact.notify('Upload failed: %s' % (str(e), ) )
             return
 
         paste_url_template = Template(self.config.pastebin_show_url)
         paste_id = urlquote(paste_id)
         paste_url = paste_url_template.safe_substitute(paste_id=paste_id)
         self.prev_pastebin_url = paste_url
-        self.statusbar.message('Pastebin URL: %s' % (paste_url, ), 10)
+        self.interact.notify('Pastebin URL: %s' % (paste_url, ), 10)
 
     def push(self, s, insert_into_history=True):
         """Push a line of code onto the buffer so it can process it all

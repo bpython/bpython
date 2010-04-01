@@ -384,6 +384,17 @@ class Tooltip(urwid.BoxWidget):
         canvas.cursor = cursor
         return canvas
 
+class URWIDInteraction(repl.Interaction):
+    def __init__(self, config, statusbar=None):
+        repl.Interaction.__init__(self, config, statusbar)
+
+    def confirm(self, q):
+        """Ask for yes or no and return boolean"""
+        return self.statusbar.prompt(q).lower().startswith('y')
+ 
+    def notify(self, s, n=10):
+        return self.statusbar.message(s, n)
+
 
 class URWIDRepl(repl.Repl):
 
@@ -399,6 +410,8 @@ class URWIDRepl(repl.Repl):
             (config.undo_key, config.save_key,
              config.pastebin_key, config.last_output_key,
              config.show_source_key))
+
+        self.interact = URWIDInteraction(self.config, self.statusbar)
 
         self.tooltip = urwid.ListBox(urwid.SimpleListWalker([]))
         self.tooltip.grid = None
