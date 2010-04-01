@@ -754,7 +754,7 @@ def main(args=None):
             bpython.args.exec_code(interpreter, exec_args)
             return 0
 
-    # sys.stderr = repl_widget
+    sys.stderr = repl_widget
     sys.stdout = repl_widget
 
     if not options.socket_id:
