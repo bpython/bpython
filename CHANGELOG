@@ -7,6 +7,7 @@ v0.9.7
 * Pastebin confirmation added; we were getting a lot of people accidentally
   pastebinning sensitive information so I think this is a good idea.
 * GTK now has pastebin, both for full log as well as the current selection
+* GTK now has write2file
 * GTK now has a menu
 * GTK now has a statusbar
 
