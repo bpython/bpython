@@ -275,7 +275,8 @@ class GTKInteraction(repl.Interaction):
         return response
 
     def file_prompt(self, s):
-        chooser = gtk.FileChooserDialog(action=gtk.FILE_CHOOSER_ACTION_SAVE,
+        chooser = gtk.FileChooserDialog(title="File to save to",
+                                        action=gtk.FILE_CHOOSER_ACTION_SAVE,
                                         buttons=(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK))
         chooser.set_default_response(gtk.RESPONSE_OK)
         chooser.set_current_name('test.py')
