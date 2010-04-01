@@ -274,6 +274,32 @@ class GTKInteraction(repl.Interaction):
         dialog.destroy()
         return response
 
+    def file_prompt(self, s):
+        chooser = gtk.FileChooserDialog(action=gtk.FILE_CHOOSER_ACTION_SAVE,
+                                        buttons=(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK))
+        chooser.set_default_response(gtk.RESPONSE_OK)
+        chooser.set_current_name('test.py')
+        
+        pyfilter = gtk.FileFilter()
+        pyfilter.set_name("Python files")
+        pyfilter.add_pattern("*.py")
+        chooser.add_filter(pyfilter) 
+
+        allfilter = gtk.FileFilter()
+        allfilter.set_name("All files")
+        allfilter.add_pattern("*")
+        chooser.add_filter(allfilter)
+
+        response = chooser.run()
+        if response == gtk.RESPONSE_OK:
+            fn = chooser.get_filename()
+        else:
+            fn = False
+
+        chooser.destroy()
+
+        return fn
+
     def notify(self, s, n=10):
         self.statusbar.message(s)
         
@@ -588,6 +614,9 @@ class ReplWidget(gtk.TextView, repl.Repl):
     def do_paste(self, widget):
         self.pastebin()
 
+    def do_write2file(self, widget):
+        self.write2file()
+
     def do_partial_paste(self, widget):
         bounds = self.text_buffer.get_selection_bounds()
         if bounds == ():
@@ -751,7 +780,12 @@ def main(args=None):
 
     filem = gtk.MenuItem("File")
     filem.set_submenu(filemenu)
-      
+ 
+    save = gtk.MenuItem("Save to file")
+    save.connect("activate", repl_widget.do_write2file)
+    filemenu.append(save)
+
+     
     pastebin = gtk.MenuItem("Pastebin")
     pastebin.connect("activate", repl_widget.do_paste)
     filemenu.append(pastebin)
