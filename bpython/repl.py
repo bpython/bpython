@@ -634,6 +634,9 @@ class Repl(object):
 
         try:
             fn = self.interact.file_prompt('Save to file (Esc to cancel): ')
+            if not fn:
+                self.interact.notify("Save cancelled.")
+                return
         except ValueError:
             self.interact.notify("Save cancelled.")
             return
