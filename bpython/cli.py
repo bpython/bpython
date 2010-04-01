@@ -58,8 +58,8 @@ from bpython.config import Struct
 # This for keys
 from bpython.keys import key_dispatch
 
+from bpython import repl
 from bpython.pager import page
-from bpython.repl import Interpreter, Repl
 import bpython.args
 
 
@@ -233,10 +233,25 @@ def make_colors(config):
     return c
 
 
-class CLIRepl(Repl):
+class CLIInteraction(repl.Interaction):
+    def __init__(self, config, statusbar=None):
+        repl.Interaction.__init__(self, config, statusbar)
+
+    def confirm(self, q):
+        """Ask for yes or no and return boolean"""
+        return self.statusbar.prompt(q).lower().startswith('y')
+ 
+    def notify(self, s, n=10):
+        return self.statusbar.message(s, n)
+
+    def file_prompt(self, s):
+        return self.statusbar.prompt(s)
+
+
+class CLIRepl(repl.Repl):
 
     def __init__(self, scr, interp, statusbar, config, idle=None):
-        Repl.__init__(self, interp, config)
+        repl.Repl.__init__(self, interp, config)
         interp.writetb = self.writetb
         self.scr = scr
         self.stdout_hist = ''
@@ -251,6 +266,7 @@ class CLIRepl(Repl):
         self.s = ''
         self.statusbar = statusbar
         self.formatter = BPythonFormatter(config.color_scheme)
+        self.interact = CLIInteraction(self.config, statusbar=self.statusbar)
 
     def addstr(self, s):
         """Add a string to the current input line and figure out
@@ -334,7 +350,7 @@ class CLIRepl(Repl):
         """Called when a SyntaxError occured in the interpreter. It is
         used to prevent autoindentation from occuring after a
         traceback."""
-        Repl.clear_current_line(self)
+        repl.Repl.clear_current_line(self)
         self.s = ''
 
     def clear_wrapped_lines(self):
@@ -359,7 +375,7 @@ class CLIRepl(Repl):
             return
 
         if self.config.auto_display_list or tab:
-            self.list_win_visible = Repl.complete(self, tab)
+            self.list_win_visible = repl.Repl.complete(self, tab)
             if self.list_win_visible:
                 try:
                     self.show_list(self.matches, self.argspec)
@@ -900,7 +916,7 @@ class CLIRepl(Repl):
         # curses.raw(True) prevents C-c from causing a SIGINT
         curses.raw(False)
         try:
-            return Repl.push(self, s, insert_into_history)
+            return repl.Repl.push(self, s, insert_into_history)
         except SystemExit:
             # Avoid a traceback on e.g. quit()
             self.do_exit = True
@@ -998,10 +1014,7 @@ class CLIRepl(Repl):
         self.statusbar.resize(refresh=False)
         self.redraw()
 
-    def ask_confirmation(self, q):
-        """Ask for yes or no and return boolean"""
-        return self.statusbar.prompt(q).lower().startswith('y')
- 
+
     def getstdout(self):
         """This method returns the 'spoofed' stdout buffer, for writing to a
         file or sending to a pastebin or whatever."""
@@ -1293,7 +1306,7 @@ class CLIRepl(Repl):
         return True
 
     def undo(self, n=1):
-        Repl.undo(self, n)
+        repl.Repl.undo(self, n)
 
         # This will unhighlight highlighted parens
         self.print_line(self.s)
@@ -1613,6 +1626,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     global stdscr
     global DO_RESIZE
     global colors
+    global repl
     DO_RESIZE = False
 
     old_sigwinch_handler = signal.signal(signal.SIGWINCH,
@@ -1639,10 +1653,10 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     if locals_ is None:
         sys.modules['__main__'] = ModuleType('__main__')
         locals_ = sys.modules['__main__'].__dict__
-    interpreter = Interpreter(locals_, getpreferredencoding())
+    interpreter = repl.Interpreter(locals_, getpreferredencoding())
 
-    repl = CLIRepl(main_win, interpreter, statusbar, config, idle)
-    repl._C = cols
+    clirepl = CLIRepl(main_win, interpreter, statusbar, config, idle)
+    clirepl._C = cols
 
     sys.stdin = FakeStdin(repl)
     sys.stdout = repl
@@ -1652,18 +1666,18 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
         bpython.args.exec_code(interpreter, args)
         if not interactive:
             curses.raw(False)
-            return repl.getstdout()
+            return clirepl.getstdout()
     else:
         sys.path.insert(0, '')
-        repl.startup()
+        clirepl.startup()
 
     if banner is not None:
-        repl.write(banner)
-        repl.write('\n')
-    repl.repl()
+        clirepl.write(banner)
+        clirepl.write('\n')
+    clirepl.repl()
     if config.hist_length:
         histfilename = os.path.expanduser(config.hist_file)
-        repl.rl_history.save(histfilename, getpreferredencoding())
+        clirepl.rl_history.save(histfilename, getpreferredencoding())
 
     main_win.erase()
     main_win.refresh()

@@ -140,13 +140,10 @@ class Statusbar(gtk.Statusbar):
     def __init__(self):
         gtk.Statusbar.__init__(self)
         
-        self.context_id = self.get_context_id('StatusBar')
+        self.context_id = self.get_context_id('Statusbar')
 
     def message(self, s, n=3):
         self.push(self.context_id, s)
-
-    def prompt(self, s):
-        pass
 
 
 class SuggestionWindow(gtk.Window):
@@ -267,6 +264,20 @@ class SuggestionWindow(gtk.Window):
         self.view.set_property('visible', bool(matches))
 
 
+class GTKInteraction(repl.Interaction):
+    def __init__(self, config, statusbar):
+        repl.Interaction.__init__(self, config, statusbar)
+
+    def confirm(self, q):
+        dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_YES_NO, q)
+        response = True if dialog.run() == gtk.RESPONSE_YES else False
+        dialog.destroy()
+        return response
+
+    def notify(self, s, n=10):
+        self.statusbar.message(s)
+        
+
 class ReplWidget(gtk.TextView, repl.Repl):
     __gsignals__ = dict(button_press_event=None,
                         focus_in_event=None,
@@ -290,7 +301,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
         self.modify_base('normal', gtk.gdk.color_parse(_COLORS[self.config.color_gtk_scheme['background']]))
 
         self.text_buffer = self.get_buffer()
-        self.statusbar = Statusbar()
+        self.interact = GTKInteraction(self.config, Statusbar())
         tags = dict()
         for (name, value) in self.config.color_gtk_scheme.iteritems():
             tag = tags[name] = self.text_buffer.create_tag(name)
@@ -574,12 +585,6 @@ class ReplWidget(gtk.TextView, repl.Repl):
             self.text_buffer.insert_at_cursor(word)
 
    
-    def ask_confirmation(self, q):
-        dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_YES_NO, q)
-        response = True if dialog.run() == gtk.RESPONSE_YES else False
-        dialog.destroy()
-        return response
-
     def do_paste(self, widget):
         self.pastebin()
 
@@ -772,7 +777,7 @@ def main(args=None):
     sw.add(repl_widget)
     container.add(sw)
 
-    sb = repl_widget.statusbar
+    sb = repl_widget.interact.statusbar
     container.pack_end(sb, expand=False)
 
     parent.show_all()
@@ -787,7 +792,6 @@ def main(args=None):
             histfilename = os.path.expanduser(config.hist_file)
             repl_widget.rl_history.save(histfilename, getpreferredencoding())
     return 0
-
 
 if __name__ == '__main__':
     from bpython.gtk_ import main
