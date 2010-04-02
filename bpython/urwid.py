@@ -169,7 +169,7 @@ def decoding_input_filter(keys, raw):
     encoding = locale.getpreferredencoding()
     converted_keys = list()
     for key in keys:
-        if isinstance(keys, basestring):
+        if isinstance(key, basestring):
             converted_keys.append(key.decode(encoding))
         else:
             converted_keys.append(key)
