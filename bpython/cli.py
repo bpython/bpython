@@ -1689,7 +1689,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     signal.signal(signal.SIGWINCH, old_sigwinch_handler)
     signal.signal(signal.SIGCONT, old_sigcont_handler)
 
-    return repl.getstdout()
+    return clirepl.getstdout()
 
 
 def main(args=None, locals_=None, banner=None):
