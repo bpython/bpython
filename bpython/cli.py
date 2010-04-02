@@ -1659,8 +1659,8 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     clirepl._C = cols
 
     sys.stdin = FakeStdin(repl)
-    sys.stdout = repl
-    sys.stderr = repl
+    sys.stdout = clirepl
+    sys.stderr = clirepl
 
     if args:
         bpython.args.exec_code(interpreter, args)
