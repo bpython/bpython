@@ -687,6 +687,7 @@ class Repl(object):
         paste_url = paste_url_template.safe_substitute(paste_id=paste_id)
         self.prev_pastebin_url = paste_url
         self.interact.notify('Pastebin URL: %s' % (paste_url, ), 10)
+        return paste_url
 
     def push(self, s, insert_into_history=True):
         """Push a line of code onto the buffer so it can process it all
