@@ -143,7 +143,15 @@ class Statusbar(gtk.Statusbar):
         self.context_id = self.get_context_id('Statusbar')
 
     def message(self, s, n=3):
+        self.clear()
         self.push(self.context_id, s)
+        gobject.timeout_add(n*1000, self.clear)
+
+    def clear(self):
+        self.pop(self.context_id)
+
+        # To stop the timeout from firing again
+        return False
 
 
 class SuggestionWindow(gtk.Window):
@@ -280,6 +288,7 @@ class GTKInteraction(repl.Interaction):
                                         buttons=(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK))
         chooser.set_default_response(gtk.RESPONSE_OK)
         chooser.set_current_name('test.py')
+        chooser.set_current_folder(os.path.expanduser('~'))
         
         pyfilter = gtk.FileFilter()
         pyfilter.set_name("Python files")
@@ -303,7 +312,6 @@ class GTKInteraction(repl.Interaction):
 
     def notify(self, s, n=10):
         self.statusbar.message(s)
-        
 
 class ReplWidget(gtk.TextView, repl.Repl):
     __gsignals__ = dict(button_press_event=None,
@@ -613,7 +621,10 @@ class ReplWidget(gtk.TextView, repl.Repl):
 
    
     def do_paste(self, widget):
-        self.pastebin()
+        clipboard = gtk.clipboard_get()
+        paste_url = self.pastebin()
+        clipboard.set_text(paste_url)
+        clipboard.store()
 
     def do_write2file(self, widget):
         self.write2file()
