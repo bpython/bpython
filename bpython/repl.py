@@ -671,7 +671,7 @@ class Repl(object):
         if s == self.prev_pastebin_content:
             self.interact.notify('Duplicate pastebin. Previous URL: ' +
                                   self.prev_pastebin_url)
-            return
+            return self.prev_pastebin_url
 
         self.prev_pastebin_content = s
 
