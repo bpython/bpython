@@ -143,7 +143,12 @@ class Statusbar(gtk.Statusbar):
         self.context_id = self.get_context_id('Statusbar')
 
     def message(self, s, n=3):
+        self.clear()
         self.push(self.context_id, s)
+        gobject.timeout_add(n*1000, self.clear)
+
+    def clear(self):
+        self.pop(self.context_id)
 
 
 class SuggestionWindow(gtk.Window):
@@ -303,7 +308,6 @@ class GTKInteraction(repl.Interaction):
 
     def notify(self, s, n=10):
         self.statusbar.message(s)
-        
 
 class ReplWidget(gtk.TextView, repl.Repl):
     __gsignals__ = dict(button_press_event=None,
