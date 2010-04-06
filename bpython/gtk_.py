@@ -288,6 +288,7 @@ class GTKInteraction(repl.Interaction):
                                         buttons=(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK))
         chooser.set_default_response(gtk.RESPONSE_OK)
         chooser.set_current_name('test.py')
+        chooser.set_current_folder(os.path.expanduser('~'))
         
         pyfilter = gtk.FileFilter()
         pyfilter.set_name("Python files")
