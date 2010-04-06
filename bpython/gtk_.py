@@ -150,6 +150,9 @@ class Statusbar(gtk.Statusbar):
     def clear(self):
         self.pop(self.context_id)
 
+        # To stop the timeout from firing again
+        return False
+
 
 class SuggestionWindow(gtk.Window):
     """
