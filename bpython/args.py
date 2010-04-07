@@ -21,7 +21,7 @@ class RaisingOptionParser(OptionParser):
         raise OptionParserFailed()
 
 
-def parse(args, extras=None):
+def parse(args, extras=None, ignore_stdin=False):
     """Receive an argument list - if None, use sys.argv - parse all args and
     take appropriate action. Also receive optional extra options: this should
     be a tuple of (title, description, options)
@@ -87,8 +87,11 @@ def parse(args, extras=None):
                'See AUTHORS for detail.')
         raise SystemExit
 
-    if not (sys.stdin.isatty() and sys.stdout.isatty()):
-        run_stdin(sys.stdin)
+    if not ignore_stdin and not (sys.stdin.isatty() and sys.stdout.isatty()):
+        interpreter = code.InteractiveInterpreter()
+        interpreter.runsource(sys.stdin.read())
+        raise SystemExit
+
     path = os.path.expanduser('~/.bpythonrc')
     # migrating old configuration file
     if os.path.isfile(path):
@@ -110,11 +113,3 @@ def exec_code(interpreter, args):
     sys.path.insert(0, os.path.abspath(os.path.dirname(args[0])))
     interpreter.runcode(code_obj)
     sys.argv = old_argv
-
-def run_stdin(stdin):
-    """
-    Run code from a file-like object and exit.
-    """
-    interpreter = code.InteractiveInterpreter()
-    interpreter.runsource(stdin.read())
-    raise SystemExit

@@ -50,15 +50,6 @@ py3 = sys.version_info[0] == 3
 _COLORS = dict(b='blue', c='cyan', g='green', m='magenta', r='red',
                w='white', y='yellow', k='black', d='black')
 
-def run_stdin(stdin):
-    """
-    Overwrite stdin reader from args as GTK does not supply a stdin/stdout
-    as a tty.
-    """
-    pass
-
-bpython.args.run_stdin = run_stdin
-
 class ArgspecFormatter(object):
     """
     Format an argspec using Pango markup language.
@@ -755,7 +746,8 @@ def main(args=None):
                    "Options specific to bpython's Gtk+ front end",
                    [optparse.Option('--socket-id', dest='socket_id',
                                     type='int', help='Embed bpython')])
-    config, options, exec_args = bpython.args.parse(args, gtk_options)
+    config, options, exec_args = bpython.args.parse(args, gtk_options,
+                                                    True)
 
     interpreter = repl.Interpreter(None, getpreferredencoding())
     repl_widget = ReplWidget(interpreter, config)
