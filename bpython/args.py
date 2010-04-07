@@ -88,10 +88,7 @@ def parse(args, extras=None):
         raise SystemExit
 
     if not (sys.stdin.isatty() and sys.stdout.isatty()):
-        interpreter = code.InteractiveInterpreter()
-        interpreter.runsource(sys.stdin.read())
-        raise SystemExit
-
+        run_stdin(sys.stdin)
     path = os.path.expanduser('~/.bpythonrc')
     # migrating old configuration file
     if os.path.isfile(path):
@@ -113,3 +110,11 @@ def exec_code(interpreter, args):
     sys.path.insert(0, os.path.abspath(os.path.dirname(args[0])))
     interpreter.runcode(code_obj)
     sys.argv = old_argv
+
+def run_stdin(stdin):
+    """
+    Run code from a file-like object and exit.
+    """
+    interpreter = code.InteractiveInterpreter()
+    interpreter.runsource(stdin.read())
+    raise SystemExit

@@ -50,6 +50,14 @@ py3 = sys.version_info[0] == 3
 _COLORS = dict(b='blue', c='cyan', g='green', m='magenta', r='red',
                w='white', y='yellow', k='black', d='black')
 
+def run_stdin(stdin):
+    """
+    Overwrite stdin reader from args as GTK does not supply a stdin/stdout
+    as a tty.
+    """
+    pass
+
+bpython.args.run_stdin = run_stdin
 
 class ArgspecFormatter(object):
     """
