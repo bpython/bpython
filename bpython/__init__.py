@@ -26,4 +26,4 @@ __version__ = 'dev'
 
 def embed(locals_=None, args=['-i', '-q'], banner=None):
     from bpython.cli import main
-    return main(args, locals_)
+    return main(args, locals_, banner)
