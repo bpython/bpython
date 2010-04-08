@@ -793,7 +793,7 @@ def main(args=None):
     filem = gtk.MenuItem("File")
     filem.set_submenu(filemenu)
 
-    save = gtk.MenuItem("Save to file")
+    save = gtk.ImageMenuItem(gtk.STOCK_SAVE)
     save.connect("activate", repl_widget.do_write2file)
     filemenu.append(save)
 
@@ -805,7 +805,7 @@ def main(args=None):
     pastebin_partial.connect("activate", repl_widget.do_partial_paste)
     filemenu.append(pastebin_partial)
 
-    exit = gtk.MenuItem("Exit")
+    exit = gtk.ImageMenuItem(gtk.STOCK_QUIT)
     exit.connect("activate", gtk.main_quit)
     filemenu.append(exit)
 
