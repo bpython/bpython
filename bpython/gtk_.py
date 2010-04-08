@@ -138,7 +138,6 @@ class Statusbar(gtk.Statusbar):
     """Contains feedback messages"""
     def __init__(self):
         gtk.Statusbar.__init__(self)
-        
         self.context_id = self.get_context_id('Statusbar')
 
     def message(self, s, n=3):
@@ -276,23 +275,27 @@ class GTKInteraction(repl.Interaction):
         repl.Interaction.__init__(self, config, statusbar)
 
     def confirm(self, q):
-        dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_YES_NO, q)
-        response = True if dialog.run() == gtk.RESPONSE_YES else False
+        dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO,
+                                   gtk.BUTTONS_YES_NO, q)
+        response = dialog.run()
         dialog.destroy()
-        return response
+        return response == gtk.RESPONSE_YES
 
     def file_prompt(self, s):
         chooser = gtk.FileChooserDialog(title="File to save to",
                                         action=gtk.FILE_CHOOSER_ACTION_SAVE,
-                                        buttons=(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK))
+                                        buttons=(gtk.STOCK_CANCEL,
+                                                 gtk.RESPONSE_CANCEL,
+                                                 gtk.STOCK_OPEN,
+                                                 gtk.RESPONSE_OK))
         chooser.set_default_response(gtk.RESPONSE_OK)
         chooser.set_current_name('test.py')
         chooser.set_current_folder(os.path.expanduser('~'))
-        
+
         pyfilter = gtk.FileFilter()
         pyfilter.set_name("Python files")
         pyfilter.add_pattern("*.py")
-        chooser.add_filter(pyfilter) 
+        chooser.add_filter(pyfilter)
 
         allfilter = gtk.FileFilter()
         allfilter.set_name("All files")
@@ -618,7 +621,6 @@ class ReplWidget(gtk.TextView, repl.Repl):
                                     self.get_cursor_iter())
             self.text_buffer.insert_at_cursor(word)
 
-   
     def do_paste(self, widget):
         clipboard = gtk.clipboard_get()
         paste_url = self.pastebin()
@@ -635,7 +637,6 @@ class ReplWidget(gtk.TextView, repl.Repl):
             pass
         else:
             self.pastebin(self.text_buffer.get_text(bounds[0], bounds[1]))
-                                               
 
     def write(self, s):
         """For overriding stdout defaults"""
@@ -653,8 +654,6 @@ class ReplWidget(gtk.TextView, repl.Repl):
 
         self.echo(s)
         self.s_hist.append(s.rstrip())
-
-
 
     def prompt(self, more):
         """
@@ -792,12 +791,11 @@ def main(args=None):
 
     filem = gtk.MenuItem("File")
     filem.set_submenu(filemenu)
- 
+
     save = gtk.MenuItem("Save to file")
     save.connect("activate", repl_widget.do_write2file)
     filemenu.append(save)
 
-     
     pastebin = gtk.MenuItem("Pastebin")
     pastebin.connect("activate", repl_widget.do_paste)
     filemenu.append(pastebin)
@@ -805,7 +803,7 @@ def main(args=None):
     pastebin_partial = gtk.MenuItem("Pastebin selection")
     pastebin_partial.connect("activate", repl_widget.do_partial_paste)
     filemenu.append(pastebin_partial)
- 
+
     exit = gtk.MenuItem("Exit")
     exit.connect("activate", gtk.main_quit)
     filemenu.append(exit)
@@ -815,7 +813,6 @@ def main(args=None):
     vbox.pack_start(mb, False, False, 0)
 
     container.pack_start(vbox, expand=False)
-
 
     # read from config
     sw = gtk.ScrolledWindow()
