@@ -624,8 +624,9 @@ class ReplWidget(gtk.TextView, repl.Repl):
     def do_paste(self, widget):
         clipboard = gtk.clipboard_get()
         paste_url = self.pastebin()
-        clipboard.set_text(paste_url)
-        clipboard.store()
+        if paste_url:
+            clipboard.set_text(paste_url)
+            clipboard.store()
 
     def do_write2file(self, widget):
         self.write2file()
