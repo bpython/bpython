@@ -21,7 +21,7 @@
 # THE SOFTWARE.
 
 
-__version__ = 'windows-dev'
+__version__ = 'dev'
 
 
 def embed(locals_=None, args=['-i', '-q'], banner=None):
