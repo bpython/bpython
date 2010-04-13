@@ -50,15 +50,6 @@ py3 = sys.version_info[0] == 3
 _COLORS = dict(b='blue', c='cyan', g='green', m='magenta', r='red',
                w='white', y='yellow', k='black', d='black')
 
-def run_stdin(stdin):
-    """
-    Overwrite stdin reader from args as GTK does not supply a stdin/stdout
-    as a tty.
-    """
-    pass
-
-bpython.args.run_stdin = run_stdin
-
 class ArgspecFormatter(object):
     """
     Format an argspec using Pango markup language.
@@ -147,7 +138,6 @@ class Statusbar(gtk.Statusbar):
     """Contains feedback messages"""
     def __init__(self):
         gtk.Statusbar.__init__(self)
-        
         self.context_id = self.get_context_id('Statusbar')
 
     def message(self, s, n=3):
@@ -285,23 +275,27 @@ class GTKInteraction(repl.Interaction):
         repl.Interaction.__init__(self, config, statusbar)
 
     def confirm(self, q):
-        dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_YES_NO, q)
-        response = True if dialog.run() == gtk.RESPONSE_YES else False
+        dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO,
+                                   gtk.BUTTONS_YES_NO, q)
+        response = dialog.run()
         dialog.destroy()
-        return response
+        return response == gtk.RESPONSE_YES
 
     def file_prompt(self, s):
         chooser = gtk.FileChooserDialog(title="File to save to",
                                         action=gtk.FILE_CHOOSER_ACTION_SAVE,
-                                        buttons=(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK))
+                                        buttons=(gtk.STOCK_CANCEL,
+                                                 gtk.RESPONSE_CANCEL,
+                                                 gtk.STOCK_OPEN,
+                                                 gtk.RESPONSE_OK))
         chooser.set_default_response(gtk.RESPONSE_OK)
         chooser.set_current_name('test.py')
         chooser.set_current_folder(os.path.expanduser('~'))
-        
+
         pyfilter = gtk.FileFilter()
         pyfilter.set_name("Python files")
         pyfilter.add_pattern("*.py")
-        chooser.add_filter(pyfilter) 
+        chooser.add_filter(pyfilter)
 
         allfilter = gtk.FileFilter()
         allfilter.set_name("All files")
@@ -331,7 +325,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
     def __init__(self, interpreter, config):
         gtk.TextView.__init__(self)
         repl.Repl.__init__(self, interpreter, config)
-        interpreter.writetb = self.writetb
+        self.interp.writetb = self.writetb
         self.editing = Nested()
         self.reset_indent = False
         self.modify_font(pango.FontDescription(self.config.gtk_font))
@@ -627,12 +621,12 @@ class ReplWidget(gtk.TextView, repl.Repl):
                                     self.get_cursor_iter())
             self.text_buffer.insert_at_cursor(word)
 
-   
     def do_paste(self, widget):
         clipboard = gtk.clipboard_get()
         paste_url = self.pastebin()
-        clipboard.set_text(paste_url)
-        clipboard.store()
+        if paste_url:
+            clipboard.set_text(paste_url)
+            clipboard.store()
 
     def do_write2file(self, widget):
         self.write2file()
@@ -644,7 +638,6 @@ class ReplWidget(gtk.TextView, repl.Repl):
             pass
         else:
             self.pastebin(self.text_buffer.get_text(bounds[0], bounds[1]))
-                                               
 
     def write(self, s):
         """For overriding stdout defaults"""
@@ -662,8 +655,6 @@ class ReplWidget(gtk.TextView, repl.Repl):
 
         self.echo(s)
         self.s_hist.append(s.rstrip())
-
-
 
     def prompt(self, more):
         """
@@ -755,7 +746,8 @@ def main(args=None):
                    "Options specific to bpython's Gtk+ front end",
                    [optparse.Option('--socket-id', dest='socket_id',
                                     type='int', help='Embed bpython')])
-    config, options, exec_args = bpython.args.parse(args, gtk_options)
+    config, options, exec_args = bpython.args.parse(args, gtk_options,
+                                                    True)
 
     interpreter = repl.Interpreter(None, getpreferredencoding())
     repl_widget = ReplWidget(interpreter, config)
@@ -800,12 +792,11 @@ def main(args=None):
 
     filem = gtk.MenuItem("File")
     filem.set_submenu(filemenu)
- 
-    save = gtk.MenuItem("Save to file")
+
+    save = gtk.ImageMenuItem(gtk.STOCK_SAVE)
     save.connect("activate", repl_widget.do_write2file)
     filemenu.append(save)
 
-     
     pastebin = gtk.MenuItem("Pastebin")
     pastebin.connect("activate", repl_widget.do_paste)
     filemenu.append(pastebin)
@@ -813,8 +804,8 @@ def main(args=None):
     pastebin_partial = gtk.MenuItem("Pastebin selection")
     pastebin_partial.connect("activate", repl_widget.do_partial_paste)
     filemenu.append(pastebin_partial)
- 
-    exit = gtk.MenuItem("Exit")
+
+    exit = gtk.ImageMenuItem(gtk.STOCK_QUIT)
     exit.connect("activate", gtk.main_quit)
     filemenu.append(exit)
 
@@ -823,7 +814,6 @@ def main(args=None):
     vbox.pack_start(mb, False, False, 0)
 
     container.pack_start(vbox, expand=False)
-
 
     # read from config
     sw = gtk.ScrolledWindow()
