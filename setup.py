@@ -49,7 +49,6 @@ setup(
     package_data = {'bpython': ['logo.png']},
     entry_points = {
         'console_scripts': [
-            'bpython = bpython.cli:main',
             'bpython-gtk = bpython.gtk_:main',
         ],
     },
