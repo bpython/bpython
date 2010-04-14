@@ -488,6 +488,22 @@ class Repl(object):
             return True
         return False
 
+    def get_source_of_current_name(self):
+        """Return the source code of the object which is bound to the
+        current name in the current input line. Return `None` if the
+        source cannot be found."""
+        try:
+            obj = self.current_func
+            if obj is None:
+                line = self.current_line()
+                if inspection.is_eval_safe_name(line):
+                    obj = self.get_object(line)
+            source = inspect.getsource(obj)
+        except (AttributeError, IOError, NameError, TypeError):
+            return None
+        else:
+            return source
+
     def complete(self, tab=False):
         """Construct a full list of possible completions and construct and
         display them in a window. Also check if there's an available argspec

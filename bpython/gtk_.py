@@ -50,6 +50,18 @@ py3 = sys.version_info[0] == 3
 _COLORS = dict(b='blue', c='cyan', g='green', m='magenta', r='red',
                w='white', y='yellow', k='black', d='black')
 
+def add_tags_to_buffer(color_scheme, text_buffer):
+    tags = dict()
+    for (name, value) in color_scheme.iteritems():
+        tag = tags[name] = text_buffer.create_tag(name)
+        for (char, prop) in zip(value, ['foreground', 'background']):
+            if char.lower() == 'd':
+                continue
+            tag.set_property(prop, _COLORS[char.lower()])
+            if char.isupper():
+                tag.set_property('weight', pango.WEIGHT_BOLD)
+    return tags
+
 class ArgspecFormatter(object):
     """
     Format an argspec using Pango markup language.
@@ -335,15 +347,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
 
         self.text_buffer = self.get_buffer()
         self.interact = GTKInteraction(self.config, Statusbar())
-        tags = dict()
-        for (name, value) in self.config.color_gtk_scheme.iteritems():
-            tag = tags[name] = self.text_buffer.create_tag(name)
-            for (char, prop) in zip(value, ['foreground', 'background']):
-                if char.lower() == 'd':
-                    continue
-                tag.set_property(prop, _COLORS[char.lower()])
-                if char.isupper():
-                    tag.set_property('weight', pango.WEIGHT_BOLD)
+        tags = add_tags_to_buffer(self.config.color_gtk_scheme, self.text_buffer)
         tags['prompt'].set_property('editable', False)
 
         self.text_buffer.connect('delete-range', self.on_buf_delete_range)
@@ -467,7 +471,29 @@ class ReplWidget(gtk.TextView, repl.Repl):
                                gtk.gdk.MOD4_MASK |
                                gtk.gdk.SHIFT_MASK)
         if not state:
-            if event.keyval == gtk.keysyms.Return:
+            if event.keyval == gtk.keysyms.F2:
+                source = self.get_source_of_current_name()
+                if source is not None:
+                    win = gtk.Window()
+                    sw = gtk.ScrolledWindow()
+                    view = gtk.TextView()
+                    buffer = view.get_buffer()
+                    add_tags_to_buffer(self.config.color_gtk_scheme, buffer)
+                    from pygments.lexers import PythonLexer
+                    tokens = PythonLexer().get_tokens(source)
+                    for (token, value) in tokens:
+                        while token not in theme_map:
+                            token = token.parent
+                        iter_ = buffer.get_end_iter()
+                        buffer.insert_with_tags_by_name(iter_, value,
+                                                        theme_map[token])
+                    sw.add(view)
+                    win.add(sw)
+                    win.show_all()
+                else:
+                    # XXX Error message
+                    pass
+            elif event.keyval == gtk.keysyms.Return:
                 if self.list_win_visible:
                     self.list_win_visible = False
                     self.list_win.hide()
