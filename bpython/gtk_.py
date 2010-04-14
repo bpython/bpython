@@ -112,10 +112,6 @@ class ExceptionManager(object):
             dialog.run()
             dialog.destroy()
 
-class MenuBar(gtk.MenuBar):
-    def __init__(self):
-        gtk.MenuBar.__init__(self)
-
 class Nested(object):
     """
     A helper class, inspired by a semaphore.
