@@ -825,19 +825,14 @@ class CLIRepl(repl.Repl):
             return ''
 
         elif key in key_dispatch[config.show_source_key]:
-            try:
-                obj = self.current_func
-                if obj is None and inspection.is_eval_safe_name(self.s):
-                    obj = self.get_object(self.s)
-                source = inspect.getsource(obj)
-            except (AttributeError, IOError, NameError, TypeError):
-                self.statusbar.message("Cannot show source.")
-                return ''
-            else:
+            source = self.get_source_of_current_name()
+            if source is not None:
                 if config.highlight_show_source:
                     source = format(PythonLexer().get_tokens(source),
                                     TerminalFormatter())
                 page(source)
+            else:
+                self.statusbar.message('Cannot show source.')
             return ''
 
         elif key == '\n':
