@@ -40,6 +40,7 @@ from urllib import quote as urlquote
 import gobject
 import gtk
 import pango
+from pygments.lexers import PythonLexer
 
 from bpython import importcompletion, repl
 from bpython.formatter import theme_map
@@ -474,25 +475,10 @@ class ReplWidget(gtk.TextView, repl.Repl):
             if event.keyval == gtk.keysyms.F2:
                 source = self.get_source_of_current_name()
                 if source is not None:
-                    win = gtk.Window()
-                    sw = gtk.ScrolledWindow()
-                    view = gtk.TextView()
-                    buffer = view.get_buffer()
-                    add_tags_to_buffer(self.config.color_gtk_scheme, buffer)
-                    from pygments.lexers import PythonLexer
-                    tokens = PythonLexer().get_tokens(source)
-                    for (token, value) in tokens:
-                        while token not in theme_map:
-                            token = token.parent
-                        iter_ = buffer.get_end_iter()
-                        buffer.insert_with_tags_by_name(iter_, value,
-                                                        theme_map[token])
-                    sw.add(view)
-                    win.add(sw)
-                    win.show_all()
+                    show_source_in_new_window(source, self.config.color_gtk_scheme,
+                                              self.config.syntax)
                 else:
-                    # XXX Error message
-                    pass
+                    self.interact.notify('Cannot show source.')
             elif event.keyval == gtk.keysyms.Return:
                 if self.list_win_visible:
                     self.list_win_visible = False
@@ -750,6 +736,23 @@ class ReplWidget(gtk.TextView, repl.Repl):
                 )
             self.move_cursor(len(string))
 
+def show_source_in_new_window(source, color_scheme=None, highlight=True):
+    win = gtk.Window()
+    sw = gtk.ScrolledWindow()
+    view = gtk.TextView()
+    buffer = view.get_buffer()
+    if highlight:
+        add_tags_to_buffer(color_scheme, buffer)
+        for (token, value) in PythonLexer().get_tokens(source):
+            while token not in theme_map:
+                token = token.parent
+            iter_ = buffer.get_end_iter()
+            buffer.insert_with_tags_by_name(iter_, value, theme_map[token])
+    else:
+        buffer.insert(buffer.get_end_iter(), source)
+    sw.add(view)
+    win.add(sw)
+    win.show_all()
 
 def init_import_completion():
     try:
