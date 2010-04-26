@@ -214,7 +214,8 @@ class SuggestionWindow(gtk.Window):
         self.show_all()
 
     def back(self):
-        self.select(-1)
+        if len(self.model):
+            self.select(-1)
 
     def do_expose_event(self, event):
         """
@@ -227,7 +228,8 @@ class SuggestionWindow(gtk.Window):
         gtk.Window.do_expose_event(self, event)
 
     def forward(self):
-        self.select(1)
+        if len(self.model):
+            self.select(1)
 
     def on_selection_changed(self, selection):
         model, iter_ = selection.get_selected()
