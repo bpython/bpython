@@ -1047,7 +1047,7 @@ class CLIRepl(repl.Repl):
             self.iy, self.ix = self.scr.getyx()
 
         self.cpos = 0
-        indent = next_indentation(self.s, self.config.tab_length)
+        indent = repl.next_indentation(self.s, self.config.tab_length)
         self.s = ''
         self.scr.refresh()
 
