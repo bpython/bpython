@@ -126,8 +126,8 @@ def find_all_modules(path=None):
         path = sys.path
 
     for p in path:
-        if not path:
-            path = os.curdir
+        if not p:
+            p = os.curdir
         for module in find_modules(p):
             modules.add(module)
             yield
