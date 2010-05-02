@@ -1653,7 +1653,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     clirepl = CLIRepl(main_win, interpreter, statusbar, config, idle)
     clirepl._C = cols
 
-    sys.stdin = FakeStdin(repl)
+    sys.stdin = FakeStdin(clirepl)
     sys.stdout = clirepl
     sys.stderr = clirepl
 
