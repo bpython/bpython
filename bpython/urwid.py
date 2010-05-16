@@ -617,7 +617,7 @@ class URWIDRepl(repl.Repl):
             if py3:
                 self.stdout_hist += line + '\n'
             else:
-                self.stdout_hist += line.encode(getpreferredencoding()) + '\n'
+                self.stdout_hist += line.encode(locale.getpreferredencoding()) + '\n'
             self.print_line(line)
             self.s_hist[-1] += self.f_string
 # I decided it was easier to just do this manually
@@ -628,7 +628,7 @@ class URWIDRepl(repl.Repl):
             self.iy, self.ix = self.scr.getyx()
 
         self.cpos = 0
-        indent = next_indentation(self.s, self.config.tab_length)
+        indent = repl.next_indentation(self.s, self.config.tab_length)
         self.s = ''
         self.scr.refresh()
 
@@ -652,7 +652,7 @@ class URWIDRepl(repl.Repl):
             t = s
 
         if not py3 and isinstance(t, unicode):
-            t = t.encode(getpreferredencoding())
+            t = t.encode(locale.getpreferredencoding())
 
         if not self.stdout_hist:
             self.stdout_hist = t

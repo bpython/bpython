@@ -33,9 +33,6 @@ import optparse
 import os
 import sys
 from locale import LC_ALL, getpreferredencoding, setlocale
-from xmlrpclib import ServerProxy, Error as XMLRPCError
-from string import Template
-from urllib import quote as urlquote
 
 import gobject
 import gtk

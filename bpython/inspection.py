@@ -39,7 +39,6 @@ try:
 except AttributeError:
     has_collections_callable = False
 try:
-    import types
     types.InstanceType
     has_instance_type = True
 except AttributeError:

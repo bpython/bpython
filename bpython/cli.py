@@ -30,7 +30,6 @@ import curses
 import math
 import re
 import time
-import inspect
 import signal
 import struct
 import termios
@@ -49,7 +48,6 @@ from pygments.token import Token
 from bpython.formatter import BPythonFormatter
 
 # This for completion
-from bpython import inspection
 from bpython import importcompletion
 
 # This for config
