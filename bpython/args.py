@@ -8,7 +8,7 @@ import sys
 import code
 from optparse import OptionParser, OptionGroup
 
-from bpython import __version__
+from bpython.meta import version 
 from bpython.config import loadini, Struct, migrate_rc
 
 
@@ -81,7 +81,7 @@ def parse(args, extras=None, ignore_stdin=False):
         os.execv(sys.executable, [sys.executable] + args)
 
     if options.version:
-        print 'bpython version', __version__,
+        print 'bpython version', version,
         print 'on top of Python', sys.version.split()[0]
         print ('(C) 2008-2010 Bob Farrell, Andreas Stuehrk et al. '
                'See AUTHORS for detail.')

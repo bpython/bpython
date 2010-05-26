@@ -7,6 +7,9 @@ import os
 import platform
 import re
 import sys
+
+from hgdistver import get_version
+
 try:
     from setuptools import setup
     using_setuptools = True
@@ -19,8 +22,6 @@ try:
 except ImportError:
     from distutils.command.build_py import build_py
 
-from bpython import __version__
-
 
 if platform.system() == 'FreeBSD':
     man_dir = 'man'
@@ -29,7 +30,7 @@ else:
 
 setup(
     name="bpython",
-    version = __version__,
+    version = get_version('bpython/meta.py'),
     author = "Bob Farrell, Andreas Stuehrk et al.",
     author_email = "robertanthonyfarrell@gmail.com",
     description = "Fancy Interface to the Python Interpreter",
