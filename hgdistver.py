@@ -1,4 +1,6 @@
 import os
+import commands
+import subprocess
 
 def version_from_cachefile(cachefile=None):
     if not cachefile:
@@ -19,7 +21,6 @@ def version_from_cachefile(cachefile=None):
 def version_from_hg_id(cachefile=None):
     """stolen logic from mercurials setup.py as well"""
     if os.path.isdir('.hg'):
-        import commands
         l = commands.getoutput('hg id -i -t').strip().split()
         while len(l) > 1 and l[-1][0].isalpha(): # remove non-numbered tags
             l.pop()
@@ -27,16 +28,38 @@ def version_from_hg_id(cachefile=None):
             version = l[-1]
             if l[0].endswith('+'): # propagate the dirty status to the tag
                 version += '+'
-        elif len(l) == 1: #no tag found
-            cmd = 'hg parents --template "{latesttag}.dev{latesttagdistance}-"'
-            version = commands.getoutput(cmd) + l[0]
-            if version[:4] == 'null':
-                version = '0.0' + version[4:]
+            return version
 
-        if version.endswith('+'):
-            import time
-            version += time.strftime('%Y%m%d')
-        return version
+def version_from_hg15_parents(cachefile=None):
+    if os.path.isdir('.hg'):
+        node = commands.getoutput('hg id -i')
+        if node == '000000000000+':
+            return '0.0.dev0-' + node
+
+        cmd = 'hg parents --template "{latesttag} {latesttagdistance}"'
+        out = commands.getoutput(cmd)
+        try:
+            tag, dist = out.split()
+            if tag=='null':
+                tag = '0.0'
+            return '%s.dev%s-%s' % (tag, dist, node)
+        except ValueError:
+            pass # unpacking failed, old hg
+
+def version_from_hg_log_with_tags(cachefile=None):
+    if os.path.isdir('.hg'):
+        node = commands.getoutput('hg id -i')
+        cmd = r'hg log -r %s:0 --template "{tags}\n"'
+        cmd = cmd % node.rstrip('+')
+        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        dist = -1 # no revs vs one rev is tricky
+
+        for dist, line in enumerate(proc.stdout):
+            tags = [t for t in line.split() if not t.isalpha()]
+            if tags:
+                return '%s.dev%s-%s' % (tags[0], dist, node)
+
+        return  '0.0.dev%s-%s' % (dist+1, node)
 
 def _archival_to_version(data):
     """stolen logic from mercurials setup.py"""
@@ -76,6 +99,8 @@ def write_cachefile(path, version):
 
 methods = [
     version_from_hg_id,
+    version_from_hg15_parents,
+    version_from_hg_log_with_tags,
     version_from_archival,
     version_from_cachefile,
     version_from_sdist_pkginfo,
@@ -87,6 +112,9 @@ def get_version(cachefile=None):
         for method in methods:
             version = method(cachefile=cachefile)
             if version:
+                if version.endswith('+'):
+                    import time
+                    version += time.strftime('%Y%m%d')
                 return version
     finally:
         if cachefile and version:
