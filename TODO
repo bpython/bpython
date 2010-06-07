@@ -1,9 +1,10 @@
 bpython.gtk_
-- add pastebin url to clipboard (or show a popup) instead of status bar
-- make statusbar only show aborted paste for a few seconds
 - make keys work
 
 bpython.urwid
 - make keys work
 
 bpython.cli
+
+bpython.qt
+- write this
