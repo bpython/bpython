@@ -164,6 +164,29 @@ def loadini(struct, configfile):
         key_dispatch[key]
 
 # TODO consolidate
+def load_theme(struct, path, inipath, default_colors):
+    theme = ConfigParser()
+    try:
+        f = open(path, 'r')
+    except (IOError, OSError), e:
+        sys.stdout.write("Error loading theme file specified in '%s':\n%s\n" %
+                         (inipath, e))
+        sys.exit(1)
+    theme.readfp(f)
+    struct.color_scheme = {}
+    for k, v in chain(theme.items('syntax'), theme.items('interface')):
+        if theme.has_option('syntax', k):
+            struct.color_scheme[k] = theme.get('syntax', k)
+        else:
+            struct.color_scheme[k] = theme.get('interface', k)
+
+    # Check against default theme to see if all values are defined
+    for k, v in default_colors.iteritems():
+        if k not in struct.color_scheme:
+            struct.color_scheme[k] = v
+    f.close()
+
+
 def load_gtk_theme(struct, path, inipath, default_colors):
     theme = ConfigParser()
     try:
@@ -176,14 +199,14 @@ def load_gtk_theme(struct, path, inipath, default_colors):
     struct.color_gtk_scheme = {}
     for k, v in chain(theme.items('syntax'), theme.items('interface')):
         if theme.has_option('syntax', k):
-            struct.color_scheme[k] = theme.get('syntax', k)
+            struct.color_gtk_scheme[k] = theme.get('syntax', k)
         else:
-            struct.color_scheme[k] = theme.get('interface', k)
+            struct.color_gtk_scheme[k] = theme.get('interface', k)
 
     # Check against default theme to see if all values are defined
     for k, v in default_colors.iteritems():
-        if k not in struct.color_scheme:
-            struct.color_scheme[k] = v
+        if k not in struct.color_gtk_scheme:
+            struct.color_gtk_scheme[k] = v
     f.close()
 
 
