@@ -848,6 +848,7 @@ def main(args=None):
     sb = repl_widget.interact.statusbar
     container.pack_end(sb, expand=False)
 
+    parent.set_focus(repl_widget)
     parent.show_all()
     parent.connect('delete-event', lambda widget, event: gtk.main_quit())
 
