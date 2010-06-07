@@ -11,6 +11,11 @@ v0.9.7
 * GTK now has a menu
 * GTK now has a statusbar
 
+* #121: GTK set default focus to repl widget
+* #118: Load_theme is not defined.
+* #99: Configurable font now documented.
+
+
 v0.9.6.2
 --------
 Unfortunately another bugfix release as I (Bob) broke py3 support.
