@@ -209,7 +209,12 @@ def getpydocspec(f, func):
 
 
 def getargspec(func, f):
-    is_bound_method = inspect.ismethod(f) and f.im_self is not None
+    # Check if it's a real bound method or if it's implicitly calling __init__
+    # (i.e. FooClass(...) and not FooClass.__init__(...) -- the former would
+    # not take 'self', the latter would:
+    is_bound_method = ((inspect.ismethod(f) and f.im_self is not None)
+                    or (f.__name__ == '__init__' and not
+                        func.endswith('.__init__')))
     try:
         if py3:
             argspec = inspect.getfullargspec(f)
