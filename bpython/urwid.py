@@ -291,6 +291,7 @@ class BPythonEdit(urwid.Edit):
                 if not (cpos or len(line) % self.tab_length or line.strip()):
                     self.set_edit_text(line[:-self.tab_length])
                     return None
+            # TODO: Add in specific keypress fetching code here
             return urwid.Edit.keypress(self, size, key)
         finally:
             self._bpy_may_move_cursor = False
