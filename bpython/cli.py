@@ -1480,10 +1480,6 @@ def init_wins(scr, colors, config):
 # Thanks to Angus Gibson for pointing out this missing line which was causing
 # problems that needed dirty hackery to fix. :)
 
-# TODO:
-#
-# This should show to be configured keys from ~/.bpython/config
-#
     statusbar = Statusbar(scr, main_win, background, config,
         " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source " %
             (config.undo_key, config.save_key,
