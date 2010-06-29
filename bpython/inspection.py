@@ -212,8 +212,10 @@ def getargspec(func, f):
     # Check if it's a real bound method or if it's implicitly calling __init__
     # (i.e. FooClass(...) and not FooClass.__init__(...) -- the former would
     # not take 'self', the latter would:
+    func_name = getattr(f, '__name__', None)
+
     is_bound_method = ((inspect.ismethod(f) and f.im_self is not None)
-                    or (f.__name__ == '__init__' and not
+                    or (func_name == '__init__' and not
                         func.endswith('.__init__')))
     try:
         if py3:
