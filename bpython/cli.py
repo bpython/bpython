@@ -237,8 +237,14 @@ class CLIInteraction(repl.Interaction):
 
     def confirm(self, q):
         """Ask for yes or no and return boolean"""
-        return self.statusbar.prompt(q).lower().startswith('y')
- 
+        try:
+            reply = self.statusbar.prompt(q)
+        except ValueError:
+            return False
+
+        return reply.lower() in ('y', 'yes')
+
+
     def notify(self, s, n=10):
         return self.statusbar.message(s, n)
 
@@ -1414,22 +1420,20 @@ class Statusbar(object):
         while True:
             c = self.win.getch()
 
+            # '\b'
             if c == 127:
                 o = bs(o)
-                continue
-
-            if c == 27:
-                raise ValueError
-
-            if not c or c < 0 or c > 127:
-                continue
-            c = chr(c)
-
-            if c == '\n':
+            # '\n'
+            elif c == 10:
                 break
-
-            self.win.addstr(c, get_colpair(self.config, 'prompt'))
-            o += c
+            # ESC
+            elif c == 27:
+                raise ValueError
+            # literal
+            elif 0 <= c < 127:
+                c = chr(c)
+                self.win.addstr(c, get_colpair(self.config, 'prompt'))
+                o += c
 
         self.settext(self._s)
         return o
