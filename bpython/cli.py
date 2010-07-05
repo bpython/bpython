@@ -1428,6 +1428,7 @@ class Statusbar(object):
                 break
             # ESC
             elif c == 27:
+                curses.flushinp()
                 raise ValueError
             # literal
             elif 0 <= c < 127:
