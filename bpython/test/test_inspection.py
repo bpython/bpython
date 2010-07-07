@@ -41,3 +41,6 @@ class TestInspection(unittest.TestCase):
         argspec = inspection.getargspec('fails', fails)
         defaults = argspec[1][3]
         self.assertEqual(str(defaults[0]), default_arg_repr)
+
+if __name__ == '__main__':
+    unittest.main()
