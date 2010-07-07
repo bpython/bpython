@@ -467,10 +467,11 @@ class CLIRepl(repl.Repl):
                     a = a | curses.A_BOLD
         s = s.replace('\x03', '')
         s = s.replace('\x01', '')
+
         # Replace NUL bytes, as addstr raises an exception otherwise
-        s = s.replace('\x00', '')
+        s = s.replace('\0', '')
         # Replace \r\n bytes, as addstr remove the current line otherwise
-        s = s.replace('\x0D\x0A', '\x0A')
+        s = s.replace('\r\n', '\n')
 
         self.scr.addstr(s, a)
 
