@@ -161,7 +161,7 @@ class History(object):
     def first(self):
         """Move back to the beginning of the history."""
         if not self.is_at_end:
-            self.index = len(self.entries) - 1
+            self.index = len(self.entries)
         return self.entries[-self.index]
 
     def back(self):
