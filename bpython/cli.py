@@ -292,16 +292,6 @@ class CLIRepl(repl.Repl):
 
         return not self.s.lstrip()
 
-    def back(self):
-        """Replace the active line with previous line in history and
-        increment the index to keep track"""
-
-        self.cpos = 0
-        self.rl_history.enter(self.s)
-        self.clear_wrapped_lines()
-        self.s = self.rl_history.back()
-        self.print_line(self.s, clr=True)
-
     def bs(self, delete_tabs=True):
         """Process a backspace"""
 
@@ -497,6 +487,33 @@ class CLIRepl(repl.Repl):
             self.scr.refresh()
 
         return True
+
+    def hbegin(self):
+        """Replace the active line with first line in history and
+        increment the index to keep track"""
+        self.cpos = 0
+        self.clear_wrapped_lines()
+        self.rl_history.enter(self.s)
+        self.s = self.rl_history.first()
+        self.print_line(self.s, clr=True)
+
+    def hend(self):
+        """Same as hbegin() but, well, forward"""
+        self.cpos = 0
+        self.clear_wrapped_lines()
+        self.rl_history.enter(self.s)
+        self.s = self.rl_history.last()
+        self.print_line(self.s, clr=True)
+
+    def back(self):
+        """Replace the active line with previous line in history and
+        increment the index to keep track"""
+
+        self.cpos = 0
+        self.clear_wrapped_lines()
+        self.rl_history.enter(self.s)
+        self.s = self.rl_history.back()
+        self.print_line(self.s, clr=True)
 
     def fwd(self):
         """Same as back() but, well, forward"""
@@ -785,6 +802,14 @@ class CLIRepl(repl.Repl):
         elif key in ("KEY_END", '^E', chr(5)):  # end or ^E
             self.end()
             # Redraw (as there might have been highlighted parens)
+            self.print_line(self.s)
+
+        elif key in ("KEY_NPAGE", '\T'): # page_down or \T
+            self.hend()
+            self.print_line(self.s)
+
+        elif key in ("KEY_PPAGE", '\S'): # page_up or \S
+            self.hbegin()
             self.print_line(self.s)
 
         elif key in key_dispatch[config.cut_to_buffer_key]:  # cut to buffer

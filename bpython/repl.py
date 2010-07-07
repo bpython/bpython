@@ -158,28 +158,44 @@ class History(object):
         if line:
             self.entries.append(line)
 
+    def first(self):
+        """Move back to the beginning of the history."""
+        if not self.is_at_end:
+            self.index = len(self.entries) - 1
+        return self.entries[-self.index]
+
     def back(self):
-        if not self.is_at_end():
+        """Move one step back in the history."""
+        if not self.is_at_end:
             self.index += 1
         return self.entries[-self.index]
 
-    def is_at_end(self):
-        return self.index >= len(self.entries)
-
-    def is_at_start(self):
-        return self.index == 0
-
-    def enter(self, line):
-        if self.index == 0:
-            self.saved_line = line
-
     def forward(self):
+        """Move one step forward in the history."""
         if self.index > 1:
             self.index -= 1
             return self.entries[-self.index]
         else:
             self.index = 0
             return self.saved_line
+
+    def last(self):
+        """Move forward to the end of the history."""
+        if not self.is_at_start:
+            self.index = 0
+        return self.entries[0]
+
+    @property
+    def is_at_end(self):
+        return self.index >= len(self.entries) or self.index == -1
+
+    @property
+    def is_at_start(self):
+        return self.index == 0
+
+    def enter(self, line):
+        if self.index == 0:
+            self.saved_line = line
 
     @classmethod
     def from_filename(cls, filename):
