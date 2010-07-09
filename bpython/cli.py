@@ -324,12 +324,17 @@ class CLIRepl(repl.Repl):
 
     def bs_word(self):
         pos = len(self.s) - self.cpos - 1
+        deleted = []
 # First we delete any space to the left of the cursor.
         while pos >= 0 and self.s[pos] == ' ':
+            deleted.append(self.s[pos])
             pos -= self.bs()
 # Then we delete a full word.
         while pos >= 0 and self.s[pos] != ' ':
+            deleted.append(self.s[pos])
             pos -= self.bs()
+
+        return ''.join(reversed(deleted))
 
     def check(self):
         """Check if paste mode should still be active and, if not, deactivate
@@ -823,7 +828,7 @@ class CLIRepl(repl.Repl):
             return ''
 
         elif key in key_dispatch[config.clear_word_key]:
-            self.bs_word()
+            self.cut_buffer = self.bs_word()
             self.complete()
             return ''
 
