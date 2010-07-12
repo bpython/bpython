@@ -54,7 +54,29 @@ class TestHistory(unittest.TestCase):
             self.history.forward()
         self.assertEqual(self.history.forward(), '#999')
 
-    def test_MatchesIterator(self):
+    def test_append(self):
+        self.history.append('print "foo\n"\n')
+        self.history.append('\n')
+
+        self.assertEqual(self.history.back(), 'print "foo\n"')
+
+    def test_enter(self):
+        self.history.enter('#lastnumber!')
+
+        self.assertEqual(self.history.back(), '#999')
+        self.assertEqual(self.history.forward(), '#lastnumber!')
+
+    def test_reset(self):
+        self.history.enter('#lastnumber!')
+        self.history.reset()
+
+        self.assertEqual(self.history.back(), '#999')
+        self.assertEqual(self.history.forward(), '')
+
+
+class TestMatchesIterator(unittest.TestCase):
+
+    def test_all(self):
         matches = ['bobby', 'bobbies', 'bobberina']
 
         matches_iterator = repl.MatchesIterator(
@@ -65,12 +87,13 @@ class TestHistory(unittest.TestCase):
         self.assertFalse(matches_iterator)
 
         slice = itertools.islice(matches_iterator, 0, 9)
-        self.assertEqual(list(slice),matches * 3)
+        self.assertEqual(list(slice), matches * 3)
 
         # should be truthy once we have an active match
         self.assertTrue(matches_iterator)
 
         self.assertEqual(matches_iterator.current(), (matches * 3)[-1])
+
 
 if __name__ == '__main__':
     unittest.main()
