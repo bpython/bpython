@@ -1,4 +1,6 @@
 import unittest
+import itertools
+
 from bpython import repl
 
 
@@ -62,13 +64,8 @@ class TestHistory(unittest.TestCase):
         # should be falsey before we enter (i.e. 'not active')
         self.assertEqual(bool(matches_iterator), False)
 
-        matched = []
-        for i, x in enumerate(matches_iterator):
-            matched.append(x)
-            if i == 8:
-                break
-
-        self.assertEqual(matched, matches * 3)
+        slice = itertools.islice(matches_iterator, 0, 9)
+        self.assertEqual(list(slice),matches * 3)
 
         # should be truthy once we have an active match
         self.assertEqual(bool(matches_iterator), True)
