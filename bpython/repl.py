@@ -230,7 +230,7 @@ class MatchesIterator(object):
         return self.index != -1
 
     def __iter__(self):
-        yield self
+        return self
 
     def current(self):
         if self.index == -1:
