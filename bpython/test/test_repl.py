@@ -62,13 +62,13 @@ class TestHistory(unittest.TestCase):
                 matches=matches)
 
         # should be falsey before we enter (i.e. 'not active')
-        self.assertEqual(bool(matches_iterator), False)
+        self.assertFalse(matches_iterator)
 
         slice = itertools.islice(matches_iterator, 0, 9)
         self.assertEqual(list(slice),matches * 3)
 
         # should be truthy once we have an active match
-        self.assertEqual(bool(matches_iterator), True)
+        self.assertTrue(matches_iterator)
 
         self.assertEqual(matches_iterator.current(), (matches * 3)[-1])
 
