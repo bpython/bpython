@@ -52,8 +52,28 @@ class TestHistory(unittest.TestCase):
             self.history.forward()
         self.assertEqual(self.history.forward(), '#999')
 
+    def test_MatchesIterator(self):
+        matches = ['bobby', 'bobbies', 'bobberina']
 
+        matches_iterator = repl.MatchesIterator(
+                current_word='bob',
+                matches=matches)
 
+        # should be falsey before we enter (i.e. 'not active')
+        self.assertEqual(bool(matches_iterator), False)
+
+        matched = []
+        for i, x in enumerate(matches_iterator):
+            matched.append(x)
+            if i == 8:
+                break
+
+        self.assertEqual(matched, matches * 3)
+
+        # should be truthy once we have an active match
+        self.assertEqual(bool(matches_iterator), True)
+
+        self.assertEqual(matches_iterator.current(), (matches * 3)[-1])
 
 if __name__ == '__main__':
     unittest.main()
