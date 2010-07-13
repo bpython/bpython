@@ -1,5 +1,5 @@
 import unittest
-import itertools
+from itertools import islice
 
 from bpython import repl
 
@@ -76,23 +76,58 @@ class TestHistory(unittest.TestCase):
 
 class TestMatchesIterator(unittest.TestCase):
 
-    def test_all(self):
-        matches = ['bobby', 'bobbies', 'bobberina']
+    def setUp(self):
+        self.matches = ['bobby', 'bobbies', 'bobberina']
+        self.matches_iterator = repl.MatchesIterator(current_word='bob',
+                                                     matches=self.matches)
 
-        matches_iterator = repl.MatchesIterator(
-                current_word='bob',
-                matches=matches)
+    def test_next(self):
+        self.assertEqual(self.matches_iterator.next(), self.matches[0])
 
-        # should be falsey before we enter (i.e. 'not active')
-        self.assertFalse(matches_iterator)
+        for x in range(len(self.matches) - 1):
+            self.matches_iterator.next()
 
-        slice = itertools.islice(matches_iterator, 0, 9)
-        self.assertEqual(list(slice), matches * 3)
+        self.assertEqual(self.matches_iterator.next(), self.matches[0])
+        self.assertEqual(self.matches_iterator.next(), self. matches[1])
+        self.assertNotEqual(self.matches_iterator.next(), self.matches[1])
 
-        # should be truthy once we have an active match
-        self.assertTrue(matches_iterator)
+    def test_previous(self):
+        self.assertEqual(self.matches_iterator.previous(), self.matches[2])
 
-        self.assertEqual(matches_iterator.current(), (matches * 3)[-1])
+        for x in range(len(self.matches) - 1):
+            self.matches_iterator.previous()
+
+        self.assertNotEqual(self.matches_iterator.previous(), self.matches[0])
+        self.assertEqual(self.matches_iterator.previous(), self.matches[1])
+        self.assertEqual(self.matches_iterator.previous(), self.matches[0])
+
+    def test_nonzero(self):
+        """self.matches_iterator should be False at start,
+        then True once we active a match.
+        """
+        self.assertFalse(self.matches_iterator)
+        self.matches_iterator.next()
+        self.assertTrue(self.matches_iterator)
+
+    def test_iter(self):
+        slice = islice(self.matches_iterator, 0, 9)
+        self.assertEqual(list(slice), self.matches * 3)
+
+    def test_current(self):
+        self.assertRaises(ValueError, self.matches_iterator.current)
+        self.matches_iterator.next()
+        self.assertEqual(self.matches_iterator.current(), self.matches[0])
+
+    def test_update(self):
+        slice = islice(self.matches_iterator, 0, 3)
+        self.assertEqual(list(slice), self.matches)
+
+        newmatches = ['string', 'str', 'set']
+        self.matches_iterator.update('s', newmatches)
+
+        newslice = islice(newmatches, 0, 3)
+        self.assertNotEqual(list(slice), self.matches)
+        self.assertEqual(list(newslice), newmatches)
 
 
 if __name__ == '__main__':
