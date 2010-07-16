@@ -37,7 +37,8 @@ import fcntl
 import unicodedata
 import errno
 
-from locale import LC_ALL, getpreferredencoding, setlocale
+from locale import LC_ALL, setlocale
+import locale
 from types import ModuleType
 
 # These are used for syntax hilighting.
@@ -60,7 +61,6 @@ from bpython import repl
 from bpython.pager import page
 import bpython.args
 
-
 def log(x):
     f = open('/tmp/bpython.log', 'a')
     f.write('%s\n' % (x,))
@@ -68,6 +68,8 @@ def log(x):
 py3 = sys.version_info[0] == 3
 stdscr = None
 
+def getpreferredencoding():
+    return locale.getpreferredencoding() or sys.getdefaultencoding()
 
 def calculate_screen_lines(tokens, width, cursor=0):
     """Given a stream of tokens and a screen width plus an optional
