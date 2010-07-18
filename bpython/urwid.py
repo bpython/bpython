@@ -391,7 +391,12 @@ class URWIDInteraction(repl.Interaction):
 
     def confirm(self, q):
         """Ask for yes or no and return boolean"""
-        return self.statusbar.prompt(q).lower().startswith('y')
+        try:
+            reply = self.statusbar.prompt(q)
+        except ValueError:
+            return False
+
+        return reply.lower() in ('y', 'yes')
 
     def notify(self, s, n=10):
         return self.statusbar.message(s, n)
@@ -597,7 +602,12 @@ class URWIDRepl(repl.Repl):
 
     def ask_confirmation(self, q):
         """Ask for yes or no and return boolean"""
-        return self.statusbar.prompt(q).lower().startswith('y')
+        try:
+            reply = self.statusbar.prompt(q)
+        except ValueError:
+            return False
+
+        return reply.lower() in ('y', 'yes')
 
     def reevaluate(self):
         """Clear the buffer, redraw the screen and re-evaluate the history"""
