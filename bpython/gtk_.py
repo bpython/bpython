@@ -85,14 +85,14 @@ class ArgspecFormatter(object):
 
 
 class ExceptionDialog(gtk.MessageDialog):
-    def __init__(self, exc_type, exc_value, tb, text='An error occurred.'):
+    def __init__(self, exc_type, exc_value, tb, text=_('An error occurred.')):
         gtk.MessageDialog.__init__(self, buttons=gtk.BUTTONS_CLOSE,
                                    type=gtk.MESSAGE_ERROR,
                                    message_format=text)
         self.set_resizable(True)
         import cgitb
         text = cgitb.text((exc_type, exc_value, tb), 5)
-        expander = gtk.Expander('Exception details')
+        expander = gtk.Expander(_('Exception details'))
         self.vbox.pack_start(expander)
         textview = gtk.TextView()
         textview.get_buffer().set_text(text)
@@ -108,7 +108,7 @@ class ExceptionManager(object):
     the exception's type, value, a traceback and a text to display as
     arguments.
     """
-    def __init__(self, DialogType, text='An error occurred.'):
+    def __init__(self, DialogType, text=_('An error occurred.')):
         self.DialogType = DialogType
         self.text = text
 
@@ -144,7 +144,7 @@ class Statusbar(gtk.Statusbar):
     """Contains feedback messages"""
     def __init__(self):
         gtk.Statusbar.__init__(self)
-        self.context_id = self.get_context_id('Statusbar')
+        self.context_id = self.get_context_id(_('Statusbar'))
 
     def message(self, s, n=3):
         self.clear()
@@ -221,7 +221,7 @@ class SuggestionWindow(gtk.Window):
         width, height = self.get_size()
         self.style.paint_flat_box(self.window, gtk.STATE_NORMAL,
                                   gtk.SHADOW_OUT, None, self,
-                                  'tooltip', 0, 0, width, height)
+                                  _('tooltip'), 0, 0, width, height)
         gtk.Window.do_expose_event(self, event)
 
     def forward(self):
@@ -290,7 +290,7 @@ class GTKInteraction(repl.Interaction):
         return response == gtk.RESPONSE_YES
 
     def file_prompt(self, s):
-        chooser = gtk.FileChooserDialog(title="File to save to",
+        chooser = gtk.FileChooserDialog(title=_("File to save to"),
                                         action=gtk.FILE_CHOOSER_ACTION_SAVE,
                                         buttons=(gtk.STOCK_CANCEL,
                                                  gtk.RESPONSE_CANCEL,
@@ -301,12 +301,12 @@ class GTKInteraction(repl.Interaction):
         chooser.set_current_folder(os.path.expanduser('~'))
 
         pyfilter = gtk.FileFilter()
-        pyfilter.set_name("Python files")
+        pyfilter.set_name(_("Python files"))
         pyfilter.add_pattern("*.py")
         chooser.add_filter(pyfilter)
 
         allfilter = gtk.FileFilter()
-        allfilter.set_name("All files")
+        allfilter.set_name(_("All files"))
         allfilter.add_pattern("*")
         chooser.add_filter(allfilter)
 
@@ -477,7 +477,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
                     show_source_in_new_window(source, self.config.color_gtk_scheme,
                                               self.config.syntax)
                 else:
-                    self.interact.notify('Cannot show source.')
+                    self.interact.notify(_('Cannot show source.'))
             elif event.keyval == gtk.keysyms.Return:
                 if self.list_win_visible:
                     self.list_win_visible = False
@@ -766,10 +766,10 @@ def main(args=None):
 
     setlocale(LC_ALL, '')
 
-    gtk_options = ('gtk-specific options',
-                   "Options specific to bpython's Gtk+ front end",
+    gtk_options = (_('gtk-specific options'),
+                   _("Options specific to bpython's Gtk+ front end"),
                    [optparse.Option('--socket-id', dest='socket_id',
-                                    type='int', help='Embed bpython')])
+                                    type='int', help=_('Embed bpython'))])
     config, options, exec_args = bpython.args.parse(args, gtk_options,
                                                     True)
 
@@ -825,7 +825,7 @@ def main(args=None):
     pastebin.connect("activate", repl_widget.do_paste)
     filemenu.append(pastebin)
 
-    pastebin_partial = gtk.MenuItem("Pastebin selection")
+    pastebin_partial = gtk.MenuItem(_("Pastebin selection"))
     pastebin_partial.connect("activate", repl_widget.do_partial_paste)
     filemenu.append(pastebin_partial)
 
