@@ -57,6 +57,9 @@ from bpython.config import Struct
 # This for keys
 from bpython.keys import key_dispatch
 
+# This for i18n
+from bpython.translations import _
+
 from bpython import repl
 from bpython.pager import page
 import bpython.args
@@ -1723,9 +1726,6 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
 
 def main(args=None, locals_=None, banner=None):
     global stdscr
-
-    import gettext
-    gettext.install('bpython')
 
     setlocale(LC_ALL, '')
 
