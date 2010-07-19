@@ -763,6 +763,8 @@ def init_import_completion():
 
 
 def main(args=None):
+    import gettext
+    gettext.install('bpython')
 
     setlocale(LC_ALL, '')
 
