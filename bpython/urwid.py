@@ -842,6 +842,9 @@ class URWIDRepl(repl.Repl):
             self._completion_update_suppressed = False
 
 def main(args=None, locals_=None, banner=None):
+    import gettext
+    gettext.install('bpython')
+
     # Err, somewhat redundant. There is a call to this buried in urwid.util.
     # That seems unfortunate though, so assume that's going away...
     locale.setlocale(locale.LC_ALL, '')

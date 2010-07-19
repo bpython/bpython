@@ -1724,6 +1724,9 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
 def main(args=None, locals_=None, banner=None):
     global stdscr
 
+    import gettext
+    gettext.install('bpython')
+
     setlocale(LC_ALL, '')
 
     config, options, exec_args = bpython.args.parse(args)
