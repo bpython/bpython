@@ -41,7 +41,9 @@ from pygments.lexers import PythonLexer
 
 from bpython import importcompletion, repl
 from bpython.formatter import theme_map
+from bpython.translations import _
 import bpython.args
+
 
 py3 = sys.version_info[0] == 3
 
