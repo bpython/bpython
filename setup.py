@@ -52,18 +52,13 @@ class build_translation(cmd.Command):
         pass
 
     def run(self):
-        src_path = os.path.join(os.path.realpath(''), 'po')
-        for filename in os.listdir(src_path):
-            if (not os.path.isfile(os.path.join(src_path, filename)) or
-                not filename.endswith('.po')):
-                continue
+        for src in glob.iglob(os.path.join('po', '[a-z][a-z]_[A-Z][A-Z].po')):
 
-            lang = filename[:-3]
+            # remove 'po/' (the directory) and '.po' (the extension)
+            lang = src[3:-3]
             dest_path = os.path.join('build', 'share', 'locale',
-                                     lang, 'LC_MESSAGES')
-
-            src = os.path.join(src_path, filename)
-            dest = os.path.join(dest_path, 'bpython.mo')
+                                     lang, 'LC_MESSAGES', '')
+            dest = dest_path + 'bpython.mo'
 
             if not os.path.exists(dest_path):
                 os.makedirs(dest_path)
@@ -83,12 +78,8 @@ data_files = [
         (os.path.join('share', 'applications'), ['data/bpython.desktop']),
 ]
 # localization
-l10n_dir = os.path.join('share', 'locale')
-for langfile in os.listdir('po'):
-    if not os.path.isfile(langfile) or not langfile.endswith('.po'):
-        continue
-
-    lang_path = os.path.join(l10n_dir, langfile[:-3], 'LC_MESSAGES')
+for langfile in glob.iglob(os.path.join('po', '[a-z][a-z]_[A-Z][A-Z].po')):
+    lang_path = os.path.join('share', 'locale', langfile[3:-3], 'LC_MESSAGES')
     data_files.append((lang_path, ['build/%s/bpython.mo' % lang_path]))
 
 
