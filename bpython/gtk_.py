@@ -503,7 +503,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
                 if self.list_win_visible:
                     self.list_win.back()
                 else:
-                    if not self.rl_history.is_at_end():
+                    if not self.rl_history.is_at_end:
                         self.rl_history.enter(self.current_line())
                         self.change_line(self.rl_history.back())
                         self.text_buffer.place_cursor(self.get_line_end_iter())
