@@ -4,16 +4,55 @@ Changelog
 v0.9.7
 ------
 
+Well guys. I's been some time since the latest release, six months have passed
+We have added a whole slew of new features, and closed a number of bugs as well.
+
+We also have a new frontend for bpython. Marien Zwart contributed a urwid
+frontend as an alternative for the curses frontend. Be aware that there still
+is a lot to fix for this urwid frontend (a lot of the keyboard shortcuts do not
+yet work for example) but please give it a good spin. Urwid also optionally
+integrates with a Twisted reactor and through that with things like the GTK
+event loop.
+
+At the same time we have done a lot of work on the GTK frontend. The GTK
+frontend is now 'usable'. Please give that a spin as well by running python-gtk
+on you system.
+
+We also welcome a new contributor in the name of Michele Orrù who we hope will
+help us fix even more bugs and improve functionality.
+
+As always, please submit any bugs you might find to our bugtracker.
+
 * Pastebin confirmation added; we were getting a lot of people accidentally
   pastebinning sensitive information so I think this is a good idea.
-* GTK now has pastebin, both for full log as well as the current selection
-* GTK now has write2file
-* GTK now has a menu
-* GTK now has a statusbar
+* Don't read PYTHONSTARTUP when executed with -i.
+* BPDB was merged in. BPDB is an extension to PDB which allows you to press B
+  in a PDB session which will let you be dropped into a bpython sessions with
+  the current PDB locals(). For usage, see the documentation.
+* The clear word shortcut (default: C-w) now deletes to the buffer.
+* More tests have been added to bpython.
+* The pastebin now checks for a previous paste (during the session) with the
+  exact same content to guard against twitchy fingers pastebinning multiple
+  times.
+* Let import completion return "import " instead of "import".
 
-* #121: GTK set default focus to repl widget
+* GTK now has pastebin, both for full log as well as the current selection.
+* GTK now has write2file.
+* GTK now has a menu.
+* GTK now has a statusbar.
+* GTK now has show source functionality.
+* GTK saves the pastebin url to the clipboard.
+* GTK now has it's own configuration section.
+* Set focus to the GTK text widget to allow for easier embedding in PIDA and
+  others which fixes issues #121.
+
+* #87: Add a closed attribute to Repl to fix mercurial.ui.ui expecting stderr
+  to have this attribute.
+* #108: Unicode characters in docsrting crash bpython
 * #118: Load_theme is not defined.
 * #99: Configurable font now documented.
+* #123: <F8> Pastebin can't handle 'ESC' key
+* #124: Unwanted input when using <arrow>/<FXX> keys in the statusbar prompt.
 
 
 v0.9.6.2
