@@ -21,7 +21,7 @@
 # THE SOFTWARE.
 
 
-__version__ = 'dev'
+__version__ = '0.9.7'
 
 
 def embed(locals_=None, args=['-i', '-q'], banner=None):
