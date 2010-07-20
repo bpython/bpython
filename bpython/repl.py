@@ -60,7 +60,7 @@ py3 = sys.version_info[0] == 3
 
 class Interpreter(code.InteractiveInterpreter):
 
-    def __init__(self, locals=None, encoding=sys.getdefaultencoding()):
+    def __init__(self, locals=None, encoding=None):
         """The syntaxerror callback can be set at any time and will be called
         on a caught syntax error. The purpose for this in bpython is so that
         the repl can be instantiated after the interpreter (which it
@@ -69,7 +69,7 @@ class Interpreter(code.InteractiveInterpreter):
         specifically, this is so that autoindentation does not occur after a
         traceback."""
 
-        self.encoding = encoding
+        self.encoding = encoding or sys.getdefaultencoding()
         self.syntaxerror_callback = None
 # Unfortunately code.InteractiveInterpreter is a classic class, so no super()
         code.InteractiveInterpreter.__init__(self, locals)
@@ -242,7 +242,10 @@ class MatchesIterator(object):
         return self.matches[self.index]
 
     def previous(self):
-        self.index = (self.index - 1) % len(self.matches)
+        if self.index <= 0:
+            self.index = len(self.matches)
+        self.index -= 1
+
         return self.matches[self.index]
 
     def update(self, current_word='', matches=[]):
