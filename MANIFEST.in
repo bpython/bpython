@@ -9,3 +9,7 @@ include doc/*.[0-9]
 include sample-config
 include *.theme
 include bpython/logo.png
+include ROADMAP
+include TODO
+include bpython/test/*.py
+include bpython/test/*.theme
