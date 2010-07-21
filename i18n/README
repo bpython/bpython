@@ -5,14 +5,14 @@ babel (http://babel.edgewall.org/)
 
 Internationalization
 ====================
-bPython delegates to babel most of the job for creating .po and .mo files, so
-you may want to check also its documentation for more informations
+bpython delegates to babel most of the job for creating .po and .mo files, so
+you may want to check also its documentation for more information
 http://babel.edgewall.org/wiki/Documentation/0.9/index.html .
 
 In order to create a new language translation, first of all you need to know
 that translations follow this path template: i18n/locale/<locale>/LC_MESSAGES/bpython.po
 
-To create a new template .po file, you just need to follow 4steps:
+To create a new template .po file, you just need to follow these four steps:
  1. Set up the correct directory structure:
 
      $ mkdir i18n/locale/fo_FO/    # assuming fo_FO is your desidered locale
