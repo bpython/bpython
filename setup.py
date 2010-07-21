@@ -49,6 +49,7 @@ if platform.system() == 'FreeBSD':
 else:
     man_dir = 'share/man'
 
+
 data_files = [
         # man pages
         (os.path.join(man_dir, 'man1'), ['doc/bpython.1']),
@@ -62,6 +63,12 @@ if using_translations:
         lang_path = os.path.join('', 'locale', lang, 'LC_MESSAGES', 'bpython.mo')
         data_files.append(('share'+lang_path, ['i18n'+lang_path]))
 
+cmdclass = dict(build_py=build_py,
+                build = build)
+# localization options: see i18n/README for more informations
+if using_translations:
+    cmdclass['compile_catalog'] = compile_catalog
+    cmdclass['extract_messages'] = extract_messages
 
 setup(
     name="bpython",
@@ -87,10 +94,7 @@ setup(
     },
     scripts = ([] if using_setuptools else ['data/bpython',
                                             'data/bpython-gtk']),
-    cmdclass = dict(build_py=build_py,
-                    build = build,
-                    compile_catalog = compile_catalog,
-                    extract_messages = extract_messages)
+    cmdclass = cmdclass
 )
 
 # vim: encoding=utf-8 sw=4 ts=4 sts=4 ai et sta
