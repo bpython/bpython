@@ -76,7 +76,7 @@ setup(
     install_requires = [
         'pygments'
     ],
-    packages = ["bpython"],
+    packages = ["bpython", "bpdb"],
     data_files = data_files,
     package_data = {'bpython': ['logo.png']},
     entry_points = {
