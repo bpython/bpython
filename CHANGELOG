@@ -15,7 +15,7 @@ integrates with a Twisted reactor and through that with things like the GTK
 event loop.
 
 At the same time we have done a lot of work on the GTK frontend. The GTK
-frontend is now 'usable'. Please give that a spin as well by running python-gtk
+frontend is now 'usable'. Please give that a spin as well by running bpython-gtk
 on you system.
 
 We also welcome a new contributor in the name of Michele Orrù who we hope will
