@@ -512,7 +512,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
                 if self.list_win_visible:
                     self.list_win.forward()
                 else:
-                    if not self.rl_history.is_at_start():
+                    if not self.rl_history.is_at_start:
                         self.rl_history.enter(self.current_line())
                         self.change_line(self.rl_history.forward())
                         self.text_buffer.place_cursor(self.get_line_end_iter())
