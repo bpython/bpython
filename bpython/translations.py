@@ -8,7 +8,7 @@ except IOError:
     # from the build/ directory
     try:
         translation = gettext.translation('bpython',
-                            os.path.join('build', 'share', 'locale'))
+                            os.path.join('i18n', 'locale'))
     except IOError:
         translation = None
 
