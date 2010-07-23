@@ -7,8 +7,7 @@ except IOError:
     # try to load .mo files created with 'python setup.py build_translation'
     # from the build/ directory
     try:
-        translation = gettext.translation('bpython',
-                            os.path.join('i18n', 'locale'))
+        translation = gettext.translation('bpython', 'i18n'))
     except IOError:
         translation = None
 
