@@ -59,8 +59,8 @@ data_files = [
 ]
 # localization
 if using_translations:
-    for lang in os.listdir('i18n'):
-        lang_path = os.path.join('', 'locale', lang, 'LC_MESSAGES', 'bpython.mo')
+    for lang in os.listdir(os.path.join('i18n', 'locale')):
+        lang_path = os.sep + os.path.join('locale', lang, 'LC_MESSAGES', 'bpython.mo')
         data_files.append(('share'+lang_path, ['i18n'+lang_path]))
 
 cmdclass = dict(build_py=build_py,
