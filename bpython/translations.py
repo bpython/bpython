@@ -4,8 +4,7 @@ import gettext
 try:
     translation = gettext.translation('bpython')
 except IOError:
-    # try to load .mo files created with 'python setup.py build_translation'
-    # from the build/ directory
+    # try to load .mo files created with babel on i18n/ dir
     try:
         translation = gettext.translation('bpython', 'i18n'))
     except IOError:
