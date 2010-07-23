@@ -28,7 +28,7 @@ except ImportError:
 
 try:
     from babel.messages.frontend import compile_catalog as _compile_catalog
-    from babel.messages.frontend import extract_messages# as _extract_messages
+    from babel.messages.frontend import extract_messages
 
     class compile_catalog(_compile_catalog):
         def initialize_options(self):
@@ -37,7 +37,8 @@ try:
             _compile_catalog.initialize_options(self)
 
             self.domain = 'bpython'
-            self.directory = os.path.join('i18n', 'locale')
+            self.directory = os.path.join('i18n')
+            self.use_fuzzy = True
 
     build.sub_commands.append(('compile_catalog', None))
     using_translations = True
@@ -59,9 +60,9 @@ data_files = [
 ]
 # localization
 if using_translations:
-    for lang in os.listdir(os.path.join('i18n', 'locale')):
-        lang_path = os.sep + os.path.join('locale', lang, 'LC_MESSAGES', 'bpython.mo')
-        data_files.append(('share'+lang_path, ['i18n'+lang_path]))
+    for lang in os.listdir('i18n'):
+        data_files.append((os.path.join('share', 'locale', lang, 'LC_MESSAGES'),
+                           ['i18n/%s/LC_MESSAGES/bpython.mo' % lang]))
 
 cmdclass = dict(build_py=build_py,
                 build = build)
