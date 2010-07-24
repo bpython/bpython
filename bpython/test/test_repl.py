@@ -129,6 +129,39 @@ class TestMatchesIterator(unittest.TestCase):
         self.assertNotEqual(list(slice), self.matches)
         self.assertEqual(list(newslice), newmatches)
 
+from bpython.args import parse
+
+class TestRepl(unittest.TestCase):
+
+    def setUp(self):
+        config = parse(args=[])[0]
+        self.interp = repl.Interpreter()
+        self.repl = repl.Repl(self.interp, config)
+
+    def test_attr_matches(self):
+        # test with builtin object
+        self.assertEqual(self.repl.attr_matches('str.s'),
+                         ['str.%s' % x for x in dir(str) if x.startswith('s')])
+        self.assertEqual(self.repl.attr_matches('int.de'),
+                         ['int.%s' % x for x in dir(int) if x.startswith('de')])
+        self.assertEqual(self.repl.attr_matches('tuple.foospamegg'), [])
+
+        # test with a new object
+        class A(object):
+            spam = 'egg'
+
+            @property
+            def clone(self):
+                return A()
+        self.interp.locals['A'] = A
+
+        self.assertEqual(self.repl.attr_matches('A.spam'), ['A.spam'])
+        # test nested attributes
+        self.assertEqual(self.repl.attr_matches('A.spam.isdi'),
+                         ['A.spam.isdigit'])
+        self.assertEqual(self.repl.attr_matches('A.clone.s'), ['A.clone.spam'])
+
+
 
 if __name__ == '__main__':
     unittest.main()
