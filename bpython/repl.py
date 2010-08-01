@@ -35,6 +35,7 @@ import traceback
 from glob import glob
 from itertools import takewhile
 from locale import getpreferredencoding
+from socket import error as SocketError
 from string import Template
 from urllib import quote as urlquote
 from xmlrpclib import ServerProxy, Error as XMLRPCError
@@ -713,7 +714,7 @@ class Repl(object):
         self.interact.notify('Posting data to pastebin...')
         try:
             paste_id = pasteservice.pastes.newPaste('pycon', s)
-        except XMLRPCError, e:
+        except (SocketError, XMLRPCError), e:
             self.interact.notify('Upload failed: %s' % (str(e), ) )
             return
 
