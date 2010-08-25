@@ -52,6 +52,8 @@ from bpython.translations import _
 import urwid
 
 py3 = sys.version_info[0] == 3
+if not py3:
+    import inspect
 
 Parenthesis = Token.Punctuation.Parenthesis
 
@@ -541,7 +543,13 @@ class URWIDRepl(repl.Repl):
                     if k == in_arg or i == in_arg:
                         color = 'bold ' + color
 
-                    markup.append((color, str(i)))
+                    if not py3:
+                        # See issue #138: We need to format tuple unpacking correctly
+                        # We use the undocumented function inspection.strseq() for
+                        # that. Fortunately, that madness is gone in Python 3.
+                        markup.append((color, inspect.strseq(i, str)))
+                    else:
+                        markup.append((color, str(i)))
                     if kw:
                         markup.extend([('punctuation', '='),
                                        ('token', kw)])
