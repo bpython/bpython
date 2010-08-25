@@ -9,7 +9,7 @@ import code
 from optparse import OptionParser, OptionGroup
 
 from bpython import __version__
-from bpython.config import loadini, Struct, migrate_rc
+from bpython.config import default_config_path, loadini, Struct
 
 
 class OptionParserFailed(ValueError):
@@ -58,7 +58,7 @@ def parse(args, extras=None, ignore_stdin=False):
     # That's probably fixable though, for example by having that
     # option swallow all remaining arguments in a callback.
     parser.disable_interspersed_args()
-    parser.add_option('--config', '-c', default='~/.bpython/config',
+    parser.add_option('--config', '-c', default=default_config_path(),
                       help='use CONFIG instead of default config file')
     parser.add_option('--interactive', '-i', action='store_true',
                       help='Drop to bpython shell after running file '
@@ -92,12 +92,7 @@ def parse(args, extras=None, ignore_stdin=False):
         interpreter.runsource(sys.stdin.read())
         raise SystemExit
 
-    path = os.path.expanduser('~/.bpythonrc')
-    # migrating old configuration file
-    if os.path.isfile(path):
-        migrate_rc(path)
     config = Struct()
-
     loadini(config, options.config)
 
     return config, options, args
