@@ -304,6 +304,14 @@ class BPythonEdit(urwid.Edit):
         finally:
             self._bpy_may_move_cursor = False
 
+class BPythonListBox(urwid.ListBox):
+    """Like `urwid.ListBox`, except that it does not eat up and
+    down keys.
+    """
+    def keypress(self, size, key):
+        if key not in ["up", "down"]:
+            return urwid.ListBox.keypress(self, size, key)
+        return key
 
 class Tooltip(urwid.BoxWidget):
 
@@ -408,7 +416,7 @@ class URWIDRepl(repl.Repl):
     def __init__(self, event_loop, palette, interpreter, config):
         repl.Repl.__init__(self, interpreter, config)
 
-        self.listbox = urwid.ListBox(urwid.SimpleListWalker([]))
+        self.listbox = BPythonListBox(urwid.SimpleListWalker([]))
 
         # String is straight from bpython.cli
         self.statusbar = Statusbar(config,

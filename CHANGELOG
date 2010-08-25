@@ -1,6 +1,21 @@
 Changelog
 =========
 
+v0.9.8
+------
+* Config files are now located according to the XDG Base Directory
+  Specification. The support for the old bpythonrc files has been
+  dropped and ~/.bpython.ini as config file location is no longer supported.
+  See issue #91.
+
+v0.9.7.1
+--------
+
+A bugfix release. The fixed bugs are:
+
+* #128: bpython-gtk is broken
+* #134: crash when using pastebin and no active internet connection
+
 v0.9.7
 ------
 
@@ -15,7 +30,7 @@ integrates with a Twisted reactor and through that with things like the GTK
 event loop.
 
 At the same time we have done a lot of work on the GTK frontend. The GTK
-frontend is now 'usable'. Please give that a spin as well by running python-gtk
+frontend is now 'usable'. Please give that a spin as well by running bpython-gtk
 on you system.
 
 We also welcome a new contributor in the name of Michele Orrù who we hope will
