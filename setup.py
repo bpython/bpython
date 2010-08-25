@@ -12,7 +12,7 @@ import sys
 from distutils import cmd
 from distutils.command.build import build
 
-from bpython import __version__
+from bpython import __version__, package_dir
 
 try:
     from setuptools import setup
@@ -30,6 +30,8 @@ try:
     from babel.messages.frontend import compile_catalog as _compile_catalog
     from babel.messages.frontend import extract_messages
 
+    translations_dir = os.path.join(package_dir, 'translations')
+
     class compile_catalog(_compile_catalog):
         def initialize_options(self):
             """Simply set default domain and directory attributes to the
@@ -37,7 +39,7 @@ try:
             _compile_catalog.initialize_options(self)
 
             self.domain = 'bpython'
-            self.directory = os.path.join('i18n')
+            self.directory = translations_dir
             self.use_fuzzy = True
 
     build.sub_commands.append(('compile_catalog', None))
@@ -60,9 +62,10 @@ data_files = [
 ]
 # localization
 if using_translations:
-    for lang in os.listdir('i18n'):
+    for lang in os.listdir(translations_dir):
         data_files.append((os.path.join('share', 'locale', lang, 'LC_MESSAGES'),
-                           ['i18n/%s/LC_MESSAGES/bpython.mo' % lang]))
+                           ['%s/%s/LC_MESSAGES/bpython.mo' %
+                            (translations_dir, lang)]))
 
 cmdclass = dict(build_py=build_py,
                 build = build)
