@@ -66,6 +66,9 @@ def log(x):
     f.write('%s\n' % (x,))
 
 py3 = sys.version_info[0] == 3
+if not py3:
+    import inspect
+
 stdscr = None
 
 def getpreferredencoding():
@@ -673,7 +676,13 @@ class CLIRepl(repl.Repl):
             if k == in_arg or i == in_arg:
                 color |= curses.A_BOLD
 
-            self.list_win.addstr(str(i), color)
+            if not py3:
+                # See issue #138: We need to format tuple unpacking correctly
+                # We use the undocumented function inspection.strseq() for
+                # that. Fortunately, that madness is gone in Python 3.
+                self.list_win.addstr(inspect.strseq(i, str), color)
+            else:
+                self.list_win.addstr(str(i), color)
             if kw:
                 self.list_win.addstr('=', punctuation_colpair)
                 self.list_win.addstr(kw, get_colpair(self.config, 'token'))

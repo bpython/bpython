@@ -588,7 +588,7 @@ class Repl(object):
 
         if not e and self.argspec:
             matches.extend(name + '=' for name in self.argspec[1][0]
-                           if name.startswith(cw))
+                           if isinstance(name, basestring) and name.startswith(cw))
             if py3:
                 matches.extend(name + '=' for name in self.argspec[1][4]
                                if name.startswith(cw))
