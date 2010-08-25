@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.9.8
+------
+* Config files are now located according to the XDG Base Directory
+  Specification. The support for the old bpythonrc files has been
+  dropped and ~/.bpython.ini as config file location is no longer supported.
+  See issue #91.
+
 v0.9.7.1
 --------
 

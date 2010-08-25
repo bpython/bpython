@@ -1,15 +1,23 @@
+from __future__ import with_statement
 import os
 import sys
 from ConfigParser import ConfigParser
 from itertools import chain
 from bpython.keys import key_dispatch
-import errno
 
 
 class Struct(object):
     """Simple class for instantiating objects we can add arbitrary attributes
     to and use for various arbitrary things."""
 
+def get_config_home():
+    """Returns the base directory for bpython's configuration files."""
+    xdg_config_home = os.environ.get('XDG_CONFIG_HOME', '~/.config')
+    return os.path.join(xdg_config_home, 'bpython')
+
+def default_config_path():
+    """Returns bpython's default configuration file path."""
+    return os.path.join(get_config_home(), 'config')
 
 def fill_config_with_default_values(config, default_values):
     for section in default_values.iterkeys():
@@ -25,11 +33,11 @@ def loadini(struct, configfile):
     """Loads .ini configuration file and stores its values in struct"""
 
     config_path = os.path.expanduser(configfile)
-    if not os.path.isfile(config_path) and configfile == '~/.bpython/config':
-        # FIXME: I decided ~/.bpython.ini was a crappy place for a config file,
-        # so this is just a fallback if the default is passed - remove this
-        # eventually please.
-        config_path = os.path.expanduser('~/.bpython.ini')
+    if not os.path.isfile(config_path) and configfile == default_config_path():
+        # We decided that '~/.bpython/config' still was a crappy
+        # place, use XDG Base Directory Specification instead.  Fall
+        # back to old config, though.
+        config_path = os.path.expanduser('~/.bpython/config')
 
     config = ConfigParser()
     fill_config_with_default_values(config, {
@@ -69,7 +77,13 @@ def loadini(struct, configfile):
         'gtk': {
             'font': 'monospace 10',
             'color_scheme': 'default'}})
-    config.read(config_path)
+    if not config.read(config_path):
+        # No config file. If the user has it in the old place then complain
+        if os.path.isfile(os.path.expanduser('~/.bpython.ini')):
+            sys.stderr.write("Error: It seems that you have a config file at "
+                             "~/.bpython.ini. Please move your config file to "
+                             "%s\n" % default_config_path())
+            sys.exit(1)
 
     struct.dedent_after = config.getint('general', 'dedent_after')
     struct.tab_length = config.getint('general', 'tab_length')
@@ -126,7 +140,7 @@ def loadini(struct, configfile):
             'prompt': 'c',
             'prompt_more': 'g',
         }
- 
+
     default_gtk_colors = {
             'keyword': 'b',
             'name': 'k',
@@ -145,123 +159,61 @@ def loadini(struct, configfile):
             'prompt_more': 'g',
         }
 
-    # TODO consolidate
     if color_scheme_name == 'default':
         struct.color_scheme = default_colors
     else:
-        path = os.path.expanduser('~/.bpython/%s.theme' % (color_scheme_name,))
-        load_theme(struct, path, config_path, default_colors)
+        struct.color_scheme = dict()
+
+        theme_filename = color_scheme_name + '.theme'
+        path = os.path.expanduser(os.path.join(get_config_home(),
+                                               theme_filename))
+        old_path = os.path.expanduser(os.path.join('~/.bpython',
+                                                   theme_filename))
+
+        for path in [path, old_path]:
+            try:
+                load_theme(struct, path, struct.color_scheme, default_colors)
+            except EnvironmentError:
+                continue
+            else:
+                break
+        else:
+            sys.stderr.write("Could not load theme '%s'.\n" %
+                                                         (color_scheme_name, ))
+            sys.exit(1)
 
     if color_gtk_scheme_name == 'default':
         struct.color_gtk_scheme = default_gtk_colors
     else:
-        path = os.path.expanduser('~/.bpython/%s.theme' % (color_gtk_scheme_name,))
-        load_gtk_theme(struct, path, config_path, default_gtk_colors)
+        struct.color_gtk_scheme = dict()
+        # Note: This is a new config option, hence we don't have a
+        # fallback directory.
+        path = os.path.expanduser(os.path.join(get_config_home(),
+                                               color_gtk_scheme_name + '.theme'))
 
+        try:
+            load_theme(struct, path, struct.color_gtk_scheme, default_colors)
+        except EnvironmentError:
+            sys.stderr.write("Could not load gtk theme '%s'.\n" %
+                                                    (color_gtk_scheme_name, ))
+            sys.exit(1)
 
     # checks for valid key configuration this part still sucks
     for key in (struct.pastebin_key, struct.save_key):
         key_dispatch[key]
 
-# TODO consolidate
-def load_theme(struct, path, inipath, default_colors):
+def load_theme(struct, path, colors, default_colors):
     theme = ConfigParser()
-    try:
-        f = open(path, 'r')
-    except (IOError, OSError), e:
-        sys.stdout.write("Error loading theme file specified in '%s':\n%s\n" %
-                         (inipath, e))
-        sys.exit(1)
-    theme.readfp(f)
-    struct.color_scheme = {}
+    with open(path, 'r') as f:
+        theme.readfp(f)
     for k, v in chain(theme.items('syntax'), theme.items('interface')):
         if theme.has_option('syntax', k):
-            struct.color_scheme[k] = theme.get('syntax', k)
+            colors[k] = theme.get('syntax', k)
         else:
-            struct.color_scheme[k] = theme.get('interface', k)
+            colors[k] = theme.get('interface', k)
 
     # Check against default theme to see if all values are defined
     for k, v in default_colors.iteritems():
-        if k not in struct.color_scheme:
-            struct.color_scheme[k] = v
+        if k not in colors:
+            colors[k] = v
     f.close()
-
-
-def load_gtk_theme(struct, path, inipath, default_colors):
-    theme = ConfigParser()
-    try:
-        f = open(path, 'r')
-    except (IOError, OSError), e:
-        sys.stdout.write("Error loading theme file specified in '%s':\n%s\n" %
-                         (inipath, e))
-        sys.exit(1)
-    theme.readfp(f)
-    struct.color_gtk_scheme = {}
-    for k, v in chain(theme.items('syntax'), theme.items('interface')):
-        if theme.has_option('syntax', k):
-            struct.color_gtk_scheme[k] = theme.get('syntax', k)
-        else:
-            struct.color_gtk_scheme[k] = theme.get('interface', k)
-
-    # Check against default theme to see if all values are defined
-    for k, v in default_colors.iteritems():
-        if k not in struct.color_gtk_scheme:
-            struct.color_gtk_scheme[k] = v
-    f.close()
-
-
-
-def migrate_rc(path):
-    """Use the shlex module to convert the old configuration file to the new
-    format.
-    The old configuration file is renamed but not removed by now."""
-    import shlex
-    f = open(path)
-    parser = shlex.shlex(f)
-
-    bools = {
-        'true': True,
-        'yes': True,
-        'on': True,
-        'false': False,
-        'no': False,
-        'off': False}
-
-    config = ConfigParser()
-    config.add_section('general')
-
-    while True:
-        k = parser.get_token()
-        v = None
-
-        if not k:
-            break
-
-        k = k.lower()
-
-        if parser.get_token() == '=':
-            v = parser.get_token() or None
-
-        if v is not None:
-            try:
-                v = int(v)
-            except ValueError:
-                if v.lower() in bools:
-                    v = bools[v.lower()]
-                config.set('general', k, v)
-    f.close()
-    try:
-        os.makedirs(os.path.expanduser('~/.bpython'))
-    except OSError, e:
-        if e.errno != errno.EEXIST:
-            raise
-    f = open(os.path.expanduser('~/.bpython/config'), 'w')
-    config.write(f)
-    f.close()
-    os.rename(path, os.path.expanduser('~/.bpythonrc.bak'))
-    print ("The configuration file for bpython has been changed. A new "
-           "config file has been created as ~/.bpython/config")
-    print ("The existing .bpythonrc file has been renamed to .bpythonrc.bak "
-           "and it can be removed.")
-    print "Press enter to continue."
-    raw_input()
