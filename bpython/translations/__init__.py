@@ -1,4 +1,5 @@
 import gettext
+import os.path
 from sys import version_info
 
 
@@ -14,7 +15,9 @@ else:
 
 def init(locale_dir=None, languages=None):
     global translator
+    if locale_dir is None:
+        locale_dir = os.path.join('bpython', 'translations')
+
     translator = gettext.translation('bpython', locale_dir, languages,
                                      fallback=True)
 
-init()
