@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 
-import glob
 import os
 import os.path
 import platform
 import re
 import sys
+from fnmatch import fnmatch
 
 from distutils import cmd
 from distutils.command.build import build
@@ -63,9 +63,10 @@ data_files = [
 # localization
 if using_translations:
     for lang in os.listdir(translations_dir):
-        data_files.append((os.path.join('share', 'locale', lang, 'LC_MESSAGES'),
-                           ['%s/%s/LC_MESSAGES/bpython.mo' %
-                            (translations_dir, lang)]))
+        if fnmatch(lang, '??_??'):
+            data_files.append((os.path.join('share', 'locale', lang, 'LC_MESSAGES'),
+                               ['%s/%s/LC_MESSAGES/bpython.mo' %
+                                (translations_dir, lang)]))
 
 cmdclass = dict(build_py=build_py,
                 build = build)
