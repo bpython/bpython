@@ -87,7 +87,9 @@ class ArgspecFormatter(object):
 
 
 class ExceptionDialog(gtk.MessageDialog):
-    def __init__(self, exc_type, exc_value, tb, text=_('An error occurred.')):
+    def __init__(self, exc_type, exc_value, tb, text=None):
+        if text is None:
+            text = _('An error occurred.')
         gtk.MessageDialog.__init__(self, buttons=gtk.BUTTONS_CLOSE,
                                    type=gtk.MESSAGE_ERROR,
                                    message_format=text)
@@ -110,9 +112,9 @@ class ExceptionManager(object):
     the exception's type, value, a traceback and a text to display as
     arguments.
     """
-    def __init__(self, DialogType, text=_('An error occurred.')):
+    def __init__(self, DialogType, text=None):
         self.DialogType = DialogType
-        self.text = text
+        self.text = text or _('An error occurred.')
 
     def __enter__(self):
         return self
@@ -765,9 +767,6 @@ def init_import_completion():
 
 
 def main(args=None):
-    import gettext
-    gettext.install('bpython')
-
     setlocale(LC_ALL, '')
 
     gtk_options = (_('gtk-specific options'),
