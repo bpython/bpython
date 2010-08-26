@@ -37,7 +37,6 @@ import fcntl
 import unicodedata
 import errno
 
-from locale import LC_ALL, setlocale
 import locale
 from types import ModuleType
 
@@ -58,6 +57,7 @@ from bpython.config import Struct
 from bpython.keys import key_dispatch
 
 # This for i18n
+from bpython import translations
 from bpython.translations import _
 
 from bpython import repl
@@ -1736,7 +1736,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
 def main(args=None, locals_=None, banner=None):
     global stdscr
 
-    setlocale(LC_ALL, '')
+    translations.init()
 
     config, options, exec_args = bpython.args.parse(args)
 

@@ -32,14 +32,14 @@ import inspect
 import optparse
 import os
 import sys
-from locale import LC_ALL, getpreferredencoding, setlocale
+from locale import getpreferredencoding
 
 import gobject
 import gtk
 import pango
 from pygments.lexers import PythonLexer
 
-from bpython import importcompletion, repl
+from bpython import importcompletion, repl, translations
 from bpython.formatter import theme_map
 from bpython.translations import _
 import bpython.args
@@ -767,7 +767,7 @@ def init_import_completion():
 
 
 def main(args=None):
-    setlocale(LC_ALL, '')
+    translations.init()
 
     gtk_options = (_('gtk-specific options'),
                    _("Options specific to bpython's Gtk+ front end"),
