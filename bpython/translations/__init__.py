@@ -1,17 +1,20 @@
-import os.path
 import gettext
+from sys import version_info
 
-try:
-    translation = gettext.translation('bpython')
-except IOError:
-    # try to load .mo files created with babel on i18n/ dir
-    try:
-        translation = gettext.translation('bpython', 'i18n')
-    except IOError:
-        translation = None
 
-if translation is None:
-    def _(s):
-        return s
+translator = None
+
+if version_info >= (3, 0):
+    def _(message):
+        return translator.gettext(message)
 else:
-    _ = translation.ugettext
+    def _(message):
+        return translator.ugettext(message)
+
+
+def init(locale_dir=None, languages=None):
+    global translator
+    translator = gettext.translation('bpython', locale_dir, languages,
+                                     fallback=True)
+
+init()

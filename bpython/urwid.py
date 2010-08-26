@@ -44,7 +44,7 @@ from optparse import Option
 
 from pygments.token import Token
 
-from bpython import args as bpargs, repl
+from bpython import args as bpargs, repl, translations
 from bpython.formatter import theme_map
 from bpython.importcompletion import find_coroutine
 from bpython.translations import _
@@ -859,9 +859,7 @@ class URWIDRepl(repl.Repl):
             self._completion_update_suppressed = False
 
 def main(args=None, locals_=None, banner=None):
-    # Err, somewhat redundant. There is a call to this buried in urwid.util.
-    # That seems unfortunate though, so assume that's going away...
-    locale.setlocale(locale.LC_ALL, '')
+    translations.init()
 
     # TODO: maybe support displays other than raw_display?
     config, options, exec_args = bpargs.parse(args, (
