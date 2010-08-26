@@ -70,7 +70,7 @@ if using_translations:
 
 cmdclass = dict(build_py=build_py,
                 build = build)
-# localization options: see i18n/README for more informations
+# localization options
 if using_translations:
     cmdclass['compile_catalog'] = compile_catalog
     cmdclass['extract_messages'] = extract_messages
