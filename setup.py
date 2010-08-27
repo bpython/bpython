@@ -52,22 +52,6 @@ if platform.system() == 'FreeBSD':
 else:
     man_dir = 'share/man'
 
-
-data_files = [
-        # man pages
-        (os.path.join(man_dir, 'man1'), ['doc/bpython.1']),
-        (os.path.join(man_dir, 'man5'), ['doc/bpython-config.5']),
-        # desktop shorcut
-        (os.path.join('share', 'applications'), ['data/bpython.desktop']),
-]
-# localization
-if using_translations:
-    for lang in os.listdir(translations_dir):
-        if fnmatch(lang, '??_??'):
-            data_files.append((os.path.join('share', 'locale', lang, 'LC_MESSAGES'),
-                               ['%s/%s/LC_MESSAGES/bpython.mo' %
-                                (translations_dir, lang)]))
-
 cmdclass = dict(build_py=build_py,
                 build = build)
 # localization options
@@ -89,7 +73,12 @@ setup(
         'pygments'
     ],
     packages = ["bpython", "bpython.translations", "bpdb"],
-    data_files = data_files,
+    data_files = [
+        # man pages
+        (os.path.join(man_dir, 'man1'), ['doc/bpython.1']),
+        (os.path.join(man_dir, 'man5'), ['doc/bpython-config.5']),
+        # desktop shorcut
+        (os.path.join('share', 'applications'), ['data/bpython.desktop'])],
     package_data = {'bpython': ['logo.png']},
     entry_points = {
         'console_scripts': [
