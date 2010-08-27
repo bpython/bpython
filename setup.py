@@ -79,7 +79,9 @@ setup(
         (os.path.join(man_dir, 'man5'), ['doc/bpython-config.5']),
         # desktop shorcut
         (os.path.join('share', 'applications'), ['data/bpython.desktop'])],
-    package_data = {'bpython': ['logo.png']},
+    package_data = {
+        'bpython': ['logo.png'],
+        'bpython.translations': ['bpython/transaltions/*.mo']},
     entry_points = {
         'console_scripts': [
             'bpython = bpython.cli:main',
