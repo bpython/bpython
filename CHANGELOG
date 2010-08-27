@@ -8,6 +8,7 @@ v0.9.8
   dropped and ~/.bpython.ini as config file location is no longer supported.
   See issue #91.
 * Fixed some issues with tuple unpacking in argspec. See issues #133 and #138.
+* Fixed a crash with non-ascii filenames in import completion. See issue #139.
 
 v0.9.7.1
 --------
