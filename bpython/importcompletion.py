@@ -25,6 +25,7 @@ import imp
 import os
 import sys
 
+py3 = sys.version_info[:2] >= (3, 0)
 
 # The cached list of all known modules
 modules = set()
@@ -107,6 +108,10 @@ def find_modules(path):
             fo, pathname, _ = imp.find_module(name, [path])
         except (ImportError, SyntaxError):
             continue
+        except UnicodeEncodeError:
+            # Happens with Python 3 when there is a filename in some
+            # invalid encoding
+            continue
         else:
             if fo is not None:
                 fo.close()
@@ -129,6 +134,12 @@ def find_all_modules(path=None):
         if not p:
             p = os.curdir
         for module in find_modules(p):
+            if not py3 and not isinstance(module, unicode):
+                try:
+                    module = module.decode(sys.getfilesystemencoding())
+                except UnicodeDecodeError:
+                    # Not importable anyway, ignore it
+                    continue
             modules.add(module)
             yield
 
