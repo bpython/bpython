@@ -73,7 +73,7 @@ if using_translations:
                 os.path.isdir(language)):
             continue
         data_files.append(('bpython/translations/'+language+'/LC_MESSAGES/',
-                           ['bpython/translations/'+language+'/LC_MESSAGES/'+'bpython.mo']))
+                           [translations_dir+language+'/LC_MESSAGES/'+'bpython.mo']))
 
 
 setup(
