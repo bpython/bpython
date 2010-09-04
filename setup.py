@@ -30,7 +30,7 @@ try:
     from babel.messages.frontend import compile_catalog as _compile_catalog
     from babel.messages.frontend import extract_messages
 
-    translations_dir = os.path.join(package_dir, 'translations')
+    translations_dir = os.path.join(package_dir, 'translations', '')
 
     class compile_catalog(_compile_catalog):
         def initialize_options(self):
@@ -59,6 +59,23 @@ if using_translations:
     cmdclass['compile_catalog'] = compile_catalog
     cmdclass['extract_messages'] = extract_messages
 
+data_files =  [
+        # man pages
+        (os.path.join(man_dir, 'man1'), ['doc/bpython.1']),
+        (os.path.join(man_dir, 'man5'), ['doc/bpython-config.5']),
+        # desktop shorcut
+        (os.path.join('share', 'applications'), ['data/bpython.desktop'])]
+# translations
+if using_translations:
+    for language in os.listdir(translations_dir):
+        if not (fnmatch(language, '[a-z][a-z]_[A-Z][A-Z]') or
+                fnmatch(language, '[a-z][a-z') or
+                os.path.isdir(language)):
+            continue
+        data_files.append(('bpython/translations/'+language+'/LC_MESSAGES/',
+                           ['bpython/translations/'+language+'/LC_MESSAGES/'+'bpython.mo']))
+
+
 setup(
     name="bpython",
     version = __version__,
@@ -73,15 +90,9 @@ setup(
         'pygments'
     ],
     packages = ["bpython", "bpython.translations", "bpdb"],
-    data_files = [
-        # man pages
-        (os.path.join(man_dir, 'man1'), ['doc/bpython.1']),
-        (os.path.join(man_dir, 'man5'), ['doc/bpython-config.5']),
-        # desktop shorcut
-        (os.path.join('share', 'applications'), ['data/bpython.desktop'])],
+    data_files = data_files,
     package_data = {
-        'bpython': ['logo.png'],
-        'bpython.translations': ['bpython/transaltions/*.mo']},
+        'bpython': ['logo.png']},
     entry_points = {
         'console_scripts': [
             'bpython = bpython.cli:main',
