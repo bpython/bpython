@@ -711,8 +711,6 @@ class URWIDRepl(repl.Repl):
             signal.signal(signal.SIGINT, orig_handler)
 
     def start(self):
-        # Stolen from bpython.cli again
-        self.push('from bpython._internal import _help as help\n', False)
         self.prompt(False)
 
     def keyboard_interrupt(self):
