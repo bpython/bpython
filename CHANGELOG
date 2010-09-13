@@ -9,6 +9,8 @@ v0.9.8
   See issue #91.
 * Fixed some issues with tuple unpacking in argspec. See issues #133 and #138.
 * Fixed a crash with non-ascii filenames in import completion. See issue #139.
+* Fixed a crash caused by inspect.findsource() raising an IndexError
+  which happens in some situations. See issue #94.
 
 v0.9.7.1
 --------
