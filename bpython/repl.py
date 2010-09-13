@@ -534,9 +534,15 @@ class Repl(object):
         if not self.get_args():
             self.argspec = None
         elif self.current_func is not None:
-            self.docstring = pydoc.getdoc(self.current_func)
-            if not self.docstring:
+            try:
+                self.docstring = pydoc.getdoc(self.current_func)
+            except IndexError:
                 self.docstring = None
+            else:
+                # pydoc.getdoc() returns an empty string if no
+                # docstring was found
+                if not self.docstring:
+                    self.docstring = None
 
         cw = self.cw()
         cs = self.current_string()
