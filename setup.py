@@ -3,11 +3,9 @@
 
 
 import os
-import os.path
 import platform
 import re
 import sys
-from fnmatch import fnmatch
 
 from distutils import cmd
 from distutils.command.build import build
@@ -26,11 +24,11 @@ try:
 except ImportError:
     from distutils.command.build_py import build_py
 
+translations_dir = os.path.join(package_dir, 'translations')
+
 try:
     from babel.messages.frontend import compile_catalog as _compile_catalog
     from babel.messages.frontend import extract_messages
-
-    translations_dir = os.path.join(package_dir, 'translations', '')
 
     class compile_catalog(_compile_catalog):
         def initialize_options(self):
@@ -63,18 +61,15 @@ data_files =  [
         # man pages
         (os.path.join(man_dir, 'man1'), ['doc/bpython.1']),
         (os.path.join(man_dir, 'man5'), ['doc/bpython-config.5']),
-        # desktop shorcut
+        # desktop shortcut
         (os.path.join('share', 'applications'), ['data/bpython.desktop'])]
-# translations
-if using_translations:
-    for language in os.listdir(translations_dir):
-        if not (fnmatch(language, '[a-z][a-z]_[A-Z][A-Z]') or
-                fnmatch(language, '[a-z][a-z') or
-                os.path.isdir(language)):
-            continue
-        data_files.append(('bpython/translations/'+language+'/LC_MESSAGES/',
-                           [translations_dir+language+'/LC_MESSAGES/'+'bpython.mo']))
 
+# translations
+mo_files = list()
+for language in os.listdir(translations_dir):
+    mo_subpath = os.path.join(language, 'LC_MESSAGES', 'bpython.mo')
+    if os.path.exists(os.path.join(translations_dir, mo_subpath)):
+        mo_files.append(mo_subpath)
 
 setup(
     name="bpython",
@@ -92,7 +87,9 @@ setup(
     packages = ["bpython", "bpython.translations", "bpdb"],
     data_files = data_files,
     package_data = {
-        'bpython': ['logo.png']},
+        'bpython': ['logo.png'],
+        'bpython.translations': mo_files
+    },
     entry_points = {
         'console_scripts': [
             'bpython = bpython.cli:main',
