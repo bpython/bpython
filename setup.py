@@ -92,8 +92,11 @@ setup(
     entry_points = {
         'console_scripts': [
             'bpython = bpython.cli:main',
-            'bpython-gtk = bpython.gtk_:main',
+            'bpython-urwid = bpython.urwid:main',
         ],
+        'gui_scripts': [
+            'bpython-gtk = bpython.gtk_:main'
+         ]
     },
     scripts = ([] if using_setuptools else ['data/bpython',
                                             'data/bpython-gtk']),
