@@ -2,11 +2,18 @@
 # -*- coding: utf-8 -*-
 
 
-import glob
 import os
+import os.path
 import platform
 import re
 import sys
+from fnmatch import fnmatch
+
+from distutils import cmd
+from distutils.command.build import build
+
+from bpython import __version__, package_dir
+
 try:
     from setuptools import setup
     using_setuptools = True
@@ -19,13 +26,55 @@ try:
 except ImportError:
     from distutils.command.build_py import build_py
 
-from bpython import __version__
+try:
+    from babel.messages.frontend import compile_catalog as _compile_catalog
+    from babel.messages.frontend import extract_messages
 
+    translations_dir = os.path.join(package_dir, 'translations', '')
+
+    class compile_catalog(_compile_catalog):
+        def initialize_options(self):
+            """Simply set default domain and directory attributes to the
+            correct path for bpython."""
+            _compile_catalog.initialize_options(self)
+
+            self.domain = 'bpython'
+            self.directory = translations_dir
+            self.use_fuzzy = True
+
+    build.sub_commands.append(('compile_catalog', None))
+    using_translations = True
+except ImportError:
+    using_translations = False
 
 if platform.system() == 'FreeBSD':
     man_dir = 'man'
 else:
     man_dir = 'share/man'
+
+cmdclass = dict(build_py=build_py,
+                build = build)
+# localization options
+if using_translations:
+    cmdclass['compile_catalog'] = compile_catalog
+    cmdclass['extract_messages'] = extract_messages
+
+data_files =  [
+        # man pages
+        (os.path.join(man_dir, 'man1'), ['doc/bpython.1']),
+        (os.path.join(man_dir, 'man5'), ['doc/bpython-config.5']),
+        # desktop shorcut
+        (os.path.join('share', 'applications'), ['data/bpython.desktop'])]
+# translations
+if using_translations:
+    for language in os.listdir(translations_dir):
+        if not (fnmatch(language, '[a-z][a-z]_[A-Z][A-Z]') or
+                fnmatch(language, '[a-z][a-z') or
+                os.path.isdir(language)):
+            continue
+        data_files.append(('bpython/translations/'+language+'/LC_MESSAGES/',
+                           [translations_dir+language+'/LC_MESSAGES/'+'bpython.mo']))
+
 
 setup(
     name="bpython",
@@ -40,22 +89,19 @@ setup(
     install_requires = [
         'pygments'
     ],
-    packages = ["bpython", "bpdb"],
-    data_files = [
-        (os.path.join(man_dir, 'man1'), ['doc/bpython.1']),
-        (os.path.join(man_dir, 'man5'), ['doc/bpython-config.5']),
-        ('share/applications', ['data/bpython.desktop'])
-    ],
-    package_data = {'bpython': ['logo.png']},
+    packages = ["bpython", "bpython.translations", "bpdb"],
+    data_files = data_files,
+    package_data = {
+        'bpython': ['logo.png']},
     entry_points = {
         'console_scripts': [
             'bpython = bpython.cli:main',
             'bpython-gtk = bpython.gtk_:main',
         ],
     },
-    scripts = ([] if using_setuptools else ['data/bpython', 
+    scripts = ([] if using_setuptools else ['data/bpython',
                                             'data/bpython-gtk']),
-    cmdclass=dict(build_py=build_py)
+    cmdclass = cmdclass
 )
 
 # vim: encoding=utf-8 sw=4 ts=4 sts=4 ai et sta
