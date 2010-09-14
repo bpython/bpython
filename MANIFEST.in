@@ -13,3 +13,4 @@ include ROADMAP
 include TODO
 include bpython/test/*.py
 include bpython/test/*.theme
+include bpython/translations/*/LC_MESSAGES/bpython.mo
