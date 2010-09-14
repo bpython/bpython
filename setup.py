@@ -4,10 +4,7 @@
 
 import os
 import platform
-import re
-import sys
 
-from distutils import cmd
 from distutils.command.build import build
 
 from bpython import __version__, package_dir
@@ -24,12 +21,19 @@ try:
 except ImportError:
     from distutils.command.build_py import build_py
 
-translations_dir = os.path.join(package_dir, 'translations')
-
 try:
     from babel.messages.frontend import compile_catalog as _compile_catalog
     from babel.messages.frontend import extract_messages
+    using_translations = True
+except ImportError:
+    using_translations = False
 
+
+cmdclass = dict(build_py=build_py, build=build)
+translations_dir = os.path.join(package_dir, 'translations')
+
+# localization options
+if using_translations:
     class compile_catalog(_compile_catalog):
         def initialize_options(self):
             """Simply set default domain and directory attributes to the
@@ -41,28 +45,23 @@ try:
             self.use_fuzzy = True
 
     build.sub_commands.append(('compile_catalog', None))
-    using_translations = True
-except ImportError:
-    using_translations = False
+
+    cmdclass['compile_catalog'] = compile_catalog
+    cmdclass['extract_messages'] = extract_messages
+
 
 if platform.system() == 'FreeBSD':
     man_dir = 'man'
 else:
     man_dir = 'share/man'
 
-cmdclass = dict(build_py=build_py,
-                build = build)
-# localization options
-if using_translations:
-    cmdclass['compile_catalog'] = compile_catalog
-    cmdclass['extract_messages'] = extract_messages
-
-data_files =  [
-        # man pages
-        (os.path.join(man_dir, 'man1'), ['doc/bpython.1']),
-        (os.path.join(man_dir, 'man5'), ['doc/bpython-config.5']),
-        # desktop shortcut
-        (os.path.join('share', 'applications'), ['data/bpython.desktop'])]
+data_files = [
+    # man pages
+    (os.path.join(man_dir, 'man1'), ['doc/bpython.1']),
+    (os.path.join(man_dir, 'man5'), ['doc/bpython-config.5']),
+    # desktop shortcut
+    (os.path.join('share', 'applications'), ['data/bpython.desktop'])
+]
 
 # translations
 mo_files = list()
