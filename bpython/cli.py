@@ -543,7 +543,13 @@ class CLIRepl(repl.Repl):
         while True:
             try:
                 key += self.scr.getkey()
-                if not py3:
+                if py3:
+                    # Seems like we get a in the locale's encoding
+                    # encoded string in Python 3 as well, but of
+                    # type str instead of bytes, hence convert it to
+                    # bytes first and decode then
+                    key = key.encode('latin-1').decode(getpreferredencoding())
+                else:
                     key = key.decode(getpreferredencoding())
                 self.scr.nodelay(False)
             except UnicodeDecodeError:
