@@ -14,6 +14,7 @@ Some issues have been resolved as well:
 * Fixed a crash with non-ascii filenames in import completion. See issue #139.
 * Fixed a crash caused by inspect.findsource() raising an IndexError
   which happens in some situations. See issue #94.
+* Non-ascii input should work now under Python 3.
 
 v0.9.7.1
 --------
