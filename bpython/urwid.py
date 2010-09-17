@@ -445,7 +445,7 @@ class URWIDRepl(repl.Repl):
         self.main_loop = urwid.MainLoop(
             self.frame, palette,
             event_loop=event_loop, unhandled_input=self.handle_input,
-            input_filter=input_filter)
+            input_filter=input_filter, handle_mouse=False)
 
         self.edits = []
         self.edit = None
