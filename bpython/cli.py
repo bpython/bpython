@@ -37,7 +37,6 @@ import fcntl
 import unicodedata
 import errno
 
-from locale import LC_ALL, setlocale
 import locale
 from types import ModuleType
 
@@ -56,6 +55,10 @@ from bpython.config import Struct
 
 # This for keys
 from bpython.keys import key_dispatch
+
+# This for i18n
+from bpython import translations
+from bpython.translations import _
 
 from bpython import repl
 from bpython.pager import page
@@ -247,7 +250,7 @@ class CLIInteraction(repl.Interaction):
         except ValueError:
             return False
 
-        return reply.lower() in ('y', 'yes')
+        return reply.lower() in (_('y'), _('yes'))
 
 
     def notify(self, s, n=10):
@@ -540,7 +543,13 @@ class CLIRepl(repl.Repl):
         while True:
             try:
                 key += self.scr.getkey()
-                if not py3:
+                if py3:
+                    # Seems like we get a in the locale's encoding
+                    # encoded string in Python 3 as well, but of
+                    # type str instead of bytes, hence convert it to
+                    # bytes first and decode then
+                    key = key.encode('latin-1').decode(getpreferredencoding())
+                else:
                     key = key.decode(getpreferredencoding())
                 self.scr.nodelay(False)
             except UnicodeDecodeError:
@@ -880,7 +889,7 @@ class CLIRepl(repl.Repl):
                                     TerminalFormatter())
                 page(source)
             else:
-                self.statusbar.message('Cannot show source.')
+                self.statusbar.message(_('Cannot show source.'))
             return ''
 
         elif key == '\n':
@@ -1530,10 +1539,10 @@ def init_wins(scr, colors, config):
 # problems that needed dirty hackery to fix. :)
 
     statusbar = Statusbar(scr, main_win, background, config,
-        " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source " %
-            (config.undo_key, config.save_key,
-             config.pastebin_key, config.last_output_key,
-             config.show_source_key),
+        _(" <%s> Rewind  <%s> Save  <%s> Pastebin "
+          " <%s> Pager  <%s> Show Source ") %
+          (config.undo_key, config.save_key, config.pastebin_key,
+           config.last_output_key, config.show_source_key),
             get_colpair(config, 'main'))
 
     return main_win, statusbar
@@ -1733,7 +1742,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
 def main(args=None, locals_=None, banner=None):
     global stdscr
 
-    setlocale(LC_ALL, '')
+    translations.init()
 
     config, options, exec_args = bpython.args.parse(args)
 

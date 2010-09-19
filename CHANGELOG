@@ -3,12 +3,18 @@ Changelog
 
 v0.9.8
 ------
+As a highlight of the release, Michele Orrù added i18n support to bpython.
+
+Some issues have been resolved as well:
 * Config files are now located according to the XDG Base Directory
   Specification. The support for the old bpythonrc files has been
   dropped and ~/.bpython.ini as config file location is no longer supported.
   See issue #91.
 * Fixed some issues with tuple unpacking in argspec. See issues #133 and #138.
 * Fixed a crash with non-ascii filenames in import completion. See issue #139.
+* Fixed a crash caused by inspect.findsource() raising an IndexError
+  which happens in some situations. See issue #94.
+* Non-ascii input should work now under Python 3.
 
 v0.9.7.1
 --------
