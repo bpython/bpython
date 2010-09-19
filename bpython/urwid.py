@@ -444,20 +444,28 @@ class URWIDRepl(repl.Repl):
 
         self.edits = []
         self.edit = None
+        self.current_output = None
         self._completion_update_suppressed = False
 
     # Subclasses of Repl need to implement echo, current_line, cw
-    def echo(self, s):
-        s = s.rstrip('\n')
+    def echo(self, orig_s):
+        s = orig_s.rstrip('\n')
         if s:
-            text = urwid.Text(('output', s))
-            if self.edit is None:
-                self.listbox.body.append(text)
+            if self.current_output is None:
+                self.current_output = urwid.Text(('output', s))
+                if self.edit is None:
+                    self.listbox.body.append(self.current_output)
+                else:
+                    self.listbox.body.insert(-1, self.current_output)
+                    # The edit widget should be focused and *stay* focused.
+                    # XXX TODO: make sure the cursor stays in the same spot.
+                    self.listbox.set_focus(len(self.listbox.body) - 1)
             else:
-                self.listbox.body.insert(-1, text)
-                # The edit widget should be focused and *stay* focused.
-                # XXX TODO: make sure the cursor stays in the same spot.
-                self.listbox.set_focus(len(self.listbox.body) - 1)
+                # XXX this assumes this all has "output" markup applied.
+                self.current_output.set_text(
+                    ('output', self.current_output.text + s))
+        if orig_s.endswith('\n'):
+            self.current_output = None
         # TODO: maybe do the redraw after a short delay
         # (for performance)
         self.main_loop.draw_screen()
@@ -708,6 +716,10 @@ class URWIDRepl(repl.Repl):
         self.echo('KeyboardInterrupt')
 
     def prompt(self, more):
+        # Clear current output here, or output resulting from the
+        # current prompt run will end up appended to the edit widget
+        # sitting above this prompt:
+        self.current_output = None
         # XXX is this the right place?
         self.rl_history.reset()
         # XXX what is s_hist?
