@@ -54,7 +54,7 @@ from bpython import importcompletion
 from bpython.config import Struct
 
 # This for keys
-from bpython.keys import key_dispatch
+from bpython.keys import cli_key_dispatch as key_dispatch
 
 # This for i18n
 from bpython import translations
