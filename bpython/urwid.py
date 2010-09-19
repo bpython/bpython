@@ -49,6 +49,8 @@ from bpython.formatter import theme_map
 from bpython.importcompletion import find_coroutine
 from bpython.translations import _
 
+from bpython.keys import urwid_key_dispatch as key_dispatch
+
 import urwid
 
 py3 = sys.version_info[0] == 3
@@ -76,6 +78,8 @@ COLORMAP = {
     'w': 'white',
     'd': 'default',
     }
+
+# Add our keys to the urwid command_map
 
 
 try:
@@ -215,12 +219,13 @@ class BPythonEdit(urwid.Edit):
 
     signals = ['edit-pos-changed']
 
-    def __init__(self, tab_length, *args, **kwargs):
+    def __init__(self, config, *args, **kwargs):
         self._bpy_text = ''
         self._bpy_attr = []
         self._bpy_selectable = True
         self._bpy_may_move_cursor = False
-        self.tab_length = tab_length
+        self.config = config
+        self.tab_length = config.tab_length 
         urwid.Edit.__init__(self, *args, **kwargs)
 
     def set_edit_pos(self, pos):
@@ -294,6 +299,9 @@ class BPythonEdit(urwid.Edit):
                 if not (cpos or len(line) % self.tab_length or line.strip()):
                     self.set_edit_text(line[:-self.tab_length])
                     return None
+            elif key == 'pastebin':
+                # do pastebin
+                pass
             # TODO: Add in specific keypress fetching code here
             return urwid.Edit.keypress(self, size, key)
         finally:
@@ -450,6 +458,8 @@ class URWIDRepl(repl.Repl):
         self.edits = []
         self.edit = None
         self._completion_update_suppressed = False
+
+        load_urwid_command_map(config)
 
     # Subclasses of Repl need to implement echo, current_line, cw
     def echo(self, s):
@@ -722,11 +732,11 @@ class URWIDRepl(repl.Repl):
         self.rl_history.reset()
         # XXX what is s_hist?
         if not more:
-            self.edit = BPythonEdit(self.config.tab_length,
+            self.edit = BPythonEdit(self.config,
                                     caption=('prompt', '>>> '))
             self.stdout_hist += '>>> '
         else:
-            self.edit = BPythonEdit(self.config.tab_length,
+            self.edit = BPythonEdit(self.config,
                                     caption=('prompt_more', '... '))
             self.stdout_hist += '... '
 
@@ -1036,6 +1046,25 @@ def main(args=None, locals_=None, banner=None):
         sys.stdout.write(myrepl.getstdout())
     sys.stdout.flush()
 
-
+def load_urwid_command_map(config):
+    urwid.command_map[key_dispatch[config.up_one_line_key]] = 'cursor up'
+    urwid.command_map[key_dispatch[config.down_one_line_key]] = 'cursor down'
+"""
+            'clear_line': 'C-u',
+            'clear_screen': 'C-l',
+            'clear_word': 'C-w',
+            'cut_to_buffer': 'C-k',
+            'delete': 'C-d',
+            'down_one_line': 'C-n',
+            'exit': '',
+            'last_output': 'F9',
+            'pastebin': 'F8',
+            'save': 'C-s',
+            'show_source': 'F2',
+            'suspend': 'C-z',
+            'undo': 'C-r',
+            'up_one_line': 'C-p',
+            'yank_from_buffer': 'C-y'},
+"""
 if __name__ == '__main__':
     main()

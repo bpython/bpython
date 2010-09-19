@@ -3,7 +3,7 @@ import os
 import sys
 from ConfigParser import ConfigParser
 from itertools import chain
-from bpython.keys import key_dispatch
+from bpython.keys import cli_key_dispatch as key_dispatch
 
 
 class Struct(object):
