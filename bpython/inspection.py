@@ -156,7 +156,9 @@ def fixlongargs(f, argspec):
     keys = argspec[0][-len(values):]
     try:
         src = inspect.getsourcelines(f)
-    except IOError:
+    except (IOError, IndexError):
+        # IndexError is raised in inspect.findsource(), can happen in
+        # some situations. See issue #94.
         return
     signature = ''.join(src[0])
     kwparsed = parsekeywordpairs(signature)

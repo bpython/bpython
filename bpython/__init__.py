@@ -20,8 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import os.path
 
 __version__ = '0.9.7.1'
+package_dir = os.path.abspath(os.path.dirname(__file__))
 
 
 def embed(locals_=None, args=['-i', '-q'], banner=None):
