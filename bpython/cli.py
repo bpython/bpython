@@ -64,10 +64,6 @@ from bpython import repl
 from bpython.pager import page
 import bpython.args
 
-def log(x):
-    f = open('/tmp/bpython.log', 'a')
-    f.write('%s\n' % (x,))
-
 py3 = sys.version_info[0] == 3
 if not py3:
     import inspect
@@ -198,12 +194,6 @@ DO_RESIZE = False
 # needs to be an instance of a ListWin class or something so I can wrap
 # the addstr stuff to a higher level.
 #
-
-
-def DEBUG(s):
-    """This shouldn't ever be called in any release of bpython, so
-    beat me up if you find anything calling it."""
-    open('/tmp/bpython-debug', 'a').write("%s\n" % (str(s), ))
 
 
 def get_color(config, name):
