@@ -1061,6 +1061,8 @@ def main(args=None, locals_=None, banner=None):
 def load_urwid_command_map(config):
     urwid.command_map[key_dispatch[config.up_one_line_key]] = 'cursor up'
     urwid.command_map[key_dispatch[config.down_one_line_key]] = 'cursor down'
+    urwid.command_map[key_dispatch['C-a']] = 'cursor max left'
+    urwid.command_map[key_dispatch['C-e']] = 'cursor max right'
 """
             'clear_line': 'C-u',
             'clear_screen': 'C-l',
