@@ -151,6 +151,19 @@ class TestArgspec(unittest.TestCase):
         """Set current input line of the test REPL."""
         self.repl.input_line = line
 
+    def test_kw_arg_position(self):
+        self.setInputLine("spam(a=0")
+        self.assertTrue(self.repl.get_args())
+        self.assertEqual(self.repl.argspec[3], "a")
+
+        self.setInputLine("spam(1, b=1")
+        self.assertTrue(self.repl.get_args())
+        self.assertEqual(self.repl.argspec[3], "b")
+
+        self.setInputLine("spam(1, c=2")
+        self.assertTrue(self.repl.get_args())
+        self.assertEqual(self.repl.argspec[3], "c")
+
     def test_lambda_position(self):
         self.setInputLine("spam(lambda a, b: 1, ")
         self.assertTrue(self.repl.get_args())
