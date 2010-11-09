@@ -1,7 +1,8 @@
+import os
 import unittest
 from itertools import islice
 
-from bpython import repl
+from bpython import config, repl
 
 
 class TestHistory(unittest.TestCase):
@@ -128,6 +129,34 @@ class TestMatchesIterator(unittest.TestCase):
         newslice = islice(newmatches, 0, 3)
         self.assertNotEqual(list(slice), self.matches)
         self.assertEqual(list(newslice), newmatches)
+
+class TestRepl(repl.Repl):
+    def __init__(self):
+        config_struct = config.Struct()
+        config.loadini(config_struct, os.devnull)
+        repl.Repl.__init__(self, repl.Interpreter(), config_struct)
+        self.input_line = ""
+
+    def current_line(self):
+        return self.input_line
+
+class TestArgspec(unittest.TestCase):
+    def setUp(self):
+        self.repl = TestRepl()
+        self.repl.push("def spam(a, b, c):\n", False)
+        self.repl.push("    pass\n", False)
+        self.repl.push("\n", False)
+
+    def setInputLine(self, line):
+        """Set current input line of the test REPL."""
+        self.repl.input_line = line
+
+    def test_lambda_position(self):
+        self.setInputLine("spam(lambda a, b: 1, ")
+        self.assertTrue(self.repl.get_args())
+        self.assertTrue(self.repl.argspec)
+        # Argument position
+        self.assertEqual(self.repl.argspec[3], 1)
 
 
 if __name__ == '__main__':
