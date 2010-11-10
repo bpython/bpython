@@ -151,6 +151,20 @@ class TestArgspec(unittest.TestCase):
         """Set current input line of the test REPL."""
         self.repl.input_line = line
 
+    def test_func_name(self):
+        for (line, expected_name) in [("spam(", "spam"),
+                                      ("spam(map([]", "map"),
+                                      ("spam((), ", "spam")]:
+            self.setInputLine(line)
+            self.assertTrue(self.repl.get_args())
+            self.assertEqual(self.repl.current_func.__name__, expected_name)
+
+    def test_syntax_error_parens(self):
+        for line in ["spam(]", "spam([)", "spam())"]:
+            self.setInputLine(line)
+            # Should not explode
+            self.repl.get_args()
+
     def test_kw_arg_position(self):
         self.setInputLine("spam(a=0")
         self.assertTrue(self.repl.get_args())
@@ -170,6 +184,16 @@ class TestArgspec(unittest.TestCase):
         self.assertTrue(self.repl.argspec)
         # Argument position
         self.assertEqual(self.repl.argspec[3], 1)
+
+    def test_name_in_assignment_without_spaces(self):
+        # Issue #127
+        self.setInputLine("x=range(")
+        self.assertTrue(self.repl.get_args())
+        self.assertEqual(self.repl.current_func.__name__, "range")
+
+    def test_nonexistent_name(self):
+        self.setInputLine("spamspamspam(")
+        self.assertFalse(self.repl.get_args())
 
 
 if __name__ == '__main__':
