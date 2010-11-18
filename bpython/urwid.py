@@ -745,12 +745,12 @@ class URWIDRepl(repl.Repl):
         # XXX what is s_hist?
         if not more:
             self.edit = BPythonEdit(self.config,
-                                    caption=('prompt', '>>> '))
-            self.stdout_hist += '>>> '
+                                    caption=('prompt', self.ps1))
+            self.stdout_hist += self.ps1
         else:
             self.edit = BPythonEdit(self.config,
-                                    caption=('prompt_more', '... '))
-            self.stdout_hist += '... '
+                                    caption=('prompt_more', self.ps2))
+            self.stdout_hist += self.ps2
 
         urwid.connect_signal(self.edit, 'change', self.on_input_change)
         urwid.connect_signal(self.edit, 'edit-pos-changed',
