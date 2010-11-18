@@ -944,15 +944,15 @@ class CLIRepl(repl.Repl):
     def prompt(self, more):
         """Show the appropriate Python prompt"""
         if not more:
-            self.echo("\x01%s\x03>>> " % (self.config.color_scheme['prompt'],))
-            self.stdout_hist += '>>> '
-            self.s_hist.append('\x01%s\x03>>> \x04' %
-                               (self.config.color_scheme['prompt'],))
+            self.echo("\x01%s\x03%s" % (self.config.color_scheme['prompt'], self.ps1))
+            self.stdout_hist += self.ps1
+            self.s_hist.append('\x01%s\x03%s\x04' %
+                               (self.config.color_scheme['prompt'], self.ps1))
         else:
             prompt_more_color = self.config.color_scheme['prompt_more']
-            self.echo("\x01%s\x03... " % (prompt_more_color, ))
-            self.stdout_hist += '... '
-            self.s_hist.append('\x01%s\x03... \x04' % (prompt_more_color, ))
+            self.echo("\x01%s\x03%s" % (prompt_more_color, self.ps2))
+            self.stdout_hist += self.ps2
+            self.s_hist.append('\x01%s\x03%s\x04' % (prompt_more_color, self.ps2))
 
     def push(self, s, insert_into_history=True):
         # curses.raw(True) prevents C-c from causing a SIGINT
@@ -1041,7 +1041,8 @@ class CLIRepl(repl.Repl):
         if real_lineno < 0:
             return
 
-        self.scr.move(real_lineno, 4)
+        self.scr.move(real_lineno,
+                      len(self.ps1) if lineno == 0 else len(self.ps2))
         line = format(tokens, BPythonFormatter(self.config.color_scheme))
         for string in line.split('\x04'):
             self.echo(string)

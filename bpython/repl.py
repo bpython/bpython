@@ -340,6 +340,8 @@ class Repl(object):
         self._C = {}
         self.prev_block_finished = 0
         self.interact = Interaction(self.config)
+        self.ps1 = 'spam> '
+        self.ps2 = '... '
         # previous pastebin content to prevent duplicate pastes, filled on call
         # to repl.pastebin
         self.prev_pastebin_content = ''
@@ -668,8 +670,10 @@ class Repl(object):
 
         def process():
             for line in s.split('\n'):
-                if line.startswith('>>>') or line.startswith('...'):
-                    yield line[4:]
+                if line.startswith(self.ps1):
+                    yield line[len(self.ps1):]
+                elif line.startswith(self.ps2):
+                    yield line[len(self.ps2):]
                 elif line.rstrip():
                     yield "# OUT: %s" % (line,)
         return "\n".join(process())

@@ -672,13 +672,13 @@ class ReplWidget(gtk.TextView, repl.Repl):
         Show the appropriate Python prompt.
         """
         if more:
-            text = '... '
+            text = self.ps2
         else:
-            text = '>>> '
+            text = self.ps1
         with self.editing:
             iter_ = self.get_cursor_iter()
             self.text_buffer.insert_with_tags_by_name(iter_, text, 'prompt')
-        iter_.forward_chars(4)
+        iter_.forward_chars(len(text))
         mark = self.text_buffer.create_mark('line_start', iter_, True)
         self.text_buffer.place_cursor(iter_)
         self.scroll_to_mark(mark, 0.2)
