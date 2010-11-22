@@ -340,7 +340,7 @@ class Repl(object):
         self._C = {}
         self.prev_block_finished = 0
         self.interact = Interaction(self.config)
-        self.ps1 = 'spam> '
+        self.ps1 = '>>> '
         self.ps2 = '... '
         # previous pastebin content to prevent duplicate pastes, filled on call
         # to repl.pastebin
