@@ -1733,6 +1733,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
 def main(args=None, locals_=None, banner=None):
     global stdscr
 
+    locale.setlocale(locale.LC_ALL, "")
     translations.init()
 
     config, options, exec_args = bpython.args.parse(args)
