@@ -31,7 +31,12 @@ class BPdb(pdb.Pdb):
         pdb.Pdb.__init__(self)
         self.rcLines = []
         self.prompt = '(BPdb) '
+        self.intro = 'Use "B" to enter BPython, Ctrl-d to exit it.'
 
+    def postloop(self):
+        # We only want to show the intro message once.
+        #self.intro = None
+        pdb.Pdb.postloop(self)
 
     ### cmd.Cmd commands
 
