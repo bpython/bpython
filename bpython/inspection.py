@@ -164,7 +164,7 @@ def fixlongargs(f, argspec):
     kwparsed = parsekeywordpairs(signature)
 
     for i, (key, value) in enumerate(zip(keys, values)):
-        if len(str(value)) != len(kwparsed[key]):
+        if len(repr(value)) != len(kwparsed[key]):
             values[i] = kwparsed[key]
 
     argspec[3] = values
