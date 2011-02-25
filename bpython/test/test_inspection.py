@@ -1,3 +1,4 @@
+import inspect
 import unittest
 
 from bpython import inspection
@@ -41,6 +42,16 @@ class TestInspection(unittest.TestCase):
         argspec = inspection.getargspec('fails', fails)
         defaults = argspec[1][3]
         self.assertEqual(str(defaults[0]), default_arg_repr)
+
+    def test_fixlongargs(self):
+        def spam(a, b=1, c="y\xc3\xa4y"):
+            pass
+
+        argspec = list(inspect.getargspec(spam))
+        print argspec[3],
+        inspection.fixlongargs(spam, argspec)
+        print argspec[3], [type(a) for a in argspec[3]]
+        self.assertFalse(argspec)
 
 if __name__ == '__main__':
     unittest.main()
