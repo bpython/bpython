@@ -15,6 +15,7 @@ Some issues have been resolved as well:
 * Fixed a crash caused by inspect.findsource() raising an IndexError
   which happens in some situations. See issue #94.
 * Non-ascii input should work now under Python 3.
+* Issue #165: C-a and C-e do the right thing now in urwid.
 
 v0.9.7.1
 --------
