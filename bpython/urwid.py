@@ -288,22 +288,30 @@ class BPythonEdit(urwid.Edit):
         return False
 
     def keypress(self, size, key):
+        if urwid.command_map[key] in ['cursor up', 'cursor down']:
+            # Do not handle up/down arrow, leave them for the repl.
+            return key
+
         self._bpy_may_move_cursor = True
         try:
-            # Do not handle up/down arrow, leave them for the repl.
-            if urwid.command_map[key] in ('cursor up', 'cursor down'):
-                return key
+            if urwid.command_map[key] == 'cursor max left':
+                self.edit_pos = 0
+            elif urwid.command_map[key] == 'cursor max right':
+                self.edit_pos = len(self.get_edit_text())
             elif key == 'backspace':
                 line = self.get_edit_text()
                 cpos = len(line) - self.edit_pos
                 if not (cpos or len(line) % self.tab_length or line.strip()):
                     self.set_edit_text(line[:-self.tab_length])
-                    return None
+                else:
+                    return urwid.Edit.keypress(self, size, key)
             elif key == 'pastebin':
                 # do pastebin
                 pass
-            # TODO: Add in specific keypress fetching code here
-            return urwid.Edit.keypress(self, size, key)
+            else:
+                # TODO: Add in specific keypress fetching code here
+                return urwid.Edit.keypress(self, size, key)
+            return None
         finally:
             self._bpy_may_move_cursor = False
 
