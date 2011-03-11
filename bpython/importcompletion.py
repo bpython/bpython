@@ -26,6 +26,20 @@ import imp
 import os
 import sys
 import warnings
+try:
+    from warnings import catch_warnings
+except ImportError:
+    import contextlib
+    @contextlib.contextmanager
+    def catch_warnings():
+        """Stripped-down version of `warnings.catch_warnings()`
+        (available in Py >= 2.6)."""
+        filters = warnings.filters
+        warnings.filters = list(filters)
+        try:
+            yield
+        finally:
+            warnings.filters = filters
 
 py3 = sys.version_info[:2] >= (3, 0)
 
@@ -107,7 +121,7 @@ def find_modules(path):
             continue
         name = os.path.splitext(name)[0]
         try:
-            with warnings.catch_warnings():
+            with catch_warnings():
                 warnings.simplefilter("ignore", ImportWarning)
                 fo, pathname, _ = imp.find_module(name, [path])
         except (ImportError, SyntaxError):
