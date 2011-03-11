@@ -599,6 +599,9 @@ class CLIRepl(repl.Repl):
             self.scr.refresh()
         return True
 
+    def isatty(self):
+        return True
+
     def lf(self):
         """Process a linefeed character; it only needs to check the
         cursor position and move appropriately so it doesn't clear
