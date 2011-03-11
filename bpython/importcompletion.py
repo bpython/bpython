@@ -24,6 +24,7 @@
 import imp
 import os
 import sys
+import warnings
 
 py3 = sys.version_info[:2] >= (3, 0)
 
@@ -105,7 +106,9 @@ def find_modules(path):
             continue
         name = os.path.splitext(name)[0]
         try:
-            fo, pathname, _ = imp.find_module(name, [path])
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", ImportWarning)
+                fo, pathname, _ = imp.find_module(name, [path])
         except (ImportError, SyntaxError):
             continue
         except UnicodeEncodeError:
