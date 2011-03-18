@@ -100,6 +100,18 @@ class AttrCleaner(object):
             setattr(type_, '__getattr__', __getattr__)
         # /Dark magic
 
+class _Repr(object):
+    """
+    Helper for `fixlongargs()`: Returns the given value in `__repr__()`.
+    """
+
+    def __init__(self, value):
+        self.value = value
+
+    def __repr__(self):
+        return self.value
+
+    __str__ = __repr__
 
 def parsekeywordpairs(signature):
     tokens = PythonLexer().get_tokens(signature)
@@ -164,8 +176,8 @@ def fixlongargs(f, argspec):
     kwparsed = parsekeywordpairs(signature)
 
     for i, (key, value) in enumerate(zip(keys, values)):
-        if len(str(value)) != len(kwparsed[key]):
-            values[i] = kwparsed[key]
+        if len(repr(value)) != len(kwparsed[key]):
+            values[i] = _Repr(kwparsed[key])
 
     argspec[3] = values
 

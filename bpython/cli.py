@@ -653,7 +653,7 @@ class CLIRepl(repl.Repl):
             ln = len(str(i))
             kw = None
             if kwargs and k + 1 > len(args) - len(kwargs):
-                kw = str(kwargs[k - (len(args) - len(kwargs))])
+                kw = repr(kwargs[k - (len(args) - len(kwargs))])
                 ln += len(kw) + 1
 
             if ln + x >= w:
@@ -685,7 +685,7 @@ class CLIRepl(repl.Repl):
                 self.list_win.addstr(inspect.strseq(i, str), color)
             else:
                 self.list_win.addstr(str(i), color)
-            if kw:
+            if kw is not None:
                 self.list_win.addstr('=', punctuation_colpair)
                 self.list_win.addstr(kw, get_colpair(self.config, 'token'))
             if k != len(args) -1:

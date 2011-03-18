@@ -83,7 +83,7 @@ class ArgspecFormatter(object):
         return string
 
     def formatvalue(self, value):
-        return '=%s' % (value, )
+        return '=%r' % (value, )
 
 
 class ExceptionDialog(gtk.MessageDialog):
