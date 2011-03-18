@@ -557,7 +557,7 @@ class URWIDRepl(repl.Repl):
                 # does clever wrapping. I do not (yet).
                 for k, i in enumerate(args):
                     if defaults and k + 1 > len(args) - len(defaults):
-                        kw = str(defaults[k - (len(args) - len(defaults))])
+                        kw = repr(defaults[k - (len(args) - len(defaults))])
                     else:
                         kw = None
 
@@ -576,7 +576,7 @@ class URWIDRepl(repl.Repl):
                         markup.append((color, inspect.strseq(i, str)))
                     else:
                         markup.append((color, str(i)))
-                    if kw:
+                    if kw is not None:
                         markup.extend([('punctuation', '='),
                                        ('token', kw)])
                     if k != len(args) - 1:
