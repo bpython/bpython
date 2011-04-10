@@ -1,7 +1,7 @@
-
 # The MIT License
 #
 # Copyright (c) 2008 Bob Farrell
+# Copyright (c) bpython authors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@ import errno
 import locale
 from types import ModuleType
 
-# These are used for syntax hilighting.
+# These are used for syntax highlighting
 from pygments import format
 from pygments.formatters import TerminalFormatter
 from pygments.lexers import PythonLexer
