@@ -1524,11 +1524,10 @@ class Statusbar(object):
         self.win.clear()
 
 
-def init_wins(scr, colors, config):
+def init_wins(scr, config):
     """Initialise the two windows (the main repl interface and the little
     status bar at the bottom with some stuff in it)"""
 #TODO: Document better what stuff is on the status bar.
-#TODO: colors argument is not used
 
     background = get_colpair(config, 'background')
     h, w = gethw()
@@ -1696,7 +1695,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     scr.timeout(300)
 
     curses.raw(True)
-    main_win, statusbar = init_wins(scr, cols, config)
+    main_win, statusbar = init_wins(scr, config)
 
     if locals_ is None:
         sys.modules['__main__'] = ModuleType('__main__')
