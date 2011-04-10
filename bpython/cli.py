@@ -68,7 +68,13 @@ py3 = sys.version_info[0] == 3
 if not py3:
     import inspect
 
+
+# --- module globals ---
 stdscr = None
+colors = None
+
+DO_RESIZE = False
+# ---
 
 def getpreferredencoding():
     return locale.getpreferredencoding() or sys.getdefaultencoding()
@@ -180,8 +186,6 @@ class FakeStdin(object):
     def readlines(self, size=-1):
         return list(iter(self.readline, ''))
 
-DO_RESIZE = False
-
 # TODO:
 #
 # Tab completion does not work if not at the end of the line.
@@ -197,6 +201,7 @@ DO_RESIZE = False
 
 
 def get_color(config, name):
+    global colors
     return colors[config.color_scheme[name].lower()]
 
 
@@ -1279,6 +1284,7 @@ class CLIRepl(repl.Repl):
     def size(self):
         """Set instance attributes for x and y top left corner coordinates
         and width and heigth for the window."""
+        global stdscr
         h, w = stdscr.getmaxyx()
         self.y = 0
         self.w = w
@@ -1522,6 +1528,7 @@ def init_wins(scr, colors, config):
     """Initialise the two windows (the main repl interface and the little
     status bar at the bottom with some stuff in it)"""
 #TODO: Document better what stuff is on the status bar.
+#TODO: colors argument is not used
 
     background = get_colpair(config, 'background')
     h, w = gethw()
@@ -1578,6 +1585,7 @@ def idle(caller):
     The statusbar check needs to go here to take care of timed
     messages and the resize handlers need to be here to make
     sure it happens conveniently."""
+    global DO_RESIZE
 
     if importcompletion.find_coroutine() or caller.paste_mode:
         caller.scr.nodelay(True)
@@ -1667,7 +1675,6 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     global stdscr
     global DO_RESIZE
     global colors
-    global repl
     DO_RESIZE = False
 
     old_sigwinch_handler = signal.signal(signal.SIGWINCH,
@@ -1734,8 +1741,6 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
 
 
 def main(args=None, locals_=None, banner=None):
-    global stdscr
-
     locale.setlocale(locale.LC_ALL, "")
     translations.init()
 
