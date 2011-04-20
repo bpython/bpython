@@ -1,0 +1,83 @@
+# Translations template for bpython.
+# Copyright (C) 2011 ORGANIZATION
+# This file is distributed under the same license as the bpython project.
+# Simon de Vlieger, 2011 .
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: bpython 0.9.7.1\n"
+"Report-Msgid-Bugs-To: http://bitbucket.org/bobf/bpython/issues\n"
+"POT-Creation-Date: 2010-07-21 14:46+0200\n"
+"PO-Revision-Date: 2011-04-21 00:46+0100\n"
+"Last-Translator: Simon de Vlieger <simon@ikanobori.jp>\n"
+"Language-Team: bpython developers\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.5\n"
+
+#: bpython/cli.py:250
+#: bpython/urwid.py:400
+msgid "y"
+msgstr "j"
+
+#: bpython/cli.py:250
+#: bpython/urwid.py:400
+msgid "yes"
+msgstr "ja"
+
+#: bpython/cli.py:877
+#: bpython/gtk_.py:482
+msgid "Cannot show source."
+msgstr "Kan de broncode niet laden"
+
+#: bpython/cli.py:1527
+#: bpython/urwid.py:415
+msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
+msgstr " <%s> Rewind  <%s> Opslaan  <%s> Pastebin  <%s> Pager  <%s> Toon broncode"
+
+#: bpython/gtk_.py:90
+#: bpython/gtk_.py:113
+msgid "An error occurred."
+msgstr "Er is een fout opgetreden"
+
+#: bpython/gtk_.py:97
+msgid "Exception details"
+msgstr "Fout details"
+
+#: bpython/gtk_.py:149
+msgid "Statusbar"
+msgstr "Statusbalk"
+
+#: bpython/gtk_.py:226
+msgid "tooltip"
+msgstr "tooltip"
+
+#: bpython/gtk_.py:295
+msgid "File to save to"
+msgstr "Bestandsnaaam"
+
+#: bpython/gtk_.py:306
+msgid "Python files"
+msgstr "Python bestanden"
+
+#: bpython/gtk_.py:311
+msgid "All files"
+msgstr "Alle bestanden"
+
+#: bpython/gtk_.py:773
+msgid "gtk-specific options"
+msgstr "gtk-specifieke opties"
+
+#: bpython/gtk_.py:774
+msgid "Options specific to bpython's Gtk+ front end"
+msgstr "Opties specifiek voor bpythons Gtk+ front end"
+
+#: bpython/gtk_.py:776
+msgid "Embed bpython"
+msgstr "Embed bpython"
+
+#: bpython/gtk_.py:832
+msgid "Pastebin selection"
+msgstr "Pastebin de selectie"
+
