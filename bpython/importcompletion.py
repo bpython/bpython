@@ -120,6 +120,9 @@ def find_modules(path):
             # which ends with a python extension, so work around.
             continue
         name = os.path.splitext(name)[0]
+        if py3 and name == "badsyntax_pep3120":
+            # Workaround for issue #166
+            continue
         try:
             with catch_warnings():
                 warnings.simplefilter("ignore", ImportWarning)
