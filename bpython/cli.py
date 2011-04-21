@@ -712,7 +712,7 @@ class CLIRepl(repl.Repl):
                 default = kwonly_defaults.get(arg, marker)
                 if default is not marker:
                     self.list_win.addstr('=', punctuation_colpair)
-                    self.list_win.addstr(default,
+                    self.list_win.addstr(repr(default),
                                          get_colpair(self.config, 'token'))
 
         if _kwargs:
