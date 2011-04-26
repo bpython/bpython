@@ -745,8 +745,11 @@ class Repl(object):
         s = s.rstrip('\n')
         self.buffer.append(s)
 
+        histfilename = os.path.expanduser(self.config.hist_file)
+
         if insert_into_history:
             self.rl_history.append(s)
+            self.rl_history.save(histfilename, getpreferredencoding())
 
         more = self.interp.runsource('\n'.join(self.buffer))
 
