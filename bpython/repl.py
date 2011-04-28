@@ -750,7 +750,7 @@ class Repl(object):
             self.rl_history.append(s)
             if self.config.hist_length:
                 histfilename = os.path.expanduser(self.config.hist_file)
-                self.rl_history.save(histfilename, getpreferredencoding())
+                self.rl_history.save(histfilename, getpreferredencoding(), self.config.hist_length)
 
         more = self.interp.runsource('\n'.join(self.buffer))
 
