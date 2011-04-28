@@ -688,7 +688,6 @@ class ReplWidget(gtk.TextView, repl.Repl):
         # Save mark for easy referencing later
         self.text_buffer.create_mark('line%i_start' % (len(self.buffer), ),
                                      self.get_line_start_iter(), True)
-        self.rl_history.append(line)
         iter_ = self.get_line_end_iter()
         self.text_buffer.place_cursor(iter_)
         with self.editing:
@@ -859,10 +858,7 @@ def main(args=None):
         gtk.main()
     except KeyboardInterrupt:
         pass
-    finally:
-        if config.hist_length:
-            histfilename = os.path.expanduser(config.hist_file)
-            repl_widget.rl_history.save(histfilename, getpreferredencoding())
+
     return 0
 
 if __name__ == '__main__':

@@ -1716,9 +1716,6 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
         clirepl.write(banner)
         clirepl.write('\n')
     clirepl.repl()
-    if config.hist_length:
-        histfilename = os.path.expanduser(config.hist_file)
-        clirepl.rl_history.save(histfilename, getpreferredencoding())
 
     main_win.erase()
     main_win.refresh()
