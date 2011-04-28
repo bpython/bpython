@@ -1019,11 +1019,6 @@ def main(args=None, locals_=None, banner=None):
                     continue
                 break
 
-            if config.hist_length:
-                histfilename = os.path.expanduser(config.hist_file)
-                myrepl.rl_history.save(histfilename,
-                                       locale.getpreferredencoding())
-
         finally:
             sys.stdin = orig_stdin
             sys.stderr = orig_stderr
