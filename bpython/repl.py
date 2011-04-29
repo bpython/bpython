@@ -745,16 +745,19 @@ class Repl(object):
         s = s.rstrip('\n')
         self.buffer.append(s)
 
-        if insert_into_history and self.config.hist_length:
-            histfilename = os.path.expanduser(self.config.hist_file)
-            self.rl_history.entries = []
-            if os.path.exists(histfilename):
-                self.rl_history.load(histfilename, getpreferredencoding())
-            self.rl_history.append(s)
-            try:
-                self.rl_history.save(histfilename, getpreferredencoding(), self.config.hist_length)
-            except EnvironmentError as (errno, strerr):
-                self.interact.notify("Write error for file: %s. %s " % (histfilename, strerr))
+        if insert_into_history:
+            if self.config.hist_length:
+                histfilename = os.path.expanduser(self.config.hist_file)
+                self.rl_history.entries = []
+                if os.path.exists(histfilename):
+                    self.rl_history.load(histfilename, getpreferredencoding())
+                self.rl_history.append(s)
+                try:
+                    self.rl_history.save(histfilename, getpreferredencoding(), self.config.hist_length)
+                except EnvironmentError as (errno, strerr):
+                    self.interact.notify("Write error for file: %s. %s " % (histfilename, strerr))
+            else:
+                self.rl_history.append(s)
 
         more = self.interp.runsource('\n'.join(self.buffer))
 
