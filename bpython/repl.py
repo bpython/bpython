@@ -751,7 +751,10 @@ class Repl(object):
             if os.path.exists(histfilename):
                 self.rl_history.load(histfilename, getpreferredencoding())
             self.rl_history.append(s)
-            self.rl_history.save(histfilename, getpreferredencoding(), self.config.hist_length)
+            try:
+                self.rl_history.save(histfilename, getpreferredencoding(), self.config.hist_length)
+            except EnvironmentError as (errno, strerr):
+                self.interact.notify("Write error for file: %s. %s " % (histfilename, strerr))
 
         more = self.interp.runsource('\n'.join(self.buffer))
 
