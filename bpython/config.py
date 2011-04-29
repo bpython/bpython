@@ -74,6 +74,9 @@ def loadini(struct, configfile):
             'undo': 'C-r',
             'up_one_line': 'C-p',
             'yank_from_buffer': 'C-y'},
+        'cli': {
+            'suggestion_width': 0.8,
+        },
         'gtk': {
             'font': 'monospace 10',
             'color_scheme': 'default'}})
@@ -117,6 +120,9 @@ def loadini(struct, configfile):
     struct.pastebin_private = config.getboolean('general', 'pastebin_private')
     struct.pastebin_url = config.get('general', 'pastebin_url')
     struct.pastebin_show_url = config.get('general', 'pastebin_show_url')
+
+    struct.cli_suggestion_width = config.getfloat('cli',
+                                                  'suggestion_width')
 
     struct.gtk_font = config.get('gtk', 'font')
 

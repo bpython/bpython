@@ -270,6 +270,9 @@ class CLIRepl(repl.Repl):
         self.formatter = BPythonFormatter(config.color_scheme)
         self.interact = CLIInteraction(self.config, statusbar=self.statusbar)
 
+        if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
+            config.cli_suggestion_width = 0.8
+
     def addstr(self, s):
         """Add a string to the current input line and figure out
         where it should go, depending on the cursor position."""
@@ -1145,7 +1148,7 @@ class CLIRepl(repl.Repl):
             max_h = h - y
         else:
             max_h = y + 1
-        max_w = int(w * 0.8)
+        max_w = int(w * self.config.cli_suggestion_width)
         self.list_win.erase()
         if items:
             sep = '.'
