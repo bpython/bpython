@@ -754,8 +754,8 @@ class Repl(object):
                 self.rl_history.append(s)
                 try:
                     self.rl_history.save(histfilename, getpreferredencoding(), self.config.hist_length)
-                except EnvironmentError as (errno, strerr):
-                    self.interact.notify("Write error for file: %s. %s " % (histfilename, strerr))
+                except EnvironmentError, err:
+                    self.interact.notify("Write error for file: %s. %s " % (histfilename, err.strerror))
             else:
                 self.rl_history.append(s)
 
