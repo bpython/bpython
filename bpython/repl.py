@@ -748,6 +748,7 @@ class Repl(object):
         if insert_into_history:
             if self.config.hist_length:
                 histfilename = os.path.expanduser(self.config.hist_file)
+                oldhistory = self.rl_history.entries
                 self.rl_history.entries = []
                 if os.path.exists(histfilename):
                     self.rl_history.load(histfilename, getpreferredencoding())
@@ -756,6 +757,8 @@ class Repl(object):
                     self.rl_history.save(histfilename, getpreferredencoding(), self.config.hist_length)
                 except EnvironmentError, err:
                     self.interact.notify("Error occured while writing to file %s (%s) " % (histfilename, err.strerror))
+                    self.rl_history.entries = oldhistory
+                    self.rl_history.append(s)
             else:
                 self.rl_history.append(s)
 
