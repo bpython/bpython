@@ -21,7 +21,7 @@ arg_spec = True
 hist_file = ~/.pythonhist
 
 # Number of lines to store in history (set to 0 to disable) (default: 100):
-hist_len = 100
+hist_length = 100
 
 # Soft tab size (default: 4, see pep-8):
 tab_length = 4
