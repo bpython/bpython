@@ -16,6 +16,8 @@ Some issues have been resolved as well:
   which happens in some situations. See issue #94.
 * Non-ascii input should work now under Python 3.
 * Issue #165: C-a and C-e do the right thing now in urwid.
+* The short command-line option "-c config" was dropped as it conflicts with
+  vanilla Python's "-c command" option. See issue #186.
 
 v0.9.7.1
 --------
