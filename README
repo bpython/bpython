@@ -110,7 +110,7 @@ See the sample-config file for a list of available options.
 You should save your config file as ~/.bpython/config or specify
 at the command line:
 
-bpython -c /path/to/bpython/config
+bpython --config /path/to/bpython/config
 
 Known Bugs
 ==========
