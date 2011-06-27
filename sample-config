@@ -1,7 +1,7 @@
 # This is a standard python config file
 # Valid values can be True, False, integer numbers, strings
-# By default bpython will look for ~/.bpython/config or you can specify a file
-# with the -c option on the command line
+# By default bpython will look for ~/.config/bpython/config or you
+# can specify a file with the --config option on the command line
 
 # General section tag
 [general]
