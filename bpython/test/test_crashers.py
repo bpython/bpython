@@ -72,7 +72,7 @@ class CrashersTest(object):
         set_win_size(slave, 25, 80)
         reactor.spawnProcess(Protocol(), sys.executable,
             (sys.executable, "-m", "bpython." + self.backend,
-             "-c",  TEST_CONFIG),
+             "--config",  TEST_CONFIG),
             env=dict(TERM="vt100"),
             usePTY=(master, slave, os.ttyname(slave)))
         return result
