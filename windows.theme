@@ -1,0 +1,28 @@
+# Each letter represents a colour marker:
+#   k, r, g, y, b, m, c, w, d
+# which stands for:
+#   blacK, Red, Green, Yellow, Blue, Magenta, Cyan, White, Default
+#
+# But in Windows (for now)
+#   K,     R,    G,     Y,    B,   M,       C,      W,     k
+#   blacK, blue, Green, cyan, red, Magenta, yellow, hite, grey
+# Capital letters represent bold (brighter)
+# Copy to %USERPROFILE%\.bpython\windows.theme and set "color_scheme = windows" in %USERPROFILE%\.bpython\config
+
+[syntax]
+keyword = G
+name = Y
+comment = c
+string = M
+error = B
+number = C
+operator = G
+punctuation = C
+token = M
+
+[interface]
+background = r
+output = w
+main = W
+prompt = W
+prompt_more = K
