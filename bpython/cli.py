@@ -697,7 +697,7 @@ class CLIRepl(repl.Repl):
             ln = len(str(i))
             kw = None
             if kwargs and k + 1 > len(args) - len(kwargs):
-                kw = str(kwargs[k - (len(args) - len(kwargs))])
+                kw = repr(kwargs[k - (len(args) - len(kwargs))])
                 ln += len(kw) + 1
 
             if ln + x >= w:
