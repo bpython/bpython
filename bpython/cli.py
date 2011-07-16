@@ -1259,7 +1259,7 @@ class CLIRepl(repl.Repl):
                 self.list_win.addstr('\n ')
 
         if self.docstring is not None:
-            if not py3:
+            if not py3 and isinstance(docstring_string, unicode):
                 docstring_string = docstring_string.encode(encoding, 'ignore')
             self.list_win.addstr('\n' + docstring_string,
                                  get_colpair(self.config, 'comment'))
