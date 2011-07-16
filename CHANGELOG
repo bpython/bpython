@@ -1,8 +1,8 @@
 Changelog
 =========
 
-v0.9.8
-------
+v0.10
+-----
 As a highlight of the release, Michele Orrù added i18n support to bpython.
 
 Some issues have been resolved as well:
