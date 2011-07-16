@@ -157,7 +157,7 @@ class FakeStdin(object):
 
         curses.raw(True)
         try:
-            while not (buffer.endswith('\n') or buffer.endswith('\r')):
+            while not buffer.endswith(('\n', '\r')):
                 key = self.interface.get_key()
                 if key in [curses.erasechar(), 'KEY_BACKSPACE']:
                     y, x = self.interface.scr.getyx()
@@ -1638,6 +1638,7 @@ def gethw():
     """
 
     if platform.system() != 'Windows':
+        import struct
         h, w = struct.unpack(
             "hhhh",
             fcntl.ioctl(sys.__stdout__, termios.TIOCGWINSZ, "\000" * 8))[0:2]
