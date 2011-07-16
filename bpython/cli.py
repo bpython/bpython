@@ -22,18 +22,38 @@
 # THE SOFTWARE.
 #
 
+# Modified by Brandon Navra
+# Notes for Windows
+# Prerequsites
+#  - Curses
+#  - pyreadline
+#
+# Added
+#
+# - Support for running on windows command prompt
+# - input from numpad keys
+#
+# Issues
+#
+# - Suspend doesn't work nor does detection of resizing of screen
+# - Instead the suspend key exits the program
+# - View source doesn't work on windows unless you install the less program (From GnuUtils or Cygwin)
+
 from __future__ import division, with_statement
 
+import platform
 import os
 import sys
 import curses
 import math
 import re
 import time
-import signal
+
 import struct
-import termios
-import fcntl
+if platform.system() != 'Windows':
+    import signal      #Windows does not have job control
+    import termios     #Windows uses curses
+    import fcntl       #Windows uses curses
 import unicodedata
 import errno
 
@@ -75,6 +95,7 @@ colors = None
 
 DO_RESIZE = False
 # ---
+
 
 def getpreferredencoding():
     return locale.getpreferredencoding() or sys.getdefaultencoding()
@@ -136,7 +157,7 @@ class FakeStdin(object):
 
         curses.raw(True)
         try:
-            while not buffer.endswith('\n'):
+            while not (buffer.endswith('\n') or buffer.endswith('\r')):
                 key = self.interface.get_key()
                 if key in [curses.erasechar(), 'KEY_BACKSPACE']:
                     y, x = self.interface.scr.getyx()
@@ -147,7 +168,7 @@ class FakeStdin(object):
                 elif key == chr(4) and not buffer:
                     # C-d
                     return ''
-                elif (key != '\n' and
+                elif (key not in ('\n', '\r') and
                     (len(key) > 1 or unicodedata.category(key) == 'Cc')):
                     continue
                 sys.stdout.write(key)
@@ -224,6 +245,21 @@ def make_colors(config):
         'w': 7,
         'd': -1,
     }
+
+    if platform.system() == 'Windows':
+        c = dict(c.items() + 
+            [
+            ('K', 8),
+            ('R', 9),
+            ('G', 10),
+            ('Y', 11),
+            ('B', 12),
+            ('M', 13),
+            ('C', 14),
+            ('W', 15),
+            ]
+         )
+
     for i in range(63):
         if i > 7:
             j = i // 8
@@ -773,14 +809,22 @@ class CLIRepl(repl.Repl):
 
         config = self.config
 
-        if key == chr(8):  # C-Backspace (on my computer anyway!)
+        if platform.system() == 'Windows':
+            C_BACK = chr(127)
+            BACKSP = chr(8)
+        else:
+            C_BACK = chr(8)
+            BACKSP = chr(127)
+            
+        if key == C_BACK:  # C-Backspace (on my computer anyway!)
             self.clrtobol()
             key = '\n'
             # Don't return; let it get handled
-        if key == chr(27):
+
+        if key == chr(27): #Escape Key
             return ''
 
-        if key in (chr(127), 'KEY_BACKSPACE'):
+        if key in (BACKSP, 'KEY_BACKSPACE'):
             self.bs()
             self.complete()
             return ''
@@ -893,7 +937,7 @@ class CLIRepl(repl.Repl):
                 self.statusbar.message(_('Cannot show source.'))
             return ''
 
-        elif key == '\n':
+        elif key in ('\n', '\r', 'PADENTER'):
             self.lf()
             return None
 
@@ -904,9 +948,25 @@ class CLIRepl(repl.Repl):
             return self.tab(back=True)
 
         elif key in key_dispatch[config.suspend_key]:
-            self.suspend()
-            return ''
+            if platform.system() != 'Windows':
+                self.suspend()
+                return ''
+            else:
+                self.do_exit = True
+                return None
 
+        elif key[0:3] == 'PAD' and not key in ('PAD0', 'PADSTOP'):
+            pad_keys = {
+                'PADMINUS': '-',
+                'PADPLUS': '+',
+                'PADSLASH': '/',
+                'PADSTAR': '*',
+            }
+            try:
+                self.addstr(pad_keys[key])
+                self.print_line(self.s)
+            except KeyError:
+                return '' 
         elif len(key) == 1 and not unicodedata.category(key) == 'Cc':
             self.addstr(key)
             self.print_line(self.s)
@@ -1296,8 +1356,9 @@ class CLIRepl(repl.Repl):
 
     def suspend(self):
         """Suspend the current process for shell job control."""
-        curses.endwin()
-        os.kill(os.getpid(), signal.SIGSTOP)
+        if platform.system() != 'Windows':
+            curses.endwin()
+            os.kill(os.getpid(), signal.SIGSTOP)
 
     def tab(self, back=False):
         """Process the tab key being hit. If there's only whitespace
@@ -1575,9 +1636,32 @@ def gethw():
     So I'm not going to ask any questions.
 
     """
-    h, w = struct.unpack(
-        "hhhh",
-        fcntl.ioctl(sys.__stdout__, termios.TIOCGWINSZ, "\000" * 8))[0:2]
+
+    if platform.system() != 'Windows':
+        h, w = struct.unpack(
+            "hhhh",
+            fcntl.ioctl(sys.__stdout__, termios.TIOCGWINSZ, "\000" * 8))[0:2]
+    else:
+        from ctypes import windll, create_string_buffer
+
+        # stdin handle is -10
+        # stdout handle is -11
+        # stderr handle is -12
+
+        h = windll.kernel32.GetStdHandle(-12)
+        csbi = create_string_buffer(22)
+        res = windll.kernel32.GetConsoleScreenBufferInfo(h, csbi)
+
+        if res:
+            import struct
+            (bufx, bufy, curx, cury, wattr,
+             left, top, right, bottom, maxx, maxy) = struct.unpack("hhhhHhhhhhh", csbi.raw)
+            sizex = right - left + 1
+            sizey = bottom - top + 1
+        else:
+            sizex, sizey = stdscr.getmaxyx()# can't determine actual size - return default values
+
+        h, w = sizey, sizex
     return h, w
 
 
@@ -1679,10 +1763,11 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     global colors
     DO_RESIZE = False
 
-    old_sigwinch_handler = signal.signal(signal.SIGWINCH,
-                                         lambda *_: sigwinch(scr))
-    # redraw window after being suspended
-    old_sigcont_handler = signal.signal(signal.SIGCONT, lambda *_: sigcont(scr))
+    if platform.system() != 'Windows':
+        old_sigwinch_handler = signal.signal(signal.SIGWINCH,
+                                             lambda *_: sigwinch(scr))
+        # redraw window after being suspended
+        old_sigcont_handler = signal.signal(signal.SIGCONT, lambda *_: sigcont(scr))
 
     stdscr = scr
     try:
@@ -1733,8 +1818,9 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     curses.raw(False)
 
     # Restore signal handlers
-    signal.signal(signal.SIGWINCH, old_sigwinch_handler)
-    signal.signal(signal.SIGCONT, old_sigcont_handler)
+    if platform.system() != 'Windows':
+        signal.signal(signal.SIGWINCH, old_sigwinch_handler)
+        signal.signal(signal.SIGCONT, old_sigcont_handler)
 
     return clirepl.getstdout()
 
@@ -1742,6 +1828,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
 def main(args=None, locals_=None, banner=None):
     locale.setlocale(locale.LC_ALL, "")
     translations.init()
+
 
     config, options, exec_args = bpython.args.parse(args)
 
