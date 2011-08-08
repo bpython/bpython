@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.10.1
+-------
+
+A bugfix release. The fixed bugs are:
+
+* #197: find_modules crashes on non-readable directories
+* #198: Source tarball lacks .po files
+
 v0.10
 -----
 As a highlight of the release, Michele Orrù added i18n support to bpython.
