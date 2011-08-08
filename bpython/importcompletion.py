@@ -110,7 +110,11 @@ def find_modules(path):
         # Perhaps a zip file
         return
 
-    for name in os.listdir(path):
+    try:
+        filenames = os.listdir(path)
+    except EnvironmentError:
+        filenames = []
+    for name in filenames:
         if not any(name.endswith(suffix[0]) for suffix in imp.get_suffixes()):
             # Possibly a package
             if '.' in name:
