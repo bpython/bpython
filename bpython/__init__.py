@@ -23,7 +23,6 @@
 import os.path
 
 __version__ = 'mercurial'
->>>>>>> other
 package_dir = os.path.abspath(os.path.dirname(__file__))
 
 
