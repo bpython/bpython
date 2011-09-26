@@ -251,7 +251,11 @@ class BPythonEdit(urwid.Edit):
 
         You should arrange for this to be called from the 'change' signal.
         """
-        self._bpy_text, self._bpy_attr = urwid.decompose_tagmarkup(markup)
+        if markup:
+            self._bpy_text, self._bpy_attr = urwid.decompose_tagmarkup(markup)
+        else:
+            # decompose_tagmarkup in some urwids fails on the empty list
+            self._bpy_text, self._bpy_attr = '', []
         # This is redundant when we're called off the 'change' signal.
         # I'm assuming this is cheap, making that ok.
         self._invalidate()
