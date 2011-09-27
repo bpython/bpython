@@ -112,35 +112,38 @@ else:
             return EvalProtocol(self.repl)
 
 
-class TwistedEventLoop(urwid.TwistedEventLoop):
+if urwid.VERSION < (1, 0, 0):
+    class TwistedEventLoop(urwid.TwistedEventLoop):
 
-    """TwistedEventLoop modified to properly stop the reactor.
+        """TwistedEventLoop modified to properly stop the reactor.
 
-    urwid 0.9.9 and 0.9.9.1 crash the reactor on ExitMainLoop instead
-    of stopping it. One obvious way this breaks is if anything used
-    the reactor's thread pool: that thread pool is not shut down if
-    the reactor is not stopped, which means python hangs on exit
-    (joining the non-daemon threadpool threads that never exit). And
-    the default resolver is the ThreadedResolver, so if we looked up
-    any names we hang on exit. That is bad enough that we hack up
-    urwid a bit here to exit properly.
-    """
+        urwid 0.9.9 and 0.9.9.1 crash the reactor on ExitMainLoop instead
+        of stopping it. One obvious way this breaks is if anything used
+        the reactor's thread pool: that thread pool is not shut down if
+        the reactor is not stopped, which means python hangs on exit
+        (joining the non-daemon threadpool threads that never exit). And
+        the default resolver is the ThreadedResolver, so if we looked up
+        any names we hang on exit. That is bad enough that we hack up
+        urwid a bit here to exit properly.
+        """
 
-    def handle_exit(self, f):
-        def wrapper(*args, **kwargs):
-            try:
-                return f(*args, **kwargs)
-            except urwid.ExitMainLoop:
-                # This is our change.
-                self.reactor.stop()
-            except:
-                # This is the same as in urwid.
-                # We are obviously not supposed to ever hit this.
-                import sys
-                print sys.exc_info()
-                self._exc_info = sys.exc_info()
-                self.reactor.crash()
-        return wrapper
+        def handle_exit(self, f):
+            def wrapper(*args, **kwargs):
+                try:
+                    return f(*args, **kwargs)
+                except urwid.ExitMainLoop:
+                    # This is our change.
+                    self.reactor.stop()
+                except:
+                    # This is the same as in urwid.
+                    # We are obviously not supposed to ever hit this.
+                    import sys
+                    print sys.exc_info()
+                    self._exc_info = sys.exc_info()
+                    self.reactor.crash()
+            return wrapper
+else:
+    TwistedEventLoop = urwid.TwistedEventLoop
 
 
 class Statusbar(object):
