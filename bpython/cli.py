@@ -247,7 +247,7 @@ def make_colors(config):
     }
 
     if platform.system() == 'Windows':
-        c = dict(c.items() + 
+        c = dict(c.items() +
             [
             ('K', 8),
             ('R', 9),
@@ -317,6 +317,7 @@ class CLIRepl(repl.Repl):
     def addstr(self, s):
         """Add a string to the current input line and figure out
         where it should go, depending on the cursor position."""
+        self.rl_history.reset()
         if not self.cpos:
             self.s += s
         else:
@@ -337,6 +338,7 @@ class CLIRepl(repl.Repl):
     def bs(self, delete_tabs=True):
         """Process a backspace"""
 
+        self.rl_history.reset()
         y, x = self.scr.getyx()
 
         if not self.s:
@@ -365,6 +367,7 @@ class CLIRepl(repl.Repl):
         return n
 
     def bs_word(self):
+        self.rl_history.reset()
         pos = len(self.s) - self.cpos - 1
         deleted = []
 # First we delete any space to the left of the cursor.
@@ -815,7 +818,7 @@ class CLIRepl(repl.Repl):
         else:
             C_BACK = chr(8)
             BACKSP = chr(127)
-            
+
         if key == C_BACK:  # C-Backspace (on my computer anyway!)
             self.clrtobol()
             key = '\n'
@@ -966,7 +969,7 @@ class CLIRepl(repl.Repl):
                 self.addstr(pad_keys[key])
                 self.print_line(self.s)
             except KeyError:
-                return '' 
+                return ''
         elif len(key) == 1 and not unicodedata.category(key) == 'Cc':
             self.addstr(key)
             self.print_line(self.s)
