@@ -789,8 +789,20 @@ class URWIDRepl(repl.Repl):
         self.prompt(False)
 
     def keyboard_interrupt(self):
-        # Do we need to do more here? Break out of multiline input perhaps?
-        self.echo('KeyboardInterrupt')
+        # If the user is currently editing, interrupt him. This
+        # mirrors what the regular python REPL does.
+        if self.edit is not None:
+            # XXX this is a lot of code, and I am not sure it is
+            # actually enough code. Needs some testing.
+            self.edit.make_readonly()
+            self.edit = None
+            self.buffer = []
+            self.echo('KeyboardInterrupt')
+            self.prompt(False)
+        else:
+            # I do not quite remember if this is reachable, but let's
+            # be safe.
+            self.echo('KeyboardInterrupt')
 
     def prompt(self, more):
         # Clear current output here, or output resulting from the
