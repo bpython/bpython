@@ -123,7 +123,10 @@ def find_modules(path):
             # Unfortunately, CPython just crashes if there is a directory
             # which ends with a python extension, so work around.
             continue
-        name = os.path.splitext(name)[0]
+        for suffix in imp.get_suffixes():
+            if name.endswith(suffix[0]):
+                name = name[:-len(suffix[0])]
+                break
         if py3 and name == "badsyntax_pep3120":
             # Workaround for issue #166
             continue
