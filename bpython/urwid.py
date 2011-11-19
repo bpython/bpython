@@ -812,14 +812,20 @@ class URWIDRepl(repl.Repl):
         # XXX is this the right place?
         self.rl_history.reset()
         # XXX what is s_hist?
+
+        # We need the caption to use unicode as urwid normalizes later
+        # input to be the same type, using ascii as encoding. If the
+        # caption is bytes this breaks typing non-ascii into bpython.
+        # Currently this decodes using ascii as I do not know where
+        # ps1 is getting loaded from. If anyone wants to make
+        # non-ascii prompts work feel free to fix this.
         if not more:
-            self.edit = BPythonEdit(self.config,
-                                    caption=('prompt', self.ps1))
+            caption = ('prompt', self.ps1.decode('ascii'))
             self.stdout_hist += self.ps1
         else:
-            self.edit = BPythonEdit(self.config,
-                                    caption=('prompt_more', self.ps2))
+            caption = ('prompt_more', self.ps2.decode('ascii'))
             self.stdout_hist += self.ps2
+        self.edit = BPythonEdit(self.config, caption=caption)
 
         urwid.connect_signal(self.edit, 'change', self.on_input_change)
         urwid.connect_signal(self.edit, 'edit-pos-changed',
