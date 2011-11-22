@@ -617,6 +617,11 @@ class Repl(object):
                 e = True
             else:
                 matches = self.completer.matches
+                if (self.config.complete_magic_methods and self.buffer and
+                    self.buffer[0].startswith("class ") and
+                    self.current_line().lstrip().startswith("def ")):
+                    matches.extend(name for name in self.config.magic_methods
+                                   if name.startswith(cw))
 
         if not e and self.argspec:
             matches.extend(name + '=' for name in self.argspec[1][0]
