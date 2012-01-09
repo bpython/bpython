@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # The MIT License
 #
 # Copyright (c) 2008 Simon de Vlieger

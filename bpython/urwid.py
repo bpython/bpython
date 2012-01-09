@@ -562,7 +562,7 @@ class URWIDRepl(repl.Repl):
         # Stolen from cli. TODO: clean up and split out.
         if (not text or
             (not text[-1].isalnum() and text[-1] not in ('.', '_'))):
-             return
+            return
 
         # Seek backwards in text for the first non-identifier char:
         for i, c in enumerate(reversed(text)):
