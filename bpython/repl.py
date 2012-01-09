@@ -146,17 +146,25 @@ class Interpreter(code.InteractiveInterpreter):
 
 class History(object):
 
-    def __init__(self, entries=None):
+    def __init__(self, entries=None, duplicates=False):
         if entries is None:
             self.entries = ['']
         else:
             self.entries = list(entries)
         self.index = 0
         self.saved_line = ''
+        self.duplicates = duplicates
 
     def append(self, line):
         line = line.rstrip('\n')
         if line:
+            if not self.duplicates:
+                # remove duplicates
+                try:
+                    while True:
+                        self.entries.remove(line)
+                except ValueError:
+                    pass
             self.entries.append(line)
 
     def first(self):
@@ -340,7 +348,7 @@ class Repl(object):
         self.interp = interp
         self.interp.syntaxerror_callback = self.clear_current_line
         self.match = False
-        self.rl_history = History()
+        self.rl_history = History(duplicates=config.hist_duplicates)
         self.s_hist = []
         self.history = []
         self.evaluating = False
