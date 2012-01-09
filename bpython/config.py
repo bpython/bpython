@@ -61,6 +61,7 @@ def loadini(struct, configfile):
             'highlight_show_source': True,
             'hist_file': '~/.pythonhist',
             'hist_length': 100,
+            'hist_duplicates': True,
             'paste_time': 0.02,
             'syntax': True,
             'tab_length': 4,
@@ -110,6 +111,7 @@ def loadini(struct, configfile):
                                                      'highlight_show_source')
     struct.hist_file = config.get('general', 'hist_file')
     struct.hist_length = config.getint('general', 'hist_length')
+    struct.hist_duplicates = config.getboolean('general', 'hist_duplicates')
     struct.flush_output = config.getboolean('general', 'flush_output')
     struct.pastebin_key = config.get('keyboard', 'pastebin')
     struct.save_key = config.get('keyboard', 'save')
