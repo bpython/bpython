@@ -1511,6 +1511,9 @@ class Statusbar(object):
             self.c = c
 
         if s:
+            if not py3 and isinstance(s, unicode):
+                s = s.encode(getpreferredencoding())
+
             if self.c:
                 self.win.addstr(s, self.c)
             else:
