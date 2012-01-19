@@ -228,9 +228,14 @@ def getargspec(func, f):
     # not take 'self', the latter would:
     func_name = getattr(f, '__name__', None)
 
-    is_bound_method = ((inspect.ismethod(f) and f.im_self is not None)
+    try:
+        is_bound_method = ((inspect.ismethod(f) and f.im_self is not None)
                     or (func_name == '__init__' and not
                         func.endswith('.__init__')))
+    except:
+        # if f is a method from a xmlrpclib.Server instance, func_name ==
+        # '__init__' throws xmlrpclib.Fault (see #202)
+        return None
     try:
         if py3:
             argspec = inspect.getfullargspec(f)
