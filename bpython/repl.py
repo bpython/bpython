@@ -749,7 +749,12 @@ class Repl(object):
             self.interact.notify("Pastebin aborted")
             return
 
-        pasteservice = ServerProxy(self.config.pastebin_url)
+        try:
+            pasteservice = ServerProxy(self.config.pastebin_url)
+        except IOError, e:
+            self.interact.notify("Pastebin error for URL '%s': %s" %
+                                 (self.config.pastebin_url, str(e)))
+            return
 
         if s == self.prev_pastebin_content:
             self.interact.notify('Duplicate pastebin. Previous URL: ' +

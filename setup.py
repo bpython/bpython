@@ -50,7 +50,7 @@ if using_translations:
     cmdclass['extract_messages'] = extract_messages
 
 
-if platform.system() == 'FreeBSD':
+if platform.system() in ['FreeBSD', 'OpenBSD']:
     man_dir = 'man'
 else:
     man_dir = 'share/man'
