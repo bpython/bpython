@@ -34,3 +34,22 @@ def set_trace():
     a debugger instance and sets the trace. """
     debugger = BPdb()
     debugger.set_trace(sys._getframe().f_back)
+
+# Adopted verbatim from pdb for completeness:
+
+def post_mortem(t=None):
+    # handling the default
+    if t is None:
+        # sys.exc_info() returns (type, value, traceback) if an exception is
+        # being handled, otherwise it returns None
+        t = sys.exc_info()[2]
+        if t is None:
+            raise ValueError("A valid traceback must be passed if no "
+                             "exception is being handled")
+
+    p = BPdb()
+    p.reset()
+    p.interaction(None, t)
+
+def pm():
+    post_mortem(getattr(sys, "last_traceback", None))
