@@ -167,12 +167,52 @@ class Statusbar(object):
     The "widget" attribute is an urwid widget.
     """
 
-    def __init__(self, config, s=None):
+    def __init__(self, config, s=None, main_loop=None):
         self.config = config
+        self.timer = None
+        self.main_loop = main_loop
         self.s = s or ''
 
-        # XXX wrap in AttrMap for wrapping?
         self.widget = urwid.Text(('main', self.s))
+        # use wrap mode 'clip' to just cut off at the end of line
+        self.widget.set_wrap_mode('clip')
+
+    def _check(self, callback, userdata=None):
+        """This is the method is called from the timer to reset the status bar."""
+        self.timer = None
+        self.settext(self.s)
+
+    def message(self, s, n=3):
+        """Display a message for a short n seconds on the statusbar and return
+        it to its original state."""
+
+        self.settext(s)
+        self.timer = self.main_loop.set_alarm_in(n, self._check)
+
+    def prompt(self, s=''):
+        """Prompt the user for some input (with the optional prompt 's') and
+        return the input text, then restore the statusbar to its original
+        value."""
+
+        # TODO
+        return ''
+
+    def settext(self, s, permanent=False):
+        """Set the text on the status bar to a new value. If permanent is True,
+        the new value will be permanent."""
+
+        if self.timer is not None:
+          self.main_loop.remove_alarm(self.timer)
+          self.timer = None
+
+        self.widget.set_text(('main', s))
+        if permanent:
+          self.s = s
+
+    def clear(self):
+        """Clear the status bar."""
+        self.settext('')
+
 
 def decoding_input_filter(keys, raw):
     """Input filter for urwid which decodes each key with the locale's
@@ -476,6 +516,7 @@ class URWIDRepl(repl.Repl):
             self.frame, palette,
             event_loop=event_loop, unhandled_input=self.handle_input,
             input_filter=input_filter, handle_mouse=False)
+        self.statusbar.main_loop = self.main_loop
 
         self.edits = []
         self.edit = None
