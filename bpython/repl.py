@@ -748,7 +748,10 @@ class Repl(object):
             not self.interact.confirm("Pastebin buffer? (y/N) ")):
             self.interact.notify("Pastebin aborted")
             return
+        return self.do_pastebin(s)
 
+    def do_pastebin(self, s):
+        """Actually perform the upload."""
         try:
             pasteservice = ServerProxy(self.config.pastebin_url)
         except IOError, e:
