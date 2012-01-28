@@ -1012,10 +1012,14 @@ def main(args=None, locals_=None, banner=None):
                 ]))
 
     if options.help_reactors:
-        from twisted.application import reactors
-        # Stolen from twisted.application.app (twistd).
-        for r in reactors.getReactorTypes():
-            print '    %-4s\t%s' % (r.shortName, r.description)
+        try:
+            from twisted.application import reactors
+            # Stolen from twisted.application.app (twistd).
+            for r in reactors.getReactorTypes():
+                print '    %-4s\t%s' % (r.shortName, r.description)
+        except ImportError:
+            sys.stderr.write('No reactors are available. Please install '
+                'twisted for reactor support.')
         return
 
     palette = [
@@ -1030,7 +1034,12 @@ def main(args=None, locals_=None, banner=None):
         options.reactor = 'select'
 
     if options.reactor:
-        from twisted.application import reactors
+        try:
+            from twisted.application import reactors
+        except ImportError:
+            sys.stderr.write('No reactors are available. Please install '
+                'twisted for reactor support.')
+            return
         try:
             # XXX why does this not just return the reactor it installed?
             reactor = reactors.installReactor(options.reactor)
@@ -1053,8 +1062,14 @@ def main(args=None, locals_=None, banner=None):
         locals_ = main_mod.__dict__
 
     if options.plugin:
-        from twisted import plugin
-        from twisted.application import service
+        try:
+            from twisted import plugin
+            from twisted.application import service
+        except ImportError:
+            sys.stderr.write('No twisted plugins are available. Please install '
+                'twisted for twisted plugin support.')
+            return
+
         for plug in plugin.getPlugins(service.IServiceMaker):
             if plug.tapname == options.plugin:
                 break
