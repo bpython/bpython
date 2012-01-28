@@ -54,7 +54,8 @@ for c in string.ascii_lowercase:
                                 '^%s' % c.upper())
 
 for c in string.ascii_lowercase:
-    urwid_key_dispatch['C-%s' % c] = 'ctrl %s' % c 
+    urwid_key_dispatch['C-%s' % c] = 'ctrl %s' % c
+    urwid_key_dispatch['M-%s' % c] = 'meta %s' % c
 
 # fill dispatch with cool characters
 cli_key_dispatch['C-['] = (chr(27), '^[')
@@ -68,4 +69,4 @@ for x in xrange(1, 13):
     cli_key_dispatch['F%s' % str(x)] = ('KEY_F(%s)' % str(x),)
 
 for x in xrange(1, 13):
-    urwid_key_dispatch['F%s' % str(x)] = 'F%s' % str(x)
+    urwid_key_dispatch['F%s' % str(x)] = 'f%s' % str(x)
