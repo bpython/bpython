@@ -218,15 +218,19 @@ class Statusbar(object):
         self.settext(s)
         self.timer = self.main_loop.set_alarm_in(n, self._check)
 
+    def _reset_timer(self):
+        """Reset the timer from message."""
+        if self.timer is not None:
+            self.main_loop.remove_alarm(self.timer)
+            self.timer = None
+
     def prompt(self, s=None, single=False):
         """Prompt the user for some input (with the optional prompt 's'). After
         the user hit enter the signal 'prompt_result' will be emited and the
         status bar will be reset. If single is True, the first keypress will be
         returned."""
 
-        if self.timer is not None:
-            self.main_loop.remove_alarm(self.timer)
-            self.timer = None
+        self._reset_timer()
 
         self.edit.single = single
         self.edit.set_caption(('main', s or '?'))
@@ -243,9 +247,7 @@ class Statusbar(object):
         the new value will be permanent. If that status bar is in prompt mode,
         the prompt will be aborted. """
 
-        if self.timer is not None:
-          self.main_loop.remove_alarm(self.timer)
-          self.timer = None
+        self._reset_timer()
 
         # hide the edit and display the text widget
         if self.edit in self.widget.widget_list:
@@ -533,7 +535,8 @@ class URWIDInteraction(repl.Interaction):
 
     def prompt(self, s, callback=None, single=False):
         """Prompt the user for input. The result will be returned via calling
-        callback."""
+        callback. Note that there can only be one prompt active. But the
+        callback can already start a new prompt."""
 
         if self.callback is not None:
             raise Exception('Prompt already in progress')
@@ -545,8 +548,11 @@ class URWIDInteraction(repl.Interaction):
     def _prompt_result(self, text):
         self.frame.set_focus('body')
         if self.callback is not None:
-            self.callback(text)
-        self.callback = None
+            # The callback might want to start another prompt, so reset it
+            # before calling the callback.
+            callback = self.callback
+            self.callback = None
+            callback(text)
 
 
 class URWIDRepl(repl.Repl):
