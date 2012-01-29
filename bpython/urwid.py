@@ -147,6 +147,28 @@ else:
     TwistedEventLoop = urwid.TwistedEventLoop
 
 
+class StatusbarEdit(urwid.Edit):
+    """Wrapper around urwid.Edit used for the prompt in Statusbar.
+
+    This class only adds a single signal that is emitted if the user presses
+    Enter."""
+
+    signals = urwid.Edit.signals + ['prompt_enter']
+
+    def __init__(self, *args, **kwargs):
+        self.single = False
+        urwid.Edit.__init__(self, *args, **kwargs)
+
+    def keypress(self, size, key):
+        if self.single:
+            urwid.emit_signal(self, 'prompt_enter', self, key)
+        elif key == 'enter':
+            urwid.emit_signal(self, 'prompt_enter', self, self.get_edit_text())
+        else:
+            return urwid.Edit.keypress(self, size, key)
+
+urwid.register_signal(StatusbarEdit, 'prompt_enter')
+
 class Statusbar(object):
 
     """Statusbar object, ripped off from bpython.cli.
@@ -167,15 +189,22 @@ class Statusbar(object):
     The "widget" attribute is an urwid widget.
     """
 
+    signals = ['prompt_result']
+
     def __init__(self, config, s=None, main_loop=None):
         self.config = config
         self.timer = None
         self.main_loop = main_loop
         self.s = s or ''
 
-        self.widget = urwid.Text(('main', self.s))
+        self.text = urwid.Text(('main', self.s))
         # use wrap mode 'clip' to just cut off at the end of line
-        self.widget.set_wrap_mode('clip')
+        self.text.set_wrap_mode('clip')
+
+        self.edit = StatusbarEdit(('main', ''))
+        urwid.connect_signal(self.edit, 'prompt_enter', self._on_prompt_enter)
+
+        self.widget = urwid.Columns([self.text, self.edit])
 
     def _check(self, callback, userdata=None):
         """This is the method is called from the timer to reset the status bar."""
@@ -189,29 +218,56 @@ class Statusbar(object):
         self.settext(s)
         self.timer = self.main_loop.set_alarm_in(n, self._check)
 
-    def prompt(self, s=''):
-        """Prompt the user for some input (with the optional prompt 's') and
-        return the input text, then restore the statusbar to its original
-        value."""
+    def prompt(self, s=None, single=False):
+        """Prompt the user for some input (with the optional prompt 's'). After
+        the user hit enter the signal 'prompt_result' will be emited and the
+        status bar will be reset. If single is True, the first keypress will be
+        returned."""
 
-        # TODO
-        return ''
+        if self.timer is not None:
+            self.main_loop.remove_alarm(self.timer)
+            self.timer = None
+
+        self.edit.single = single
+        self.edit.set_caption(('main', s or '?'))
+        self.edit.set_edit_text('')
+        # hide the text and display the edit widget
+        if not self.edit in self.widget.widget_list:
+            self.widget.widget_list.append(self.edit)
+        if self.text in self.widget.widget_list:
+            self.widget.widget_list.remove(self.text)
+        self.widget.set_focus_column(0)
 
     def settext(self, s, permanent=False):
         """Set the text on the status bar to a new value. If permanent is True,
-        the new value will be permanent."""
+        the new value will be permanent. If that status bar is in prompt mode,
+        the prompt will be aborted. """
 
         if self.timer is not None:
           self.main_loop.remove_alarm(self.timer)
           self.timer = None
 
-        self.widget.set_text(('main', s))
+        # hide the edit and display the text widget
+        if self.edit in self.widget.widget_list:
+            self.widget.widget_list.remove(self.edit)
+        if not self.text in self.widget.widget_list:
+            self.widget.widget_list.append(self.text)
+
+        self.text.set_text(('main', s))
         if permanent:
           self.s = s
 
     def clear(self):
         """Clear the status bar."""
         self.settext('')
+
+    def _on_prompt_enter(self, edit, new_text):
+        """Reset the statusbar and pass the input from the prompt to the caller
+        via 'prompt_result'."""
+        self.settext(self.s)
+        urwid.emit_signal(self, 'prompt_result', new_text)
+
+urwid.register_signal(Statusbar, 'prompt_result')
 
 
 def decoding_input_filter(keys, raw):
@@ -269,7 +325,7 @@ class BPythonEdit(urwid.Edit):
         self._bpy_selectable = True
         self._bpy_may_move_cursor = False
         self.config = config
-        self.tab_length = config.tab_length 
+        self.tab_length = config.tab_length
         urwid.Edit.__init__(self, *args, **kwargs)
 
     def set_edit_pos(self, pos):
@@ -353,9 +409,6 @@ class BPythonEdit(urwid.Edit):
                     self.set_edit_text(line[:-self.tab_length])
                 else:
                     return urwid.Edit.keypress(self, size, key)
-            elif key == 'pastebin':
-                # do pastebin
-                pass
             else:
                 # TODO: Add in specific keypress fetching code here
                 return urwid.Edit.keypress(self, size, key)
@@ -461,20 +514,39 @@ class Tooltip(urwid.BoxWidget):
         return canvas
 
 class URWIDInteraction(repl.Interaction):
-    def __init__(self, config, statusbar=None):
+    def __init__(self, config, statusbar, frame):
         repl.Interaction.__init__(self, config, statusbar)
+        self.frame = frame
+        urwid.connect_signal(statusbar, 'prompt_result', self._prompt_result)
+        self.callback = None
 
-    def confirm(self, q):
-        """Ask for yes or no and return boolean"""
-        try:
-            reply = self.statusbar.prompt(q)
-        except ValueError:
-            return False
+    def confirm(self, q, callback):
+        """Ask for yes or no and call callback to return the result"""
 
-        return reply.lower() in (_('y'), _('yes'))
+        def callback_wrapper(result):
+            callback(result.lower() in (_('y'), _('yes')))
+
+        self.prompt(q, callback_wrapper, single=True)
 
     def notify(self, s, n=10):
         return self.statusbar.message(s, n)
+
+    def prompt(self, s, callback=None, single=False):
+        """Prompt the user for input. The result will be returned via calling
+        callback."""
+
+        if self.callback is not None:
+            raise Exception('Prompt already in progress')
+
+        self.callback = callback
+        self.statusbar.prompt(s, single=single)
+        self.frame.set_focus('footer')
+
+    def _prompt_result(self, text):
+        self.frame.set_focus('body')
+        if self.callback is not None:
+            self.callback(text)
+        self.callback = None
 
 
 class URWIDRepl(repl.Repl):
@@ -490,21 +562,12 @@ class URWIDRepl(repl.Repl):
 
         self.listbox = BPythonListBox(urwid.SimpleListWalker([]))
 
-        # String is straight from bpython.cli
-        self.statusbar = Statusbar(config,
-            _(" <%s> Rewind  <%s> Save  <%s> Pastebin "
-              " <%s> Pager  <%s> Show Source ") %
-              (config.undo_key, config.save_key, config.pastebin_key,
-               config.last_output_key, config.show_source_key))
-
-        self.interact = URWIDInteraction(self.config, self.statusbar)
-
         self.tooltip = urwid.ListBox(urwid.SimpleListWalker([]))
         self.tooltip.grid = None
         self.overlay = Tooltip(self.listbox, self.tooltip)
         self.stdout_hist = ''
 
-        self.frame = urwid.Frame(self.overlay, footer=self.statusbar.widget)
+        self.frame = urwid.Frame(self.overlay)
 
         if urwid.get_encoding_mode() == 'narrow':
             input_filter = decoding_input_filter
@@ -516,7 +579,15 @@ class URWIDRepl(repl.Repl):
             self.frame, palette,
             event_loop=event_loop, unhandled_input=self.handle_input,
             input_filter=input_filter, handle_mouse=False)
-        self.statusbar.main_loop = self.main_loop
+
+        # String is straight from bpython.cli
+        self.statusbar = Statusbar(config,
+            _(" <%s> Rewind  <%s> Save  <%s> Pastebin "
+              " <%s> Pager  <%s> Show Source ") %
+              (config.undo_key, config.save_key, config.pastebin_key,
+               config.last_output_key, config.show_source_key), self.main_loop)
+        self.frame.set_footer(self.statusbar.widget)
+        self.interact = URWIDInteraction(self.config, self.statusbar, self.frame)
 
         self.edits = []
         self.edit = None
@@ -899,6 +970,11 @@ class URWIDRepl(repl.Repl):
         edit.set_edit_markup(list(format_tokens(tokens)))
 
     def handle_input(self, event):
+        # Since most of the input handling here should be handled in the edit
+        # instead, we return here early if the edit doesn't have the focus.
+        if self.frame.get_focus() != 'body':
+            return
+
         if event == 'enter':
             inp = self.edit.get_edit_text()
             self.history.append(inp)
@@ -1189,6 +1265,7 @@ def load_urwid_command_map(config):
     urwid.command_map[key_dispatch[config.down_one_line_key]] = 'cursor down'
     urwid.command_map[key_dispatch['C-a']] = 'cursor max left'
     urwid.command_map[key_dispatch['C-e']] = 'cursor max right'
+    urwid.command_map[key_dispatch[config.pastebin_key]] = 'pastebin'
 """
             'clear_line': 'C-u',
             'clear_screen': 'C-l',
