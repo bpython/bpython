@@ -575,6 +575,15 @@ class CLIRepl(repl.Repl):
         self.s = self.rl_history.forward()
         self.print_line(self.s, clr=True)
 
+    def search(self):
+        """Search with the partial matches from the history object."""
+
+        self.cpo = 0
+        self.clear_wrapped_lines()
+        self.rl_history.enter(self.s)
+        self.s = self.rl_history.back(start=False, search=True)
+        self.print_line(self.s, clr=True)
+
     def get_key(self):
         key = ''
         while True:
@@ -846,6 +855,10 @@ class CLIRepl(repl.Repl):
 
         elif key in key_dispatch[config.undo_key]:  # C-r
             self.undo()
+            return ''
+
+        elif key in key_dispatch[config.search_key]:
+            self.search()
             return ''
 
         elif key in ('KEY_UP', ) + key_dispatch[config.up_one_line_key]:

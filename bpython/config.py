@@ -84,6 +84,7 @@ def loadini(struct, configfile):
             'show_source': 'F2',
             'suspend': 'C-z',
             'undo': 'C-r',
+            'search': 'C-o',
             'up_one_line': 'C-p',
             'yank_from_buffer': 'C-y'},
         'cli': {
@@ -115,6 +116,7 @@ def loadini(struct, configfile):
     struct.flush_output = config.getboolean('general', 'flush_output')
     struct.pastebin_key = config.get('keyboard', 'pastebin')
     struct.save_key = config.get('keyboard', 'save')
+    struct.search_key = config.get('keyboard', 'search')
     struct.show_source_key = config.get('keyboard', 'show_source')
     struct.suspend_key = config.get('keyboard', 'suspend')
     struct.undo_key = config.get('keyboard', 'undo')

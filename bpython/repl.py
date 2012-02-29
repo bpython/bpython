@@ -173,10 +173,12 @@ class History(object):
             self.index = len(self.entries)
         return self.entries[-self.index]
 
-    def back(self, match=True):
+    def back(self, start=True, search=False):
         """Move one step back in the history."""
         if not self.is_at_end:
-            if match:
+            if search:
+                self.index += self.find_partial_match_backward(self.saved_line)
+            elif match:
                 self.index += self.find_match_backward(self.saved_line)
             else:
                 self.index += 1
@@ -189,10 +191,20 @@ class History(object):
                 return idx + 1
         return 0
 
-    def forward(self, match = True):
+    def find_partial_match_backward(self, search_term):
+        filtered_list_len = len(self.entries) - self.index
+        for idx, val in enumerate(reversed(self.entries[:filtered_list_len])):
+            if search_term in val:
+                return idx + 1
+        return 0
+
+
+    def forward(self, start=True, search=False):
         """Move one step forward in the history."""
         if self.index > 1:
-            if match:
+            if search:
+                self.index -= self.find_partial_match_forward(self.saved_line)
+            elif match:
                 self.index -= self.find_match_forward(self.saved_line)
             else:
                 self.index -= 1
@@ -207,6 +219,15 @@ class History(object):
             if val.startswith(search_term):
                 return idx + 1
         return self.index
+
+    def find_partial_match_forward(self, search_term):
+        filtered_list_len = len(self.entries) - self.index + 1
+        for idx, val in enumerate(self.entries[filtered_list_len:]):
+            if search_term in val:
+                return idx + 1
+        return self.index
+
+
 
     def last(self):
         """Move forward to the end of the history."""
