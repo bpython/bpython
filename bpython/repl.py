@@ -178,7 +178,7 @@ class History(object):
         if not self.is_at_end:
             if search:
                 self.index += self.find_partial_match_backward(self.saved_line)
-            elif match:
+            elif start:
                 self.index += self.find_match_backward(self.saved_line)
             else:
                 self.index += 1
@@ -204,7 +204,7 @@ class History(object):
         if self.index > 1:
             if search:
                 self.index -= self.find_partial_match_forward(self.saved_line)
-            elif match:
+            elif start:
                 self.index -= self.find_match_forward(self.saved_line)
             else:
                 self.index -= 1
