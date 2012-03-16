@@ -401,7 +401,8 @@ class Repl(object):
 
         pythonhist = os.path.expanduser(self.config.hist_file)
         if os.path.exists(pythonhist):
-            self.rl_history.load(pythonhist, getpreferredencoding())
+            self.rl_history.load(pythonhist,
+                    getpreferredencoding() or "ascii")
 
     def startup(self):
         """
