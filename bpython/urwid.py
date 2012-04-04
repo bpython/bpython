@@ -1101,7 +1101,7 @@ def main(args=None, locals_=None, banner=None):
                 print '    %-4s\t%s' % (r.shortName, r.description)
         except ImportError:
             sys.stderr.write('No reactors are available. Please install '
-                'twisted for reactor support.')
+                'twisted for reactor support.\n')
         return
 
     palette = [
@@ -1120,7 +1120,7 @@ def main(args=None, locals_=None, banner=None):
             from twisted.application import reactors
         except ImportError:
             sys.stderr.write('No reactors are available. Please install '
-                'twisted for reactor support.')
+                'twisted for reactor support.\n')
             return
         try:
             # XXX why does this not just return the reactor it installed?
@@ -1149,7 +1149,7 @@ def main(args=None, locals_=None, banner=None):
             from twisted.application import service
         except ImportError:
             sys.stderr.write('No twisted plugins are available. Please install '
-                'twisted for twisted plugin support.')
+                'twisted for twisted plugin support.\n')
             return
 
         for plug in plugin.getPlugins(service.IServiceMaker):
