@@ -1,6 +1,19 @@
 Changelog
 =========
 
+v0.11
+-----
+
+A bugfix/cleanup release .The fixed bugs are:
+
+* #204
+
+Otherwise lots of small additions to the to be replacement for our ncurses
+frontend, the urwid frontend.
+
+I'd like to specifically thank Amjith Ramanujam for his work on history search
+which was further implemented and is in working order right now.
+
 v0.10.1
 -------
 
