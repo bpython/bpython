@@ -6,7 +6,7 @@ v0.11
 
 A bugfix/cleanup release .The fixed bugs are:
 
-* #204
+* #204: "import math" not autocompleting on python 3.2
 
 Otherwise lots of small additions to the to be replacement for our ncurses
 frontend, the urwid frontend.
