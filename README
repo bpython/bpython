@@ -107,8 +107,9 @@ as you type.
 Configuration
 =============
 See the sample-config file for a list of available options.
-You should save your config file as ~/.bpython/config or specify
-at the command line:
+You should save your config file as ~/.config/bpython/config
+(i.e $XDG_CONFIG_HOME/bpython/config) or specify at the
+command line:
 
 bpython --config /path/to/bpython/config
 
