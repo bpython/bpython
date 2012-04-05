@@ -23,7 +23,9 @@ except ImportError:
 
 try:
     from babel.messages.frontend import compile_catalog as _compile_catalog
-    from babel.messages.frontend import extract_messages
+    from babel.messages.frontend import extract_messages as _extract_messages
+    from babel.messages.frontend import update_catalog as _update_catalog
+    from babel.messages.frontend import init_catalog as _init_catalog
     using_translations = True
 except ImportError:
     using_translations = False
@@ -44,10 +46,44 @@ if using_translations:
             self.directory = translations_dir
             self.use_fuzzy = True
 
+    class update_catalog(_update_catalog):
+        def initialize_options(self):
+            """Simply set default domain and directory attributes to the
+            correct path for bpython."""
+            _update_catalog.initialize_options(self)
+
+            self.domain = 'bpython'
+            self.output_dir = translations_dir
+            self.input_file = os.path.join(translations_dir, 'bpython.pot')
+
+    class extract_messages(_extract_messages):
+        def initialize_options(self):
+            """Simply set default domain and output file attributes to the
+            correct values for bpython."""
+            _extract_messages.initialize_options(self)
+
+            self.domain = 'bpython'
+            self.output_file = os.path.join(translations_dir, 'bpython.pot')
+
+    class init_catalog(_init_catalog):
+        def initialize_options(self):
+            """Simply set default domain, input file and output directory
+            attributes to the correct values for bpython."""
+            _init_catalog.initialize_options(self)
+
+            self.domain = 'bpython'
+            self.output_dir = translations_dir
+            self.input_file = os.path.join(translations_dir, 'bpython.pot')
+
     build.sub_commands.append(('compile_catalog', None))
+    build.sub_commands.append(('update_catalog', None))
+    build.sub_commands.append(('extract_messages', None))
+    build.sub_commands.append(('init_catalog', None))
 
     cmdclass['compile_catalog'] = compile_catalog
     cmdclass['extract_messages'] = extract_messages
+    cmdclass['update_catalog'] = update_catalog
+    cmdclass['init_catalog'] = init_catalog
 
 
 if platform.system() in ['FreeBSD', 'OpenBSD']:
