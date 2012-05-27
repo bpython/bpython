@@ -116,6 +116,25 @@ def calculate_screen_lines(tokens, width, cursor=0):
     return lines
 
 
+class FakeStream(object):
+    """Provide a fake file object which calls functions on the interface
+    provided."""
+
+    def __init__(self, interface):
+        self.encoding = getpreferredencoding()
+        self.interface = interface
+
+    def write(self, s):
+        self.interface.write(s)
+
+    def writelines(self, l):
+        for s in l:
+            self.write(s)
+
+    def isatty(self):
+        # some third party (amongst them mercurial) depend on this
+        return True
+
 class FakeStdin(object):
     """Provide a fake stdin type for things like raw_input() etc."""
 
@@ -653,9 +672,6 @@ class CLIRepl(repl.Repl):
         self.cpos = len(self.s)
         if refresh:
             self.scr.refresh()
-        return True
-
-    def isatty(self):
         return True
 
     def lf(self):
@@ -1814,8 +1830,8 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     clirepl._C = cols
 
     sys.stdin = FakeStdin(clirepl)
-    sys.stdout = clirepl
-    sys.stderr = clirepl
+    sys.stdout = FakeStream(clirepl)
+    sys.stderr = FakeStream(clirepl)
 
     if args:
         bpython.args.exec_code(interpreter, args)
