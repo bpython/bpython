@@ -790,7 +790,8 @@ class Repl(object):
 
         self.interact.notify('Posting data to pastebin...')
         try:
-            paste_id = pasteservice.pastes.newPaste('pycon', s)
+            paste_id = pasteservice.pastes.newPaste('pycon', s, '', '', '',
+                   self.config.pastebin_private)
         except (SocketError, XMLRPCError), e:
             self.interact.notify('Upload failed: %s' % (str(e), ) )
             return
