@@ -34,12 +34,14 @@ import subprocess
 import sys
 import textwrap
 import traceback
+import unicodedata
 from glob import glob
 from itertools import takewhile
 from locale import getpreferredencoding
 from socket import error as SocketError
 from string import Template
 from urllib import quote as urlquote
+from urlparse import urlparse
 from xmlrpclib import ServerProxy, Error as XMLRPCError
 
 from pygments.lexers import PythonLexer
@@ -820,8 +822,8 @@ class Repl(object):
         try:
             helper = subprocess.Popen('', executable=self.config.pastebin_helper,
                                       stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-            helper.stdin.write(s.encode())
-            paste_url = helper.communicate()[0].decode().strip()
+            helper.stdin.write(s.encode(getpreferredencoding()))
+            paste_url = helper.communicate()[0].decode(getpreferredencoding()).split()[0]
         except OSError, e:
             if e.errno == errno.ENOENT:
                 self.interact.notify('Upload failed: Helper program not found.')
@@ -837,6 +839,11 @@ class Repl(object):
         if not paste_url:
             self.interact.notify('Upload failed: No output from helper program.')
             return
+        else:
+            parsed_url = urlparse(paste_url)
+            if not parsed_url.scheme or any(unicodedata.category(char) == 'Cc' for char in paste_url):
+                self.interact.notify("Upload failed: Failed to recognize the helper program's output as an URL.")
+                return
 
         self.prev_pastebin_content = s
         self.interact.notify('Pastebin URL: %s' % (paste_url, ), 10)
