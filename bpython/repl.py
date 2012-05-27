@@ -29,6 +29,7 @@ import os
 import pydoc
 import re
 import rlcompleter
+import subprocess
 import sys
 import textwrap
 import traceback
@@ -770,10 +771,13 @@ class Repl(object):
             not self.interact.confirm("Pastebin buffer? (y/N) ")):
             self.interact.notify("Pastebin aborted")
             return
-        return self.do_pastebin(s)
+        if self.config.pastebin_helper:
+            return self.do_pastebin_helper(s)
+        else:
+            return self.do_pastebin_xmlrpc(s)
 
-    def do_pastebin(self, s):
-        """Actually perform the upload."""
+    def do_pastebin_xmlrpc(self, s):
+        """Upload to pastebin via XML-RPC."""
         try:
             pasteservice = ServerProxy(self.config.pastebin_url)
         except IOError, e:
@@ -800,6 +804,40 @@ class Repl(object):
         paste_id = urlquote(paste_id)
         paste_url = paste_url_template.safe_substitute(paste_id=paste_id)
         self.prev_pastebin_url = paste_url
+        self.interact.notify('Pastebin URL: %s' % (paste_url, ), 10)
+        return paste_url
+
+    def do_pastebin_helper(self, s):
+        """Call out to helper program for pastebin upload."""
+        if s == self.prev_pastebin_content:
+            self.interact.notify('Duplicate pastebin. Previous URL: ' +
+                                  self.prev_pastebin_url)
+            return self.prev_pastebin_url
+
+        self.interact.notify('Posting data to pastebin...')
+
+        try:
+            helper = subprocess.Popen('', executable=self.config.pastebin_helper,
+                                      stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            helper.stdin.write(s.encode())
+            paste_url = helper.communicate()[0].decode().strip()
+        except OSError, e:
+            if e.errno == 2:
+                self.interact.notify('Upload failed: Helper program not found.')
+            else:
+                self.interact.notify('Upload failed: Helper program could not be run.')
+            return
+
+        if helper.returncode != 0:
+            self.interact.notify('Upload failed: Helper program returned non-zero exit status %s.' %
+                                 (helper.returncode, ))
+            return
+
+        if not paste_url:
+            self.interact.notify('Upload failed: No output from helper program.')
+            return
+
+        self.prev_pastebin_content = s
         self.interact.notify('Pastebin URL: %s' % (paste_url, ), 10)
         return paste_url
 
