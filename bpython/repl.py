@@ -24,6 +24,7 @@
 from __future__ import with_statement
 import code
 import codecs
+import errno
 import inspect
 import os
 import pydoc
@@ -822,7 +823,7 @@ class Repl(object):
             helper.stdin.write(s.encode())
             paste_url = helper.communicate()[0].decode().strip()
         except OSError, e:
-            if e.errno == 2:
+            if e.errno == errno.ENOENT:
                 self.interact.notify('Upload failed: Helper program not found.')
             else:
                 self.interact.notify('Upload failed: Helper program could not be run.')
