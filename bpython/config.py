@@ -70,6 +70,7 @@ def loadini(struct, configfile):
             'pastebin_url': 'http://bpaste.net/xmlrpc/',
             'pastebin_private': True,
             'pastebin_show_url': 'http://bpaste.net/show/$paste_id/',
+            'pastebin_helper': '',
         },
         'keyboard': {
             'clear_line': 'C-u',
@@ -137,6 +138,7 @@ def loadini(struct, configfile):
     struct.pastebin_url = config.get('general', 'pastebin_url')
     struct.pastebin_private = config.get('general', 'pastebin_private')
     struct.pastebin_show_url = config.get('general', 'pastebin_show_url')
+    struct.pastebin_helper = config.get('general', 'pastebin_helper')
 
     struct.cli_suggestion_width = config.getfloat('cli',
                                                   'suggestion_width')
