@@ -774,10 +774,10 @@ class Repl(object):
             not self.interact.confirm("Pastebin buffer? (y/N) ")):
             self.interact.notify("Pastebin aborted")
             return
-        return do_pastebin(s)
-
+        return self.do_pastebin(s)
 
     def do_pastebin(self, s):
+        """Actually perform the upload."""
         if s == self.prev_pastebin_content:
             self.interact.notify('Duplicate pastebin. Previous URL: ' +
                                   self.prev_pastebin_url)
