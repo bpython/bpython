@@ -1,6 +1,17 @@
 Changelog
 =========
 
+Since v0.11
+___________
+
+* Added a new pastebin_helper config option to name an executable that should
+  perform pastebin upload on bpython's behalf. If set, this overrides
+  pastebin_url. Data is supplied to the helper via STDIN, and it is expected
+  to return a pastebin URL as the first word of its output.
+* Fixed a bug causing pastebin upload to fail after a previous attempt was
+  unsuccessful. A duplicate pastebin error would be displayed in this case,
+  despite the original upload having failed.
+
 v0.11
 -----
 
