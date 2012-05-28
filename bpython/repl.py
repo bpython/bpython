@@ -774,6 +774,15 @@ class Repl(object):
             not self.interact.confirm("Pastebin buffer? (y/N) ")):
             self.interact.notify("Pastebin aborted")
             return
+        return do_pastebin(s)
+
+
+    def do_pastebin(self, s):
+        if s == self.prev_pastebin_content:
+            self.interact.notify('Duplicate pastebin. Previous URL: ' +
+                                  self.prev_pastebin_url)
+            return self.prev_pastebin_url
+
         if self.config.pastebin_helper:
             return self.do_pastebin_helper(s)
         else:
@@ -787,11 +796,6 @@ class Repl(object):
             self.interact.notify("Pastebin error for URL '%s': %s" %
                                  (self.config.pastebin_url, str(e)))
             return
-
-        if s == self.prev_pastebin_content:
-            self.interact.notify('Duplicate pastebin. Previous URL: ' +
-                                  self.prev_pastebin_url)
-            return self.prev_pastebin_url
 
         self.prev_pastebin_content = s
 
@@ -812,11 +816,6 @@ class Repl(object):
 
     def do_pastebin_helper(self, s):
         """Call out to helper program for pastebin upload."""
-        if s == self.prev_pastebin_content:
-            self.interact.notify('Duplicate pastebin. Previous URL: ' +
-                                  self.prev_pastebin_url)
-            return self.prev_pastebin_url
-
         self.interact.notify('Posting data to pastebin...')
 
         try:
