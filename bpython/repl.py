@@ -820,29 +820,39 @@ class Repl(object):
         self.interact.notify('Posting data to pastebin...')
 
         try:
-            helper = subprocess.Popen('', executable=self.config.pastebin_helper,
-                                      stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            helper = subprocess.Popen('',
+                                      executable=self.config.pastebin_helper,
+                                      stdin=subprocess.PIPE,
+                                      stdout=subprocess.PIPE)
             helper.stdin.write(s.encode(getpreferredencoding()))
-            paste_url = helper.communicate()[0].decode(getpreferredencoding()).split()[0]
+            output = helper.communicate()[0].decode(getpreferredencoding())
+            paste_url = output.split()[0]
         except OSError, e:
             if e.errno == errno.ENOENT:
-                self.interact.notify('Upload failed: Helper program not found.')
+                self.interact.notify('Upload failed: '
+                                     'Helper program not found.')
             else:
-                self.interact.notify('Upload failed: Helper program could not be run.')
+                self.interact.notify('Upload failed: '
+                                     'Helper program could not be run.')
             return
 
         if helper.returncode != 0:
-            self.interact.notify('Upload failed: Helper program returned non-zero exit status %s.' %
-                                 (helper.returncode, ))
+            self.interact.notify('Upload failed: '
+                                 'Helper program returned non-zero exit '
+                                 'status %s.' % (helper.returncode, ))
             return
 
         if not paste_url:
-            self.interact.notify('Upload failed: No output from helper program.')
+            self.interact.notify('Upload failed: '
+                                 'No output from helper program.')
             return
         else:
             parsed_url = urlparse(paste_url)
-            if not parsed_url.scheme or any(unicodedata.category(char) == 'Cc' for char in paste_url):
-                self.interact.notify("Upload failed: Failed to recognize the helper program's output as an URL.")
+            if (not parsed_url.scheme
+                or any(unicodedata.category(char) == 'Cc' for c in paste_url)):
+                self.interact.notify("Upload failed: "
+                                     "Failed to recognize the helper "
+                                     "program's output as an URL.")
                 return
 
         self.prev_pastebin_content = s
