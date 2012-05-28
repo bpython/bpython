@@ -848,7 +848,7 @@ class Repl(object):
         else:
             parsed_url = urlparse(paste_url)
             if (not parsed_url.scheme
-                or any(unicodedata.category(char) == 'Cc' for c in paste_url)):
+                or any(unicodedata.category(c) == 'Cc' for c in paste_url)):
                 self.interact.notify("Upload failed: "
                                      "Failed to recognize the helper "
                                      "program's output as an URL.")
