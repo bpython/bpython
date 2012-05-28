@@ -797,8 +797,6 @@ class Repl(object):
                                  (self.config.pastebin_url, str(e)))
             return
 
-        self.prev_pastebin_content = s
-
         self.interact.notify('Posting data to pastebin...')
         try:
             paste_id = pasteservice.pastes.newPaste('pycon', s, '', '', '',
@@ -806,6 +804,8 @@ class Repl(object):
         except (SocketError, XMLRPCError), e:
             self.interact.notify('Upload failed: %s' % (str(e), ) )
             return
+
+        self.prev_pastebin_content = s
 
         paste_url_template = Template(self.config.pastebin_show_url)
         paste_id = urlquote(paste_id)
