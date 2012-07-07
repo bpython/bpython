@@ -840,8 +840,8 @@ class URWIDRepl(repl.Repl):
                 self.stdout_hist += line.encode(locale.getpreferredencoding()) + '\n'
             self.print_line(line)
             self.s_hist[-1] += self.f_string
-# I decided it was easier to just do this manually
-# than to make the print_line and history stuff more flexible.
+            # I decided it was easier to just do this manually
+            # than to make the print_line and history stuff more flexible.
             self.scr.addstr('\n')
             more = self.push(line)
             self.prompt(more)

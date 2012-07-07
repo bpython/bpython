@@ -76,7 +76,7 @@ class Interpreter(code.InteractiveInterpreter):
 
         self.encoding = encoding or sys.getdefaultencoding()
         self.syntaxerror_callback = None
-# Unfortunately code.InteractiveInterpreter is a classic class, so no super()
+        # Unfortunately code.InteractiveInterpreter is a classic class, so no super()
         code.InteractiveInterpreter.__init__(self, locals)
 
     if not py3:
@@ -377,7 +377,7 @@ class Repl(object):
         self.s_hist = []
         self.history = []
         self.evaluating = False
-# Use the interpreter's namespace only for the readline stuff:
+        # Use the interpreter's namespace only for the readline stuff:
         self.completer = rlcompleter.Completer(self.interp.locals)
         self.completer.attr_matches = self.attr_matches
         # Gna, Py 2.6's rlcompleter searches for __call__ inside the
@@ -644,10 +644,10 @@ class Repl(object):
             try:
                 self.completer.complete(cw, 0)
             except Exception:
-# This sucks, but it's either that or list all the exceptions that could
-# possibly be raised here, so if anyone wants to do that, feel free to send me
-# a patch. XXX: Make sure you raise here if you're debugging the completion
-# stuff !
+                # This sucks, but it's either that or list all the exceptions that could
+                # possibly be raised here, so if anyone wants to do that, feel free to send me
+                # a patch. XXX: Make sure you raise here if you're debugging the completion
+                # stuff !
                 e = True
             else:
                 matches = self.completer.matches
@@ -664,7 +664,7 @@ class Repl(object):
                 matches.extend(name + '=' for name in self.argspec[1][4]
                                if name.startswith(cw))
 
-# unless the first character is a _ filter out all attributes starting with a _
+        # unless the first character is a _ filter out all attributes starting with a _
         if not e and not cw.split('.')[-1].startswith('_'):
             matches = [match for match in matches
                        if not match.split('.')[-1].startswith('_')]
@@ -675,7 +675,7 @@ class Repl(object):
             if not self.argspec:
                 return False
         else:
-# remove duplicates
+            # remove duplicates
             self.matches = sorted(set(matches))
 
 
