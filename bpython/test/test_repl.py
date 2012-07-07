@@ -132,9 +132,13 @@ class TestMatchesIterator(unittest.TestCase):
 
 
 class FakeRepl(repl.Repl):
-    def __init__(self):
+    def __init__(self, conf={}):
+
         config_struct = config.Struct()
         config.loadini(config_struct, os.devnull)
+        if 'autocomplete_mode' in conf:
+            config_struct.autocomplete_mode = conf['autocomplete_mode']
+
         repl.Repl.__init__(self, repl.Interpreter(), config_struct)
         self.input_line = ""
         self.current_word = ""
@@ -203,12 +207,9 @@ class TestArgspec(unittest.TestCase):
         self.assertFalse(self.repl.get_args())
 
 class TestRepl(unittest.TestCase):
-    def setUp(self):
-        self.repl = FakeRepl()
-        self.repl.config.autocomplete_mode = "1"
-
 
     def test_default_complete(self):
+        self.repl = FakeRepl({'autocomplete_mode':"1"})
         self.repl.input_line = "d"
         self.repl.current_word = "d"
 
@@ -217,15 +218,17 @@ class TestRepl(unittest.TestCase):
         self.assertEqual(self.repl.completer.matches,
             ['def', 'del', 'delattr(', 'dict(', 'dir(', 'divmod('])
 
+
     def test_alternate_complete(self):
+        self.repl = FakeRepl({'autocomplete_mode':"2"})
         self.repl.input_line = "doc"
         self.repl.current_word = "doc"
-        self.repl.config.autocomplete_mode = "2"
 
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.completer,'matches'))
         self.assertEqual(self.repl.completer.matches,
             ['UnboundLocalError(', '__doc__'])
+
 
 
 
