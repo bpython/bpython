@@ -22,17 +22,12 @@
 #
 
 from __future__ import with_statement
-import __builtin__
-import __main__
-
 import code
 import codecs
 import errno
 import inspect
 import os
 import pydoc
-import re
-import rlcompleter
 import subprocess
 import sys
 import textwrap
@@ -52,6 +47,7 @@ from pygments.token import Token
 
 from bpython import importcompletion, inspection
 from bpython.formatter import Parenthesis
+from bpython.autocomplete import Autocomplete
 
 # Needed for special handling of __abstractmethods__
 # abc only exists since 2.6, so check both that it exists and that it's
@@ -380,14 +376,7 @@ class Repl(object):
         self.s_hist = []
         self.history = []
         self.evaluating = False
-        # Use the interpreter's namespace only for the readline stuff:
-        self.completer = rlcompleter.Completer(self.interp.locals)
-        self.completer.attr_matches = self.attr_matches
-        # Gna, Py 2.6's rlcompleter searches for __call__ inside the
-        # instance instead of the type, so we monkeypatch to prevent
-        # side-effects (__getattr__/__getattribute__)
-        self.completer._callable_postfix = self._callable_postfix
-        self.completer.global_matches = self.global_matches
+        self.completer = Autocomplete(self.interp.locals, config)
         self.matches = []
         self.matches_iter = MatchesIterator()
         self.argspec = None
@@ -425,51 +414,6 @@ class Repl(object):
                 else:
                     self.interp.runsource(f.read(), filename, 'exec', encode=False)
 
-    def attr_matches(self, text):
-        """Taken from rlcompleter.py and bent to my will."""
-
-        m = re.match(r"(\w+(\.\w+)*)\.(\w*)", text)
-        if not m:
-            return []
-
-        expr, attr = m.group(1, 3)
-        if expr.isdigit():
-            # Special case: float literal, using attrs here will result in
-            # a SyntaxError
-            return []
-        obj = eval(expr, self.interp.locals)
-        with inspection.AttrCleaner(obj):
-            matches = self.attr_lookup(obj, expr, attr)
-        return matches
-
-    def attr_lookup(self, obj, expr, attr):
-        """Second half of original attr_matches method factored out so it can
-        be wrapped in a safe try/finally block in case anything bad happens to
-        restore the original __getattribute__ method."""
-        words = dir(obj)
-        if hasattr(obj, '__class__'):
-            words.append('__class__')
-            words = words + rlcompleter.get_class_members(obj.__class__)
-            if has_abc and not isinstance(obj.__class__, abc.ABCMeta):
-                try:
-                    words.remove('__abstractmethods__')
-                except ValueError:
-                    pass
-
-        matches = []
-        n = len(attr)
-        for word in words:
-            if self.method_match(word, n, attr) and word != "__builtins__":
-                matches.append("%s.%s" % (expr, word))
-        return matches
-
-    def _callable_postfix(self, value, word):
-        """rlcompleter's _callable_postfix done right."""
-        with inspection.AttrCleaner(value):
-            if inspection.is_callable(value):
-                word += '('
-        return word
-
     def current_string(self, concatenate=False):
         """Return the current string."""
         tokens = self.tokenize(self.current_line())
@@ -498,33 +442,6 @@ class Repl(object):
         if opening is None:
             return ''
         return ''.join(string)
-
-    def global_matches(self, text):
-        """Compute matches when text is a simple name.
-        Return a list of all keywords, built-in functions and names currently
-        defined in self.namespace that match.
-        """
-
-        hash = {}
-        n = len(text)
-        import keyword
-        for word in keyword.kwlist:
-            if self.method_match(word, n, text):
-                hash[word] = 1
-        for nspace in [__builtin__.__dict__, __main__.__dict__]:
-            for word, val in nspace.items():
-                if self.method_match(word, len(text), text) and word != "__builtins__":
-                    hash[self._callable_postfix(val, word)] = 1
-        matches = hash.keys()
-        matches.sort()
-        return matches
-
-    def method_match(self, word, size, text):
-        if self.config.autocomplete_mode == "1":
-            return word[:size] == text
-        else:
-            s = r'.*%s.*' % '.*'.join(list(text))
-            return re.search(s, word)
 
     def get_object(self, name):
         attributes = name.split('.')
