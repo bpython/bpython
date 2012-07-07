@@ -56,6 +56,7 @@ def loadini(struct, configfile):
             'color_scheme': 'default',
             'complete_magic_methods' : True,
             'magic_methods' : MAGIC_METHODS,
+            'autocomplete_mode':2,
             'dedent_after': 1,
             'flush_output': True,
             'highlight_show_source': True,
@@ -147,6 +148,7 @@ def loadini(struct, configfile):
                                                       'complete_magic_methods')
     methods = config.get('general', 'magic_methods')
     struct.magic_methods = [meth.strip() for meth in methods.split(",")]
+    struct.autocomplete_mode = config.get('general', 'autocomplete_mode')
 
     struct.gtk_font = config.get('gtk', 'font')
 

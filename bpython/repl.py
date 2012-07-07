@@ -22,6 +22,9 @@
 #
 
 from __future__ import with_statement
+import __builtin__
+import __main__
+
 import code
 import codecs
 import errno
@@ -384,6 +387,7 @@ class Repl(object):
         # instance instead of the type, so we monkeypatch to prevent
         # side-effects (__getattr__/__getattribute__)
         self.completer._callable_postfix = self._callable_postfix
+        self.completer.global_matches = self.global_matches
         self.matches = []
         self.matches_iter = MatchesIterator()
         self.argspec = None
@@ -455,7 +459,7 @@ class Repl(object):
         matches = []
         n = len(attr)
         for word in words:
-            if word[:n] == attr and word != "__builtins__":
+            if self.method_match(word, n, attr) and word != "__builtins__":
                 matches.append("%s.%s" % (expr, word))
         return matches
 
@@ -494,6 +498,33 @@ class Repl(object):
         if opening is None:
             return ''
         return ''.join(string)
+
+    def global_matches(self, text):
+        """Compute matches when text is a simple name.
+        Return a list of all keywords, built-in functions and names currently
+        defined in self.namespace that match.
+        """
+
+        hash = {}
+        n = len(text)
+        import keyword
+        for word in keyword.kwlist:
+            if self.method_match(word, n, text):
+                hash[word] = 1
+        for nspace in [__builtin__.__dict__, __main__.__dict__]:
+            for word, val in nspace.items():
+                if self.method_match(word, len(text), text) and word != "__builtins__":
+                    hash[self._callable_postfix(val, word)] = 1
+        matches = hash.keys()
+        matches.sort()
+        return matches
+
+    def method_match(self, word, size, text):
+        if self.config.autocomplete_mode == "1":
+            return word[:size] == text
+        else:
+            s = r'.*%s.*' % '.*'.join(list(text))
+            return re.search(s, word)
 
     def get_object(self, name):
         attributes = name.split('.')
