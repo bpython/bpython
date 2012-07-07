@@ -191,8 +191,8 @@ class FakeStdin(object):
                     (len(key) > 1 or unicodedata.category(key) == 'Cc')):
                     continue
                 sys.stdout.write(key)
-# Include the \n in the buffer - raw_input() seems to deal with trailing
-# linebreaks and will break if it gets an empty string.
+                # Include the \n in the buffer - raw_input() seems to deal with trailing
+                # linebreaks and will break if it gets an empty string.
                 buffer += key
         finally:
             curses.raw(False)
@@ -371,7 +371,7 @@ class CLIRepl(repl.Repl):
         self.clear_wrapped_lines()
 
         if not self.cpos:
-# I know the nested if blocks look nasty. :(
+            # I know the nested if blocks look nasty. :(
             if self.atbol() and delete_tabs:
                 n = len(self.s) % self.config.tab_length
                 if not n:
@@ -389,11 +389,11 @@ class CLIRepl(repl.Repl):
         self.rl_history.reset()
         pos = len(self.s) - self.cpos - 1
         deleted = []
-# First we delete any space to the left of the cursor.
+        # First we delete any space to the left of the cursor.
         while pos >= 0 and self.s[pos] == ' ':
             deleted.append(self.s[pos])
             pos -= self.bs()
-# Then we delete a full word.
+        # Then we delete a full word.
         while pos >= 0 and self.s[pos] != ' ':
             deleted.append(self.s[pos])
             pos -= self.bs()
@@ -484,8 +484,8 @@ class CLIRepl(repl.Repl):
         left of the cursor"""
 
         if self.cpos:
-# I don't know if autocomplete should be disabled if the cursor
-# isn't at the end of the line, but that's what this does for now.
+            # I don't know if autocomplete should be disabled if the cursor
+            # isn't at the end of the line, but that's what this does for now.
             return
 
         l = len(self.s)
@@ -618,16 +618,16 @@ class CLIRepl(repl.Repl):
                     key = key.decode(getpreferredencoding())
                 self.scr.nodelay(False)
             except UnicodeDecodeError:
-# Yes, that actually kind of sucks, but I don't see another way to get
-# input right
+                # Yes, that actually kind of sucks, but I don't see another way to get
+                # input right
                 self.scr.nodelay(True)
             except curses.error:
-# I'm quite annoyed with the ambiguity of this exception handler. I previously
-# caught "curses.error, x" and accessed x.message and checked that it was "no
-# input", which seemed a crappy way of doing it. But then I ran it on a
-# different computer and the exception seems to have entirely different
-# attributes. So let's hope getkey() doesn't raise any other crazy curses
-# exceptions. :)
+                # I'm quite annoyed with the ambiguity of this exception handler. I previously
+                # caught "curses.error, x" and accessed x.message and checked that it was "no
+                # input", which seemed a crappy way of doing it. But then I ran it on a
+                # different computer and the exception seems to have entirely different
+                # attributes. So let's hope getkey() doesn't raise any other crazy curses
+                # exceptions. :)
                 self.scr.nodelay(False)
                 # XXX What to do here? Raise an exception?
                 if key:
@@ -1094,8 +1094,8 @@ class CLIRepl(repl.Repl):
         up/down to go back and forth (which has to be separate to the
         evaluation history, which will be truncated when undoing."""
 
-# Use our own helper function because Python's will use real stdin and
-# stdout instead of our wrapped
+        # Use our own helper function because Python's will use real stdin and
+        # stdout instead of our wrapped
         self.push('from bpython._internal import _help as help\n', False)
 
         self.iy, self.ix = self.scr.getyx()
@@ -1190,8 +1190,8 @@ class CLIRepl(repl.Repl):
                 self.stdout_hist += line.encode(getpreferredencoding()) + '\n'
             self.print_line(line)
             self.s_hist[-1] += self.f_string
-# I decided it was easier to just do this manually
-# than to make the print_line and history stuff more flexible.
+            # I decided it was easier to just do this manually
+            # than to make the print_line and history stuff more flexible.
             self.scr.addstr('\n')
             more = self.push(line)
             self.prompt(more)
@@ -1282,7 +1282,7 @@ class CLIRepl(repl.Repl):
             return True
 
         if items:
-# visible items (we'll append until we can't fit any more in)
+            # visible items (we'll append until we can't fit any more in)
             v_items = [items[0][:max_w - 3]]
             lsize()
         else:
@@ -1355,9 +1355,9 @@ class CLIRepl(repl.Repl):
                 docstring_string = docstring_string.encode(encoding, 'ignore')
             self.list_win.addstr('\n' + docstring_string,
                                  get_colpair(self.config, 'comment'))
-# XXX: After all the trouble I had with sizing the list box (I'm not very good
-# at that type of thing) I decided to do this bit of tidying up here just to
-# make sure there's no unnececessary blank lines, it makes things look nicer.
+            # XXX: After all the trouble I had with sizing the list box (I'm not very good
+            # at that type of thing) I decided to do this bit of tidying up here just to
+            # make sure there's no unnececessary blank lines, it makes things look nicer.
 
         y = self.list_win.getyx()[0]
         self.list_win.resize(y + 2, w)
@@ -1370,8 +1370,8 @@ class CLIRepl(repl.Repl):
         self.scr.cursyncup()
         self.scr.noutrefresh()
 
-# This looks a little odd, but I can't figure a better way to stick the cursor
-# back where it belongs (refreshing the window hides the list_win)
+        # This looks a little odd, but I can't figure a better way to stick the cursor
+        # back where it belongs (refreshing the window hides the list_win)
 
         self.scr.move(*self.scr.getyx())
         self.list_win.refresh()
@@ -1626,7 +1626,7 @@ class Statusbar(object):
 def init_wins(scr, config):
     """Initialise the two windows (the main repl interface and the little
     status bar at the bottom with some stuff in it)"""
-#TODO: Document better what stuff is on the status bar.
+    #TODO: Document better what stuff is on the status bar.
 
     background = get_colpair(config, 'background')
     h, w = gethw()
@@ -1634,8 +1634,8 @@ def init_wins(scr, config):
     main_win = newwin(background, h - 1, w, 0, 0)
     main_win.scrollok(True)
     main_win.keypad(1)
-# Thanks to Angus Gibson for pointing out this missing line which was causing
-# problems that needed dirty hackery to fix. :)
+    # Thanks to Angus Gibson for pointing out this missing line which was causing
+    # problems that needed dirty hackery to fix. :)
 
     statusbar = Statusbar(scr, main_win, background, config,
         _(" <%s> Rewind  <%s> Save  <%s> Pastebin "
@@ -1727,7 +1727,7 @@ def do_resize(caller):
     global DO_RESIZE
     h, w = gethw()
     if not h:
-# Hopefully this shouldn't happen. :)
+    # Hopefully this shouldn't happen. :)
         return
 
     curses.endwin()
@@ -1737,7 +1737,7 @@ def do_resize(caller):
     DO_RESIZE = False
 
     caller.resize()
-# The list win resizes itself every time it appears so no need to do it here.
+    # The list win resizes itself every time it appears so no need to do it here.
 
 
 class FakeDict(object):
@@ -1882,7 +1882,7 @@ def main(args=None, locals_=None, banner=None):
         sys.stderr = orig_stderr
         sys.stdout = orig_stdout
 
-# Fake stdout data so everything's still visible after exiting
+    # Fake stdout data so everything's still visible after exiting
     if config.flush_output and not options.quiet:
         sys.stdout.write(o)
     sys.stdout.flush()
