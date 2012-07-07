@@ -3,3 +3,5 @@ bpython.egg-info/*
 .pyc
 tags
 _trial_temp
+env
+.DS_Store
