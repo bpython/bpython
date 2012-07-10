@@ -435,6 +435,7 @@ class CLIRepl(repl.Repl):
         if self.list_win_visible and not self.config.auto_display_list:
             self.scr.touchwin()
             self.list_win_visible = False
+            self.matches_iter.update()
             return
 
         if self.config.auto_display_list or tab:
