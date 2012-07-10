@@ -1022,7 +1022,7 @@ def next_indentation(line, tab_length):
     if line.rstrip().endswith(':'):
         indentation += 1
     elif indentation >= 1:
-        if line.lstrip().startswith(('return', 'pass')):
+        if line.lstrip().startswith(('return', 'pass', 'raise')):
             indentation -= 1
     return indentation
 
