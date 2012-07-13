@@ -140,6 +140,12 @@ Default: C-k
 
 Cuts the current line to the buffer.
 
+search
+^^^^^^
+Default: C-o
+
+Search up for any lines containing what is on the current line.
+
 yank_from_buffer
 ^^^^^^^^^^^^^^^^
 Default: C-y
