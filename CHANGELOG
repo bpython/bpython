@@ -1,8 +1,21 @@
 Changelog
 =========
 
-Since v0.11
-___________
+dev
+---
+
+We want to give special thanks to the Hacker School project-
+(https://www.hackerschool.com/) for choosing bpython as their pet hacking
+project. In special we would like to thank the following people for contributing
+their code to bpython:
+
+- Martha Girdler
+- Allison Kaptur
+- Ingrid Cheung
+
+We'd also like to thank Eike Hein for contributing his pastebin code which now
+makes it possible to paste using a 3rd party program unlocking a whole slew of
+pastebins for bpython users.
 
 * Added a new pastebin_helper config option to name an executable that should
   perform pastebin upload on bpython's behalf. If set, this overrides
@@ -11,6 +24,10 @@ ___________
 * Fixed a bug causing pastebin upload to fail after a previous attempt was
   unsuccessful. A duplicate pastebin error would be displayed in this case,
   despite the original upload having failed.
+* Added more key shortcuts to bpython.urwid
+* Smarter dedenting after certain expressions
+* #74 fixed broken completion when auto_display_list was disabled
+
 
 v0.11
 -----
