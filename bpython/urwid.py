@@ -1272,6 +1272,9 @@ def load_urwid_command_map(config):
     urwid.command_map[key_dispatch['C-a']] = 'cursor max left'
     urwid.command_map[key_dispatch['C-e']] = 'cursor max right'
     urwid.command_map[key_dispatch[config.pastebin_key]] = 'pastebin'
+    urwid.command_map[key_dispatch['C-f']] = 'cursor right'
+    urwid.command_map[key_dispatch['C-b']] = 'cursor left'
+    urwid.command_map[key_dispatch['C-d']] = 'delete'
 """
             'clear_line': 'C-u',
             'clear_screen': 'C-l',
