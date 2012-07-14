@@ -38,6 +38,7 @@ v0.10
 As a highlight of the release, Michele Orrù added i18n support to bpython.
 
 Some issues have been resolved as well:
+
 * Config files are now located according to the XDG Base Directory
   Specification. The support for the old bpythonrc files has been
   dropped and ~/.bpython.ini as config file location is no longer supported.
