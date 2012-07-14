@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: bpython 0.9.7.1\n"
 "Report-Msgid-Bugs-To: http://bitbucket.org/bobf/bpython/issues\n"
-"POT-Creation-Date: 2012-05-29 01:26+0200\n"
+"POT-Creation-Date: 2012-07-14 21:45+0200\n"
 "PO-Revision-Date: 2011-04-21 00:46+0100\n"
 "Last-Translator: Simon de Vlieger <simon@ikanobori.jp>\n"
 "Language-Team: bpython developers\n"
@@ -25,11 +25,11 @@ msgstr "j"
 msgid "yes"
 msgstr "ja"
 
-#: bpython/cli.py:969 bpython/gtk_.py:484
+#: bpython/cli.py:970 bpython/gtk_.py:484
 msgid "Cannot show source."
 msgstr "Kan de broncode niet laden"
 
-#: bpython/cli.py:1641 bpython/urwid.py:591
+#: bpython/cli.py:1642 bpython/urwid.py:591
 #, python-format
 msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
 msgstr " <%s> Rewind  <%s> Opslaan  <%s> Pastebin  <%s> Pager  <%s> Toon broncode"
