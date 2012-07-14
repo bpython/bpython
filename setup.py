@@ -75,10 +75,7 @@ if using_translations:
             self.output_dir = translations_dir
             self.input_file = os.path.join(translations_dir, 'bpython.pot')
 
-    build.sub_commands.append(('compile_catalog', None))
-    build.sub_commands.append(('update_catalog', None))
-    build.sub_commands.append(('extract_messages', None))
-    build.sub_commands.append(('init_catalog', None))
+    build.sub_commands.insert(0, ('compile_catalog', None))
 
     cmdclass['compile_catalog'] = compile_catalog
     cmdclass['extract_messages'] = extract_messages
