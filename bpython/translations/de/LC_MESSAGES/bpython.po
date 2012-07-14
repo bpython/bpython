@@ -1,0 +1,133 @@
+# German translations for bpython.
+# Copyright (C) 2012 ORGANIZATION
+# This file is distributed under the same license as the bpython project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: bpython mercurial\n"
+"Report-Msgid-Bugs-To: http://bitbucket.org/bobf/bpython/issues\n"
+"POT-Creation-Date: 2012-07-14 21:45+0200\n"
+"PO-Revision-Date: 2012-04-05 09:37+0200\n"
+"Last-Translator: Sebastian Ramacher\n"
+"Language-Team: de <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
+
+#: bpython/cli.py:303 bpython/urwid.py:529
+msgid "y"
+msgstr "j"
+
+#: bpython/cli.py:303 bpython/urwid.py:529
+msgid "yes"
+msgstr "ja"
+
+#: bpython/cli.py:970 bpython/gtk_.py:484
+msgid "Cannot show source."
+msgstr "Kann Quellcode nicht anzeigen."
+
+#: bpython/cli.py:1642 bpython/urwid.py:591
+#, python-format
+msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
+msgstr ""
+
+#: bpython/gtk_.py:92 bpython/gtk_.py:117
+msgid "An error occurred."
+msgstr "Ein Fehler ist aufgetreten."
+
+#: bpython/gtk_.py:99
+msgid "Exception details"
+msgstr "Ausnahmedetails"
+
+#: bpython/gtk_.py:151
+msgid "Statusbar"
+msgstr "Statusleiste"
+
+#: bpython/gtk_.py:228
+msgid "tooltip"
+msgstr ""
+
+#: bpython/gtk_.py:297
+msgid "File to save to"
+msgstr ""
+
+#: bpython/gtk_.py:308
+msgid "Python files"
+msgstr "Python Dateien"
+
+#: bpython/gtk_.py:313
+msgid "All files"
+msgstr "Alle Dateien"
+
+#: bpython/gtk_.py:771
+msgid "gtk-specific options"
+msgstr ""
+
+#: bpython/gtk_.py:772
+msgid "Options specific to bpython's Gtk+ front end"
+msgstr ""
+
+#: bpython/gtk_.py:774
+msgid "Embed bpython"
+msgstr "Bette bpython ein"
+
+#: bpython/gtk_.py:830
+msgid "Pastebin selection"
+msgstr ""
+
+#: bpython/repl.py:776
+msgid "Pastebin buffer? (y/N) "
+msgstr ""
+
+#: bpython/repl.py:777
+msgid "Pastebin aborted"
+msgstr ""
+
+#: bpython/repl.py:784
+#, python-format
+msgid "Duplicate pastebin. Previous URL: %s"
+msgstr ""
+
+#: bpython/repl.py:798
+#, python-format
+msgid "Pastebin error for URL '%s': %s"
+msgstr ""
+
+#: bpython/repl.py:802 bpython/repl.py:821
+msgid "Posting data to pastebin..."
+msgstr ""
+
+#: bpython/repl.py:807
+#, python-format
+msgid "Upload failed: %s"
+msgstr ""
+
+#: bpython/repl.py:816 bpython/repl.py:860
+#, python-format
+msgid "Pastebin URL: %s"
+msgstr ""
+
+#: bpython/repl.py:833
+msgid "Upload failed: Helper program not found."
+msgstr ""
+
+#: bpython/repl.py:836
+msgid "Upload failed: Helper program could not be run."
+msgstr ""
+
+#: bpython/repl.py:843
+#, python-format
+msgid "Upload failed: Helper program returned non-zero exit status %s."
+msgstr ""
+
+#: bpython/repl.py:847
+msgid "Upload failed: No output from helper program."
+msgstr ""
+
+#: bpython/repl.py:854
+msgid "Upload failed: Failed to recognize the helper program's output as an URL."
+msgstr ""
+
