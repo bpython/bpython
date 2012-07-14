@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: bpython 0.9.7\n"
 "Report-Msgid-Bugs-To: http://bitbucket.org/bobf/bpython/issues\n"
-"POT-Creation-Date: 2012-05-29 01:26+0200\n"
+"POT-Creation-Date: 2012-07-14 21:45+0200\n"
 "PO-Revision-Date: 2010-07-21 14:46+0200\n"
 "Last-Translator: Claudia Medde\n"
 "Language-Team: bpython developers\n"
@@ -25,11 +25,11 @@ msgstr "s"
 msgid "yes"
 msgstr "si"
 
-#: bpython/cli.py:969 bpython/gtk_.py:484
+#: bpython/cli.py:970 bpython/gtk_.py:484
 msgid "Cannot show source."
 msgstr "Imposible mostrar el código fuente"
 
-#: bpython/cli.py:1641 bpython/urwid.py:591
+#: bpython/cli.py:1642 bpython/urwid.py:591
 #, python-format
 msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
 msgstr ""
