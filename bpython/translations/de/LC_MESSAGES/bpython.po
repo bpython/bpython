@@ -1,7 +1,7 @@
 # German translations for bpython.
-# Copyright (C) 2012 ORGANIZATION
+# Copyright (C) 2012 bpython developers
 # This file is distributed under the same license as the bpython project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
+# Sebastian Ramacher <sebastian+dev@ramacher.at>, 2012.
 #
 msgid ""
 msgstr ""
@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: http://bitbucket.org/bobf/bpython/issues\n"
 "POT-Creation-Date: 2012-07-14 21:45+0200\n"
 "PO-Revision-Date: 2012-04-05 09:37+0200\n"
-"Last-Translator: Sebastian Ramacher\n"
+"Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language-Team: de <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
