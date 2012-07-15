@@ -1280,7 +1280,6 @@ def load_urwid_command_map(config):
             'clear_screen': 'C-l',
             'clear_word': 'C-w',
             'cut_to_buffer': 'C-k',
-            'delete': 'C-d',
             'down_one_line': 'C-n',
             'exit': '',
             'last_output': 'F9',
