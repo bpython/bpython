@@ -134,7 +134,8 @@ setup(
     scripts = ([] if using_setuptools else ['data/bpython',
                                             'data/bpython-gtk',
                                             'data/bpython-urwid']),
-    cmdclass = cmdclass
+    cmdclass = cmdclass,
+    test_suite = 'bpython.test'
 )
 
 # vim: fileencoding=utf-8 sw=4 ts=4 sts=4 ai et sta
