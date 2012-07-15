@@ -426,6 +426,7 @@ class CLIRepl(repl.Repl):
             self.scr.clrtoeol()
 
     def complete(self, tab=False):
+        """Get Autcomplete list and window."""
         if self.paste_mode and self.list_win_visible:
             self.scr.touchwin()
 
@@ -483,24 +484,23 @@ class CLIRepl(repl.Repl):
         """Return the current word, i.e. the (incomplete) word directly to the
         left of the cursor"""
 
-        if self.cpos:
-            # I don't know if autocomplete should be disabled if the cursor
-            # isn't at the end of the line, but that's what this does for now.
-            return
+        # I don't know if autocomplete should be disabled if the cursor
+        # isn't at the end of the line, but that's what this does for now.
+        if self.cpos: return
 
+        # look from right to left for a bad method character
         l = len(self.s)
+        is_method_char = lambda c: c.isalnum() or c in ('.', '_')
 
-        if (not self.s or
-            (not self.s[l - 1].isalnum() and
-             self.s[l - 1] not in ('.', '_'))):
+        if not self.s or not is_method_char(self.s[l-1]):
             return
 
-        i = 1
-        while i < l + 1:
-            if not self.s[-i].isalnum() and self.s[-i] not in ('.', '_'):
+        for i in range(1, l+1):
+            if not is_method_char(self.s[-i]):
+                i -= 1
                 break
-            i += 1
-        return self.s[-i + 1:]
+
+        return self.s[-i:]
 
     def delete(self):
         """Process a del"""
