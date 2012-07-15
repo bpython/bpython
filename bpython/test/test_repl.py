@@ -1,8 +1,9 @@
 import os
 import unittest
+import sys
 from itertools import islice
-
-from bpython import config, repl
+from mock import Mock
+from bpython import config, repl, cli
 
 
 class TestHistory(unittest.TestCase):
@@ -130,6 +131,13 @@ class TestMatchesIterator(unittest.TestCase):
         self.assertNotEqual(list(slice), self.matches)
         self.assertEqual(list(newslice), newmatches)
 
+class FakeHistory(repl.History):
+
+    def __init__(self):
+        pass
+
+    def reset(self):
+        pass
 
 class FakeRepl(repl.Repl):
     def __init__(self, conf={}):
@@ -150,6 +158,11 @@ class FakeRepl(repl.Repl):
     def cw(self):
         return self.current_word
 
+class FakeCliRepl(cli.CLIRepl, FakeRepl):
+    def __init__(self):
+        self.s = ''
+        self.cpos = 0
+        self.rl_history = FakeHistory()
 
 class TestArgspec(unittest.TestCase):
     def setUp(self):
@@ -229,8 +242,55 @@ class TestRepl(unittest.TestCase):
         self.assertEqual(self.repl.completer.matches,
             ['UnboundLocalError(', '__doc__'])
 
+class TestCliRepl(unittest.TestCase):
 
+    def setUp(self):
+        self.repl = FakeCliRepl()
 
+    def test_atbol(self):
+        self.assertTrue(self.repl.atbol())
+        self.repl.s = "\t\t"
+        self.assertTrue(self.repl.atbol())
+        self.repl.s = "\t\tnot an empty line"
+        self.assertFalse(self.repl.atbol())
+
+    def test_addstr(self):
+        self.repl.complete = Mock(True)
+
+        self.repl.s = "foo"
+        self.repl.addstr("bar")
+        self.assertEqual(self.repl.s, "foobar")
+
+        self.repl.cpos = 3
+        self.repl.addstr('buzz')
+        self.assertEqual(self.repl.s, "foobuzzbar")
+
+    def test_cw(self):
+
+        self.repl.cpos = 2
+        self.assertEqual(self.repl.cw(), None)
+        self.repl.cpos = 0
+
+        self.repl.s = ''
+        self.assertEqual(self.repl.cw(), None)
+
+        self.repl.s = "this.is.a.test\t"
+        self.assertEqual(self.repl.cw(), None)
+
+        s = "this.is.a.test"
+        self.repl.s = s
+        self.assertEqual(self.repl.cw(), s)
+
+        s = "\t\tthis.is.a.test"
+        self.repl.s = s
+        self.assertEqual(self.repl.cw(), s.lstrip())
+
+        self.repl.s = "this.is.\ta.test"
+        self.assertEqual(self.repl.cw(), 'a.test')
+
+    def test_tab(self):
+        pass
+        # self.repl.tab()
 
 if __name__ == '__main__':
     unittest.main()
