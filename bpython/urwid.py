@@ -421,6 +421,10 @@ class BPythonEdit(urwid.Edit):
                     line = line[:np] + line[p:]
                 self.set_edit_text(line)
                 self.edit_pos = np
+            elif urwid.command_map[key] == 'clear line':
+                line = self.get_edit_text()
+                self.set_edit_text(line[self.edit_pos:])
+                self.edit_pos = 0
             elif key == 'backspace':
                 line = self.get_edit_text()
                 cpos = len(line) - self.edit_pos
@@ -1293,9 +1297,9 @@ def load_urwid_command_map(config):
     urwid.command_map[key_dispatch['C-b']] = 'cursor left'
     urwid.command_map[key_dispatch['C-d']] = 'delete'
     urwid.command_map[key_dispatch[config.clear_word_key]] = 'clear word'
+    urwid.command_map[key_dispatch[config.clear_line_key]] = 'clear line'
 
 """
-            'clear_line': 'C-u',
             'clear_screen': 'C-l',
             'cut_to_buffer': 'C-k',
             'down_one_line': 'C-n',
