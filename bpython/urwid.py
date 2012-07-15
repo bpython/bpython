@@ -404,6 +404,23 @@ class BPythonEdit(urwid.Edit):
                 self.edit_pos = 0
             elif urwid.command_map[key] == 'cursor max right':
                 self.edit_pos = len(self.get_edit_text())
+            elif urwid.command_map[key] == 'clear word':
+                # ^w
+                if self.edit_pos == 0:
+                    return
+                line = self.get_edit_text()
+                # delete any space left of the cursor
+                p = len(line[:self.edit_pos].strip())
+                line = line[:p] + line[self.edit_pos:]
+                # delete a full word
+                np = line.rfind(' ', 0, p)
+                if np == -1:
+                    line = line[p:]
+                    np = 0
+                else:
+                    line = line[:np] + line[p:]
+                self.set_edit_text(line)
+                self.edit_pos = np
             elif key == 'backspace':
                 line = self.get_edit_text()
                 cpos = len(line) - self.edit_pos
@@ -1275,10 +1292,11 @@ def load_urwid_command_map(config):
     urwid.command_map[key_dispatch['C-f']] = 'cursor right'
     urwid.command_map[key_dispatch['C-b']] = 'cursor left'
     urwid.command_map[key_dispatch['C-d']] = 'delete'
+    urwid.command_map[key_dispatch[config.clear_word_key]] = 'clear word'
+
 """
             'clear_line': 'C-u',
             'clear_screen': 'C-l',
-            'clear_word': 'C-w',
             'cut_to_buffer': 'C-k',
             'down_one_line': 'C-n',
             'exit': '',
