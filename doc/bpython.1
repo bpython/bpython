@@ -16,7 +16,8 @@
 .\" .sp <n>    insert n+1 empty lines
 .\" for manpage-specific macros, see man(7)
 .SH NAME
-bpython, bpython-urwid \- a fancy interface to the Python interactive interpreter
+bpython, bpython-gtk, bpython-urwid \- a fancy {curses, GTK+, urwid} interface
+to the Python interactive interpreter
 .SH SYNOPSIS
 .B bpython
 [\fIoptions\fR] [\fIfile\fR [\fIargs\fR]]
@@ -91,24 +92,27 @@ options if twisted is available:
 .IP "\fB\-\-reactor=\fR\fIreactor\fR" 4
 .PD
 Use Twisted's \fIreactor\fR reactor instead of urwid's event loop.
-
 .IP "\fB\-\-help\-reactors\fR" 4
 .PD
 Display a list of available Twisted reactors.
-
 .IP "\fB\-p \fR\fIplugin\fR" 4
 .PD 0
 .IP "\fB\-\-plugin=\fR\fIplugin\fR" 4
 .PD
 Execute a twistd plugin. Use twistd to get a list of available plugins. Use
 "\-\-" to pass options to the plugin.
-
 .IP "\fB\-s \fR\fIport\fR" 4
 .PD 0
 .IP "\fB\-\-s=\fR\fIport\fR" 4
 .PD
 Run a eval server on port \fIport\fR. This options forces the use of a Twisted
 reactor.
+
+.PP
+\fBbpython-gtk\fR also supports the following options:
+.IP "\fB\-\-socket-id=\fR\fISOCKET_ID\fR" 4
+.PD
+Embed bpython.
 
 .SH KEYS
 \fBbpython\fR's keys are fully configurable. See
