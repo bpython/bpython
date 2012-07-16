@@ -3,14 +3,17 @@
 Configuration
 =============
 You can copy the supplied sample-config to your home directory and move it to
-``/.bpython/config``. bpython tries to find ``~/.bpython/config`` and use it as
-its configuration (it also looks for ``~/.bpython.ini`` as this was the default
-before 0.9.4), if the file does not exist bpython will use its documented 
-defaults.
+``$XDG_CONFIG_HOME/bpython/config`` [#f1]_. bpython tries to find
+``$XDG_CONFIG_HOME/bpython/config`` and use it as its configuration, if the
+file does not exist bpython will use its documented defaults.
+
+.. :: Footnotes
+
+.. [#f1] ``$XDG_CONFIG_HOME`` defaults to ``~/.config`` if not set.
 
 General
 -------
-This refers to the ``[general]`` section in your `~/.bpython/config` file.
+This refers to the ``[general]`` section in your `$XDG_CONFIG_HOME/bpython/config` file.
 
 auto_display_list
 ^^^^^^^^^^^^^^^^^
@@ -52,6 +55,8 @@ pastebin_private
 If the pastebin supports a private option to make a random paste id, use it.
 Default: True).
 
+.. versionadded:: 0.12
+
 pastebin_show_url
 ^^^^^^^^^^^^^^^^^
 The url under which the new paste can be reached. ``$paste_id`` will be
@@ -68,18 +73,20 @@ its output. The data is supplied to the helper via STDIN.
 
 An example helper program is ``pastebinit``, available for most systems.
 
+.. versionadded:: 0.12
+
 .. _configuration_color_scheme:
 
 color_scheme
 ^^^^^^^^^^^^
 See :ref:`themes` for more information.
 
-Color schemes should be put in ``~/.bpython/``
+Color schemes should be put in ``$XDG_CONFIG_HOME/bpython/``
 
-e.g to use the theme ``~/.bpython/foo.theme`` set ``color_scheme = foo``
+e.g to use the theme ``$XDG_CONFIG_HOME/bpython/foo.theme`` set ``color_scheme = foo``
 
 If you set the colorscheme to `foo` this will be translated to 
-``~/.bpython/foo.theme`` so be sure to put the file in that directory.
+``$XDG_CONFIG_HOME/bpython/foo.theme`` so be sure to put the file in that directory.
 
 Leave blank or set to "default" to use the default (builtin) theme.
 
@@ -89,13 +96,13 @@ Whether to flush all output to stdout on exit (default: True).
 
 Keyboard
 --------
-This section refers to the ``[keyboard]`` section in your ``~/.bpython/config``.
+This section refers to the ``[keyboard]`` section in your ``$XDG_CONFIG_HOME/bpython/config``.
 
 You can set various keyboard shortcuts to be used by bpython. However, we have yet to map all keys
 to their respective control codes. If you configure a key combination which is not yet supported
 by bpython it will raise an exception telling you the key does not exist in bpython.keys.
 
-Valid keys are: 
+Valid keys are:
 
 * Control + any alphanumeric character (C-a through A-z, also a few others).
 * Any function key ranging from F1 to F12.
@@ -190,7 +197,7 @@ The width of the suggestion window in percent of the terminal width.
 
 GTK
 ---
-This refers to the ``[gtk]`` section in your `~/.bpython/config` file.
+This refers to the ``[gtk]`` section in your `$XDG_CONFIG_HOME/bpython/config` file.
 
 font
 ^^^^
