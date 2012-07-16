@@ -415,7 +415,7 @@ class Repl(object):
                     self.interp.runsource(f.read(), filename, 'exec', encode=False)
 
     def current_string(self, concatenate=False):
-        """Return the current string."""
+        """If the line ends in a string get it, otherwise return ''"""
         tokens = self.tokenize(self.current_line())
         string_tokens = list(takewhile(token_is_any_of([Token.String,
                                                         Token.Text]),

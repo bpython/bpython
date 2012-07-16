@@ -1393,13 +1393,18 @@ class CLIRepl(repl.Repl):
             os.kill(os.getpid(), signal.SIGSTOP)
 
     def tab(self, back=False):
-        """Process the tab key being hit. If there's only whitespace
+        """Process the tab key being hit. 
+
+        If there's only whitespace
         in the line or the line is blank then process a normal tab,
         otherwise attempt to autocomplete to the best match of possible
         choices in the match list.
-        If `back` is True, walk backwards through the list of suggestions
-        and don't indent if there are only whitespace in the line."""
 
+        If `back` is True, walk backwards through the list of suggestions
+        and don't indent if there are only whitespace in the line.
+        """
+
+        # 1. check if we should add a tab character
         if self.atbol() and not back:
             x_pos = len(self.s) - self.cpos
             num_spaces = x_pos % self.config.tab_length
@@ -1410,6 +1415,7 @@ class CLIRepl(repl.Repl):
             self.print_line(self.s)
             return True
 
+        # 2. get the current word
         if not self.matches_iter:
             self.complete(tab=True)
             if not self.config.auto_display_list and not self.list_win_visible:
@@ -1421,10 +1427,12 @@ class CLIRepl(repl.Repl):
         else:
             cw = self.matches_iter.current_word
 
+        # check to see if we can expand the current word
         b = os.path.commonprefix(self.matches)
-        if b:
-            self.s += b[len(cw):]
-            expanded = bool(b[len(cw):])
+        if b and self.config.autocomplete_mode == 1:
+            expanded_string = b[len(cw):]
+            self.s += expanded_string
+            expanded = bool(expanded_string)
             self.print_line(self.s)
             if len(self.matches) == 1 and self.config.auto_display_list:
                 self.scr.touchwin()
@@ -1433,13 +1441,16 @@ class CLIRepl(repl.Repl):
         else:
             expanded = False
 
+        # swap current word for a match list item
         if not expanded and self.matches:
+            # reset s if this is the nth result
             if self.matches_iter:
                 self.s = self.s[:-len(self.matches_iter.current())] + cw
-            if back:
-                current_match = self.matches_iter.previous()
-            else:
-                current_match = self.matches_iter.next()
+
+            current_match = back and self.matches_iter.previous() \
+                                  or self.matches_iter.next()
+
+            # update s with the new match
             if current_match:
                 try:
                     self.show_list(self.matches, self.argspec, current_match)
@@ -1449,7 +1460,12 @@ class CLIRepl(repl.Repl):
                     # using it.
                     self.list_win.border()
                     self.list_win.refresh()
-                self.s += current_match[len(cw):]
+
+                if self.config.autocomplete_mode == 1:
+                    self.s += current_match[len(cw):]
+                else:
+                    self.s = current_match
+
                 self.print_line(self.s, True)
         return True
 
