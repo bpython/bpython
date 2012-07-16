@@ -26,3 +26,4 @@ Contents:
    sourcecode
    bpaste
    tips
+   bpdb
