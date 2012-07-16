@@ -1105,14 +1105,14 @@ def main(args=None, locals_=None, banner=None):
     config, options, exec_args = bpargs.parse(args, (
             'Urwid options', None, [
                 Option('--reactor', '-r',
-                       help='Run a reactor (see --help-reactors)'),
+                       help=_('Run a reactor (see --help-reactors).')),
                 Option('--help-reactors', action='store_true',
-                       help='List available reactors for -r'),
+                       help=_('List available reactors for -r.')),
                 Option('--plugin', '-p',
-                       help='twistd plugin to run (use twistd for a list). '
-                       'Use "--" to pass further options to the plugin.'),
+                       help=_('twistd plugin to run (use twistd for a list). '
+                       'Use "--" to pass further options to the plugin.')),
                 Option('--server', '-s', type='int',
-                       help='Port to run an eval server on (forces Twisted)'),
+                       help=_('Port to run an eval server on (forces Twisted).')),
                 ]))
 
     if options.help_reactors:
