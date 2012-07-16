@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: bpython 0.9.7.1\n"
 "Report-Msgid-Bugs-To: http://bitbucket.org/bobf/bpython/issues\n"
-"POT-Creation-Date: 2012-07-14 21:45+0200\n"
+"POT-Creation-Date: 2012-07-16 12:50+0200\n"
 "PO-Revision-Date: 2011-04-21 00:46+0100\n"
 "Last-Translator: Simon de Vlieger <simon@ikanobori.jp>\n"
 "Language-Team: bpython developers\n"
@@ -17,11 +17,34 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
 
-#: bpython/cli.py:303 bpython/urwid.py:529
+#: bpython/args.py:53
+msgid ""
+"Usage: %prog [options] [file [args]]\n"
+"NOTE: If bpython sees an argument it does not know, execution falls back "
+"to the regular Python interpreter."
+msgstr ""
+
+#: bpython/args.py:63
+msgid "Use CONFIG instead of default config file."
+msgstr ""
+
+#: bpython/args.py:65
+msgid "Drop to bpython shell after running file instead of exiting."
+msgstr ""
+
+#: bpython/args.py:68
+msgid "Don't flush the output to stdout."
+msgstr ""
+
+#: bpython/args.py:70
+msgid "Print version and exit."
+msgstr ""
+
+#: bpython/cli.py:303 bpython/urwid.py:550
 msgid "y"
 msgstr "j"
 
-#: bpython/cli.py:303 bpython/urwid.py:529
+#: bpython/cli.py:303 bpython/urwid.py:550
 msgid "yes"
 msgstr "ja"
 
@@ -29,7 +52,7 @@ msgstr "ja"
 msgid "Cannot show source."
 msgstr "Kan de broncode niet laden"
 
-#: bpython/cli.py:1642 bpython/urwid.py:591
+#: bpython/cli.py:1642 bpython/urwid.py:612
 #, python-format
 msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
 msgstr " <%s> Rewind  <%s> Opslaan  <%s> Pastebin  <%s> Pager  <%s> Toon broncode"
@@ -129,5 +152,23 @@ msgstr ""
 
 #: bpython/repl.py:854
 msgid "Upload failed: Failed to recognize the helper program's output as an URL."
+msgstr ""
+
+#: bpython/urwid.py:1108
+msgid "Run a reactor (see --help-reactors)."
+msgstr ""
+
+#: bpython/urwid.py:1110
+msgid "List available reactors for -r."
+msgstr ""
+
+#: bpython/urwid.py:1112
+msgid ""
+"twistd plugin to run (use twistd for a list). Use \"--\" to pass further "
+"options to the plugin."
+msgstr ""
+
+#: bpython/urwid.py:1115
+msgid "Port to run an eval server on (forces Twisted)."
 msgstr ""
 
