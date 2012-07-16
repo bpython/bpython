@@ -300,7 +300,16 @@ class TestCliRepl(unittest.TestCase):
         self.repl.s = "this.is.\ta.test"
         self.assertEqual(self.repl.cw(), 'a.test')
 
-    def test_tab(self):
+
+class TestCliReplTab(unittest.TestCase):
+
+    def setUp(self):
+
+        def setup_matches(tab=False):
+            self.repl.matches = ["foobar", "foofoobar"]
+            self.repl.matches_iter = repl.MatchesIterator()
+            self.repl.matches_iter.update('f', self.repl.matches)
+
         self.repl = FakeCliRepl()
 
         # Stub out CLIRepl attributes
@@ -309,17 +318,11 @@ class TestCliRepl(unittest.TestCase):
         self.repl.print_line = Mock()
         self.repl.show_list = Mock()
 
-        # Stub out the Complete logic
-        def setup_complete(first=True):
-            def setup_matches(tab=False):
-                self.repl.matches = ["foobar", "foofoobar"]
-                self.repl.matches_iter = repl.MatchesIterator()
-                self.repl.matches_iter.update('f', self.repl.matches)
-
-            self.repl.complete = Mock()
-            self.repl.complete.return_value = True
-            self.repl.complete.side_effect = setup_matches
-            self.repl.matches_iter = first and None or setup_matches()
+        # Stub out complete
+        self.repl.complete = Mock()
+        self.repl.complete.return_value = True
+        self.repl.complete.side_effect = setup_matches
+        self.repl.matches_iter = None
 
         # Stub out the config logic
         self.repl.config = Mock()
@@ -328,54 +331,61 @@ class TestCliRepl(unittest.TestCase):
         self.repl.config.list_win_visible = True
         self.repl.config.autocomplete_mode = 1
 
-        # Tests
 
-        # test normal tab
-        self.repl.s = ""
-        setup_complete()
-        self.repl.tab()
-        self.assertEqual(self.repl.s, "    ")
+    def test_tab(self):
+        def test_normal_tab(self):
+            self.repl.s = ""
+            setup_complete()
+            self.repl.tab()
+            self.assertEqual(self.repl.s, "    ")
 
-        # test expand
-        self.repl.s = "f"
-        setup_complete()
-        self.repl.tab()
-        self.assertEqual(self.repl.s, "foo")
+        def test_expand(self):
+            self.repl.s = "f"
+            setup_complete()
+            self.repl.tab()
+            self.assertEqual(self.repl.s, "foo")
 
-        # test first forward
-        self.repl.s = "foo"
-        setup_complete()
-        self.repl.tab()
-        self.assertEqual(self.repl.s, "foobar")
+        def test_first_forward(self):
+            self.repl.s = "foo"
+            setup_complete()
+            self.repl.tab()
+            self.assertEqual(self.repl.s, "foobar")
 
-        # test first back
-        self.repl.s = "foo"
-        setup_complete()
-        self.repl.tab(back=True)
-        self.assertEqual(self.repl.s, "foofoobar")
+        def test_first_back(self):
+            self.repl.s = "foo"
+            setup_complete()
+            self.repl.tab(back=True)
+            self.assertEqual(self.repl.s, "foofoobar")
 
-        # test nth forward
-        self.repl.s = "f"
-        setup_complete()
-        self.repl.tab()
-        self.repl.tab()
-        self.assertEqual(self.repl.s, "foobar")
+        def test_nth_forward(self):
+            self.repl.s = "f"
+            setup_complete()
+            self.repl.tab()
+            self.repl.tab()
+            self.assertEqual(self.repl.s, "foobar")
 
-        # test nth back
-        self.repl.s = "f"
-        setup_complete()
-        self.repl.tab()
-        self.repl.tab(back=True)
-        self.assertEqual(self.repl.s, "foofoobar")
+        def test_nth_back(self):
+            self.repl.s = "f"
+            setup_complete()
+            self.repl.tab()
+            self.repl.tab(back=True)
+            self.assertEqual(self.repl.s, "foofoobar")
 
-        # test non-appending tab-complete
-        self.repl.s = "bar"
-        self.repl.config.autocomplete_mode = 2
-        self.repl.tab()
-        self.assertEqual(self.repl.s, "foobar")
+        def test_non_contiguous_tab_complete(self):
+            self.repl.s = "br"
+            self.repl.config.autocomplete_mode = 2
+            setup_complete()
+            self.repl.tab()
+            self.assertEqual(self.repl.s, "foobar")
 
-        self.repl.tab()
-        self.assertEqual(self.repl.s, "foofoobar")
+        def test_non_appending_tab_complete(self):
+            self.repl.s = "bar"
+            self.repl.config.autocomplete_mode = 2
+            setup_complete()
+            self.repl.tab()
+            self.assertEqual(self.repl.s, "foobar")
+            self.repl.tab()
+            self.assertEqual(self.repl.s, "foofoobar")
 
 if __name__ == '__main__':
     unittest.main()
