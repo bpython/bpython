@@ -1861,7 +1861,6 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
 
 
 def main(args=None, locals_=None, banner=None):
-    locale.setlocale(locale.LC_ALL, "")
     translations.init()
 
 

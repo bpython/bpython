@@ -1098,7 +1098,6 @@ class URWIDRepl(repl.Repl):
             self._completion_update_suppressed = False
 
 def main(args=None, locals_=None, banner=None):
-    locale.setlocale(locale.LC_ALL, "")
     translations.init()
 
     # TODO: maybe support displays other than raw_display?

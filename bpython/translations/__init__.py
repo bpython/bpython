@@ -1,12 +1,13 @@
 import gettext
+import locale
 import os.path
-from sys import version_info
+import sys
 
 from bpython import package_dir
 
 translator = None
 
-if version_info >= (3, 0):
+if sys.version_info >= (3, 0):
     def _(message):
         return translator.gettext(message)
 else:
@@ -15,6 +16,15 @@ else:
 
 
 def init(locale_dir=None, languages=None):
+    try:
+        locale.setlocale(locale.LC_ALL, '')
+    except locale.Error:
+        # This means that the user's environment is broken. Let's just continue
+        # with the default C locale.
+        sys.stderr.write("Error: Your locale settings are not supported by "
+                         "the system. Using the fallback 'C' locale instead. "
+                         "Please fix your locale settings.\n")
+
     global translator
     if locale_dir is None:
         locale_dir = os.path.join(package_dir, 'translations')
