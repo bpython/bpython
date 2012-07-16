@@ -26,7 +26,7 @@ msgstr ""
 
 #: bpython/args.py:63
 msgid "Use CONFIG instead of default config file."
-msgstr ""
+msgstr "Verwende CONFIG antatt der standardmäßigen Konfigurationsdatei."
 
 #: bpython/args.py:65
 msgid "Drop to bpython shell after running file instead of exiting."
@@ -38,7 +38,7 @@ msgstr ""
 
 #: bpython/args.py:70
 msgid "Print version and exit."
-msgstr ""
+msgstr "Zeige Versionsinformationen an und beende."
 
 #: bpython/cli.py:303 bpython/urwid.py:550
 msgid "y"
