@@ -16,9 +16,12 @@
 .\" .sp <n>    insert n+1 empty lines
 .\" for manpage-specific macros, see man(7)
 .SH NAME
-bpython \- a fancy curses interface to the Python interactive interpreter
+bpython, bpython-urwid \- a fancy interface to the Python interactive interpreter
 .SH SYNOPSIS
 .B bpython
+[\fIoptions\fR] [\fIfile\fR [\fIargs\fR]]
+
+.B bpython-urwid
 [\fIoptions\fR] [\fIfile\fR [\fIargs\fR]]
 .SH DESCRIPTION
 The idea is to provide the user with all the features
@@ -79,6 +82,33 @@ Do not flush the output to stdout.
 .IP "\fB\-\-version\fR" 4
 .PD
 Print bpython's version and exit.
+
+.PP
+In addition to the above options, bpython-urwid also supports the following
+options if twisted is available:
+.IP "\fB\-r \fR\fIreactor\fR" 4
+.PD 0
+.IP "\fB\-\-reactor=\fR\fIreactor\fR" 4
+.PD
+Use Twisted's \fIreactor\fR reactor instead of urwid's event loop.
+
+.IP "\fB\-\-help\-reactors\fR" 4
+.PD
+Display a list of available Twisted reactors.
+
+.IP "\fB\-p \fR\fIplugin\fR" 4
+.PD 0
+.IP "\fB\-\-plugin=\fR\fIplugin\fR" 4
+.PD
+Execute a twistd plugin. Use twistd to get a list of available plugins. Use
+"\-\-" to pass options to the plugin.
+
+.IP "\fB\-s \fR\fIport\fR" 4
+.PD 0
+.IP "\fB\-\-s=\fR\fIport\fR" 4
+.PD
+Run a eval server on port \fIport\fR. This options forces the use of a Twisted
+reactor.
 
 .SH KEYS
 bpython's keys are fully configurable. See
