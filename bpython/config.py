@@ -148,7 +148,7 @@ def loadini(struct, configfile):
                                                       'complete_magic_methods')
     methods = config.get('general', 'magic_methods')
     struct.magic_methods = [meth.strip() for meth in methods.split(",")]
-    struct.autocomplete_mode = config.get('general', 'autocomplete_mode')
+    struct.autocomplete_mode = config.getint('general', 'autocomplete_mode')
 
     struct.gtk_font = config.get('gtk', 'font')
 
