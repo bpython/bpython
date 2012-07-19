@@ -47,7 +47,18 @@ from pygments.token import Token
 
 from bpython import importcompletion, inspection
 from bpython.formatter import Parenthesis
+from bpython.translations import _
 from bpython.autocomplete import Autocomplete
+
+# Needed for special handling of __abstractmethods__
+# abc only exists since 2.6, so check both that it exists and that it's
+# the one we're expecting
+try:
+    import abc
+    abc.ABCMeta
+    has_abc = True
+except (ImportError, AttributeError):
+    has_abc = False
 
 py3 = sys.version_info[0] == 3
 
