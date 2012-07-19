@@ -27,7 +27,15 @@ import rlcompleter
 import re
 from bpython import inspection
 
-
+# Needed for special handling of __abstractmethods__
+# abc only exists since 2.6, so check both that it exists and that it's
+# the one we're expecting
+try:
+    import abc
+    abc.ABCMeta
+    has_abc = True
+except (ImportError, AttributeError):
+    has_abc = False
 
 class Autocomplete(rlcompleter.Completer):
     """
@@ -102,7 +110,7 @@ class Autocomplete(rlcompleter.Completer):
         for word in keyword.kwlist:
             if self.method_match(word, n, text):
                 hash[word] = 1
-        for nspace in [__builtin__.__dict__, __main__.__dict__]:
+        for nspace in [__builtin__.__dict__, self.namespace]:
             for word, val in nspace.items():
                 if self.method_match(word, len(text), text) and word != "__builtins__":
                     hash[self._callable_postfix(val, word)] = 1
@@ -111,8 +119,11 @@ class Autocomplete(rlcompleter.Completer):
         return matches
 
     def method_match(self, word, size, text):
-        if self.autocomplete_mode == "1":
+        if self.autocomplete_mode == 1:
             return word[:size] == text
+        elif self.autocomplete_mode == 2:
+            s = r'.*%s.*' % text
+            return re.search(s, word)
         else:
             s = r'.*%s.*' % '.*'.join(list(text))
             return re.search(s, word)

@@ -10,7 +10,35 @@ def setup_config(conf):
     config.loadini(config_struct, os.devnull)
     if 'autocomplete_mode' in conf:
         config_struct.autocomplete_mode = conf['autocomplete_mode']
+    print config_struct
     return config_struct
+
+class FakeHistory(repl.History):
+
+    def __init__(self):
+        pass
+
+    def reset(self):
+        pass
+
+class FakeRepl(repl.Repl):
+    def __init__(self, conf={}):
+        repl.Repl.__init__(self, repl.Interpreter(), setup_config(conf))
+        self.input_line = ""
+        self.current_word = ""
+        self.cpos = 0
+
+    def current_line(self):
+        return self.input_line
+
+    def cw(self):
+        return self.current_word
+
+class FakeCliRepl(cli.CLIRepl, FakeRepl):
+    def __init__(self):
+        self.s = ''
+        self.cpos = 0
+        self.rl_history = FakeHistory()
 
 class TestHistory(unittest.TestCase):
     def setUp(self):
@@ -137,33 +165,6 @@ class TestMatchesIterator(unittest.TestCase):
         self.assertNotEqual(list(slice), self.matches)
         self.assertEqual(list(newslice), newmatches)
 
-class FakeHistory(repl.History):
-
-    def __init__(self):
-        pass
-
-    def reset(self):
-        pass
-
-class FakeRepl(repl.Repl):
-    def __init__(self, conf={}):
-        repl.Repl.__init__(self, repl.Interpreter(), setup_config(conf))
-        self.input_line = ""
-        self.current_word = ""
-        self.cpos = 0
-
-    def current_line(self):
-        return self.input_line
-
-    def cw(self):
-        return self.current_word
-
-class FakeCliRepl(cli.CLIRepl, FakeRepl):
-    def __init__(self):
-        self.s = ''
-        self.cpos = 0
-        self.rl_history = FakeHistory()
-
 class TestArgspec(unittest.TestCase):
     def setUp(self):
         self.repl = FakeRepl()
@@ -232,8 +233,17 @@ class TestRepl(unittest.TestCase):
         self.repl.input_line = 'a = "2" + 2'
         self.assertEqual(self.repl.current_string(), '')
 
-    def test_default_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode':"1"})
+    # TODO: figure out how to capture whether foobar is in globals
+    @unittest.skip('not working yet')
+    def test_push(self):
+        self.repl = FakeRepl()
+        self.repl.push("foobar = 2")
+        self.repl.push("\"foobar\" in globals().keys()")
+
+    # COMPLETE TESTS
+    # 1. Global tests
+    def test_simple_global_complete(self):
+        self.repl = FakeRepl({'autocomplete_mode':1})
         self.repl.input_line = "d"
         self.repl.current_word = "d"
 
@@ -242,8 +252,18 @@ class TestRepl(unittest.TestCase):
         self.assertEqual(self.repl.completer.matches,
             ['def', 'del', 'delattr(', 'dict(', 'dir(', 'divmod('])
 
-    def test_alternate_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode':"2"})
+    def test_substring_global_complete(self):
+        self.repl = FakeRepl({'autocomplete_mode':2})
+        self.repl.input_line = "time"
+        self.repl.current_word = "time"
+
+        self.assertTrue(self.repl.complete())
+        self.assertTrue(hasattr(self.repl.completer,'matches'))
+        self.assertEqual(self.repl.completer.matches,
+            ['RuntimeError(', 'RuntimeWarning('])
+
+    def test_fuzzy_global_complete(self):
+        self.repl = FakeRepl({'autocomplete_mode':3})
         self.repl.input_line = "doc"
         self.repl.current_word = "doc"
 
@@ -251,6 +271,70 @@ class TestRepl(unittest.TestCase):
         self.assertTrue(hasattr(self.repl.completer,'matches'))
         self.assertEqual(self.repl.completer.matches,
             ['UnboundLocalError(', '__doc__'])
+
+    # 2. Attribute tests
+    def test_simple_attribute_complete(self):
+        self.repl = FakeRepl({'autocomplete_mode':1})
+        self.repl.input_line = "Foo.b"
+        self.repl.current_word = "Foo.b"
+
+        code = "class Foo():\n\tdef bar(self):\n\t\tpass\n"
+        for line in code.split("\n"):
+            self.repl.push(line)
+
+        self.assertTrue(self.repl.complete())
+        self.assertTrue(hasattr(self.repl.completer,'matches'))
+        self.assertEqual(self.repl.completer.matches,
+            ['Foo.bar'])
+
+    def test_substring_attribute_complete(self):
+        self.repl = FakeRepl({'autocomplete_mode':2})
+        self.repl.input_line = "Foo.ar"
+        self.repl.current_word = "Foo.ar"
+
+        code = "class Foo():\n\tdef bar(self):\n\t\tpass\n"
+        for line in code.split("\n"):
+            self.repl.push(line)
+
+        self.assertTrue(self.repl.complete())
+        self.assertTrue(hasattr(self.repl.completer,'matches'))
+        self.assertEqual(self.repl.completer.matches,
+            ['Foo.bar'])
+
+    def test_fuzzy_attribute_complete(self):
+        self.repl = FakeRepl({'autocomplete_mode':3})
+        self.repl.input_line = "Foo.br"
+        self.repl.current_word = "Foo.br"
+
+        code = "class Foo():\n\tdef bar(self):\n\t\tpass\n"
+        for line in code.split("\n"):
+            self.repl.push(line)
+
+        self.assertTrue(self.repl.complete())
+        self.assertTrue(hasattr(self.repl.completer,'matches'))
+        self.assertEqual(self.repl.completer.matches,
+            ['Foo.bar'])
+
+    # 3. Edge Cases
+    def test_updating_namespace_complete(self):
+        self.repl = FakeRepl({'autocomplete_mode':1})
+        self.repl.input_line = "foo"
+        self.repl.current_word = "foo"
+        self.repl.push("foobar = 2")
+
+        self.assertTrue(self.repl.complete())
+        self.assertTrue(hasattr(self.repl.completer,'matches'))
+        self.assertEqual(self.repl.completer.matches,
+            ['foobar'])
+
+    def test_file_should_not_appear_in_complete(self):
+        self.repl = FakeRepl({'autocomplete_mode':1})
+        self.repl.input_line = "_"
+        self.repl.current_word = "_"
+        self.assertTrue(self.repl.complete())
+        self.assertTrue(hasattr(self.repl.completer,'matches'))
+        self.assertNotIn('__file__', self.repl.completer.matches)
+
 
 class TestCliRepl(unittest.TestCase):
 
@@ -297,18 +381,22 @@ class TestCliRepl(unittest.TestCase):
         self.repl.s = s
         self.assertEqual(self.repl.cw(), s.lstrip())
 
-        self.repl.s = "this.is.\ta.test"
-        self.assertEqual(self.repl.cw(), 'a.test')
-
+        self.repl.s = "import datetime"
+        self.assertEqual(self.repl.cw(), 'datetime')
 
 class TestCliReplTab(unittest.TestCase):
 
     def setUp(self):
 
         def setup_matches(tab=False):
-            self.repl.matches = ["foobar", "foofoobar"]
+
+            if self.repl.cw() and len(self.repl.cw().split('.')) == 1:
+                self.repl.matches = ["foobar", "foofoobar"]
+            else:
+                self.repl.matches = ["Foo.foobar", "Foo.foofoobar"]
+
             self.repl.matches_iter = repl.MatchesIterator()
-            self.repl.matches_iter.update('f', self.repl.matches)
+            self.repl.matches_iter.update(self.repl.cw(), self.repl.matches)
 
         self.repl = FakeCliRepl()
 
@@ -331,61 +419,93 @@ class TestCliReplTab(unittest.TestCase):
         self.repl.config.list_win_visible = True
         self.repl.config.autocomplete_mode = 1
 
+    # 3 Types of tab complete
+    def test_simple_tab_complete(self):
+        self.repl.s = "foo"
+        self.repl.tab()
+        self.assertEqual(self.repl.s, "foobar")
 
-    def test_tab(self):
-        def test_normal_tab(self):
-            self.repl.s = ""
-            setup_complete()
-            self.repl.tab()
-            self.assertEqual(self.repl.s, "    ")
+    def test_substring_tab_complete(self):
+        self.repl.s = "bar"
+        self.repl.config.autocomplete_mode = 3
+        self.repl.tab()
+        self.assertEqual(self.repl.s, "foobar")
+        self.repl.tab()
+        self.assertEqual(self.repl.s, "foofoobar")
 
-        def test_expand(self):
-            self.repl.s = "f"
-            setup_complete()
-            self.repl.tab()
-            self.assertEqual(self.repl.s, "foo")
+    def test_fuzzy_tab_complete(self):
+        self.repl.s = "br"
+        self.repl.config.autocomplete_mode = 3
+        self.repl.tab()
+        self.assertEqual(self.repl.s, "foobar")
 
-        def test_first_forward(self):
-            self.repl.s = "foo"
-            setup_complete()
-            self.repl.tab()
-            self.assertEqual(self.repl.s, "foobar")
+    # Edge Cases
+    def test_normal_tab(self):
+        """make sure pressing the tab key will
+           still in some cases add a tab"""
+        self.repl.s = ""
+        self.repl.tab()
+        self.assertEqual(self.repl.s, "    ")
 
-        def test_first_back(self):
-            self.repl.s = "foo"
-            setup_complete()
-            self.repl.tab(back=True)
-            self.assertEqual(self.repl.s, "foofoobar")
+    def test_back_parameter(self):
+        self.repl.s = "foo"
+        self.repl.tab(back=True)
+        self.assertEqual(self.repl.s, "foofoobar")
 
-        def test_nth_forward(self):
-            self.repl.s = "f"
-            setup_complete()
-            self.repl.tab()
-            self.repl.tab()
-            self.assertEqual(self.repl.s, "foobar")
+    def test_nth_forward(self):
+        """make sure that pressing tab twice will fist expand 
+        and then cycle to the first match"""
+        self.repl.s = "f"
+        self.repl.tab()
+        self.repl.tab()
+        self.assertEqual(self.repl.s, "foobar")
 
-        def test_nth_back(self):
-            self.repl.s = "f"
-            setup_complete()
-            self.repl.tab()
-            self.repl.tab(back=True)
-            self.assertEqual(self.repl.s, "foofoobar")
+    def test_current_word(self):
+        """Complete should not be affected by words that precede it."""
+        self.repl.s = "import f"
+        self.repl.tab()
+        self.assertEqual(self.repl.s, "import foo")
 
-        def test_non_contiguous_tab_complete(self):
-            self.repl.s = "br"
-            self.repl.config.autocomplete_mode = 2
-            setup_complete()
-            self.repl.tab()
-            self.assertEqual(self.repl.s, "foobar")
+        self.repl.tab()
+        self.assertEqual(self.repl.s, "import foobar")
 
-        def test_non_appending_tab_complete(self):
-            self.repl.s = "bar"
-            self.repl.config.autocomplete_mode = 2
-            setup_complete()
-            self.repl.tab()
-            self.assertEqual(self.repl.s, "foobar")
-            self.repl.tab()
-            self.assertEqual(self.repl.s, "foofoobar")
+        self.repl.tab()
+        self.assertEqual(self.repl.s, "import foofoobar")
+
+    # Attribute Tests
+    def test_fuzzy_attribute_tab_complete(self):
+        """Test fuzzy attribute with no text"""
+        self.repl.s = "Foo."
+        self.repl.config.autocomplete_mode = 3
+
+        self.repl.tab()
+        self.assertEqual(self.repl.s, "Foo.foobar")
+        print self.repl.s
+
+    def test_fuzzy_attribute_tab_complete2(self):
+        """Test fuzzy attribute with some text"""
+        self.repl.s = "Foo.br"
+        self.repl.config.autocomplete_mode = 3
+
+        self.repl.tab()
+        self.assertEqual(self.repl.s, "Foo.foobar")
+
+    # Expand Tests
+    def test_simple_expand(self):
+        self.repl.s = "f"
+        self.repl.tab()
+        self.assertEqual(self.repl.s, "foo")
+
+    def test_substring_expand_forward(self):
+        self.repl.config.autocomplete_mode = 2
+        self.repl.s = "ba"
+        self.repl.tab()
+        self.assertEqual(self.repl.s, "bar")
+
+    def test_fuzzy_expand(self):
+        pass
+
+
 
 if __name__ == '__main__':
     unittest.main()

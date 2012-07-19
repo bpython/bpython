@@ -1089,7 +1089,7 @@ class CLIRepl(repl.Repl):
         """Initialise the repl and jump into the loop. This method also has to
         keep a stack of lines entered for the horrible "undo" feature. It also
         tracks everything that would normally go to stdout in the normal Python
-        interpreter so it can quickly write it to stdout on exit after
+        interpreter so it can quickly write it to st on exit after
         curses.endwin(), as well as a history of lines entered for using
         up/down to go back and forth (which has to be separate to the
         evaluation history, which will be truncated when undoing."""
@@ -1404,6 +1404,8 @@ class CLIRepl(repl.Repl):
         and don't indent if there are only whitespace in the line.
         """
 
+        mode = self.config.autocomplete_mode
+
         # 1. check if we should add a tab character
         if self.atbol() and not back:
             x_pos = len(self.s) - self.cpos
@@ -1427,21 +1429,29 @@ class CLIRepl(repl.Repl):
         else:
             cw = self.matches_iter.current_word
 
-        # check to see if we can expand the current word
-        b = os.path.commonprefix(self.matches)
-        if b and self.config.autocomplete_mode == 1:
-            expanded_string = b[len(cw):]
+        # 3. check to see if we can expand the current word
+        cseq = None
+        if mode == 2:
+            if all([len(match.split(cw)) == 2 for match in self.matches]):
+                seq = [cw + match.split(cw)[1] for match in self.matches]
+                cseq = os.path.commonprefix(seq)
+        else:
+            seq = self.matches
+            cseq = os.path.commonprefix(seq)
+
+        if cseq and mode != 3:
+            expanded_string = cseq[len(cw):]
             self.s += expanded_string
             expanded = bool(expanded_string)
             self.print_line(self.s)
             if len(self.matches) == 1 and self.config.auto_display_list:
                 self.scr.touchwin()
             if expanded:
-                self.matches_iter.update(b, self.matches)
+                self.matches_iter.update(cseq, self.matches)
         else:
             expanded = False
 
-        # swap current word for a match list item
+        # 4. swap current word for a match list item
         if not expanded and self.matches:
             # reset s if this is the nth result
             if self.matches_iter:
@@ -1464,7 +1474,7 @@ class CLIRepl(repl.Repl):
                 if self.config.autocomplete_mode == 1:
                     self.s += current_match[len(cw):]
                 else:
-                    self.s = current_match
+                    self.s = self.s[:-len(cw)] + current_match
 
                 self.print_line(self.s, True)
         return True
