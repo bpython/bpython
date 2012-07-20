@@ -1,21 +1,8 @@
 Changelog
 =========
 
-dev
----
-
-We want to give special thanks to the Hacker School project-
-(https://www.hackerschool.com/) for choosing bpython as their pet hacking
-project. In special we would like to thank the following people for contributing
-their code to bpython:
-
-- Martha Girdler
-- Allison Kaptur
-- Ingrid Cheung
-
-We'd also like to thank Eike Hein for contributing his pastebin code which now
-makes it possible to paste using a 3rd party program unlocking a whole slew of
-pastebins for bpython users.
+Since v0.11
+___________
 
 * Added a new pastebin_helper config option to name an executable that should
   perform pastebin upload on bpython's behalf. If set, this overrides
@@ -24,10 +11,6 @@ pastebins for bpython users.
 * Fixed a bug causing pastebin upload to fail after a previous attempt was
   unsuccessful. A duplicate pastebin error would be displayed in this case,
   despite the original upload having failed.
-* Added more key shortcuts to bpython.urwid
-* Smarter dedenting after certain expressions
-* #74 fixed broken completion when auto_display_list was disabled
-
 
 v0.11
 -----
@@ -55,6 +38,7 @@ v0.10
 As a highlight of the release, Michele Orrù added i18n support to bpython.
 
 Some issues have been resolved as well:
+
 * Config files are now located according to the XDG Base Directory
   Specification. The support for the old bpythonrc files has been
   dropped and ~/.bpython.ini as config file location is no longer supported.
@@ -90,7 +74,7 @@ integrates with a Twisted reactor and through that with things like the GTK
 event loop.
 
 At the same time we have done a lot of work on the GTK frontend. The GTK
-frontend is now 'usable'. Please give that a spin as well by running bpython-gtk
+frontend is now 'usable'. Please give that a spin as well by running python-gtk
 on you system.
 
 We also welcome a new contributor in the name of Michele Orrù who we hope will
@@ -98,17 +82,12 @@ help us fix even more bugs and improve functionality.
 
 As always, please submit any bugs you might find to our bugtracker.
 
-* Pastebin confirmation added; we were getting a lot of people accidentally
-  pastebinning sensitive information so I think this is a good idea.
+* Pastebin confirmation added; we were getting a lot of people accidentally pastebinning sensitive information so I think this is a good idea.
 * Don't read PYTHONSTARTUP when executed with -i.
-* BPDB was merged in. BPDB is an extension to PDB which allows you to press B
-  in a PDB session which will let you be dropped into a bpython sessions with
-  the current PDB locals(). For usage, see the documentation.
+* BPDB was merged in. BPDB is an extension to PDB which allows you to press B in a PDB session which will let you be dropped into a bpython sessions with the current PDB locals(). For usage, see the documentation.
 * The clear word shortcut (default: C-w) now deletes to the buffer.
 * More tests have been added to bpython.
-* The pastebin now checks for a previous paste (during the session) with the
-  exact same content to guard against twitchy fingers pastebinning multiple
-  times.
+* The pastebin now checks for a previous paste (during the session) with the exact same content to guard against twitchy fingers pastebinning multiple times.
 * Let import completion return "import " instead of "import".
 
 * GTK now has pastebin, both for full log as well as the current selection.
@@ -118,24 +97,21 @@ As always, please submit any bugs you might find to our bugtracker.
 * GTK now has show source functionality.
 * GTK saves the pastebin url to the clipboard.
 * GTK now has it's own configuration section.
-* Set focus to the GTK text widget to allow for easier embedding in PIDA and
-  others which fixes issues #121.
+* Set focus to the GTK text widget to allow for easier embedding in PIDA and others which fixes issues #121.
 
-* #87: Add a closed attribute to Repl to fix mercurial.ui.ui expecting stderr
-  to have this attribute.
+* #87: Add a closed attribute to Repl to fix mercurial.ui.ui expecting stderr to have this attribute.
 * #108: Unicode characters in docsrting crash bpython
 * #118: Load_theme is not defined.
 * #99: Configurable font now documented.
 * #123: <F8> Pastebin can't handle 'ESC' key
-* #124: Unwanted input when using <arrow>/<FXX> keys in the statusbar prompt.
-
+* #124: Unwanted input when using <arrow>/<FXX> keys in the statusbar prompt
 
 v0.9.6.2
 --------
 Unfortunately another bugfix release as I (Bob) broke py3 support.
 
 * #84: bpython doesn't work with Python 3
-       Thanks very much to Henry Prêcheur for both the bug report and the
+       Thanks very much to Henry Prêcheur for both the bug report and the 
        patch.
 
 v0.9.6.1
@@ -155,8 +131,7 @@ A bugfix/feature release (and a start at gtk). Happy Christmas everyone!
 * #72: Auto dedentation
 * #78: Theme without a certain value raises exception
 
-- add the possibility for a banner to be shown on bpython startup (when
-  embedded or in code) written by Caio Romao.
+- add the possibility for a banner to be shown on bpython startup (when embedded or in code) written by Caio Ramao.
 - add a hack to add a write() method to our fake stdin object
 - Don't use curses interface when stdout is not attached to a terminal. 
 - PEP-8 conformance.

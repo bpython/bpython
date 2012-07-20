@@ -1,3 +1,10 @@
+.. _authors:
+
+Authors
+=======
+If you contributed to bpython and want to be on this list please find us
+(:ref:`community`) and let us know!
+
 bpython is written and maintained by Bob Farrell and Andreas Stuehrk
 <robertanthonyfarrell at gmail dot com>,
 <andy-python at hammerhartes dot de>.
@@ -18,5 +25,6 @@ Other contributors are (in alphabetical order):
 * Simon de Vlieger <simon at ikanobori dot jp>
 * Marien Zwart <marien dot zwart at gmail dot com>
 
-
-Many thanks for all contributions!
+A big thanks goes out to all the people who help us out by either submitting
+patches, helping us determine problems, our package maintainers and of course
+everybody who creates issues for us to fix.

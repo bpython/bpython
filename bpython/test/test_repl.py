@@ -217,6 +217,13 @@ class TestArgspec(unittest.TestCase):
         self.assertTrue(self.repl.get_args())
         self.assertEqual(self.repl.current_func.__name__, "range")
 
+        self.setInputLine("{x:range(")
+        self.assertTrue(self.repl.get_args())
+        self.assertEqual(self.repl.current_func.__name__, "range")
+
+        self.setInputLine("foo(1, 2, x,range(")
+        self.assertEqual(self.repl.current_func.__name__, "range")
+
     def test_nonexistent_name(self):
         self.setInputLine("spamspamspam(")
         self.assertFalse(self.repl.get_args())

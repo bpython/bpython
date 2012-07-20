@@ -1,16 +1,16 @@
-# Dutch (Netherlands) translations for bpython.
-# Copyright (C) 2011 ORGANIZATION
+# German translations for bpython.
+# Copyright (C) 2012 bpython developers
 # This file is distributed under the same license as the bpython project.
-# Simon de Vlieger, 2011 .
+# Sebastian Ramacher <sebastian+dev@ramacher.at>, 2012.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: bpython 0.9.7.1\n"
+"Project-Id-Version: bpython mercurial\n"
 "Report-Msgid-Bugs-To: http://bitbucket.org/bobf/bpython/issues\n"
 "POT-Creation-Date: 2012-07-16 12:50+0200\n"
-"PO-Revision-Date: 2011-04-21 00:46+0100\n"
-"Last-Translator: Simon de Vlieger <simon@ikanobori.jp>\n"
-"Language-Team: bpython developers\n"
+"PO-Revision-Date: 2012-04-05 09:37+0200\n"
+"Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
+"Language-Team: de <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -26,7 +26,7 @@ msgstr ""
 
 #: bpython/args.py:63
 msgid "Use CONFIG instead of default config file."
-msgstr ""
+msgstr "Verwende CONFIG antatt der standardmäßigen Konfigurationsdatei."
 
 #: bpython/args.py:65
 msgid "Drop to bpython shell after running file instead of exiting."
@@ -38,7 +38,7 @@ msgstr ""
 
 #: bpython/args.py:70
 msgid "Print version and exit."
-msgstr ""
+msgstr "Zeige Versionsinformationen an und beende."
 
 #: bpython/cli.py:303 bpython/urwid.py:550
 msgid "y"
@@ -50,56 +50,56 @@ msgstr "ja"
 
 #: bpython/cli.py:970 bpython/gtk_.py:484
 msgid "Cannot show source."
-msgstr "Kan de broncode niet laden"
+msgstr "Kann Quellcode nicht anzeigen."
 
 #: bpython/cli.py:1642 bpython/urwid.py:612
 #, python-format
 msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
-msgstr " <%s> Rewind  <%s> Opslaan  <%s> Pastebin  <%s> Pager  <%s> Toon broncode"
+msgstr ""
 
 #: bpython/gtk_.py:92 bpython/gtk_.py:117
 msgid "An error occurred."
-msgstr "Er is een fout opgetreden"
+msgstr "Ein Fehler ist aufgetreten."
 
 #: bpython/gtk_.py:99
 msgid "Exception details"
-msgstr "Fout details"
+msgstr "Ausnahmedetails"
 
 #: bpython/gtk_.py:151
 msgid "Statusbar"
-msgstr "Statusbalk"
+msgstr "Statusleiste"
 
 #: bpython/gtk_.py:228
 msgid "tooltip"
-msgstr "tooltip"
+msgstr ""
 
 #: bpython/gtk_.py:297
 msgid "File to save to"
-msgstr "Bestandsnaaam"
+msgstr ""
 
 #: bpython/gtk_.py:308
 msgid "Python files"
-msgstr "Python bestanden"
+msgstr "Python Dateien"
 
 #: bpython/gtk_.py:313
 msgid "All files"
-msgstr "Alle bestanden"
+msgstr "Alle Dateien"
 
 #: bpython/gtk_.py:771
 msgid "gtk-specific options"
-msgstr "gtk-specifieke opties"
+msgstr ""
 
 #: bpython/gtk_.py:772
 msgid "Options specific to bpython's Gtk+ front end"
-msgstr "Opties specifiek voor bpythons Gtk+ front end"
+msgstr ""
 
 #: bpython/gtk_.py:774
 msgid "Embed bpython"
-msgstr "Embed bpython"
+msgstr "Bette bpython ein"
 
 #: bpython/gtk_.py:830
 msgid "Pastebin selection"
-msgstr "Pastebin de selectie"
+msgstr ""
 
 #: bpython/repl.py:776
 msgid "Pastebin buffer? (y/N) "

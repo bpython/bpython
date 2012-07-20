@@ -10,6 +10,7 @@ from optparse import OptionParser, OptionGroup
 
 from bpython import __version__
 from bpython.config import default_config_path, loadini, Struct
+from bpython.translations import _
 
 
 class OptionParserFailed(ValueError):
@@ -49,24 +50,24 @@ def parse(args, extras=None, ignore_stdin=False):
         args = sys.argv[1:]
 
     parser = RaisingOptionParser(
-        usage='Usage: %prog [options] [file [args]]\n'
+        usage=_('Usage: %prog [options] [file [args]]\n'
         'NOTE: If bpython sees an argument it does '
         'not know, execution falls back to the '
-        'regular Python interpreter.')
+        'regular Python interpreter.'))
     # This is not sufficient if bpython gains its own -m support
     # (instead of falling back to Python itself for that).
     # That's probably fixable though, for example by having that
     # option swallow all remaining arguments in a callback.
     parser.disable_interspersed_args()
     parser.add_option('--config', default=default_config_path(),
-                      help='use CONFIG instead of default config file')
+                      help=_('Use CONFIG instead of default config file.'))
     parser.add_option('--interactive', '-i', action='store_true',
-                      help='Drop to bpython shell after running file '
-                           'instead of exiting')
+                      help=_('Drop to bpython shell after running file '
+                           'instead of exiting.'))
     parser.add_option('--quiet', '-q', action='store_true',
-                      help="Don't flush the output to stdout.")
+                      help=_("Don't flush the output to stdout."))
     parser.add_option('--version', '-V', action='store_true',
-                      help='print version and exit')
+                      help=_('Print version and exit.'))
 
     if extras is not None:
         extras_group = OptionGroup(parser, extras[0], extras[1])

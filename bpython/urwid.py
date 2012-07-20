@@ -404,6 +404,27 @@ class BPythonEdit(urwid.Edit):
                 self.edit_pos = 0
             elif urwid.command_map[key] == 'cursor max right':
                 self.edit_pos = len(self.get_edit_text())
+            elif urwid.command_map[key] == 'clear word':
+                # ^w
+                if self.edit_pos == 0:
+                    return
+                line = self.get_edit_text()
+                # delete any space left of the cursor
+                p = len(line[:self.edit_pos].strip())
+                line = line[:p] + line[self.edit_pos:]
+                # delete a full word
+                np = line.rfind(' ', 0, p)
+                if np == -1:
+                    line = line[p:]
+                    np = 0
+                else:
+                    line = line[:np] + line[p:]
+                self.set_edit_text(line)
+                self.edit_pos = np
+            elif urwid.command_map[key] == 'clear line':
+                line = self.get_edit_text()
+                self.set_edit_text(line[self.edit_pos:])
+                self.edit_pos = 0
             elif key == 'backspace':
                 line = self.get_edit_text()
                 cpos = len(line) - self.edit_pos
@@ -1083,14 +1104,14 @@ def main(args=None, locals_=None, banner=None):
     config, options, exec_args = bpargs.parse(args, (
             'Urwid options', None, [
                 Option('--reactor', '-r',
-                       help='Run a reactor (see --help-reactors)'),
+                       help=_('Run a reactor (see --help-reactors).')),
                 Option('--help-reactors', action='store_true',
-                       help='List available reactors for -r'),
+                       help=_('List available reactors for -r.')),
                 Option('--plugin', '-p',
-                       help='twistd plugin to run (use twistd for a list). '
-                       'Use "--" to pass further options to the plugin.'),
+                       help=_('twistd plugin to run (use twistd for a list). '
+                       'Use "--" to pass further options to the plugin.')),
                 Option('--server', '-s', type='int',
-                       help='Port to run an eval server on (forces Twisted)'),
+                       help=_('Port to run an eval server on (forces Twisted).')),
                 ]))
 
     if options.help_reactors:
@@ -1272,12 +1293,15 @@ def load_urwid_command_map(config):
     urwid.command_map[key_dispatch['C-a']] = 'cursor max left'
     urwid.command_map[key_dispatch['C-e']] = 'cursor max right'
     urwid.command_map[key_dispatch[config.pastebin_key]] = 'pastebin'
+    urwid.command_map[key_dispatch['C-f']] = 'cursor right'
+    urwid.command_map[key_dispatch['C-b']] = 'cursor left'
+    urwid.command_map[key_dispatch['C-d']] = 'delete'
+    urwid.command_map[key_dispatch[config.clear_word_key]] = 'clear word'
+    urwid.command_map[key_dispatch[config.clear_line_key]] = 'clear line'
+
 """
-            'clear_line': 'C-u',
             'clear_screen': 'C-l',
-            'clear_word': 'C-w',
             'cut_to_buffer': 'C-k',
-            'delete': 'C-d',
             'down_one_line': 'C-n',
             'exit': '',
             'last_output': 'F9',
