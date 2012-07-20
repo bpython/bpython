@@ -75,10 +75,7 @@ if using_translations:
             self.output_dir = translations_dir
             self.input_file = os.path.join(translations_dir, 'bpython.pot')
 
-    build.sub_commands.append(('compile_catalog', None))
-    build.sub_commands.append(('update_catalog', None))
-    build.sub_commands.append(('extract_messages', None))
-    build.sub_commands.append(('init_catalog', None))
+    build.sub_commands.insert(0, ('compile_catalog', None))
 
     cmdclass['compile_catalog'] = compile_catalog
     cmdclass['extract_messages'] = extract_messages
@@ -135,8 +132,10 @@ setup(
          ]
     },
     scripts = ([] if using_setuptools else ['data/bpython',
-                                            'data/bpython-gtk']),
-    cmdclass = cmdclass
+                                            'data/bpython-gtk',
+                                            'data/bpython-urwid']),
+    cmdclass = cmdclass,
+    test_suite = 'bpython.test'
 )
 
-# vim: encoding=utf-8 sw=4 ts=4 sts=4 ai et sta
+# vim: fileencoding=utf-8 sw=4 ts=4 sts=4 ai et sta

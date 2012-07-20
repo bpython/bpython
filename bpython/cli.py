@@ -436,6 +436,7 @@ class CLIRepl(repl.Repl):
         if self.list_win_visible and not self.config.auto_display_list:
             self.scr.touchwin()
             self.list_win_visible = False
+            self.matches_iter.update()
             return
 
         if self.config.auto_display_list or tab:
@@ -1699,7 +1700,6 @@ def gethw():
     """
 
     if platform.system() != 'Windows':
-        import struct
         h, w = struct.unpack(
             "hhhh",
             fcntl.ioctl(sys.__stdout__, termios.TIOCGWINSZ, "\000" * 8))[0:2]
@@ -1715,7 +1715,6 @@ def gethw():
         res = windll.kernel32.GetConsoleScreenBufferInfo(h, csbi)
 
         if res:
-            import struct
             (bufx, bufy, curx, cury, wattr,
              left, top, right, bottom, maxx, maxy) = struct.unpack("hhhhHhhhhhh", csbi.raw)
             sizex = right - left + 1
@@ -1888,7 +1887,6 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
 
 
 def main(args=None, locals_=None, banner=None):
-    locale.setlocale(locale.LC_ALL, "")
     translations.init()
 
 

@@ -16,9 +16,13 @@
 .\" .sp <n>    insert n+1 empty lines
 .\" for manpage-specific macros, see man(7)
 .SH NAME
-bpython \- a fancy curses interface to the Python interactive interpreter
+bpython, bpython-gtk, bpython-urwid \- a fancy {curses, GTK+, urwid} interface
+to the Python interactive interpreter
 .SH SYNOPSIS
 .B bpython
+[\fIoptions\fR] [\fIfile\fR [\fIargs\fR]]
+
+.B bpython-urwid
 [\fIoptions\fR] [\fIfile\fR [\fIargs\fR]]
 .SH DESCRIPTION
 The idea is to provide the user with all the features
@@ -53,7 +57,7 @@ Unlike other curses apps, bpython dumps the screen data to stdout when you quit,
 
 .SH OPTIONS
 The long and short forms of options, shown here as alternatives, are
-equivalent. If bpython sees an argument it does not know, execution falls
+equivalent. If \fBbpython\fR sees an argument it does not know, execution falls
 back to the regular Python interpreter.
 .IP "\fB\-\-config=\fR\fIconfig\fR" 4
 .PD
@@ -67,7 +71,7 @@ Show the help message and exit.
 .PD 0
 .IP "\fB\-\-interactive\fR" 4
 .PD
-Drop to bpython shell after running \fIfile\fR instead of exiting.
+Drop to \fBbpython\fR shell after running \fIfile\fR instead of exiting.
 The PYTHONSTARTUP file is not read.
 .IP "\fB\-q\fR" 4
 .PD 0
@@ -78,14 +82,44 @@ Do not flush the output to stdout.
 .PD 0
 .IP "\fB\-\-version\fR" 4
 .PD
-Print bpython's version and exit.
+Print \fBbpython\fR's version and exit.
+
+.PP
+In addition to the above options, \fBbpython-urwid\fR also supports the following
+options if twisted is available:
+.IP "\fB\-r \fR\fIreactor\fR" 4
+.PD 0
+.IP "\fB\-\-reactor=\fR\fIreactor\fR" 4
+.PD
+Use Twisted's \fIreactor\fR reactor instead of urwid's event loop.
+.IP "\fB\-\-help\-reactors\fR" 4
+.PD
+Display a list of available Twisted reactors.
+.IP "\fB\-p \fR\fIplugin\fR" 4
+.PD 0
+.IP "\fB\-\-plugin=\fR\fIplugin\fR" 4
+.PD
+Execute a twistd plugin. Use twistd to get a list of available plugins. Use
+"\-\-" to pass options to the plugin.
+.IP "\fB\-s \fR\fIport\fR" 4
+.PD 0
+.IP "\fB\-\-s=\fR\fIport\fR" 4
+.PD
+Run a eval server on port \fIport\fR. This options forces the use of a Twisted
+reactor.
+
+.PP
+\fBbpython-gtk\fR also supports the following options:
+.IP "\fB\-\-socket-id=\fR\fISOCKET_ID\fR" 4
+.PD
+Embed bpython.
 
 .SH KEYS
-bpython's keys are fully configurable. See
+\fBbpython\fR's keys are fully configurable. See
 http://docs.bpython-interpreter.org/configuration.html#keyboard
 
 .SH FILES
-~/.bpython/config
+$XDG_CONFIG_HOME/bpython/config
 .RS
 Your bpython config. See sample-config (in /usr/share/doc/bpython/examples on Debian) for various options you can use, or read
 .BR bpython-config (5)

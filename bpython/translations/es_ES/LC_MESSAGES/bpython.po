@@ -1,80 +1,176 @@
-# Translations template for bpython.
+# Spanish (Spain) translations for bpython.
 # Copyright (C) 2010 ORGANIZATION
 # This file is distributed under the same license as the bpython project.
 # Claudia Medde, 2010.
 #
-#,
 msgid ""
 msgstr ""
 "Project-Id-Version: bpython 0.9.7\n"
 "Report-Msgid-Bugs-To: http://bitbucket.org/bobf/bpython/issues\n"
-"POT-Creation-Date: 2010-07-21 14:46+0200\n"
+"POT-Creation-Date: 2012-07-16 12:50+0200\n"
 "PO-Revision-Date: 2010-07-21 14:46+0200\n"
 "Last-Translator: Claudia Medde\n"
 "Language-Team: bpython developers\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 0.9.5\n"
+"Generated-By: Babel 0.9.6\n"
 
+#: bpython/args.py:53
+msgid ""
+"Usage: %prog [options] [file [args]]\n"
+"NOTE: If bpython sees an argument it does not know, execution falls back "
+"to the regular Python interpreter."
+msgstr ""
 
-#: bpython/cli.py:250 bpython/urwid.py:400
+#: bpython/args.py:63
+msgid "Use CONFIG instead of default config file."
+msgstr ""
+
+#: bpython/args.py:65
+msgid "Drop to bpython shell after running file instead of exiting."
+msgstr ""
+
+#: bpython/args.py:68
+msgid "Don't flush the output to stdout."
+msgstr ""
+
+#: bpython/args.py:70
+msgid "Print version and exit."
+msgstr ""
+
+#: bpython/cli.py:303 bpython/urwid.py:550
 msgid "y"
 msgstr "s"
 
-#: bpython/cli.py:250 bpython/urwid.py:400
+#: bpython/cli.py:303 bpython/urwid.py:550
 msgid "yes"
 msgstr "si"
 
-#: bpython/cli.py:877 bpython/gtk_.py:482
+#: bpython/cli.py:970 bpython/gtk_.py:484
 msgid "Cannot show source."
 msgstr "Imposible mostrar el código fuente"
 
-#: bpython/cli.py:1527 bpython/urwid.py:415
+#: bpython/cli.py:1642 bpython/urwid.py:612
+#, python-format
 msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
-msgstr " <%s> Rewind  <%s> Salva  <%s> Pastebin  <%s> Pager  <%s> Mostra el código fuente"
+msgstr ""
+" <%s> Rewind  <%s> Salva  <%s> Pastebin  <%s> Pager  <%s> Mostra el "
+"código fuente"
 
-#: bpython/gtk_.py:90 bpython/gtk_.py:113
+#: bpython/gtk_.py:92 bpython/gtk_.py:117
 msgid "An error occurred."
 msgstr ""
 
-#: bpython/gtk_.py:97
+#: bpython/gtk_.py:99
 msgid "Exception details"
 msgstr ""
 
-#: bpython/gtk_.py:149
+#: bpython/gtk_.py:151
 msgid "Statusbar"
 msgstr "Statusbar"
 
-#: bpython/gtk_.py:226
+#: bpython/gtk_.py:228
 msgid "tooltip"
 msgstr "tooltip"
 
-#: bpython/gtk_.py:295
+#: bpython/gtk_.py:297
 msgid "File to save to"
 msgstr ""
 
-#: bpython/gtk_.py:306
+#: bpython/gtk_.py:308
 msgid "Python files"
 msgstr "Files Python"
 
-#: bpython/gtk_.py:311
+#: bpython/gtk_.py:313
 msgid "All files"
 msgstr "Todos los files"
 
-#: bpython/gtk_.py:773
+#: bpython/gtk_.py:771
 msgid "gtk-specific options"
 msgstr ""
 
-#: bpython/gtk_.py:774
+#: bpython/gtk_.py:772
 msgid "Options specific to bpython's Gtk+ front end"
 msgstr ""
 
-#: bpython/gtk_.py:776
+#: bpython/gtk_.py:774
 msgid "Embed bpython"
 msgstr "Embed bpython"
 
-#: bpython/gtk_.py:832
+#: bpython/gtk_.py:830
 msgid "Pastebin selection"
 msgstr "Pastebin la selección"
+
+#: bpython/repl.py:776
+msgid "Pastebin buffer? (y/N) "
+msgstr ""
+
+#: bpython/repl.py:777
+msgid "Pastebin aborted"
+msgstr ""
+
+#: bpython/repl.py:784
+#, python-format
+msgid "Duplicate pastebin. Previous URL: %s"
+msgstr ""
+
+#: bpython/repl.py:798
+#, python-format
+msgid "Pastebin error for URL '%s': %s"
+msgstr ""
+
+#: bpython/repl.py:802 bpython/repl.py:821
+msgid "Posting data to pastebin..."
+msgstr ""
+
+#: bpython/repl.py:807
+#, python-format
+msgid "Upload failed: %s"
+msgstr ""
+
+#: bpython/repl.py:816 bpython/repl.py:860
+#, python-format
+msgid "Pastebin URL: %s"
+msgstr ""
+
+#: bpython/repl.py:833
+msgid "Upload failed: Helper program not found."
+msgstr ""
+
+#: bpython/repl.py:836
+msgid "Upload failed: Helper program could not be run."
+msgstr ""
+
+#: bpython/repl.py:843
+#, python-format
+msgid "Upload failed: Helper program returned non-zero exit status %s."
+msgstr ""
+
+#: bpython/repl.py:847
+msgid "Upload failed: No output from helper program."
+msgstr ""
+
+#: bpython/repl.py:854
+msgid "Upload failed: Failed to recognize the helper program's output as an URL."
+msgstr ""
+
+#: bpython/urwid.py:1108
+msgid "Run a reactor (see --help-reactors)."
+msgstr ""
+
+#: bpython/urwid.py:1110
+msgid "List available reactors for -r."
+msgstr ""
+
+#: bpython/urwid.py:1112
+msgid ""
+"twistd plugin to run (use twistd for a list). Use \"--\" to pass further "
+"options to the plugin."
+msgstr ""
+
+#: bpython/urwid.py:1115
+msgid "Port to run an eval server on (forces Twisted)."
+msgstr ""
 
