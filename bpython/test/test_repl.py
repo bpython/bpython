@@ -10,7 +10,6 @@ def setup_config(conf):
     config.loadini(config_struct, os.devnull)
     if 'autocomplete_mode' in conf:
         config_struct.autocomplete_mode = conf['autocomplete_mode']
-    print config_struct
     return config_struct
 
 class FakeHistory(repl.History):
@@ -485,7 +484,6 @@ class TestCliReplTab(unittest.TestCase):
 
         self.repl.tab()
         self.assertEqual(self.repl.s, "Foo.foobar")
-        print self.repl.s
 
     def test_fuzzy_attribute_tab_complete2(self):
         """Test fuzzy attribute with some text"""
