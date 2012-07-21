@@ -20,6 +20,12 @@ auto_display_list
 Display the autocomplete list as you type (default: True).
 When this is off, you can hit tab to see the suggestions.
 
+autocomplete_mode
+^^^^^^^^^^^^^^^^^
+There are three modes for autocomplete. Simple (1), Substring (2), and Fuzzy (3).
+Simple matches methods with a common prefix, substring matches methods with a common
+subsequence, and fuzzy matches methods with common characters (default: 2).
+
 syntax
 ^^^^^^
 Syntax highlighting as you type (default: True).

@@ -96,7 +96,6 @@ class TestHistory(unittest.TestCase):
 
         self.assertEqual(self.history.back(), 'print "foo\n"')
 
-    @unittest.skip("currently fails")
     def test_enter(self):
         self.history.enter('#lastnumber!')
 
@@ -210,7 +209,6 @@ class TestArgspec(unittest.TestCase):
         # Argument position
         self.assertEqual(self.repl.argspec[3], 1)
 
-    @unittest.skip('currently fails')
     def test_name_in_assignment_without_spaces(self):
         # Issue #127
         self.setInputLine("x=range(")
