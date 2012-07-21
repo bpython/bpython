@@ -6,6 +6,9 @@ Dependencies
 Pygments
 (apt-get install python-pygments)
 
+Mock
+(pip install mock`)
+
 Introduction
 ============
 A few people asked for stuff like syntax highlighting
