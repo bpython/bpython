@@ -114,7 +114,7 @@ setup(
     long_description = """bpython is a fancy interface to the Python
     interpreter for Unix-like operating systems.""",
     install_requires = [
-        'pygments'
+        'pygments', 'mock'
     ],
     packages = ["bpython", "bpython.translations", "bpdb"],
     data_files = data_files,
