@@ -217,6 +217,12 @@ Default: C-l
 
 Clears the screen to the top.
 
+show_source
+^^^^^^^^^^^
+Default: F2
+
+Shows the source of the currently being completed (python) function.
+
 exit
 ^^^^
 Default: C-d
