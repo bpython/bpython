@@ -71,7 +71,47 @@ behalf. If set, this overrides `pastebin_url`. It also overrides `pastebin_show_
 as the helper is expected to return the full URL to the pastebin as the first word of
 its output. The data is supplied to the helper via STDIN.
 
-An example helper program is ``pastebinit``, available for most systems.
+An example helper program is ``pastebinit``, available for most systems. The
+following helper program can be used to create `gists <http://gist.github.com>`_:
+
+.. code-block:: python
+
+  #!/usr/bin/env python
+
+  import sys
+  import urllib2
+  import json
+
+  def do_gist_json(s):
+      """ Use json to post to github. """
+      gist_public = False
+      gist_url = 'https://api.github.com/gists'
+
+      data = {'description': None,
+              'public': None,
+              'files' : {
+                  'sample': { 'content': None }
+              }}
+      data['description'] = 'Gist from BPython'
+      data['public'] = gist_public
+      data['files']['sample']['content'] = s
+
+      req = urllib2.Request(gist_url, json.dumps(data), {'Content-Type': 'application/json'})
+      try:
+          res = urllib2.urlopen(req)
+      except HTTPError, e:
+          return e
+
+      try:
+          json_res = json.loads(res.read())
+          return json_res['html_url']
+      except HTTPError, e:
+          return e
+
+  if __name__ == "__main__":
+    s = sys.stdin.read()
+    print do_gist_json(s)
+
 
 .. versionadded:: 0.12
 
