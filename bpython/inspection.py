@@ -267,7 +267,7 @@ def is_eval_safe_name(string):
 
 def is_callable(obj):
     if has_instance_type and isinstance(obj, types.InstanceType):
-        # Work around a Python bug, see issue 7624
+        # Work around a CPython bug, see CPython issue #7624
         return callable(obj)
     elif has_collections_callable:
         return isinstance(obj, collections.Callable)
