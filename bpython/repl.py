@@ -534,13 +534,17 @@ class Repl(object):
                             stack[-1][1] += 1
                         except TypeError:
                             stack[-1][1] = ''
+                        stack[-1][0] = ''
                     elif value == ':' and stack[-1][2] == 'lambda':
                         stack.pop()
+                    else:
+                        stack[-1][0] = ''
                 elif (token is Token.Name or token in Token.Name.subtypes or
                       token is Token.Operator and value == '.'):
                     stack[-1][0] += value
                 elif token is Token.Operator and value == '=':
                     stack[-1][1] = stack[-1][0]
+                    stack[-1][0] = ''
                 elif token is Token.Keyword and value == 'lambda':
                     stack.append(['', 0, value])
                 else:
