@@ -185,8 +185,7 @@ class TestArgspec(unittest.TestCase):
         # Argument position
         self.assertEqual(self.repl.argspec[3], 1)
 
-    def test_name_in_assignment_without_spaces(self):
-        # Issue #127
+    def test_issue127(self):
         self.setInputLine("x=range(")
         self.assertTrue(self.repl.get_args())
         self.assertEqual(self.repl.current_func.__name__, "range")
@@ -196,6 +195,9 @@ class TestArgspec(unittest.TestCase):
         self.assertEqual(self.repl.current_func.__name__, "range")
 
         self.setInputLine("foo(1, 2, x,range(")
+        self.assertEqual(self.repl.current_func.__name__, "range")
+
+        self.setInputLine("(x,range(")
         self.assertEqual(self.repl.current_func.__name__, "range")
 
     def test_nonexistent_name(self):
