@@ -1103,8 +1103,11 @@ def main(args=None, locals_=None, banner=None):
     # TODO: maybe support displays other than raw_display?
     config, options, exec_args = bpargs.parse(args, (
             'Urwid options', None, [
+                Option('--twisted', '-T', action='store_true',
+                       help=_('Run twisted reactor.')),
                 Option('--reactor', '-r',
-                       help=_('Run a reactor (see --help-reactors).')),
+                       help=_('Select specific reactor (see --help-reactors). '
+                       'Implies --twisted.')),
                 Option('--help-reactors', action='store_true',
                        help=_('List available reactors for -r.')),
                 Option('--plugin', '-p',
@@ -1133,8 +1136,8 @@ def main(args=None, locals_=None, banner=None):
             ('bold ' + name, color + ',bold', background, monochrome)
             for name, color, background, monochrome in palette])
 
-    if (options.server or options.plugin) and not options.reactor:
-        options.reactor = 'select'
+    if options.server or options.plugin:
+        options.twisted = True
 
     if options.reactor:
         try:
@@ -1151,6 +1154,14 @@ def main(args=None, locals_=None, banner=None):
         except reactors.NoSuchReactor:
             sys.stderr.write('Reactor %s does not exist\n' % (
                     options.reactor,))
+            return
+        event_loop = TwistedEventLoop(reactor)
+    elif options.twisted:
+        try:
+            from twisted.internet import reactor
+        except ImportError:
+            sys.stderr.write('No reactors are available. Please install '
+                'twisted for reactor support.\n')
             return
         event_loop = TwistedEventLoop(reactor)
     else:
