@@ -5,3 +5,4 @@ tags
 _trial_temp
 .mo
 build/*
+.idea/
