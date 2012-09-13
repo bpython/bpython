@@ -1909,7 +1909,8 @@ def main(args=None, locals_=None, banner=None):
     # Fake stdout data so everything's still visible after exiting
     if config.flush_output and not options.quiet:
         sys.stdout.write(o)
-    sys.stdout.flush()
+    if hasattr(sys.stdout, 'flush'):
+        sys.stdout.flush()
 
 
 if __name__ == '__main__':

@@ -22,6 +22,7 @@ Contents:
    releases
    community
    django
+   windows
    changelog
    sourcecode
    bpaste
