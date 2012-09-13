@@ -1,6 +1,6 @@
 # The MIT License
 #
-# Copyright (c) 2009-2011 the bpython authors.
+# Copyright (c) 2009-2012 the bpython authors.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -42,33 +42,33 @@ class Autocomplete(rlcompleter.Completer):
     """
 
     def __init__(self, namespace = None, config = None):
-    	rlcompleter.Completer.__init__(self, namespace)
-    	self.locals = namespace
-    	if hasattr(config, 'autocomplete_mode'):
-    		self.autocomplete_mode = config.autocomplete_mode
-    	else:
-    		self.autocomplete_mode = 1
+        rlcompleter.Completer.__init__(self, namespace)
+        self.locals = namespace
+        if hasattr(config, 'autocomplete_mode'):
+            self.autocomplete_mode = config.autocomplete_mode
+        else:
+            self.autocomplete_mode = 1
 
     def attr_matches(self, text):
-	    """Taken from rlcompleter.py and bent to my will.
-	    """
+        """Taken from rlcompleter.py and bent to my will.
+        """
 
-		# Gna, Py 2.6's rlcompleter searches for __call__ inside the
-		# instance instead of the type, so we monkeypatch to prevent
-		# side-effects (__getattr__/__getattribute__)
-	    m = re.match(r"(\w+(\.\w+)*)\.(\w*)", text)
-	    if not m:
-	        return []
+        # Gna, Py 2.6's rlcompleter searches for __call__ inside the
+        # instance instead of the type, so we monkeypatch to prevent
+        # side-effects (__getattr__/__getattribute__)
+        m = re.match(r"(\w+(\.\w+)*)\.(\w*)", text)
+        if not m:
+            return []
 
-	    expr, attr = m.group(1, 3)
-	    if expr.isdigit():
-	        # Special case: float literal, using attrs here will result in
-	        # a SyntaxError
-	        return []
-	    obj = eval(expr, self.locals)
-	    with inspection.AttrCleaner(obj):
-	        matches = self.attr_lookup(obj, expr, attr)
-	    return matches
+        expr, attr = m.group(1, 3)
+        if expr.isdigit():
+            # Special case: float literal, using attrs here will result in
+            # a SyntaxError
+            return []
+        obj = eval(expr, self.locals)
+        with inspection.AttrCleaner(obj):
+            matches = self.attr_lookup(obj, expr, attr)
+        return matches
 
     def attr_lookup(self, obj, expr, attr):
         """Second half of original attr_matches method factored out so it can
