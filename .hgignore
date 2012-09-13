@@ -7,3 +7,4 @@ _trial_temp
 build/*
 env
 .DS_Store
+.idea/
