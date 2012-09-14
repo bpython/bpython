@@ -666,6 +666,8 @@ class CLIRepl(repl.Repl):
         while True:
             key = self.get_key()
             if self.p_key(key) is None:
+                if self.config.cli_trim_prompts and self.s.startswith(">>> "):
+                    self.s = self.s[4:]
                 return self.s
 
     def home(self, refresh=True):
