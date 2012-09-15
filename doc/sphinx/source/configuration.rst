@@ -241,6 +241,12 @@ The width of the suggestion window in percent of the terminal width.
 
 .. versionadded:: 0.9.8
 
+trim_prompts
+^^^^^^^^^^^^
+Default: False
+
+Trims lines starting with '>>> ' when set to True.
+
 GTK
 ---
 This refers to the ``[gtk]`` section in your `$XDG_CONFIG_HOME/bpython/config` file.
