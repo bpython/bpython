@@ -82,6 +82,7 @@ from bpython.translations import _
 
 from bpython import repl
 from bpython.pager import page
+from bpython import autocomplete
 import bpython.args
 
 py3 = sys.version_info[0] == 3
@@ -1432,7 +1433,7 @@ class CLIRepl(repl.Repl):
 
         # 3. check to see if we can expand the current word
         cseq = None
-        if mode == 2:
+        if mode == autocomplete.SUBSTRING:
             if all([len(match.split(cw)) == 2 for match in self.matches]):
                 seq = [cw + match.split(cw)[1] for match in self.matches]
                 cseq = os.path.commonprefix(seq)
@@ -1440,7 +1441,7 @@ class CLIRepl(repl.Repl):
             seq = self.matches
             cseq = os.path.commonprefix(seq)
 
-        if cseq and mode != 3:
+        if cseq and mode != autocomplete.FUZZY:
             expanded_string = cseq[len(cw):]
             self.s += expanded_string
             expanded = bool(expanded_string)
@@ -1472,7 +1473,7 @@ class CLIRepl(repl.Repl):
                     self.list_win.border()
                     self.list_win.refresh()
 
-                if self.config.autocomplete_mode == 1:
+                if self.config.autocomplete_mode == autocomplete.SIMPLE:
                     self.s += current_match[len(cw):]
                 else:
                     self.s = self.s[:-len(cw)] + current_match

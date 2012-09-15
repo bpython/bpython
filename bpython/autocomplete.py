@@ -37,6 +37,11 @@ try:
 except (ImportError, AttributeError):
     has_abc = False
 
+# Autocomplete modes
+SIMPLE = 'simple'
+SUBSTRING = 'substring'
+FUZZY = 'fuzzy'
+
 class Autocomplete(rlcompleter.Completer):
     """
     """
@@ -47,7 +52,7 @@ class Autocomplete(rlcompleter.Completer):
         if hasattr(config, 'autocomplete_mode'):
             self.autocomplete_mode = config.autocomplete_mode
         else:
-            self.autocomplete_mode = 1
+            self.autocomplete_mode = SUBSTRING
 
     def attr_matches(self, text):
         """Taken from rlcompleter.py and bent to my will.
@@ -119,9 +124,9 @@ class Autocomplete(rlcompleter.Completer):
         return matches
 
     def method_match(self, word, size, text):
-        if self.autocomplete_mode == 1:
+        if self.autocomplete_mode == SIMPLE:
             return word[:size] == text
-        elif self.autocomplete_mode == 2:
+        elif self.autocomplete_mode == SUBSTRING:
             s = r'.*%s.*' % text
             return re.search(s, word)
         else:

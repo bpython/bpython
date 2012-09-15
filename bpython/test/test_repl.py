@@ -3,7 +3,7 @@ import unittest
 import sys
 from itertools import islice
 from mock import Mock
-from bpython import config, repl, cli
+from bpython import config, repl, cli, autocomplete
 
 def setup_config(conf):
     config_struct = config.Struct()
@@ -249,7 +249,7 @@ class TestRepl(unittest.TestCase):
     # COMPLETE TESTS
     # 1. Global tests
     def test_simple_global_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode':1})
+        self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
         self.repl.input_line = "d"
         self.repl.current_word = "d"
 
@@ -259,7 +259,7 @@ class TestRepl(unittest.TestCase):
             ['def', 'del', 'delattr(', 'dict(', 'dir(', 'divmod('])
 
     def test_substring_global_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode':2})
+        self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
         self.repl.input_line = "time"
         self.repl.current_word = "time"
 
@@ -269,7 +269,7 @@ class TestRepl(unittest.TestCase):
             ['RuntimeError(', 'RuntimeWarning('])
 
     def test_fuzzy_global_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode':3})
+        self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
         self.repl.input_line = "doc"
         self.repl.current_word = "doc"
 
@@ -280,7 +280,7 @@ class TestRepl(unittest.TestCase):
 
     # 2. Attribute tests
     def test_simple_attribute_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode':1})
+        self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
         self.repl.input_line = "Foo.b"
         self.repl.current_word = "Foo.b"
 
@@ -294,7 +294,7 @@ class TestRepl(unittest.TestCase):
             ['Foo.bar'])
 
     def test_substring_attribute_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode':2})
+        self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
         self.repl.input_line = "Foo.ar"
         self.repl.current_word = "Foo.ar"
 
@@ -308,7 +308,7 @@ class TestRepl(unittest.TestCase):
             ['Foo.bar'])
 
     def test_fuzzy_attribute_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode':3})
+        self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
         self.repl.input_line = "Foo.br"
         self.repl.current_word = "Foo.br"
 
@@ -323,7 +323,7 @@ class TestRepl(unittest.TestCase):
 
     # 3. Edge Cases
     def test_updating_namespace_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode':1})
+        self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
         self.repl.input_line = "foo"
         self.repl.current_word = "foo"
         self.repl.push("foobar = 2")
@@ -334,7 +334,7 @@ class TestRepl(unittest.TestCase):
             ['foobar'])
 
     def test_file_should_not_appear_in_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode':1})
+        self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
         self.repl.input_line = "_"
         self.repl.current_word = "_"
         self.assertTrue(self.repl.complete())
@@ -423,7 +423,7 @@ class TestCliReplTab(unittest.TestCase):
         self.repl.config.tab_length = 4
         self.repl.config.auto_display_list = True
         self.repl.config.list_win_visible = True
-        self.repl.config.autocomplete_mode = 1
+        self.repl.config.autocomplete_mode = autocomplete.SIMPLE
 
     # 3 Types of tab complete
     def test_simple_tab_complete(self):
@@ -433,7 +433,7 @@ class TestCliReplTab(unittest.TestCase):
 
     def test_substring_tab_complete(self):
         self.repl.s = "bar"
-        self.repl.config.autocomplete_mode = 3
+        self.repl.config.autocomplete_mode = autocomplete.FUZZY
         self.repl.tab()
         self.assertEqual(self.repl.s, "foobar")
         self.repl.tab()
@@ -441,7 +441,7 @@ class TestCliReplTab(unittest.TestCase):
 
     def test_fuzzy_tab_complete(self):
         self.repl.s = "br"
-        self.repl.config.autocomplete_mode = 3
+        self.repl.config.autocomplete_mode = autocomplete.FUZZY
         self.repl.tab()
         self.assertEqual(self.repl.s, "foobar")
 
@@ -482,7 +482,7 @@ class TestCliReplTab(unittest.TestCase):
     def test_fuzzy_attribute_tab_complete(self):
         """Test fuzzy attribute with no text"""
         self.repl.s = "Foo."
-        self.repl.config.autocomplete_mode = 3
+        self.repl.config.autocomplete_mode = autocomplete.FUZZY
 
         self.repl.tab()
         self.assertEqual(self.repl.s, "Foo.foobar")
@@ -490,7 +490,7 @@ class TestCliReplTab(unittest.TestCase):
     def test_fuzzy_attribute_tab_complete2(self):
         """Test fuzzy attribute with some text"""
         self.repl.s = "Foo.br"
-        self.repl.config.autocomplete_mode = 3
+        self.repl.config.autocomplete_mode = autocomplete.FUZZY
 
         self.repl.tab()
         self.assertEqual(self.repl.s, "Foo.foobar")
@@ -502,7 +502,7 @@ class TestCliReplTab(unittest.TestCase):
         self.assertEqual(self.repl.s, "foo")
 
     def test_substring_expand_forward(self):
-        self.repl.config.autocomplete_mode = 2
+        self.repl.config.autocomplete_mode = autocomplete.SUBSTRING
         self.repl.s = "ba"
         self.repl.tab()
         self.assertEqual(self.repl.s, "bar")
