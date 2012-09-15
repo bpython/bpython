@@ -116,6 +116,7 @@ setup(
     install_requires = [
         'pygments'
     ],
+    tests_require = ['mock'],
     packages = ["bpython", "bpython.translations", "bpdb"],
     data_files = data_files,
     package_data = {

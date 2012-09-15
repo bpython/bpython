@@ -28,8 +28,6 @@ import errno
 import inspect
 import os
 import pydoc
-import re
-import rlcompleter
 import subprocess
 import sys
 import textwrap
@@ -55,6 +53,7 @@ else:
 from bpython import importcompletion, inspection
 from bpython.formatter import Parenthesis
 from bpython.translations import _
+from bpython.autocomplete import Autocomplete
 
 
 # Needed for special handling of __abstractmethods__
@@ -81,7 +80,7 @@ class Interpreter(code.InteractiveInterpreter):
 
         self.encoding = encoding or sys.getdefaultencoding()
         self.syntaxerror_callback = None
-# Unfortunately code.InteractiveInterpreter is a classic class, so no super()
+        # Unfortunately code.InteractiveInterpreter is a classic class, so no super()
         code.InteractiveInterpreter.__init__(self, locals)
 
     if not py3:
@@ -382,13 +381,7 @@ class Repl(object):
         self.s_hist = []
         self.history = []
         self.evaluating = False
-# Use the interpreter's namespace only for the readline stuff:
-        self.completer = rlcompleter.Completer(self.interp.locals)
-        self.completer.attr_matches = self.attr_matches
-        # Gna, Py 2.6's rlcompleter searches for __call__ inside the
-        # instance instead of the type, so we monkeypatch to prevent
-        # side-effects (__getattr__/__getattribute__)
-        self.completer._callable_postfix = self._callable_postfix
+        self.completer = Autocomplete(self.interp.locals, config)
         self.matches = []
         self.matches_iter = MatchesIterator()
         self.argspec = None
@@ -426,53 +419,8 @@ class Repl(object):
                 else:
                     self.interp.runsource(f.read(), filename, 'exec', encode=False)
 
-    def attr_matches(self, text):
-        """Taken from rlcompleter.py and bent to my will."""
-
-        m = re.match(r"(\w+(\.\w+)*)\.(\w*)", text)
-        if not m:
-            return []
-
-        expr, attr = m.group(1, 3)
-        if expr.isdigit():
-            # Special case: float literal, using attrs here will result in
-            # a SyntaxError
-            return []
-        obj = eval(expr, self.interp.locals)
-        with inspection.AttrCleaner(obj):
-            matches = self.attr_lookup(obj, expr, attr)
-        return matches
-
-    def attr_lookup(self, obj, expr, attr):
-        """Second half of original attr_matches method factored out so it can
-        be wrapped in a safe try/finally block in case anything bad happens to
-        restore the original __getattribute__ method."""
-        words = dir(obj)
-        if hasattr(obj, '__class__'):
-            words.append('__class__')
-            words = words + rlcompleter.get_class_members(obj.__class__)
-            if has_abc and not isinstance(obj.__class__, abc.ABCMeta):
-                try:
-                    words.remove('__abstractmethods__')
-                except ValueError:
-                    pass
-
-        matches = []
-        n = len(attr)
-        for word in words:
-            if word[:n] == attr and word != "__builtins__":
-                matches.append("%s.%s" % (expr, word))
-        return matches
-
-    def _callable_postfix(self, value, word):
-        """rlcompleter's _callable_postfix done right."""
-        with inspection.AttrCleaner(value):
-            if inspection.is_callable(value):
-                word += '('
-        return word
-
     def current_string(self, concatenate=False):
-        """Return the current string."""
+        """If the line ends in a string get it, otherwise return ''"""
         tokens = self.tokenize(self.current_line())
         string_tokens = list(takewhile(token_is_any_of([Token.String,
                                                         Token.Text]),
@@ -653,10 +601,10 @@ class Repl(object):
             try:
                 self.completer.complete(cw, 0)
             except Exception:
-# This sucks, but it's either that or list all the exceptions that could
-# possibly be raised here, so if anyone wants to do that, feel free to send me
-# a patch. XXX: Make sure you raise here if you're debugging the completion
-# stuff !
+                # This sucks, but it's either that or list all the exceptions that could
+                # possibly be raised here, so if anyone wants to do that, feel free to send me
+                # a patch. XXX: Make sure you raise here if you're debugging the completion
+                # stuff !
                 e = True
             else:
                 matches = self.completer.matches
@@ -673,7 +621,7 @@ class Repl(object):
                 matches.extend(name + '=' for name in self.argspec[1][4]
                                if name.startswith(cw))
 
-# unless the first character is a _ filter out all attributes starting with a _
+        # unless the first character is a _ filter out all attributes starting with a _
         if not e and not cw.split('.')[-1].startswith('_'):
             matches = [match for match in matches
                        if not match.split('.')[-1].startswith('_')]
@@ -684,7 +632,7 @@ class Repl(object):
             if not self.argspec:
                 return False
         else:
-# remove duplicates
+            # remove duplicates
             self.matches = sorted(set(matches))
 
 
