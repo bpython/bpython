@@ -4,7 +4,7 @@ import sys
 from ConfigParser import ConfigParser
 from itertools import chain
 from bpython.keys import cli_key_dispatch as key_dispatch
-
+from bpython.autocomplete import SUBSTRING
 
 MAGIC_METHODS = ", ".join("__%s__" % s for s in [
     "init", "repr", "str", "lt", "le", "eq", "ne", "gt", "ge", "cmp", "hash",
@@ -56,7 +56,7 @@ def loadini(struct, configfile):
             'color_scheme': 'default',
             'complete_magic_methods' : True,
             'magic_methods' : MAGIC_METHODS,
-            'autocomplete_mode':2,
+            'autocomplete_mode': SUBSTRING,
             'dedent_after': 1,
             'flush_output': True,
             'highlight_show_source': True,
@@ -148,7 +148,7 @@ def loadini(struct, configfile):
                                                       'complete_magic_methods')
     methods = config.get('general', 'magic_methods')
     struct.magic_methods = [meth.strip() for meth in methods.split(",")]
-    struct.autocomplete_mode = config.getint('general', 'autocomplete_mode')
+    struct.autocomplete_mode = config.get('general', 'autocomplete_mode')
 
     struct.gtk_font = config.get('gtk', 'font')
 
