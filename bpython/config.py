@@ -91,6 +91,7 @@ def loadini(struct, configfile):
             'yank_from_buffer': 'C-y'},
         'cli': {
             'suggestion_width': 0.8,
+            'trim_prompts': False,
         },
         'gtk': {
             'font': 'monospace 10',
@@ -142,6 +143,8 @@ def loadini(struct, configfile):
 
     struct.cli_suggestion_width = config.getfloat('cli',
                                                   'suggestion_width')
+    struct.cli_trim_prompts = config.getboolean('cli',
+                                                  'trim_prompts')
 
     struct.complete_magic_methods = config.getboolean('general',
                                                       'complete_magic_methods')
