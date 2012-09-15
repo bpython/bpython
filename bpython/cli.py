@@ -1091,7 +1091,7 @@ class CLIRepl(repl.Repl):
         """Initialise the repl and jump into the loop. This method also has to
         keep a stack of lines entered for the horrible "undo" feature. It also
         tracks everything that would normally go to stdout in the normal Python
-        interpreter so it can quickly write it to st on exit after
+        interpreter so it can quickly write it to stdout on exit after
         curses.endwin(), as well as a history of lines entered for using
         up/down to go back and forth (which has to be separate to the
         evaluation history, which will be truncated when undoing."""
