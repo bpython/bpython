@@ -5,4 +5,6 @@ tags
 _trial_temp
 .mo
 build/*
+env
+.DS_Store
 .idea/

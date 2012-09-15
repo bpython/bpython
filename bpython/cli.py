@@ -82,6 +82,7 @@ from bpython.translations import _
 
 from bpython import repl
 from bpython.pager import page
+from bpython import autocomplete
 import bpython.args
 
 py3 = sys.version_info[0] == 3
@@ -191,8 +192,8 @@ class FakeStdin(object):
                     (len(key) > 1 or unicodedata.category(key) == 'Cc')):
                     continue
                 sys.stdout.write(key)
-# Include the \n in the buffer - raw_input() seems to deal with trailing
-# linebreaks and will break if it gets an empty string.
+                # Include the \n in the buffer - raw_input() seems to deal with trailing
+                # linebreaks and will break if it gets an empty string.
                 buffer += key
         finally:
             curses.raw(False)
@@ -371,7 +372,7 @@ class CLIRepl(repl.Repl):
         self.clear_wrapped_lines()
 
         if not self.cpos:
-# I know the nested if blocks look nasty. :(
+            # I know the nested if blocks look nasty. :(
             if self.atbol() and delete_tabs:
                 n = len(self.s) % self.config.tab_length
                 if not n:
@@ -389,11 +390,11 @@ class CLIRepl(repl.Repl):
         self.rl_history.reset()
         pos = len(self.s) - self.cpos - 1
         deleted = []
-# First we delete any space to the left of the cursor.
+        # First we delete any space to the left of the cursor.
         while pos >= 0 and self.s[pos] == ' ':
             deleted.append(self.s[pos])
             pos -= self.bs()
-# Then we delete a full word.
+        # Then we delete a full word.
         while pos >= 0 and self.s[pos] != ' ':
             deleted.append(self.s[pos])
             pos -= self.bs()
@@ -426,6 +427,7 @@ class CLIRepl(repl.Repl):
             self.scr.clrtoeol()
 
     def complete(self, tab=False):
+        """Get Autcomplete list and window."""
         if self.paste_mode and self.list_win_visible:
             self.scr.touchwin()
 
@@ -484,24 +486,23 @@ class CLIRepl(repl.Repl):
         """Return the current word, i.e. the (incomplete) word directly to the
         left of the cursor"""
 
-        if self.cpos:
-# I don't know if autocomplete should be disabled if the cursor
-# isn't at the end of the line, but that's what this does for now.
-            return
+        # I don't know if autocomplete should be disabled if the cursor
+        # isn't at the end of the line, but that's what this does for now.
+        if self.cpos: return
 
+        # look from right to left for a bad method character
         l = len(self.s)
+        is_method_char = lambda c: c.isalnum() or c in ('.', '_')
 
-        if (not self.s or
-            (not self.s[l - 1].isalnum() and
-             self.s[l - 1] not in ('.', '_'))):
+        if not self.s or not is_method_char(self.s[l-1]):
             return
 
-        i = 1
-        while i < l + 1:
-            if not self.s[-i].isalnum() and self.s[-i] not in ('.', '_'):
+        for i in range(1, l+1):
+            if not is_method_char(self.s[-i]):
+                i -= 1
                 break
-            i += 1
-        return self.s[-i + 1:]
+
+        return self.s[-i:]
 
     def delete(self):
         """Process a del"""
@@ -619,16 +620,16 @@ class CLIRepl(repl.Repl):
                     key = key.decode(getpreferredencoding())
                 self.scr.nodelay(False)
             except UnicodeDecodeError:
-# Yes, that actually kind of sucks, but I don't see another way to get
-# input right
+                # Yes, that actually kind of sucks, but I don't see another way to get
+                # input right
                 self.scr.nodelay(True)
             except curses.error:
-# I'm quite annoyed with the ambiguity of this exception handler. I previously
-# caught "curses.error, x" and accessed x.message and checked that it was "no
-# input", which seemed a crappy way of doing it. But then I ran it on a
-# different computer and the exception seems to have entirely different
-# attributes. So let's hope getkey() doesn't raise any other crazy curses
-# exceptions. :)
+                # I'm quite annoyed with the ambiguity of this exception handler. I previously
+                # caught "curses.error, x" and accessed x.message and checked that it was "no
+                # input", which seemed a crappy way of doing it. But then I ran it on a
+                # different computer and the exception seems to have entirely different
+                # attributes. So let's hope getkey() doesn't raise any other crazy curses
+                # exceptions. :)
                 self.scr.nodelay(False)
                 # XXX What to do here? Raise an exception?
                 if key:
@@ -1097,8 +1098,8 @@ class CLIRepl(repl.Repl):
         up/down to go back and forth (which has to be separate to the
         evaluation history, which will be truncated when undoing."""
 
-# Use our own helper function because Python's will use real stdin and
-# stdout instead of our wrapped
+        # Use our own helper function because Python's will use real stdin and
+        # stdout instead of our wrapped
         self.push('from bpython._internal import _help as help\n', False)
 
         self.iy, self.ix = self.scr.getyx()
@@ -1193,8 +1194,8 @@ class CLIRepl(repl.Repl):
                 self.stdout_hist += line.encode(getpreferredencoding()) + '\n'
             self.print_line(line)
             self.s_hist[-1] += self.f_string
-# I decided it was easier to just do this manually
-# than to make the print_line and history stuff more flexible.
+            # I decided it was easier to just do this manually
+            # than to make the print_line and history stuff more flexible.
             self.scr.addstr('\n')
             more = self.push(line)
             self.prompt(more)
@@ -1285,7 +1286,7 @@ class CLIRepl(repl.Repl):
             return True
 
         if items:
-# visible items (we'll append until we can't fit any more in)
+            # visible items (we'll append until we can't fit any more in)
             v_items = [items[0][:max_w - 3]]
             lsize()
         else:
@@ -1358,9 +1359,9 @@ class CLIRepl(repl.Repl):
                 docstring_string = docstring_string.encode(encoding, 'ignore')
             self.list_win.addstr('\n' + docstring_string,
                                  get_colpair(self.config, 'comment'))
-# XXX: After all the trouble I had with sizing the list box (I'm not very good
-# at that type of thing) I decided to do this bit of tidying up here just to
-# make sure there's no unnececessary blank lines, it makes things look nicer.
+            # XXX: After all the trouble I had with sizing the list box (I'm not very good
+            # at that type of thing) I decided to do this bit of tidying up here just to
+            # make sure there's no unnececessary blank lines, it makes things look nicer.
 
         y = self.list_win.getyx()[0]
         self.list_win.resize(y + 2, w)
@@ -1373,8 +1374,8 @@ class CLIRepl(repl.Repl):
         self.scr.cursyncup()
         self.scr.noutrefresh()
 
-# This looks a little odd, but I can't figure a better way to stick the cursor
-# back where it belongs (refreshing the window hides the list_win)
+        # This looks a little odd, but I can't figure a better way to stick the cursor
+        # back where it belongs (refreshing the window hides the list_win)
 
         self.scr.move(*self.scr.getyx())
         self.list_win.refresh()
@@ -1396,13 +1397,20 @@ class CLIRepl(repl.Repl):
             os.kill(os.getpid(), signal.SIGSTOP)
 
     def tab(self, back=False):
-        """Process the tab key being hit. If there's only whitespace
+        """Process the tab key being hit. 
+
+        If there's only whitespace
         in the line or the line is blank then process a normal tab,
         otherwise attempt to autocomplete to the best match of possible
         choices in the match list.
-        If `back` is True, walk backwards through the list of suggestions
-        and don't indent if there are only whitespace in the line."""
 
+        If `back` is True, walk backwards through the list of suggestions
+        and don't indent if there are only whitespace in the line.
+        """
+
+        mode = self.config.autocomplete_mode
+
+        # 1. check if we should add a tab character
         if self.atbol() and not back:
             x_pos = len(self.s) - self.cpos
             num_spaces = x_pos % self.config.tab_length
@@ -1413,6 +1421,7 @@ class CLIRepl(repl.Repl):
             self.print_line(self.s)
             return True
 
+        # 2. get the current word
         if not self.matches_iter:
             self.complete(tab=True)
             if not self.config.auto_display_list and not self.list_win_visible:
@@ -1424,25 +1433,38 @@ class CLIRepl(repl.Repl):
         else:
             cw = self.matches_iter.current_word
 
-        b = os.path.commonprefix(self.matches)
-        if b:
-            self.s += b[len(cw):]
-            expanded = bool(b[len(cw):])
+        # 3. check to see if we can expand the current word
+        cseq = None
+        if mode == autocomplete.SUBSTRING:
+            if all([len(match.split(cw)) == 2 for match in self.matches]):
+                seq = [cw + match.split(cw)[1] for match in self.matches]
+                cseq = os.path.commonprefix(seq)
+        else:
+            seq = self.matches
+            cseq = os.path.commonprefix(seq)
+
+        if cseq and mode != autocomplete.FUZZY:
+            expanded_string = cseq[len(cw):]
+            self.s += expanded_string
+            expanded = bool(expanded_string)
             self.print_line(self.s)
             if len(self.matches) == 1 and self.config.auto_display_list:
                 self.scr.touchwin()
             if expanded:
-                self.matches_iter.update(b, self.matches)
+                self.matches_iter.update(cseq, self.matches)
         else:
             expanded = False
 
+        # 4. swap current word for a match list item
         if not expanded and self.matches:
+            # reset s if this is the nth result
             if self.matches_iter:
                 self.s = self.s[:-len(self.matches_iter.current())] + cw
-            if back:
-                current_match = self.matches_iter.previous()
-            else:
-                current_match = self.matches_iter.next()
+
+            current_match = back and self.matches_iter.previous() \
+                                  or self.matches_iter.next()
+
+            # update s with the new match
             if current_match:
                 try:
                     self.show_list(self.matches, self.argspec, current_match)
@@ -1452,7 +1474,12 @@ class CLIRepl(repl.Repl):
                     # using it.
                     self.list_win.border()
                     self.list_win.refresh()
-                self.s += current_match[len(cw):]
+
+                if self.config.autocomplete_mode == autocomplete.SIMPLE:
+                    self.s += current_match[len(cw):]
+                else:
+                    self.s = self.s[:-len(cw)] + current_match
+
                 self.print_line(self.s, True)
         return True
 
@@ -1629,7 +1656,7 @@ class Statusbar(object):
 def init_wins(scr, config):
     """Initialise the two windows (the main repl interface and the little
     status bar at the bottom with some stuff in it)"""
-#TODO: Document better what stuff is on the status bar.
+    #TODO: Document better what stuff is on the status bar.
 
     background = get_colpair(config, 'background')
     h, w = gethw()
@@ -1637,8 +1664,8 @@ def init_wins(scr, config):
     main_win = newwin(background, h - 1, w, 0, 0)
     main_win.scrollok(True)
     main_win.keypad(1)
-# Thanks to Angus Gibson for pointing out this missing line which was causing
-# problems that needed dirty hackery to fix. :)
+    # Thanks to Angus Gibson for pointing out this missing line which was causing
+    # problems that needed dirty hackery to fix. :)
 
     statusbar = Statusbar(scr, main_win, background, config,
         _(" <%s> Rewind  <%s> Save  <%s> Pastebin "
@@ -1728,7 +1755,7 @@ def do_resize(caller):
     global DO_RESIZE
     h, w = gethw()
     if not h:
-# Hopefully this shouldn't happen. :)
+    # Hopefully this shouldn't happen. :)
         return
 
     curses.endwin()
@@ -1738,7 +1765,7 @@ def do_resize(caller):
     DO_RESIZE = False
 
     caller.resize()
-# The list win resizes itself every time it appears so no need to do it here.
+    # The list win resizes itself every time it appears so no need to do it here.
 
 
 class FakeDict(object):
@@ -1882,7 +1909,7 @@ def main(args=None, locals_=None, banner=None):
         sys.stderr = orig_stderr
         sys.stdout = orig_stdout
 
-# Fake stdout data so everything's still visible after exiting
+    # Fake stdout data so everything's still visible after exiting
     if config.flush_output and not options.quiet:
         sys.stdout.write(o)
     if hasattr(sys.stdout, 'flush'):
