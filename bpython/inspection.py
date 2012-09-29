@@ -29,9 +29,11 @@ import pydoc
 import re
 import sys
 import types
+from itertools import dropwhile
 
-from pygments.lexers import PythonLexer
 from pygments.token import Token
+
+from bpython._py3compat import PythonLexer, py3
 
 try:
     collections.Callable
@@ -43,8 +45,6 @@ try:
     has_instance_type = True
 except AttributeError:
     has_instance_type = False
-
-py3 = sys.version_info[0] == 3
 
 if not py3:
     _name = re.compile(r'[a-zA-Z_]\w*$')

@@ -41,7 +41,7 @@ except ImportError:
         finally:
             warnings.filters = filters
 
-py3 = sys.version_info[:2] >= (3, 0)
+from bpython._py3compat import py3
 
 # The cached list of all known modules
 modules = set()
