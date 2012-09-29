@@ -42,15 +42,10 @@ from urllib import quote as urlquote
 from urlparse import urlparse
 from xmlrpclib import ServerProxy, Error as XMLRPCError
 
-py3 = sys.version_info[0] == 3
-
 from pygments.token import Token
-if py3:
-    from pygments.lexers import Python3Lexer as PythonLexer
-else:
-    from pygments.lexers import PythonLexer
 
 from bpython import importcompletion, inspection
+from bpython._py3compat import PythonLexer, py3
 from bpython.formatter import Parenthesis
 from bpython.translations import _
 from bpython.autocomplete import Autocomplete

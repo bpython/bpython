@@ -46,6 +46,7 @@ from optparse import Option
 from pygments.token import Token
 
 from bpython import args as bpargs, repl, translations
+from bpython._py3compat import py3
 from bpython.formatter import theme_map
 from bpython.importcompletion import find_coroutine
 from bpython.translations import _
@@ -54,7 +55,6 @@ from bpython.keys import urwid_key_dispatch as key_dispatch
 
 import urwid
 
-py3 = sys.version_info[0] == 3
 if not py3:
     import inspect
 

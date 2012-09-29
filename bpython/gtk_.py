@@ -37,15 +37,13 @@ from locale import getpreferredencoding
 import gobject
 import gtk
 import pango
-from pygments.lexers import PythonLexer
 
 from bpython import importcompletion, repl, translations
+from bpython._py3compat import PythonLexer, py3
 from bpython.formatter import theme_map
 from bpython.translations import _
 import bpython.args
 
-
-py3 = sys.version_info[0] == 3
 
 _COLORS = dict(b='blue', c='cyan', g='green', m='magenta', r='red',
                w='white', y='yellow', k='black', d='black')
