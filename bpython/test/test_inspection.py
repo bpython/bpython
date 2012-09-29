@@ -42,5 +42,20 @@ class TestInspection(unittest.TestCase):
         defaults = argspec[1][3]
         self.assertEqual(str(defaults[0]), default_arg_repr)
 
+    def test_pasekeywordpairs_string(self):
+        def spam(eggs="foo, bar"):
+            pass
+
+        defaults = inspection.getargspec("spam", spam)[1][3]
+        self.assertEqual(repr(defaults[0]), "'foo, bar'")
+
+    def test_parsekeywordpairs_multiple_keywords(self):
+        def spam(eggs=23, foobar="yay"):
+            pass
+
+        defaults = inspection.getargspec("spam", spam)[1][3]
+        self.assertEqual(repr(defaults[0]), "23")
+        self.assertEqual(repr(defaults[1]), "'yay'")
+
 if __name__ == '__main__':
     unittest.main()
