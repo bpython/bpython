@@ -22,7 +22,6 @@
 #
 
 import __builtin__
-import __main__
 import rlcompleter
 import re
 from bpython import inspection
