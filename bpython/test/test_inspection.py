@@ -31,6 +31,7 @@ class TestInspection(unittest.TestCase):
         self.assertFalse(inspection.is_callable(None))
 
     def test_parsekeywordpairs(self):
+        # See issue #109
         def fails(spam=['-a', '-b']):
             pass
 

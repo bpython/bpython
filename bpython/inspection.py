@@ -27,9 +27,7 @@ import inspect
 import keyword
 import pydoc
 import re
-import sys
 import types
-from itertools import dropwhile
 
 from pygments.token import Token
 
@@ -115,36 +113,31 @@ class _Repr(object):
 
 def parsekeywordpairs(signature):
     tokens = PythonLexer().get_tokens(signature)
+    preamble = True
     stack = []
     substack = []
     parendepth = 0
-    begin = False
     for token, value in tokens:
-        if not begin:
-            if token is Token.Punctuation and value == u'(':
-                begin = True
+        if preamble:
+            if token is Token.Punctuation and value == u"(":
+                preamble = False
             continue
 
         if token is Token.Punctuation:
-            if value == u'(':
+            if value in [u'(', u'{', u'[']:
                 parendepth += 1
-            elif value == u')':
+            elif value in [u')', u'}', u']']:
                 parendepth -= 1
             elif value == ':' and parendepth == -1:
                 # End of signature reached
                 break
+            if ((value == ',' and parendepth == 0) or
+                  (value == ')' and parendepth == -1)):
+                stack.append(substack)
+                substack = []
+                continue
 
-        if parendepth > 0:
-            substack.append(value)
-            continue
-
-        if (token is Token.Punctuation and
-            (value == ',' or (value == ')' and parendepth == -1))):
-            stack.append(substack[:])
-            del substack[:]
-            continue
-
-        if value and value.strip():
+        if value and (parendepth > 0 or value.strip()):
             substack.append(value)
 
     d = {}
