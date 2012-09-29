@@ -1,6 +1,5 @@
 import os
 import unittest
-import sys
 from itertools import islice
 from mock import Mock
 from bpython import config, repl, cli, autocomplete
