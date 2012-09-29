@@ -25,7 +25,9 @@ autocomplete_mode
 There are three modes for autocomplete. simple, substring, and fuzzy.
 Simple matches methods with a common prefix, substring matches methods with a common
 subsequence, and fuzzy matches methods with common characters (default:
-substring).
+simple).
+
+.. versionadded:: 0.12
 
 syntax
 ^^^^^^
