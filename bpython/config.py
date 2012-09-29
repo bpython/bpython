@@ -4,7 +4,7 @@ import sys
 from ConfigParser import ConfigParser
 from itertools import chain
 from bpython.keys import cli_key_dispatch as key_dispatch
-from bpython.autocomplete import SUBSTRING
+from bpython.autocomplete import SIMPLE as default_completion
 
 MAGIC_METHODS = ", ".join("__%s__" % s for s in [
     "init", "repr", "str", "lt", "le", "eq", "ne", "gt", "ge", "cmp", "hash",
@@ -56,7 +56,7 @@ def loadini(struct, configfile):
             'color_scheme': 'default',
             'complete_magic_methods' : True,
             'magic_methods' : MAGIC_METHODS,
-            'autocomplete_mode': SUBSTRING,
+            'autocomplete_mode': default_completion,
             'dedent_after': 1,
             'flush_output': True,
             'highlight_show_source': True,
