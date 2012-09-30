@@ -117,7 +117,7 @@ setup(
         'pygments'
     ],
     tests_require = ['mock'],
-    packages = ["bpython", "bpython.translations", "bpdb"],
+    packages = ["bpython", "bpython.test", "bpython.translations", "bpdb"],
     data_files = data_files,
     package_data = {
         'bpython': ['logo.png'],
