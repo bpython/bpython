@@ -73,7 +73,7 @@ class CrashersTest(object):
         reactor.spawnProcess(Protocol(), sys.executable,
             (sys.executable, "-m", "bpython." + self.backend,
              "--config",  TEST_CONFIG),
-            env=dict(TERM="vt100"),
+            env=dict(TERM="vt100", LANG=os.environ.get("LANG", "")),
             usePTY=(master, slave, os.ttyname(slave)))
         return result
 
