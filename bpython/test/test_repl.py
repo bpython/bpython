@@ -2,6 +2,12 @@ import os
 import unittest
 from itertools import islice
 from mock import Mock
+try:
+    from unittest import skip
+except ImportError:
+    def skip(f):
+        return lambda self: None
+
 from bpython import config, repl, cli, autocomplete
 
 def setup_config(conf):
@@ -239,7 +245,7 @@ class TestRepl(unittest.TestCase):
         self.assertEqual(self.repl.current_string(), '')
 
     # TODO: figure out how to capture whether foobar is in globals
-    @unittest.skip('not working yet')
+    @skip('not working yet')
     def test_push(self):
         self.repl = FakeRepl()
         self.repl.push("foobar = 2")
@@ -338,7 +344,7 @@ class TestRepl(unittest.TestCase):
         self.repl.current_word = "_"
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.completer,'matches'))
-        self.assertNotIn('__file__', self.repl.completer.matches)
+        self.assertTrue('__file__' not in self.repl.completer.matches)
 
 
 class TestCliRepl(unittest.TestCase):
