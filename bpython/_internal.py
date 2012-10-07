@@ -10,7 +10,11 @@ pydoc.pager = page
 class _Helper(object):
 
     def __init__(self):
-        self.helper = pydoc.Helper(sys.stdin, sys.stdout)
+        if hasattr(pydoc.Helper, "output"):
+            # See issue #228
+            self.helper = pydoc.Helper(sys.stdin, None)
+        else:
+            self.helper = pydoc.Helper(sys.stdin, sys.stdout)
 
     def __repr__(self):
         return ("Type help() for interactive help, "
