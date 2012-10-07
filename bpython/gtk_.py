@@ -336,6 +336,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
         gtk.TextView.__init__(self)
         repl.Repl.__init__(self, interpreter, config)
         self.interp.writetb = self.writetb
+        self.exit_value = None
         self.editing = Nested()
         self.reset_indent = False
         self.modify_font(pango.FontDescription(self.config.gtk_font))
@@ -694,7 +695,8 @@ class ReplWidget(gtk.TextView, repl.Repl):
         self.highlight_current_line()
         try:
             return self.push(line + '\n')
-        except SystemExit:
+        except SystemExit, e:
+            self.exit_value = e.args
             self.emit('exit-event')
             return False
 
@@ -857,8 +859,8 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
 
-    return 0
+    return repl.extract_exit_value(repl_widget.exit_value)
 
 if __name__ == '__main__':
     from bpython.gtk_ import main
-    main()
+    sys.exit(main())
