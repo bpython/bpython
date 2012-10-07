@@ -321,6 +321,7 @@ class CLIRepl(repl.Repl):
         self.list_win = newwin(get_colpair(config, 'background'), 1, 1, 1, 1)
         self.cpos = 0
         self.do_exit = False
+        self.exit_value = None
         self.f_string = ''
         self.idle = idle
         self.in_hist = False
@@ -1066,9 +1067,10 @@ class CLIRepl(repl.Repl):
         curses.raw(False)
         try:
             return repl.Repl.push(self, s, insert_into_history)
-        except SystemExit:
+        except SystemExit, e:
             # Avoid a traceback on e.g. quit()
             self.do_exit = True
+            self.exit_value = e.args
             return False
         finally:
             curses.raw(True)
@@ -1131,6 +1133,7 @@ class CLIRepl(repl.Repl):
             if not more:
                 self.prev_block_finished = stdout_position
                 self.s = ''
+        return self.exit_value
 
     def reprint_line(self, lineno, tokens):
         """Helper function for paren highlighting: Reprint line at offset
@@ -1821,6 +1824,9 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     I've tried to keep it well factored but it needs some
     tidying up, especially in separating the curses stuff
     from the rest of the repl.
+
+    Returns a tuple (exit value, output), where exit value is a tuple
+    with arguments passed to SystemExit.
     """
     global stdscr
     global DO_RESIZE
@@ -1873,7 +1879,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     if banner is not None:
         clirepl.write(banner)
         clirepl.write('\n')
-    clirepl.repl()
+    exit_value = clirepl.repl()
 
     main_win.erase()
     main_win.refresh()
@@ -1886,7 +1892,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
         signal.signal(signal.SIGWINCH, old_sigwinch_handler)
         signal.signal(signal.SIGCONT, old_sigcont_handler)
 
-    return clirepl.getstdout()
+    return (exit_value, clirepl.getstdout())
 
 
 def main(args=None, locals_=None, banner=None):
@@ -1901,9 +1907,9 @@ def main(args=None, locals_=None, banner=None):
     orig_stderr = sys.stderr
 
     try:
-        o = curses_wrapper(main_curses, exec_args, config,
-                           options.interactive, locals_,
-                           banner=banner)
+        (exit_value, output) = curses_wrapper(
+            main_curses, exec_args, config, options.interactive, locals_,
+            banner=banner)
     finally:
         sys.stdin = orig_stdin
         sys.stderr = orig_stderr
@@ -1911,13 +1917,13 @@ def main(args=None, locals_=None, banner=None):
 
     # Fake stdout data so everything's still visible after exiting
     if config.flush_output and not options.quiet:
-        sys.stdout.write(o)
+        sys.stdout.write(output)
     if hasattr(sys.stdout, 'flush'):
         sys.stdout.flush()
-
+    return repl.extract_exit_value(exit_value)
 
 if __name__ == '__main__':
     from bpython.cli import main
-    main()
+    sys.exit(main())
 
 # vim: sw=4 ts=4 sts=4 ai et

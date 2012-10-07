@@ -1027,3 +1027,14 @@ def token_is_any_of(token_types):
         return any(check(token) for check in is_token_types)
 
     return token_is_any_of
+
+def extract_exit_value(args):
+    """Given the arguments passed to `SystemExit`, return the value that
+    should be passed to `sys.exit`.
+    """
+    if len(args) == 0:
+        return None
+    elif len(args) == 1:
+        return args[0]
+    else:
+        return args

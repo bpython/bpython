@@ -621,6 +621,8 @@ class URWIDRepl(repl.Repl):
         self.current_output = None
         self._completion_update_suppressed = False
 
+        self.exit_value = None
+
         load_urwid_command_map(config)
 
     # Subclasses of Repl need to implement echo, current_line, cw
@@ -913,7 +915,8 @@ class URWIDRepl(repl.Repl):
         # Pretty blindly adapted from bpython.cli
         try:
             return repl.Repl.push(self, s, insert_into_history)
-        except SystemExit:
+        except SystemExit, e:
+            self.exit_value = e.args
             raise urwid.ExitMainLoop()
         except KeyboardInterrupt:
             # KeyboardInterrupt happened between the except block around
@@ -1296,7 +1299,9 @@ def main(args=None, locals_=None, banner=None):
 
     if config.flush_output and not options.quiet:
         sys.stdout.write(myrepl.getstdout())
-    sys.stdout.flush()
+    if hasattr(sys.stdout, "flush"):
+        sys.stdout.flush()
+    return repl.extract_exit_value(myrepl.exit_value)
 
 def load_urwid_command_map(config):
     urwid.command_map[key_dispatch[config.up_one_line_key]] = 'cursor up'
@@ -1325,4 +1330,4 @@ def load_urwid_command_map(config):
             'yank_from_buffer': 'C-y'},
 """
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
