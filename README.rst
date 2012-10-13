@@ -1,5 +1,5 @@
 bpython - A fancy curses interface to the Python interactive interpreter
-=======
+========================================================================
 
 Dependencies
 ============
@@ -108,9 +108,9 @@ Configuration
 See the sample-config file for a list of available options.
 You should save your config file as ~/.config/bpython/config
 (i.e $XDG_CONFIG_HOME/bpython/config) or specify at the
-command line:
+command line::
 
-bpython --config /path/to/bpython/config
+	bpython --config /path/to/bpython/config
 
 Known Bugs
 ==========
@@ -139,14 +139,14 @@ It can be obtained from cygwin or GnuWin32 or msys
 
 Current version is tested with
 ------------------------------
-Curses 2.2
-pyreadline 1.7
+ * Curses 2.2
+ * pyreadline 1.7
 
 Curses Notes
 ------------
 The curses used has a bug where the colours are displayed incorrectly:
-    red  is swapped with blue
-    cyan is swapped with yellow
+ * red  is swapped with blue
+ * cyan is swapped with yellow
 
 To correct this I have provided my windows.theme file.
 
