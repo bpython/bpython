@@ -61,8 +61,7 @@ Features
 	me with very little to do except format the tokens
 	in all my favourite colours.
 
-* Readline-like autocomplete with suggestions displayed
-as you type.
+* Readline-like autocomplete with suggestions displayed as you type.
 	Thanks to Python's readline interface to libreadline
 	and a ready-made class for using a Python interpreter's
 	scope as the dataset, the only work here was displaying
