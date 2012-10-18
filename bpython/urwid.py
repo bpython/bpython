@@ -113,7 +113,10 @@ else:
             return EvalProtocol(self.repl)
 
 
-if urwid.VERSION < (1, 0, 0):
+# If Twisted is not available urwid has no TwistedEventLoop attribute.
+# Code below will try to import reactor before using TwistedEventLoop.
+# I assume TwistedEventLoop will be available if that import succeeds.
+if urwid.VERSION < (1, 0, 0) and hasattr(urwid, 'TwistedEventLoop'):
     class TwistedEventLoop(urwid.TwistedEventLoop):
 
         """TwistedEventLoop modified to properly stop the reactor.
@@ -144,7 +147,7 @@ if urwid.VERSION < (1, 0, 0):
                     self.reactor.crash()
             return wrapper
 else:
-    TwistedEventLoop = urwid.TwistedEventLoop
+    TwistedEventLoop = getattr(urwid, 'TwistedEventLoop', None)
 
 
 class StatusbarEdit(urwid.Edit):
