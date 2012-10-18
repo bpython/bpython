@@ -624,7 +624,8 @@ class URWIDRepl(repl.Repl):
         self.current_output = None
         self._completion_update_suppressed = False
 
-        self.exit_value = None
+        # Bulletproof: this is a value extract_exit_value accepts.
+        self.exit_value = ()
 
         load_urwid_command_map(config)
 
