@@ -321,7 +321,7 @@ class CLIRepl(repl.Repl):
         self.list_win = newwin(get_colpair(config, 'background'), 1, 1, 1, 1)
         self.cpos = 0
         self.do_exit = False
-        self.exit_value = None
+        self.exit_value = ()
         self.f_string = ''
         self.idle = idle
         self.in_hist = False
@@ -1120,7 +1120,7 @@ class CLIRepl(repl.Repl):
 
             self.scr.redrawwin()
             if self.do_exit:
-                return
+                return self.exit_value
 
             self.history.append(inp)
             self.s_hist[-1] += self.f_string
