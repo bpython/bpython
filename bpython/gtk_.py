@@ -336,7 +336,7 @@ class ReplWidget(gtk.TextView, repl.Repl):
         gtk.TextView.__init__(self)
         repl.Repl.__init__(self, interpreter, config)
         self.interp.writetb = self.writetb
-        self.exit_value = None
+        self.exit_value = ()
         self.editing = Nested()
         self.reset_indent = False
         self.modify_font(pango.FontDescription(self.config.gtk_font))
