@@ -121,7 +121,8 @@ setup(
     data_files = data_files,
     package_data = {
         'bpython': ['logo.png'],
-        'bpython.translations': mo_files
+        'bpython.translations': mo_files,
+        'bpython.test': ['test.config', 'test.theme']
     },
     entry_points = {
         'console_scripts': [
