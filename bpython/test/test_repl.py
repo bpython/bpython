@@ -300,17 +300,17 @@ class TestRepl(unittest.TestCase):
 
     def test_substring_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
-        self.repl.input_line = "Foo.ar"
-        self.repl.current_word = "Foo.ar"
+        self.repl.input_line = "Foo.az"
+        self.repl.current_word = "Foo.az"
 
-        code = "class Foo():\n\tdef bar(self):\n\t\tpass\n"
+        code = "class Foo():\n\tdef baz(self):\n\t\tpass\n"
         for line in code.split("\n"):
             self.repl.push(line)
 
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.completer,'matches'))
         self.assertEqual(self.repl.completer.matches,
-            ['Foo.bar'])
+            ['Foo.baz'])
 
     def test_fuzzy_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
