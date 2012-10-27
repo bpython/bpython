@@ -636,12 +636,15 @@ class CLIRepl(repl.Repl):
                 if key:
                     return key
             else:
-                t = time.time()
-                self.paste_mode = (
-                    t - self.last_key_press <= self.config.paste_time
-                )
-                self.last_key_press = t
-                return key
+                if key != '\x00':
+                    t = time.time()
+                    self.paste_mode = (
+                        t - self.last_key_press <= self.config.paste_time
+                    )
+                    self.last_key_press = t
+                    return key
+                else:
+                    key = ''
             finally:
                 if self.idle:
                     self.idle(self)
@@ -1687,7 +1690,7 @@ def sigwinch(unused_scr):
 def sigcont(unused_scr):
     sigwinch(unused_scr)
     # Forces the redraw
-    curses.ungetch('')
+    curses.ungetch('\x00')
 
 def gethw():
     """I found this code on a usenet post, and snipped out the bit I needed,
@@ -1744,7 +1747,10 @@ def idle(caller):
         caller.scr.nodelay(True)
         key = caller.scr.getch()
         caller.scr.nodelay(False)
-        curses.ungetch(key)
+        if key != -1:
+            curses.ungetch(key)
+        else:
+            curses.ungetch('\x00')
     caller.statusbar.check()
     caller.check()
 
