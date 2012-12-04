@@ -38,7 +38,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'bpython'
-copyright = u'2008-2011 Bob Farrell, Andreas Stuehrk et al.'
+copyright = u'2008-2012 Bob Farrell, Andreas Stuehrk et al.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -192,3 +192,20 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+# -- Options for manual page output --------------------------------------------
+
+# One entry per manual page. List of tuples
+# (source start file, name, description, authors, manual section).
+man_pages = [
+    ('man-bpython', 'bpython',
+     u'a fancy {curses, GTK+, urwid} interface to the Python interactive interpreter',
+     [], 1),
+    ('man-bpython-config', 'bpython-config',
+     u'user configuration file for bpython',
+     [], 5)
+]
+
+# If true, show URL addresses after external links.
+#man_show_urls = False
+
