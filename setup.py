@@ -30,6 +30,12 @@ try:
 except ImportError:
     using_translations = False
 
+try:
+    from sphinx.setup_command import BuildDoc
+    using_sphinx = True
+except ImportError:
+    using_sphinx = False
+
 
 cmdclass = dict(build_py=build_py, build=build)
 translations_dir = os.path.join(package_dir, 'translations')
@@ -82,19 +88,35 @@ if using_translations:
     cmdclass['update_catalog'] = update_catalog
     cmdclass['init_catalog'] = init_catalog
 
+if using_sphinx:
+    class BuildDocMan(BuildDoc):
+        def initialize_options(self):
+            BuildDoc.initialize_options(self)
+            self.builder = 'man'
+            self.source_dir = 'doc/sphinx/source'
+            self.build_dir = 'build'
 
-if platform.system() in ['FreeBSD', 'OpenBSD']:
-    man_dir = 'man'
+    build.sub_commands.insert(0, ('build_sphinx_man', None))
+    cmdclass['build_sphinx_man'] = BuildDocMan
+
+    if platform.system() in ['FreeBSD', 'OpenBSD']:
+        man_dir = 'man'
+    else:
+        man_dir = 'share/man'
+
+    # manual pages
+    man_pages = [
+        (os.path.join(man_dir, 'man1'), ['build/man/bpython.1']),
+        (os.path.join(man_dir, 'man5'), ['build/man/bpython-config.5']),
+    ]
 else:
-    man_dir = 'share/man'
+    man_pages = []
 
 data_files = [
-    # man pages
-    (os.path.join(man_dir, 'man1'), ['doc/bpython.1']),
-    (os.path.join(man_dir, 'man5'), ['doc/bpython-config.5']),
     # desktop shortcut
     (os.path.join('share', 'applications'), ['data/bpython.desktop'])
 ]
+data_files.extend(man_pages)
 
 # translations
 mo_files = list()
