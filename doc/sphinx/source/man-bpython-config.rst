@@ -15,6 +15,12 @@ Description
 The configuration file contains various options controlling the behaviour of
 :program:`bpython`.
 
+
+.. toctree::
+    :hidden:
+
+    configuration
+
 Author
 ------
 
