@@ -16,10 +16,10 @@ The configuration file contains various options controlling the behaviour of
 :program:`bpython`.
 
 
-.. toctree::
-    :hidden:
-
-    configuration
+.. include:: configuration-options.rst
+    :end-before: .. _configuration_color_scheme:
+.. include:: configuration-options.rst
+    :start-after: .. _configuration_color_scheme:
 
 Author
 ------
