@@ -5,7 +5,9 @@ include LICENSE
 include data/bpython
 include data/bpython-gtk
 include data/bpython.desktop
-include doc/*.[0-9]
+include doc/sphinx/source/conf.py
+include doc/sphinx/source/*.rst
+include doc/sphinx/source/logo.png
 include sample-config
 include *.theme
 include bpython/logo.png
