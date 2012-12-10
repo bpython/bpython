@@ -1,8 +1,8 @@
 Changelog
 =========
 
-dev
----
+0.12
+----
 
 We want to give special thanks to the Hacker School project-
 (https://www.hackerschool.com/) for choosing bpython as their pet hacking
@@ -28,6 +28,12 @@ pastebins for bpython users.
 * Smarter dedenting after certain expressions
 * #74 fixed broken completion when auto_display_list was disabled
 
+We also have done numerous cleanup actions including building the man pages from
+our documentation. Including the documentation in the source directory. Some
+minor changes to the README to have EOL 79 and changes to urwid to work better
+without twisted installed.
+
+* Fix ungetch issues with Python 3.3. See issues #230, #231.
 
 v0.11
 -----
