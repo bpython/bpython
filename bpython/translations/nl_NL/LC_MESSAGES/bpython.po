@@ -1,5 +1,5 @@
 # Dutch (Netherlands) translations for bpython.
-# Copyright (C) 2011 ORGANIZATION
+# Copyright (C) 2011 bpython developers
 # This file is distributed under the same license as the bpython project.
 # Simon de Vlieger, 2011 .
 #
