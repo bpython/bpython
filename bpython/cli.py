@@ -1874,10 +1874,17 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     sys.stderr = FakeStream(clirepl)
 
     if args:
-        bpython.args.exec_code(interpreter, args)
+        exit_value = 0
+        try:
+            bpython.args.exec_code(interpreter, args)
+        except SystemExit, e:
+            # The documentation of code.InteractiveInterpreter.runcode claims
+            # that it reraises SystemExit. However, I can't manage to trigger
+            # that. To be one the safe side let's catch SystemExit here anyway.
+            exit_value = e.args
         if not interactive:
             curses.raw(False)
-            return clirepl.getstdout()
+            return (exit_value, clirepl.getstdout())
     else:
         sys.path.insert(0, '')
         clirepl.startup()
