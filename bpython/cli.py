@@ -1616,7 +1616,7 @@ class Statusbar(object):
                 curses.flushinp()
                 raise ValueError
             # literal
-            elif 0 <= c < 127:
+            elif 0 < c < 127:
                 c = chr(c)
                 self.win.addstr(c, get_colpair(self.config, 'prompt'))
                 o += c
