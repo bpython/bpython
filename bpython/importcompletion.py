@@ -134,7 +134,7 @@ def find_modules(path):
             with catch_warnings():
                 warnings.simplefilter("ignore", ImportWarning)
                 fo, pathname, _ = imp.find_module(name, [path])
-        except (ImportError, SyntaxError):
+        except (ImportError, IOError, SyntaxError):
             continue
         except UnicodeEncodeError:
             # Happens with Python 3 when there is a filename in some
