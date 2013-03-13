@@ -704,6 +704,8 @@ class Repl(object):
 
         if fn.startswith('~'):
             fn = os.path.expanduser(fn)
+        if not fn.endswith('.py') and self.config.save_append_py:
+            fn = fn + '.py'
 
         s = self.formatforfile(self.getstdout())
 
