@@ -707,16 +707,29 @@ class Repl(object):
         if not fn.endswith('.py') and self.config.save_append_py:
             fn = fn + '.py'
 
+        mode = 'w'
+        if os.path.exists(fn):
+            mode = self.interact.file_prompt('%s already exists. Do you want '
+                                             'to (c)ancel, (o)verwrite or '
+                                             '(a)ppend? ' % (fn, ))
+            if mode in ('o', 'overwrite'):
+                mode = 'w'
+            elif mode in ('a', 'append'):
+                mode = 'a'
+            else:
+                self.interact.notify('Save cancelled.')
+                return
+
         s = self.formatforfile(self.getstdout())
 
         try:
-            f = open(fn, 'w')
+            f = open(fn, mode)
             f.write(s)
             f.close()
         except IOError:
             self.interact.notify("Disk write error for file '%s'." % (fn, ))
         else:
-            self.interact.notify('Saved to %s' % (fn, ))
+            self.interact.notify('Saved to %s.' % (fn, ))
 
     def pastebin(self, s=None):
         """Upload to a pastebin and display the URL in the status bar."""
