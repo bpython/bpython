@@ -72,6 +72,7 @@ def loadini(struct, configfile):
             'pastebin_private': True,
             'pastebin_show_url': 'http://bpaste.net/show/$paste_id/',
             'pastebin_helper': '',
+            'save_append_py': False
         },
         'keyboard': {
             'clear_line': 'C-u',
@@ -152,6 +153,7 @@ def loadini(struct, configfile):
     methods = config.get('general', 'magic_methods')
     struct.magic_methods = [meth.strip() for meth in methods.split(",")]
     struct.autocomplete_mode = config.get('general', 'autocomplete_mode')
+    struct.save_append_py = config.getboolean('general', 'save_append_py')
 
     struct.gtk_font = config.get('gtk', 'font')
 

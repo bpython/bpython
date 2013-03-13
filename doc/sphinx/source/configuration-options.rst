@@ -130,6 +130,12 @@ flush_output
 ^^^^^^^^^^^^
 Whether to flush all output to stdout on exit (default: True).
 
+save_append_py
+^^^^^^^^^^^^^^
+Whether to append ``.py`` to the filename while saving the input to a file.
+
+.. versionadded:: 0.13
+
 Keyboard
 --------
 This section refers to the ``[keyboard]`` section in your ``$XDG_CONFIG_HOME/bpython/config``.
