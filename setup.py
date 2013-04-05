@@ -11,9 +11,11 @@ from bpython import __version__, package_dir
 
 try:
     from setuptools import setup
+    from setuptools.command.install import install as _install
     using_setuptools = True
 except ImportError:
     from distutils.core import setup
+    from distutils.command.install import install as _install
     using_setuptools = False
 
 try:
@@ -36,8 +38,14 @@ try:
 except ImportError:
     using_sphinx = False
 
+class install(_install):
+    """Force install to run build target."""
 
-cmdclass = dict(build_py=build_py, build=build)
+    def run(self):
+        self.run_command('build')
+        _install.run(self)
+
+cmdclass = dict(build_py=build_py, build=build, install=install)
 translations_dir = os.path.join(package_dir, 'translations')
 
 # localization options
