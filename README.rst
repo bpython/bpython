@@ -5,6 +5,8 @@ Dependencies
 ============
 Pygments
 (apt-get install python-pygments)
+Sphinx != 1.1.2 (for the documentation only)
+(apt-get install python-sphinx)
 
 Introduction
 ============
