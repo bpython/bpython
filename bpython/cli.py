@@ -1773,7 +1773,10 @@ def do_resize(caller):
     curses.doupdate()
     DO_RESIZE = False
 
-    caller.resize()
+    try:
+        caller.resize()
+    except curses.error:
+        pass
     # The list win resizes itself every time it appears so no need to do it here.
 
 
