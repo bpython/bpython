@@ -34,7 +34,6 @@ INFOBOX_ONLY_BELOW = True
 #TODO implement paste mode and figure out what the deal with config.paste_time is
 #TODO figure out how config.auto_display_list=False behaves and implement it
 #TODO figure out how config.list_win_visible behaves and implement it
-#TODO implement config.syntax
 #TODO other autocomplete modes even though I hate them
 #TODO config.colors_scheme['error']
 #TODO better status bar message - keybindings like bpython.cli.init_wins
@@ -42,6 +41,8 @@ INFOBOX_ONLY_BELOW = True
 
 #TODO options.interactive, .quiet
 #TODO execute file if in args
+
+#TODO clarify "formatted" vs "display"
 
 logging.basicConfig(level=logging.DEBUG, filename='repl.log', datefmt='%M:%S')
 
@@ -328,7 +329,13 @@ class Repl(BpythonRepl):
         err_spot = sys.stderr.tell()
         #logging.debug('running %r in interpreter', self.buffer)
         unfinished = self.interp.runsource('\n'.join(self.buffer))
-        self.display_buffer.append(bpythonparse(format(self.tokenize(line), self.formatter))) #current line not added to display buffer if quitting
+
+        #current line not added to display buffer if quitting
+        if self.config.syntax:
+            self.display_buffer.append(bpythonparse(format(self.tokenize(line), self.formatter)))
+        else:
+            self.display_buffer.append(fmtstr(line))
+
         sys.stdout.seek(out_spot)
         sys.stderr.seek(err_spot)
         out = sys.stdout.read()
@@ -354,7 +361,7 @@ class Repl(BpythonRepl):
 
     def unhighlight_paren(self):
         """modify line in self.display_buffer to unhighlight a paren if possible"""
-        if self.highlighted_paren is not None:
+        if self.highlighted_paren is not None and self.config.syntax:
             lineno, saved_tokens = self.highlighted_paren
             if lineno == len(self.display_buffer):
                 # then this is the current line, so don't worry about it
@@ -369,7 +376,10 @@ class Repl(BpythonRepl):
     ## formatting, output
     @property
     def current_formatted_line(self):
-        fs = bpythonparse(format(self.tokenize(self._current_line), self.formatter))
+        if self.config.syntax:
+            fs = bpythonparse(format(self.tokenize(self._current_line), self.formatter))
+        else:
+            fs = fmtstr(self._current_line)
         logging.debug('calculating current formatted line: %r', repr(fs))
         return fs
 
@@ -558,7 +568,8 @@ class Repl(BpythonRepl):
         return len(self._current_line) - self.cursor_offset_in_line
     def reprint_line(self, lineno, tokens):
         logging.debug("calling reprint line with %r %r", lineno, tokens)
-        self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
+        if self.config.syntax:
+            self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
     def reevaluate(self):
         """bpython.Repl.undo calls this"""
         #TODO other implementations have a enter no-history method, could do
