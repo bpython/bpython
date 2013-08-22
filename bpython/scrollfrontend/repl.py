@@ -68,6 +68,7 @@ class Repl(BpythonRepl):
     resize event, this works fine.
     """
 
+    ## initialization, cleanup
     def __init__(self):
         logging.debug("starting init")
         interp = code.InteractiveInterpreter()
@@ -109,92 +110,6 @@ class Repl(BpythonRepl):
         self.height = None
         self.start_background_tasks()
 
-    ## Required by bpython.repl.Repl
-    def current_line(self):
-        """Returns the current line"""
-        return self._current_line
-    def echo(self, msg, redraw=True):
-        """
-        Notification that redrawing the current line is necessary (we don't
-        care, since we always redraw the whole screen)
-
-        Supposed to parse and echo a formatted string with appropriate attributes.
-        It's not supposed to update the screen if it's reevaluating the code (as it
-        does with undo)."""
-        logging.debug("echo called with %r" % msg)
-    def cw(self):
-        """Returns the "current word", based on what's directly left of the cursor.
-        examples inclue "socket.socket.metho" or "self.reco" or "yiel" """
-        return self.current_word
-    @property
-    def cpos(self):
-        "many WATs were had - it's the pos from the end of the line back"""
-        return len(self._current_line) - self.cursor_offset_in_line
-    def reprint_line(self, lineno, tokens):
-        logging.debug("calling reprint line with %r %r", lineno, tokens)
-        self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
-    def reevaluate(self):
-        """bpython.Repl.undo calls this"""
-        #TODO other implementations have a enter no-history method, could do
-        # that instead of clearing history and getting it rewritten
-        old_logical_lines = self.history
-        self.history = []
-        self.display_lines = []
-
-        self.done = True # this keeps the first prompt correct
-        self.interp = code.InteractiveInterpreter()
-        self.completer = Autocomplete(self.interp.locals, self.config)
-        self.completer.autocomplete_mode = 'simple'
-        self.buffer = []
-        self.display_buffer = []
-        self.highlighted_paren = None
-
-        for line in old_logical_lines:
-            self._current_line = line
-            self.on_enter()
-        self.cursor_offset_in_line = 0
-        self._current_line = ''
-    def getstdout(self):
-        lines = self.lines_for_display + [self.current_formatted_line]
-        s = '\n'.join([x.s if isinstance(x, FmtStr) else x
-                       for x in lines]) if lines else ''
-        return s
-
-
-    ## Our own functions
-
-    @property
-    def current_formatted_line(self):
-        fs = bpythonparse(format(self.tokenize(self._current_line), self.formatter))
-        logging.debug('calculating current formatted line: %r', repr(fs))
-        return fs
-
-    def unhighlight_paren(self):
-        """modify line in self.display_buffer to unhighlight a paren if possible"""
-        if self.highlighted_paren is not None:
-            lineno, saved_tokens = self.highlighted_paren
-            if lineno == len(self.display_buffer):
-                # then this is the current line, so don't worry about it
-                return
-            self.highlighted_paren = None
-            logging.debug('trying to unhighlight a paren on line %r', lineno)
-            logging.debug('with these tokens: %r', saved_tokens)
-            new = bpythonparse(format(saved_tokens, self.formatter))
-            self.display_buffer[lineno][:len(new)] = new
-
-    @property
-    def lines_for_display(self):
-        return self.display_lines + self.display_buffer_lines
-
-    @property
-    def display_buffer_lines(self):
-        lines = []
-        for display_line in self.display_buffer:
-            display_line = fmtstr(self.ps2 if lines else self.ps1, PROMPTCOLOR) + display_line
-            for line in paint.display_linize(display_line, self.width):
-                lines.append(line)
-        return lines
-
     def __enter__(self):
         self.orig_stdout = sys.stdout
         self.orig_stderr = sys.stderr
@@ -209,10 +124,6 @@ class Repl(BpythonRepl):
         sys.stdout = self.orig_stdout
         sys.stderr = self.orig_stderr
 
-    @property
-    def display_line_with_prompt(self):
-        return fmtstr(self.ps1 if self.done else self.ps2, PROMPTCOLOR) + self.current_formatted_line
-
     def start_background_tasks(self):
         t = threading.Thread(target=self.importcompletion_thread)
         t.daemon = True
@@ -222,6 +133,93 @@ class Repl(BpythonRepl):
         """quick tasks we want to do bits of during downtime"""
         while importcompletion.find_coroutine(): # returns None when fully initialized
             pass
+
+    def clean_up_current_line_for_exit(self):
+        """Called when trying to exit to prep for final paint"""
+        logging.debug('unhighlighting paren for exit')
+        self.cursor_offset_in_line = -1
+        self.unhighlight_paren()
+
+    ## Event handling
+    def process_event(self, e):
+        """Returns True if shutting down, otherwise mutates state of Repl object"""
+
+        #logging.debug("processing event %r", e)
+        if isinstance(e, events.WindowChangeEvent):
+            logging.debug('window change to %d %d', e.width, e.height)
+            self.width, self.height = e.width, e.height
+            return
+        if self.status_bar.has_focus:
+            return self.status_bar.process_event(e)
+
+        if e in self.rl_char_sequences:
+            self.cursor_offset_in_line, self._current_line = self.rl_char_sequences[e](self.cursor_offset_in_line, self._current_line)
+            self.update_completion()
+
+        # readline history commands
+        elif e in ("[A", "KEY_UP") + key_dispatch[self.config.up_one_line_key]:
+            self.rl_history.enter(self._current_line)
+            self._current_line = self.rl_history.back(False)
+            self.cursor_offset_in_line = len(self._current_line)
+            self.update_completion()
+        elif e in ("[B", "KEY_DOWN") + key_dispatch[self.config.down_one_line_key]:
+            self.rl_history.enter(self._current_line)
+            self._current_line = self.rl_history.forward(False)
+            self.cursor_offset_in_line = len(self._current_line)
+            self.update_completion()
+        elif e in key_dispatch[self.config.search_key]:
+            raise NotImplementedError()
+        #TODO add rest of history commands
+
+        # Need to figure out what these are, but I think they belong in manual_realine
+        # under slightly different names
+        elif e in key_dispatch[self.config.cut_to_buffer_key]:
+            raise NotImplementedError()
+        elif e in key_dispatch[self.config.yank_from_buffer_key]:
+            raise NotImplementedError()
+
+        elif e in key_dispatch[self.config.clear_screen_key]:
+            raise NotImplementedError()
+        elif e in key_dispatch[self.config.last_output_key]:
+            raise NotImplementedError()
+        elif e in key_dispatch[self.config.show_source_key]:
+            raise NotImplementedError()
+        elif e in key_dispatch[self.config.suspend_key]:
+            raise SystemExit()
+        elif e == "":
+            raise KeyboardInterrupt()
+        elif e in ("",) + key_dispatch[self.config.exit_key]:
+            raise SystemExit()
+        elif e in ("\n", "\r", "PAD_ENTER"):
+            self.on_enter()
+            self.update_completion()
+        elif e in ["", "", "\x00", "\x11"]:
+            pass #dunno what these are, but they screw things up #TODO find out
+            #TODO use a whitelist instead of a blacklist!
+        elif e == '\t': # tab
+            self.on_tab()
+        elif e in ('[Z', "KEY_BTAB"): # shift-tab
+            self.on_tab(back=True)
+        elif e in ('',) + key_dispatch[self.config.undo_key]:
+            self.undo()
+            self.update_completion()
+        elif e in ('\x13',) + key_dispatch[self.config.save_key]: # ctrl-s for save
+            t = threading.Thread(target=self.write2file)
+            t.daemon = True
+            logging.debug('starting write2file thread')
+            t.start()
+            self.interact.wait_for_request_or_notify()
+        # F8 for pastebin
+        elif e in ('\x1b[19~',) + key_dispatch[self.config.pastebin_key]:
+            t = threading.Thread(target=self.pastebin)
+            t.daemon = True
+            logging.debug('starting pastebin thread')
+            t.start()
+            self.interact.wait_for_request_or_notify()
+        #TODO add PAD keys hack as in bpython.cli
+        else:
+            self.add_normal_character(e)
+            self.update_completion()
 
     def on_enter(self):
         self.cursor_offset_in_line = -1 # so the cursor isn't touching a paren
@@ -238,10 +236,6 @@ class Repl(BpythonRepl):
         self._current_line = ' '*indent
         self.cursor_offset_in_line = len(self._current_line)
 
-    def only_whitespace_left_of_cursor(self):
-        """returns true if all characters on current line before cursor are whitespace"""
-        return self._current_line[:self.cursor_offset_in_line].strip()
-
     def on_tab(self, back=False):
         """Do something on tab key
         taken from bpython.cli
@@ -252,8 +246,13 @@ class Repl(BpythonRepl):
         3) select the first or last match
         4) select the next or previous match if already have a match
         """
+
+        def only_whitespace_left_of_cursor():
+            """returns true if all characters on current line before cursor are whitespace"""
+            return self._current_line[:self.cursor_offset_in_line].strip()
+
         logging.debug('self.matches: %r', self.matches)
-        if not self.only_whitespace_left_of_cursor():
+        if not only_whitespace_left_of_cursor():
             front_white = (len(self._current_line[:self.cursor_offset_in_line]) -
                 len(self._current_line[:self.cursor_offset_in_line].lstrip()))
             to_add = 4 - (front_white % self.config.tab_length)
@@ -285,6 +284,7 @@ class Repl(BpythonRepl):
             self.current_word = (self.matches_iter.previous()
                                  if back else self.matches_iter.next())
 
+    ## Handler Helpers
     def add_normal_character(self, char):
         assert len(char) == 1, repr(char)
         self._current_line = (self._current_line[:self.cursor_offset_in_line] +
@@ -294,94 +294,9 @@ class Repl(BpythonRepl):
         self.cursor_offset_in_line, self._current_line = substitute_abbreviations(self.cursor_offset_in_line, self._current_line)
         #TODO deal with characters that take up more than one space? do we care?
 
-    def process_event(self, e):
-        """Returns True if shutting down, otherwise mutates state of Repl object"""
-
-        #logging.debug("processing event %r", e)
-        if isinstance(e, events.WindowChangeEvent):
-            logging.debug('window change to %d %d', e.width, e.height)
-            self.width, self.height = e.width, e.height
-            return
-        if self.status_bar.has_focus:
-            return self.status_bar.process_event(e)
-
-        if e in self.rl_char_sequences:
-            self.cursor_offset_in_line, self._current_line = self.rl_char_sequences[e](self.cursor_offset_in_line, self._current_line)
-            self.set_completion()
-
-        # readline history commands
-        elif e in ("[A", "KEY_UP") + key_dispatch[self.config.up_one_line_key]:
-            self.rl_history.enter(self._current_line)
-            self._current_line = self.rl_history.back(False)
-            self.cursor_offset_in_line = len(self._current_line)
-            self.set_completion()
-        elif e in ("[B", "KEY_DOWN") + key_dispatch[self.config.down_one_line_key]:
-            self.rl_history.enter(self._current_line)
-            self._current_line = self.rl_history.forward(False)
-            self.cursor_offset_in_line = len(self._current_line)
-            self.set_completion()
-        elif e in key_dispatch[self.config.search_key]:
-            raise NotImplementedError()
-        #TODO add rest of history commands
-
-        # Need to figure out what these are, but I think they belong in manual_realine
-        # under slightly different names
-        elif e in key_dispatch[self.config.cut_to_buffer_key]:
-            raise NotImplementedError()
-        elif e in key_dispatch[self.config.yank_from_buffer_key]:
-            raise NotImplementedError()
-
-        elif e in key_dispatch[self.config.clear_screen_key]:
-            raise NotImplementedError()
-        elif e in key_dispatch[self.config.last_output_key]:
-            raise NotImplementedError()
-        elif e in key_dispatch[self.config.show_source_key]:
-            raise NotImplementedError()
-        elif e in key_dispatch[self.config.suspend_key]:
-            raise SystemExit()
-        elif e == "":
-            raise KeyboardInterrupt()
-        elif e in ("",) + key_dispatch[self.config.exit_key]:
-            raise SystemExit()
-        elif e in ("\n", "\r", "PAD_ENTER"):
-            self.on_enter()
-            self.set_completion()
-        elif e in ["", "", "\x00", "\x11"]:
-            pass #dunno what these are, but they screw things up #TODO find out
-            #TODO use a whitelist instead of a blacklist!
-        elif e == '\t': # tab
-            self.on_tab()
-        elif e in ('[Z', "KEY_BTAB"): # shift-tab
-            self.on_tab(back=True)
-        elif e in ('',) + key_dispatch[self.config.undo_key]:
-            self.undo()
-            self.set_completion()
-        elif e in ('\x13',) + key_dispatch[self.config.save_key]: # ctrl-s for save
-            t = threading.Thread(target=self.write2file)
-            t.daemon = True
-            logging.debug('starting write2file thread')
-            t.start()
-            self.interact.wait_for_request_or_notify()
-        # F8 for pastebin
-        elif e in ('\x1b[19~',) + key_dispatch[self.config.pastebin_key]:
-            t = threading.Thread(target=self.pastebin)
-            t.daemon = True
-            logging.debug('starting pastebin thread')
-            t.start()
-            self.interact.wait_for_request_or_notify()
-        #TODO add PAD keys hack as in bpython.cli
-        else:
-            self.add_normal_character(e)
-            self.set_completion()
-
-    def clean_up_current_line_for_exit(self):
-        """Called when trying to exit to prep for final paint"""
-        logging.debug('unhighlighting paren for exit')
-        self.cursor_offset_in_line = -1
-        self.unhighlight_paren()
-
-    def set_completion(self, tab=False):
+    def update_completion(self, tab=False):
         """Update autocomplete info; self.matches and self.argspec"""
+        #TODO do we really have to do something this ugly? Can we rename it?
         # this method stolen from bpython.cli
         if self.paste_mode:
             return
@@ -393,30 +308,6 @@ class Repl(BpythonRepl):
 
         if self.config.auto_display_list or tab:
             self.list_win_visible = BpythonRepl.complete(self, tab)
-
-    @property
-    def current_word(self):
-        words = re.split(r'([\w_][\w0-9._]*[(]?)', self._current_line)
-        chars = 0
-        cw = None
-        for word in words:
-            chars += len(word)
-            if chars == self.cursor_offset_in_line and word and word.count(' ') == 0:
-                cw = word
-        if cw and re.match(r'^[\w_][\w0-9._]*[(]?$', cw):
-            return cw
-
-    @current_word.setter
-    def current_word(self, value):
-        # current word means word cursor is at the end of, so delete from cursor back to [ ."']
-        pos = self.cursor_offset_in_line - 1
-        if pos > -1 and self._current_line[pos] not in tuple(' :)'):
-            pos -= 1
-        while pos > -1 and self._current_line[pos] not in tuple(' :()\'"'):
-            pos -= 1
-        start = pos + 1; del pos
-        self._current_line = self._current_line[:start] + value + self._current_line[self.cursor_offset_in_line:]
-        self.cursor_offset_in_line = start + len(value)
 
     def push(self, line):
         """Push a line of code onto the buffer, run the buffer
@@ -461,6 +352,68 @@ class Repl(BpythonRepl):
                 indent = 0
             return (out[:-1], err[:-1], True, indent)
 
+    def unhighlight_paren(self):
+        """modify line in self.display_buffer to unhighlight a paren if possible"""
+        if self.highlighted_paren is not None:
+            lineno, saved_tokens = self.highlighted_paren
+            if lineno == len(self.display_buffer):
+                # then this is the current line, so don't worry about it
+                return
+            self.highlighted_paren = None
+            logging.debug('trying to unhighlight a paren on line %r', lineno)
+            logging.debug('with these tokens: %r', saved_tokens)
+            new = bpythonparse(format(saved_tokens, self.formatter))
+            self.display_buffer[lineno][:len(new)] = new
+
+
+    ## formatting, output
+    @property
+    def current_formatted_line(self):
+        fs = bpythonparse(format(self.tokenize(self._current_line), self.formatter))
+        logging.debug('calculating current formatted line: %r', repr(fs))
+        return fs
+
+    @property
+    def lines_for_display(self):
+        return self.display_lines + self.display_buffer_lines
+
+    @property
+    def current_word(self):
+        words = re.split(r'([\w_][\w0-9._]*[(]?)', self._current_line)
+        chars = 0
+        cw = None
+        for word in words:
+            chars += len(word)
+            if chars == self.cursor_offset_in_line and word and word.count(' ') == 0:
+                cw = word
+        if cw and re.match(r'^[\w_][\w0-9._]*[(]?$', cw):
+            return cw
+
+    @current_word.setter
+    def current_word(self, value):
+        # current word means word cursor is at the end of, so delete from cursor back to [ ."']
+        pos = self.cursor_offset_in_line - 1
+        if pos > -1 and self._current_line[pos] not in tuple(' :)'):
+            pos -= 1
+        while pos > -1 and self._current_line[pos] not in tuple(' :()\'"'):
+            pos -= 1
+        start = pos + 1; del pos
+        self._current_line = self._current_line[:start] + value + self._current_line[self.cursor_offset_in_line:]
+        self.cursor_offset_in_line = start + len(value)
+
+    @property
+    def display_buffer_lines(self):
+        lines = []
+        for display_line in self.display_buffer:
+            display_line = fmtstr(self.ps2 if lines else self.ps1, PROMPTCOLOR) + display_line
+            for line in paint.display_linize(display_line, self.width):
+                lines.append(line)
+        return lines
+
+    @property
+    def display_line_with_prompt(self):
+        return fmtstr(self.ps1 if self.done else self.ps2, PROMPTCOLOR) + self.current_formatted_line
+
     def paint(self, about_to_exit=False):
         """Returns an array of min_height or more rows and width columns, plus cursor position
 
@@ -474,7 +427,7 @@ class Repl(BpythonRepl):
         # use fmtstr.bpythonparse.color_for_letter(config.background) -> "black"
 
         if about_to_exit:
-            self.clean_up_current_line_for_exit()
+            self.clean_up_current_line_for_exit() # exception to not changing state!
 
         width, min_height = self.width, self.height
         show_status_bar = bool(self.status_bar.current_line)
@@ -577,6 +530,58 @@ class Repl(BpythonRepl):
         s += " lines scrolled down:" + repr(self.scroll_offset) + '\n'
         s += '>'
         return s
+
+    ## Provided for bpython.repl.Repl
+    def current_line(self):
+        """Returns the current line"""
+        return self._current_line
+    def echo(self, msg, redraw=True):
+        """
+        Notification that redrawing the current line is necessary (we don't
+        care, since we always redraw the whole screen)
+
+        Supposed to parse and echo a formatted string with appropriate attributes.
+        It's not supposed to update the screen if it's reevaluating the code (as it
+        does with undo)."""
+        logging.debug("echo called with %r" % msg)
+    def cw(self):
+        """Returns the "current word", based on what's directly left of the cursor.
+        examples inclue "socket.socket.metho" or "self.reco" or "yiel" """
+        return self.current_word
+    @property
+    def cpos(self):
+        "many WATs were had - it's the pos from the end of the line back"""
+        return len(self._current_line) - self.cursor_offset_in_line
+    def reprint_line(self, lineno, tokens):
+        logging.debug("calling reprint line with %r %r", lineno, tokens)
+        self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
+    def reevaluate(self):
+        """bpython.Repl.undo calls this"""
+        #TODO other implementations have a enter no-history method, could do
+        # that instead of clearing history and getting it rewritten
+        old_logical_lines = self.history
+        self.history = []
+        self.display_lines = []
+
+        self.done = True # this keeps the first prompt correct
+        self.interp = code.InteractiveInterpreter()
+        self.completer = Autocomplete(self.interp.locals, self.config)
+        self.completer.autocomplete_mode = 'simple'
+        self.buffer = []
+        self.display_buffer = []
+        self.highlighted_paren = None
+
+        for line in old_logical_lines:
+            self._current_line = line
+            self.on_enter()
+        self.cursor_offset_in_line = 0
+        self._current_line = ''
+    def getstdout(self):
+        lines = self.lines_for_display + [self.current_formatted_line]
+        s = '\n'.join([x.s if isinstance(x, FmtStr) else x
+                       for x in lines]) if lines else ''
+        return s
+
 
 def test():
     with Repl() as r:
