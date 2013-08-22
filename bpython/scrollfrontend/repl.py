@@ -90,8 +90,6 @@ class Repl(BpythonRepl):
                                         # interact is called to interact with the status bar,
                                         # so we're just using the same object
         self._current_line = '' # line currently being edited, without '>>> '
-        self.current_formatted_line = fmtstr('') # needs to be updated before each draw
-                                                 # by calling set_formatted_line
         self.display_lines = [] # lines separated whenever logical line
                                 # length goes over what the terminal width
                                 # was at the time of original output
@@ -153,7 +151,6 @@ class Repl(BpythonRepl):
 
         for line in old_logical_lines:
             self._current_line = line
-            self.set_formatted_line()
             self.on_enter()
         self.cursor_offset_in_line = 0
         self._current_line = ''
@@ -178,8 +175,15 @@ class Repl(BpythonRepl):
         return super(Repl, self).tokenize(s, newline)
 
     ## Our own functions
+
+    @property
+    def current_formatted_line(self):
+        fs = bpythonparse(format(self.tokenize(self._current_line), self.formatter))
+        logging.debug('calculating current formatted line: %r', repr(fs))
+        return fs
+
     def unhighlight_paren(self):
-        """set self.display_buffer after """
+        """modify line in self.display_buffer to unhighlight a paren if possible"""
         if self.highlighted_paren is not None:
             lineno, saved_tokens = self.highlighted_paren
             if lineno == len(self.display_buffer):
@@ -233,9 +237,8 @@ class Repl(BpythonRepl):
             pass
 
     def on_enter(self):
-        self.cursor_offset_in_line = 10000 # so the cursor isn't touching a paren
-        self.unhighlight_paren()           # in unhighlight_paren and set_formatted_line
-        self.set_formatted_line()
+        self.cursor_offset_in_line = -1 # so the cursor isn't touching a paren
+        self.unhighlight_paren()        # in unhighlight_paren
 
         self.rl_history.append(self._current_line)
         self.rl_history.last()
@@ -271,7 +274,7 @@ class Repl(BpythonRepl):
                 self.add_normal_character(' ')
             return
 
-        #TODO I'm not sure what's going on in the next 10 lines, particuarlly list_win_visible
+        #TODO I'm not sure what's going on in the next 10 lines, particularly list_win_visible
         # get the (manually typed or common-sequence completed from manually typed) current word
         if self.matches_iter:
             cw = self.matches_iter.current_word
@@ -383,25 +386,12 @@ class Repl(BpythonRepl):
         else:
             self.add_normal_character(e)
             self.set_completion()
-        self.set_formatted_line()
 
     def clean_up_current_line_for_exit(self):
         """Called when trying to exit to prep for final paint"""
-        logging.debug('resetting formatted line for exit')
+        logging.debug('unhighlighting paren for exit')
         self.cursor_offset_in_line = -1
         self.unhighlight_paren()
-        self.set_formatted_line()
-
-    def set_formatted_line(self):
-        """Sets current_formatted_line, so bpython.repl.Repl...
-        shoot there must some reason for this ugliness...
-        I tried to do pure functions where possible there's some reason...
-        It's not a peformance optimization, I tried not to do any of those yet
-        Maybe because bpython.repl.Repl.tokenize has some side effect
-        that should only happen once per line?
-        """
-        self.current_formatted_line = bpythonparse(format(self.tokenize(self._current_line), self.formatter))
-        logging.debug(repr(self.current_formatted_line))
 
     def set_completion(self, tab=False):
         """Update autocomplete info; self.matches and self.argspec"""
