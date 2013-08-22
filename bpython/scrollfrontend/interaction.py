@@ -18,7 +18,6 @@ class StatusBar(BpythonInteraction):
     functionality in a evented or callback style, but trying to integrate
     bpython.Repl code.
     """
-    #TODO Remove dependence on bpython.Repl, it's more complicated than it's worth!
     def __init__(self, initial_message='', permanent_text=""):
         self._current_line = ''
         self.cursor_offset_in_line = 0
@@ -66,7 +65,6 @@ class StatusBar(BpythonInteraction):
             self.response_queue.put(False)
             self.escape()
         else: # add normal character
-            #TODO factor this out, same in both process_event methods
             self._current_line = (self._current_line[:self.cursor_offset_in_line] +
                                  e +
                                  self._current_line[self.cursor_offset_in_line:])

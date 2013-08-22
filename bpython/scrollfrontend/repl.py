@@ -36,11 +36,8 @@ INFOBOX_ONLY_BELOW = True
 #TODO figure out how config.list_win_visible behaves and implement it
 #TODO other autocomplete modes even though I hate them
 #TODO figure out what config.flush_output is
-
 #TODO options.interactive, .quiet
 #TODO execute file if in args
-
-#TODO clarify "formatted" vs "display"
 
 logging.basicConfig(level=logging.DEBUG, filename='repl.log', datefmt='%M:%S')
 
@@ -73,8 +70,6 @@ class Repl(BpythonRepl):
         loadini(config, default_config_path())
         config.autocomplete_mode = SIMPLE # only one implemented currently
 
-        #TODO determine if this is supposed to use this, or if it should be
-        # frontend specific.
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 1
 
@@ -165,24 +160,24 @@ class Repl(BpythonRepl):
             self._current_line = self.rl_history.forward(False)
             self.cursor_offset_in_line = len(self._current_line)
             self.update_completion()
-        elif e in key_dispatch[self.config.search_key]:
+        elif e in key_dispatch[self.config.search_key]: #TODO
             raise NotImplementedError()
         #TODO add rest of history commands
 
         # Need to figure out what these are, but I think they belong in manual_realine
         # under slightly different names
-        elif e in key_dispatch[self.config.cut_to_buffer_key]:
+        elif e in key_dispatch[self.config.cut_to_buffer_key]: #TODO
             raise NotImplementedError()
-        elif e in key_dispatch[self.config.yank_from_buffer_key]:
+        elif e in key_dispatch[self.config.yank_from_buffer_key]: #TODO
             raise NotImplementedError()
 
-        elif e in key_dispatch[self.config.clear_screen_key]:
+        elif e in key_dispatch[self.config.clear_screen_key]: #TODO
             raise NotImplementedError()
-        elif e in key_dispatch[self.config.last_output_key]:
+        elif e in key_dispatch[self.config.last_output_key]: #TODO
             raise NotImplementedError()
-        elif e in key_dispatch[self.config.show_source_key]:
+        elif e in key_dispatch[self.config.show_source_key]: #TODO
             raise NotImplementedError()
-        elif e in key_dispatch[self.config.suspend_key]:
+        elif e in key_dispatch[self.config.suspend_key]: #TODO
             raise SystemExit()
         elif e == "":
             raise KeyboardInterrupt()
@@ -377,7 +372,7 @@ class Repl(BpythonRepl):
 
     ## formatting, output
     @property
-    def current_formatted_line(self):
+    def current_line_formatted(self):
         if self.config.syntax:
             fs = bpythonparse(format(self.tokenize(self._current_line), self.formatter))
         else:
@@ -428,7 +423,7 @@ class Repl(BpythonRepl):
     def display_line_with_prompt(self):
         return (func_for_letter(self.config.color_scheme['prompt'])(self.ps1)
                 if self.done else
-                func_for_letter(self.config.color_scheme['prompt_more'])(self.ps2)) + self.current_formatted_line
+                func_for_letter(self.config.color_scheme['prompt_more'])(self.ps2)) + self.current_line_formatted
 
     def paint(self, about_to_exit=False):
         """Returns an array of min_height or more rows and width columns, plus cursor position
@@ -594,7 +589,7 @@ class Repl(BpythonRepl):
         self.cursor_offset_in_line = 0
         self._current_line = ''
     def getstdout(self):
-        lines = self.lines_for_display + [self.current_formatted_line]
+        lines = self.lines_for_display + [self.current_line_formatted]
         s = '\n'.join([x.s if isinstance(x, FmtStr) else x
                        for x in lines]) if lines else ''
         return s
