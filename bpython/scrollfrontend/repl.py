@@ -307,11 +307,6 @@ class Repl(BpythonRepl):
     def process_event(self, e):
         """Returns True if shutting down, otherwise mutates state of Repl object"""
 
-        # shim for weird key_dispatch #TODO patch bpython
-        def tint(x):
-            """Tuple if not tuple - returns one-item tuple if x isn't a tuple"""
-            return x if isinstance(x, tuple) else tuple(x)
-
         #logging.debug("processing event %r", e)
         if isinstance(e, events.WindowChangeEvent):
             logging.debug('window change to %d %d', e.width, e.height)
@@ -356,7 +351,7 @@ class Repl(BpythonRepl):
             raise SystemExit()
         elif e == "":
             raise KeyboardInterrupt()
-        elif e in ("",) + tint(key_dispatch[self.config.exit_key]):
+        elif e in ("",) + key_dispatch[self.config.exit_key]:
             raise SystemExit()
         elif e in ("\n", "\r", "PAD_ENTER"):
             self.on_enter()
