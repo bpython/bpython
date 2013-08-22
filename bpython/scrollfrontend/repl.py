@@ -29,7 +29,6 @@ import bpython.scrollfrontend.replpainter as paint
 import fmtstr.events as events
 from bpython.scrollfrontend.friendly import NotImplementedError
 
-PROMPTCOLOR = 'cyan'
 INFOBOX_ONLY_BELOW = True
 
 #TODO implement paste mode and figure out what the deal with config.paste_time is
@@ -37,7 +36,6 @@ INFOBOX_ONLY_BELOW = True
 #TODO figure out how config.list_win_visible behaves and implement it
 #TODO config.cli_trim_prompts
 #TODO implement config.syntax
-#TODO implement config.color_scheme['prompt'] and ['prompt_more]
 #TODO other autocomplete modes even though I hate them
 #TODO config.colors_scheme['error']
 #TODO better status bar message - keybindings like bpython.cli.init_wins
@@ -405,14 +403,18 @@ class Repl(BpythonRepl):
     def display_buffer_lines(self):
         lines = []
         for display_line in self.display_buffer:
-            display_line = fmtstr(self.ps2 if lines else self.ps1, PROMPTCOLOR) + display_line
+            display_line = (func_for_letter(self.config.color_scheme['prompt_more'])(self.ps2)
+                           if lines else
+                           func_for_letter(self.config.color_scheme['prompt'])(self.ps1)) + display_line
             for line in paint.display_linize(display_line, self.width):
                 lines.append(line)
         return lines
 
     @property
     def display_line_with_prompt(self):
-        return fmtstr(self.ps1 if self.done else self.ps2, PROMPTCOLOR) + self.current_formatted_line
+        return (func_for_letter(self.config.color_scheme['prompt'])(self.ps1)
+                if self.done else
+                func_for_letter(self.config.color_scheme['prompt_more'])(self.ps2)) + self.current_formatted_line
 
     def paint(self, about_to_exit=False):
         """Returns an array of min_height or more rows and width columns, plus cursor position
