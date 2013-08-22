@@ -61,11 +61,11 @@ class Repl(BpythonRepl):
     outputs:
      -2D array to be rendered
 
-    Geometry information gets passed around, while REPL information is state
-      on the object
-
-    TODO change all "rows" to "height" iff rows is a number
-    (not if it's an array of the rows)
+    Repl is mostly view-indepented state of Repl - but self.width and self.height
+    are important for figuring out how to wrap lines for example.
+    Usually self.width and self.height should be set by receiving a window resize event,
+    not manually set to anything - as long as the first event received is a window
+    resize event, this works fine.
     """
 
     def __init__(self):
@@ -107,7 +107,7 @@ class Repl(BpythonRepl):
 
         self.paste_mode = False
 
-        self.width = None
+        self.width = None  # will both be set by a window resize event
         self.height = None
         self.start_background_tasks()
 
@@ -219,7 +219,7 @@ class Repl(BpythonRepl):
         sys.stderr = self.orig_stderr
 
     @property
-    def current_display_line(self):
+    def display_line_with_prompt(self):
         return fmtstr(self.ps1 if self.done else self.ps2, PROMPTCOLOR) + self.current_formatted_line
 
     def start_background_tasks(self):
@@ -233,8 +233,8 @@ class Repl(BpythonRepl):
             pass
 
     def on_enter(self):
-        self.cursor_offset_in_line = 10000
-        self.unhighlight_paren()
+        self.cursor_offset_in_line = 10000 # so the cursor isn't touching a paren
+        self.unhighlight_paren()           # in unhighlight_paren and set_formatted_line
         self.set_formatted_line()
 
         self.rl_history.append(self._current_line)
@@ -393,6 +393,13 @@ class Repl(BpythonRepl):
         self.set_formatted_line()
 
     def set_formatted_line(self):
+        """Sets current_formatted_line, so bpython.repl.Repl...
+        shoot there must some reason for this ugliness...
+        I tried to do pure functions where possible there's some reason...
+        It's not a peformance optimization, I tried not to do any of those yet
+        Maybe because bpython.repl.Repl.tokenize has some side effect
+        that should only happen once per line?
+        """
         self.current_formatted_line = bpythonparse(format(self.tokenize(self._current_line), self.formatter))
         logging.debug(repr(self.current_formatted_line))
 
@@ -518,17 +525,17 @@ class Repl(BpythonRepl):
             history = paint.paint_history(current_line_start_row, width, self.lines_for_display)
             arr[:history.height,:history.width] = history
 
-        current_line = paint.paint_current_line(min_height, width, self.current_display_line)
+        current_line = paint.paint_current_line(min_height, width, self.display_line_with_prompt)
         arr[current_line_start_row:current_line_start_row + current_line.height,
             0:current_line.width] = current_line
 
         if current_line.height > min_height:
             return arr, (0, 0) # short circuit, no room for infobox
 
-        lines = paint.display_linize(self.current_display_line+'X', width)
+        lines = paint.display_linize(self.display_line_with_prompt+'X', width)
                                        # extra character for space for the cursor
         cursor_row = current_line_start_row + len(lines) - 1
-        cursor_column = (self.cursor_offset_in_line + len(self.current_display_line) - len(self._current_line)) % width
+        cursor_column = (self.cursor_offset_in_line + len(self.display_line_with_prompt) - len(self._current_line)) % width
 
         if self.list_win_visible:
             logging.debug('infobox display code running')
@@ -550,26 +557,25 @@ class Repl(BpythonRepl):
 
     ## Debugging shims
     def dumb_print_output(self):
-        rows, columns = self.height, self.width
         arr, cpos = self.paint()
         arr[cpos[0], cpos[1]] = '~'
         def my_print(msg):
             self.orig_stdout.write(str(msg)+'\n')
-        my_print('X'*(columns+8))
-        my_print(' use "/" for enter '.center(columns+8, 'X'))
-        my_print(' use "\\" for rewind '.center(columns+8, 'X'))
-        my_print(' use "|" to raise an error '.center(columns+8, 'X'))
-        my_print(' use "$" to pastebin '.center(columns+8, 'X'))
-        my_print(' "~" is the cursor '.center(columns+8, 'X'))
-        my_print('X'*(columns+8))
-        my_print('X..'+('.'*(columns+2))+'..X')
+        my_print('X'*(self.width+8))
+        my_print(' use "/" for enter '.center(self.width+8, 'X'))
+        my_print(' use "\\" for rewind '.center(self.width+8, 'X'))
+        my_print(' use "|" to raise an error '.center(self.width+8, 'X'))
+        my_print(' use "$" to pastebin '.center(self.width+8, 'X'))
+        my_print(' "~" is the cursor '.center(self.width+8, 'X'))
+        my_print('X'*(self.width+8))
+        my_print('X..'+('.'*(self.width+2))+'..X')
         for line in arr:
             my_print('X...'+(line if line else ' '*len(line))+'...X')
         logging.debug('line:')
         logging.debug(repr(line))
-        my_print('X..'+('.'*(columns+2))+'..X')
-        my_print('X'*(columns+8))
-        return max(len(arr) - rows, 0)
+        my_print('X..'+('.'*(self.width+2))+'..X')
+        my_print('X'*(self.width+8))
+        return max(len(arr) - self.height, 0)
 
     def dumb_input(self):
         for c in raw_input('>'):
