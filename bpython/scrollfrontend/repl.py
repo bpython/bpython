@@ -32,9 +32,8 @@ from bpython.scrollfrontend.friendly import NotImplementedError
 INFOBOX_ONLY_BELOW = True
 
 #TODO implement paste mode and figure out what the deal with config.paste_time is
-#TODO check config.auto_display_list
+#TODO figure out how config.auto_display_list=False behaves and implement it
 #TODO figure out how config.list_win_visible behaves and implement it
-#TODO config.cli_trim_prompts
 #TODO implement config.syntax
 #TODO other autocomplete modes even though I hate them
 #TODO config.colors_scheme['error']
@@ -289,6 +288,9 @@ class Repl(BpythonRepl):
                              char +
                              self._current_line[self.cursor_offset_in_line:])
         self.cursor_offset_in_line += 1
+        if self.config.cli_trim_prompts and self._current_line.startswith(">>> "):
+            self._current_line = self._current_line[4:]
+            self.cursor_offset_in_line = max(0, self.cursor_offset_in_line - 4)
         self.cursor_offset_in_line, self._current_line = substitute_abbreviations(self.cursor_offset_in_line, self._current_line)
         #TODO deal with characters that take up more than one space? do we care?
 
