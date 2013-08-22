@@ -892,7 +892,15 @@ class Repl(object):
         """See the flush() method docstring."""
 
     def tokenize(self, s, newline=False):
-        """Tokenize a line of code."""
+        """Tokenizes a line of code, returning pygments tokens
+        with side effects/impurities:
+        - reads self.cpos to see what parens should be highlighted
+        - reads self.buffer to see what came before the passed in line
+        - sets self.highlighted_paren to (buffer_lineno, tokens_for_that_line) for buffer line
+            that should replace that line to unhighlight it
+        - calls reprint_line with a buffer's line's tokens and the buffer lineno that has changed
+            iff that line is the not the current line
+        """
 
         source = '\n'.join(self.buffer + [s])
         cursor = len(source) - self.cpos

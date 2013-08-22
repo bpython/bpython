@@ -160,19 +160,6 @@ class Repl(BpythonRepl):
                        for x in lines]) if lines else ''
         return s
 
-    ## wrappers for super functions so I can add descriptive docstrings
-    def tokenize(self, s, newline=False):
-        """Tokenizes a line of code, returning what that line should look like,
-        with side effects:
-
-        - reads self.cpos to see what parens should be highlighted
-        - reads self.buffer to see what came before the passed in line
-        - sets self.highlighted_paren to (buffer_lineno, tokens_for_that_line) for buffer line
-            that should replace that line to unhighlight it
-        - calls reprint_line with a buffer's line's tokens and the buffer lineno that has changed
-            iff that line is the not the current line
-        """
-        return super(Repl, self).tokenize(s, newline)
 
     ## Our own functions
 
