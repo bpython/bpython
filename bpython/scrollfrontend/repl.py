@@ -35,7 +35,6 @@ INFOBOX_ONLY_BELOW = True
 #TODO figure out how config.auto_display_list=False behaves and implement it
 #TODO figure out how config.list_win_visible behaves and implement it
 #TODO other autocomplete modes even though I hate them
-#TODO config.colors_scheme['error']
 #TODO better status bar message - keybindings like bpython.cli.init_wins
 #TODO figure out what config.flush_output is
 
@@ -230,7 +229,9 @@ class Repl(BpythonRepl):
         if output:
             self.display_lines.extend(sum([paint.display_linize(line, self.width) for line in output.split('\n')], []))
         if err:
-            self.display_lines.extend([fmtstr(line, 'red') for line in sum([paint.display_linize(line, self.width) for line in err.split('\n')], [])])
+            self.display_lines.extend([func_for_letter(self.config.color_scheme['error'])(line)
+                                      for line in sum([paint.display_linize(line, self.width)
+                                                      for line in err.split('\n')], [])])
         self._current_line = ' '*indent
         self.cursor_offset_in_line = len(self._current_line)
 
