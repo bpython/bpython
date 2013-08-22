@@ -35,7 +35,6 @@ INFOBOX_ONLY_BELOW = True
 #TODO figure out how config.auto_display_list=False behaves and implement it
 #TODO figure out how config.list_win_visible behaves and implement it
 #TODO other autocomplete modes even though I hate them
-#TODO better status bar message - keybindings like bpython.cli.init_wins
 #TODO figure out what config.flush_output is
 
 #TODO options.interactive, .quiet
@@ -79,7 +78,9 @@ class Repl(BpythonRepl):
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 1
 
-        self.status_bar = StatusBar(_('welcome to bpython'))
+        self.status_bar = StatusBar(_('welcome to bpython'), _(
+            " <%s> Rewind  <%s> Save  <%s> Pastebin "
+            ) % (config.undo_key, config.save_key, config.pastebin_key))
         self.rl_char_sequences = get_updated_char_sequences(key_dispatch, config)
         logging.debug("starting parent init")
         super(Repl, self).__init__(interp, config)
