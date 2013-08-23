@@ -496,7 +496,7 @@ class Repl(BpythonRepl):
                 logging.debug('slamming infobox of shape %r into arr', infobox.shape)
 
         if show_status_bar and not about_to_exit:
-            arr[max(arr.height, min_height), :] = paint.paint_statusbar(1, width, self.status_bar.current_line)
+            arr[max(arr.height, min_height), :] = paint.paint_statusbar(1, width, self.status_bar.current_line, self.config)
         return arr, (cursor_row, cursor_column)
 
     ## Debugging shims

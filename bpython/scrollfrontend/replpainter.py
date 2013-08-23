@@ -1,6 +1,7 @@
 
 from fmtstr.fmtfuncs import *
 from fmtstr.fsarray import fsarray
+from fmtstr.bpythonparse import func_for_letter
 
 import logging
 
@@ -71,8 +72,8 @@ def paint_infobox(rows, columns, matches, argspec, match, docstring, config):
     #return r
     return fsarray(r[:rows-1, :])
 
-def paint_statusbar(rows, columns, msg):
-    return fsarray([on_green(blue(msg.center(columns)))])
+def paint_statusbar(rows, columns, msg, config):
+    return fsarray([func_for_letter(config.color_scheme['main'])(msg.ljust(columns))])
 
 if __name__ == '__main__':
     #paint_history(10, 30, ['asdf', 'adsf', 'aadadfadf']).dumb_display()
