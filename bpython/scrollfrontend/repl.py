@@ -29,7 +29,7 @@ import bpython.scrollfrontend.replpainter as paint
 import fmtstr.events as events
 from bpython.scrollfrontend.friendly import NotImplementedError
 
-INFOBOX_ONLY_BELOW = True
+INFOBOX_ONLY_BELOW = True #TODO make this a config option if it isn't already
 
 #TODO implement paste mode and figure out what the deal with config.paste_time is
 #TODO figure out how config.auto_display_list=False behaves and implement it
@@ -38,6 +38,9 @@ INFOBOX_ONLY_BELOW = True
 #TODO figure out what config.flush_output is
 #TODO options.interactive, .quiet
 #TODO execute file if in args
+#TODO prettier completion box!
+#TODO working raw_input
+#TODO python3 compatibility
 
 logging.basicConfig(level=logging.DEBUG, filename='repl.log', datefmt='%M:%S')
 
