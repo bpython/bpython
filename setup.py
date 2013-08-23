@@ -151,7 +151,7 @@ setup(
     interpreter for Unix-like operating systems.""",
     install_requires = [
         'pygments',
-        'fmtstr>=0.0.3'
+        'fmtstr>=0.0.4'
     ],
     tests_require = ['mock'],
     packages = ["bpython", "bpython.test", "bpython.translations", "bpdb"],
