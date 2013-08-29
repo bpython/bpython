@@ -67,10 +67,10 @@ def paint_infobox(rows, columns, matches, argspec, match, docstring, config):
     # add borders
     width = min(columns - 2, max([len(line) for line in lines]))
     output_lines = []
-    output_lines.append('┌'+'─'*width+'┐')
+    output_lines.append('+'+'-'*width+'+')
     for line in lines:
         output_lines.append('|'+((line+' '*(width - len(line)))[:width])+'|')
-    output_lines.append('└'+'─'*width+'┘')
+    output_lines.append('+'+'-'*width+'+')
     r = fsarray(output_lines[:rows])
     assert len(r.shape) == 2
     #return r
