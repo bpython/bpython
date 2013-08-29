@@ -4,7 +4,9 @@ import re
 import logging
 import code
 import threading
+import Queue
 from cStringIO import StringIO
+import traceback
 
 from bpython.autocomplete import Autocomplete, SIMPLE
 from bpython.repl import Repl as BpythonRepl
@@ -21,6 +23,7 @@ from fmtstr.fmtstr import fmtstr, FmtStr
 from fmtstr.bpythonparse import parse as bpythonparse
 from fmtstr.bpythonparse import func_for_letter
 
+from bpython.scrollfrontend.manual_readline import char_sequences as rl_char_sequences
 from bpython.scrollfrontend.manual_readline import get_updated_char_sequences
 from bpython.scrollfrontend.abbreviate import substitute_abbreviations
 from bpython.scrollfrontend.interaction import StatusBar
@@ -45,6 +48,56 @@ INFOBOX_ONLY_BELOW = True #TODO make this a config option if it isn't already
 logging.basicConfig(level=logging.DEBUG, filename='repl.log', datefmt='%M:%S')
 
 from bpython.keys import cli_key_dispatch as key_dispatch
+
+class FakeStdin(object):
+    def __init__(self, on_receive_tuple):
+        self.request_from_executing_code = Queue.Queue(maxsize=1)
+        self.response_queue = Queue.Queue(maxsize=1)
+        self.has_focus = False
+        self.current_line = ''
+        self.cursor_offset_in_line = 0
+        self.on_receive_tuple = on_receive_tuple
+
+    def wait_for_request_or_finish(self):
+        logging.debug('waiting for message from running code (stack depth %r)', len(traceback.format_stack()))
+        msg = self.request_from_executing_code.get(timeout=3)
+        logging.debug('FakeStdin received message %r', msg)
+        self.process_request(msg)
+
+    def process_request(self, msg):
+        if msg == 'can haz stdin line plz':
+            logging.debug('setting focus to stdin')
+            self.has_focus = True
+        elif isinstance(msg, tuple):
+            logging.debug('calling on_finish_running_code')
+            self.on_receive_tuple(*msg)
+        else:
+            logging.debug('unrecognized message!')
+            assert False
+
+    def process_event(self, e):
+        assert self.has_focus
+        if e in rl_char_sequences:
+            self.cursor_offset_in_line, self.current_line = rl_char_sequences[e](self.cursor_offset_in_line, self._current_line)
+            #TODO EOF on ctrl-d
+        else: # add normal character
+            logging.debug('adding normal char %r to current line', e)
+            self.current_line = (self.current_line[:self.cursor_offset_in_line] +
+                                 e +
+                                 self.current_line[self.cursor_offset_in_line:])
+            self.cursor_offset_in_line += 1
+
+        if self.current_line.endswith(("\n", "\r")):
+            self.has_focus = False
+            self.response_queue.put(self.current_line)
+            self.current_line = ''
+            self.cursor_offset_in_line = 0
+            self.wait_for_request_or_finish()
+
+    def readline(self):
+        self.request_from_executing_code.put('can haz stdin line plz')
+        return self.response_queue.get(timeout=15)
+
 
 class Repl(BpythonRepl):
     """
@@ -100,6 +153,8 @@ class Repl(BpythonRepl):
         self.cursor_offset_in_line = 0 # from the left, 0 means first char
         self.done = True
 
+        self.stdin = FakeStdin(self.on_finish_running_code)
+
         self.paste_mode = False
 
         self.width = None  # will both be set by a window resize event
@@ -109,8 +164,10 @@ class Repl(BpythonRepl):
     def __enter__(self):
         self.orig_stdout = sys.stdout
         self.orig_stderr = sys.stderr
+        self.orig_stdin = sys.stdin
         sys.stdout = StringIO()
         sys.stderr = StringIO()
+        sys.stdin = self.stdin
         return self
 
     def __exit__(self, *args):
@@ -147,6 +204,8 @@ class Repl(BpythonRepl):
             return
         if self.status_bar.has_focus:
             return self.status_bar.process_event(e)
+        if self.stdin.has_focus:
+            return self.stdin.process_event(e)
 
         if e in self.rl_char_sequences:
             self.cursor_offset_in_line, self._current_line = self.rl_char_sequences[e](self.cursor_offset_in_line, self._current_line)
@@ -224,15 +283,18 @@ class Repl(BpythonRepl):
         self.rl_history.append(self._current_line)
         self.rl_history.last()
         self.history.append(self._current_line)
-        output, err, self.done, indent = self.push(self._current_line)
+        self.push(self._current_line)
+
+    def on_finish_running_code(self, output, error, done, indent):
         if output:
             self.display_lines.extend(sum([paint.display_linize(line, self.width) for line in output.split('\n')], []))
-        if err:
+        if error:
             self.display_lines.extend([func_for_letter(self.config.color_scheme['error'])(line)
                                       for line in sum([paint.display_linize(line, self.width)
-                                                      for line in err.split('\n')], [])])
+                                                      for line in error.split('\n')], [])])
         self._current_line = ' '*indent
         self.cursor_offset_in_line = len(self._current_line)
+        self.done = done
 
     def on_tab(self, back=False):
         """Do something on tab key
@@ -314,7 +376,21 @@ class Repl(BpythonRepl):
         """Push a line of code onto the buffer, run the buffer
 
         If the interpreter successfully runs the code, clear the buffer
-        Return ("for stdout", "for_stderr", finished?)
+        """
+        t = threading.Thread(target=self.runsource, args=(line,))
+        t.daemon = True
+        t.start()
+        logging.debug('push() is now waiting')
+        self.stdin.wait_for_request_or_finish()
+        logging.debug('push() done waiting')
+
+    def runsource(self, line):
+        """Push a line of code on to the buffer, run the buffer, clean up
+
+        Makes requests for input and announces being done as necessary via threadsafe queue
+        sends messages:
+            * request for readline
+            * (stdoutput, error, done?, amount_to_indent_next_line)
         """
         self.buffer.append(line)
         indent = len(re.match(r'[ ]*', line).group())
@@ -327,7 +403,7 @@ class Repl(BpythonRepl):
             indent = max(0, indent - self.config.tab_length)
         out_spot = sys.stdout.tell()
         err_spot = sys.stderr.tell()
-        #logging.debug('running %r in interpreter', self.buffer)
+        logging.debug('running %r in interpreter', self.buffer)
         unfinished = self.interp.runsource('\n'.join(self.buffer))
 
         #current line not added to display buffer if quitting
@@ -349,7 +425,7 @@ class Repl(BpythonRepl):
 
         if unfinished and not err:
             logging.debug('unfinished - line added to buffer')
-            return (None, None, False, indent)
+            self.stdin.request_from_executing_code.put((None, None, False, indent))
         else:
             logging.debug('finished - buffer cleared')
             self.display_lines.extend(self.display_buffer_lines)
@@ -357,7 +433,9 @@ class Repl(BpythonRepl):
             self.buffer = []
             if err:
                 indent = 0
-            return (out[:-1], err[:-1], True, indent)
+            logging.debug('sending output info')
+            self.stdin.request_from_executing_code.put((out[:-1], err[:-1], True, indent))
+            logging.debug('sent output info')
 
     def unhighlight_paren(self):
         """modify line in self.display_buffer to unhighlight a paren if possible"""
@@ -380,7 +458,9 @@ class Repl(BpythonRepl):
             fs = bpythonparse(format(self.tokenize(self._current_line), self.formatter))
         else:
             fs = fmtstr(self._current_line)
-        logging.debug('calculating current formatted line: %r', repr(fs))
+        if hasattr(self, 'old_fs') and str(fs) != str(self.old_fs):
+            logging.debug('calculating current formatted line: %r', repr(fs))
+        self.old_fs = fs
         return fs
 
     @property
@@ -482,6 +562,7 @@ class Repl(BpythonRepl):
         cursor_column = (self.cursor_offset_in_line + len(self.display_line_with_prompt) - len(self._current_line)) % width
 
         if self.list_win_visible:
+            #TODO infobox not properly expanding window! try reduce( docs about halfway down a 80x24 terminal
             logging.debug('infobox display code running')
             visible_space_above = history.height
             visible_space_below = min_height - cursor_row
