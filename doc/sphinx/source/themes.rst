@@ -4,11 +4,11 @@ Themes
 ======
 This chapter is about bpython's themeing capabalities.
 
-bpython uses .theme files placed in your ~/.bpython directory. You can set the
-theme in the :ref:`configuration_color_scheme` option in your
-`~/bpython/config`` file (:ref:`configuration`). You can find some of our
-themes in our gallery on our website:
-http://bpython-interpreter.org/themes/
+bpython uses .theme files placed in your ``$XDG_CONFIG_HOME/bpython`` directory
+[#f1]_.  You can set the theme in the :ref:`configuration_color_scheme` option
+in your ``$XDG_CONFIG_HOME/bpython/config`` file (:ref:`configuration`). You can
+find some of our themes in our gallery on our website:
+`<http://bpython-interpreter.org/themes/>`_
 
 Available Colors
 ----------------
@@ -53,7 +53,8 @@ The default theme included in bpython is as follows:
   # which stands for:
   #   blacK, Red, Green, Yellow, Blue, Magenta, Cyan, White, Default
   # Capital letters represent bold
-  # Copy to ~/.bpython/foo.theme and set "color_scheme = foo" in ~/bpython/config
+  # Copy to $XDG_CONFIG_HOME/bpython/foo.theme and set "color_scheme = foo" in
+  # $XDG_CONFIG_HOME/bpython/config ($XDG_CONFIG_HOME defaults to ~/.config)
 
   [syntax]
   keyword = y
@@ -66,7 +67,7 @@ The default theme included in bpython is as follows:
   punctuation = y
   token = C
   paren = R
-  
+
   [interface]
   # XXX: gnome-terminal appears to be braindead. The cursor will disappear unless
   # you set the background colour to "d".
@@ -75,4 +76,8 @@ The default theme included in bpython is as follows:
   main = c
   prompt = c
   prompt_more = g
+
+.. :: Footnotes
+
+.. [#f1] ``$XDG_CONFIG_HOME`` defaults to ``~/.config`` if not set.
 
