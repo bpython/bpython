@@ -1,7 +1,8 @@
 # This is a standard python config file
 # Valid values can be True, False, integer numbers, strings
-# By default bpython will look for ~/.config/bpython/config or you
-# can specify a file with the --config option on the command line
+# By default bpython will look for $XDG_CONFIG_HOME/bpython/config
+# ($XDG_CONFIG_HOME defaults to ~/.config) or you can specify a file with the
+# --config option on the command line
 
 # General section tag
 [general]
@@ -26,9 +27,9 @@ hist_length = 100
 # Soft tab size (default: 4, see pep-8):
 tab_length = 4
 
-# Color schemes should be put in ~/.bpython/
-# e.g. to use the theme ~/.bpython/foo.theme set color_scheme = foo
-# Leave blank or set to "default" to use the default theme
+# Color schemes should be put in $XDG_CONFIG_HOME/bpython/ e.g. to use the theme
+# $XDG_CONFIG_HOME/bpython/foo.theme set color_scheme = foo. Leave blank or set
+# to "default" to use the default theme
 color_scheme = default
 
 [keyboard]
