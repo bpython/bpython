@@ -154,7 +154,7 @@ setup(
         'fmtstr>=0.0.4'
     ],
     tests_require = ['mock'],
-    packages = ["bpython", "bpython.test", "bpython.translations", "bpdb"],
+    packages = ["bpython", "bpython.test", "bpython.translations", "bpdb", "bpython.scrollfrontend"],
     data_files = data_files,
     package_data = {
         'bpython': ['logo.png'],
