@@ -5,7 +5,7 @@ from bpython.scrollfrontend.repl import Repl
 
 def main():
     with TerminalController() as tc:
-        with Terminal(tc) as term:
+        with Terminal(tc, keep_last_line=True, hide_cursor=False) as term:
             with Repl() as repl:
                 rows, columns = tc.get_screen_size()
                 repl.width = columns
