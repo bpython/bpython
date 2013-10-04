@@ -39,7 +39,7 @@ def matches_lines(rows, columns, matches, current, config):
         return []
     color = func_for_letter(config.color_scheme['main'])
     max_match_width = max(len(m) for m in matches)
-    words_wide = max(1, (columns - 1) / (max_match_width + 1))
+    words_wide = max(1, (columns - 1) // (max_match_width + 1))
     matches_lines = [fmtstr(' ').join(color(m.ljust(max_match_width))
                                         if m != current
                                         else highlight_color(m) + ' '*(max_match_width - len(m))
@@ -67,10 +67,10 @@ def paint_infobox(rows, columns, matches, argspec, match, docstring, config):
     # add borders
     width = min(columns - 2, max([len(line) for line in lines]))
     output_lines = []
-    output_lines.append('+'+'-'*width+'+')
+    output_lines.append(u'┌'+u'─'*width+u'┐')
     for line in lines:
-        output_lines.append('|'+((line+' '*(width - len(line)))[:width])+'|')
-    output_lines.append('+'+'-'*width+'+')
+        output_lines.append(u'│'+((line+' '*(width - len(line)))[:width])+u'│')
+    output_lines.append(u'└'+u'─'*width+u'┘')
     r = fsarray(output_lines[:rows])
     assert len(r.shape) == 2
     #return r

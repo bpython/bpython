@@ -1,6 +1,8 @@
 """"""
 import sys
 
+from bpython._py3compat import py3
+
 def resetquit(builtins):
     """Redefine builtins 'quit' and 'exit' not so close stdin
 
@@ -12,4 +14,4 @@ def resetquit(builtins):
 
 def monkeypatch_quit():
     if 'site' in sys.modules:
-        resetquit(sys.modules['__builtin__'])
+        resetquit(sys.modules['builtins' if py3 else '__builtin__'])
