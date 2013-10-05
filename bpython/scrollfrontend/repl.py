@@ -21,7 +21,7 @@ from bpython.translations import _
 from fmtstr.fsarray import FSArray
 from fmtstr.fmtstr import fmtstr, FmtStr
 from fmtstr.bpythonparse import parse as bpythonparse
-from fmtstr.bpythonparse import func_for_letter
+from fmtstr.bpythonparse import func_for_letter, color_for_letter
 
 from bpython.scrollfrontend.manual_readline import char_sequences as rl_char_sequences
 from bpython.scrollfrontend.manual_readline import get_updated_char_sequences
@@ -41,7 +41,6 @@ INFOBOX_ONLY_BELOW = True #TODO make this a config option if it isn't already
 #TODO figure out what config.flush_output is
 #TODO options.interactive, .quiet
 #TODO execute file if in args
-#TODO prettier completion box!
 #TODO working raw_input
 
 from bpython.keys import cli_key_dispatch as key_dispatch
@@ -107,7 +106,7 @@ class Repl(BpythonRepl):
     outputs:
      -2D array to be rendered
 
-    Repl is mostly view-indepented state of Repl - but self.width and self.height
+    Repl is mostly view-independent state of Repl - but self.width and self.height
     are important for figuring out how to wrap lines for example.
     Usually self.width and self.height should be set by receiving a window resize event,
     not manually set to anything - as long as the first event received is a window
@@ -514,9 +513,6 @@ class Repl(BpythonRepl):
         less state is cool!
         """
 
-        #TODO allow custom background colors? I'm not sure about this
-        # use fmtstr.bpythonparse.color_for_letter(config.background) -> "black"
-
         if about_to_exit:
             self.clean_up_current_line_for_exit() # exception to not changing state!
 
@@ -575,6 +571,11 @@ class Repl(BpythonRepl):
 
         if show_status_bar and not about_to_exit:
             arr[max(arr.height, min_height), :] = paint.paint_statusbar(1, width, self.status_bar.current_line, self.config)
+
+
+        if self.config.color_scheme['background'] not in ('d', 'D'):
+            for r in range(arr.height):
+                arr[r] = fmtstr(arr[r], bg=color_for_letter(self.config.color_scheme['background']))
         return arr, (cursor_row, cursor_column)
 
     ## Debugging shims
