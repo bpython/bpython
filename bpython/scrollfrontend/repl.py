@@ -44,8 +44,6 @@ INFOBOX_ONLY_BELOW = True #TODO make this a config option if it isn't already
 #TODO prettier completion box!
 #TODO working raw_input
 
-logging.basicConfig(level=logging.DEBUG, filename='repl.log', datefmt='%M:%S')
-
 from bpython.keys import cli_key_dispatch as key_dispatch
 
 class FakeStdin(object):

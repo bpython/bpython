@@ -61,7 +61,7 @@ class StatusBar(BpythonInteraction):
             else:
                 self.response_queue.put(False)
             self.escape()
-        elif e == "\x1b":
+        elif e == ['\x1b', '\t']:
             self.response_queue.put(False)
             self.escape()
         else: # add normal character
