@@ -43,7 +43,6 @@ INFOBOX_ONLY_BELOW = True #TODO make this a config option if it isn't already
 #TODO execute file if in args
 #TODO prettier completion box!
 #TODO working raw_input
-#TODO python3 compatibility
 
 logging.basicConfig(level=logging.DEBUG, filename='repl.log', datefmt='%M:%S')
 
