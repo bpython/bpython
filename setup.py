@@ -152,6 +152,9 @@ setup(
     install_requires = [
         'pygments'
     ],
+    extras_require = {
+        'urwid': ['urwid']
+    },
     tests_require = ['mock'],
     packages = ["bpython", "bpython.test", "bpython.translations", "bpdb"],
     data_files = data_files,
@@ -163,7 +166,7 @@ setup(
     entry_points = {
         'console_scripts': [
             'bpython = bpython.cli:main',
-            'bpython-urwid = bpython.urwid:main',
+            'bpython-urwid = bpython.urwid:main [urwid]',
         ],
         'gui_scripts': [
             'bpython-gtk = bpython.gtk_:main'
