@@ -1,21 +1,21 @@
 # German translations for bpython.
-# Copyright (C) 2012 bpython developers
+# Copyright (C) 2012-2013 bpython developers
 # This file is distributed under the same license as the bpython project.
-# Sebastian Ramacher <sebastian+dev@ramacher.at>, 2012.
+# Sebastian Ramacher <sebastian+dev@ramacher.at>, 2012-2013.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: bpython mercurial\n"
 "Report-Msgid-Bugs-To: http://bitbucket.org/bobf/bpython/issues\n"
-"POT-Creation-Date: 2012-07-16 12:50+0200\n"
-"PO-Revision-Date: 2012-04-05 09:37+0200\n"
+"POT-Creation-Date: 2013-10-10 23:29+0200\n"
+"PO-Revision-Date: 2013-10-11 14:51+0200\n"
 "Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language-Team: de <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 0.9.6\n"
+"Generated-By: Babel 1.3\n"
 
 #: bpython/args.py:53
 msgid ""
@@ -30,58 +30,58 @@ msgstr "Verwende CONFIG antatt der standardmäßigen Konfigurationsdatei."
 
 #: bpython/args.py:65
 msgid "Drop to bpython shell after running file instead of exiting."
-msgstr ""
+msgstr "Verbleibe in bpython nach dem Ausführen der Datei."
 
 #: bpython/args.py:68
 msgid "Don't flush the output to stdout."
-msgstr ""
+msgstr "Gib Ausgabe beim Beenden nicht ernaut auf stdout aus."
 
 #: bpython/args.py:70
 msgid "Print version and exit."
 msgstr "Zeige Versionsinformationen an und beende."
 
-#: bpython/cli.py:303 bpython/urwid.py:550
+#: bpython/cli.py:304 bpython/urwid.py:553
 msgid "y"
 msgstr "j"
 
-#: bpython/cli.py:303 bpython/urwid.py:550
+#: bpython/cli.py:304 bpython/urwid.py:553
 msgid "yes"
 msgstr "ja"
 
-#: bpython/cli.py:970 bpython/gtk_.py:484
+#: bpython/cli.py:977 bpython/gtk_.py:483
 msgid "Cannot show source."
 msgstr "Kann Quellcode nicht anzeigen."
 
-#: bpython/cli.py:1642 bpython/urwid.py:612
+#: bpython/cli.py:1677 bpython/urwid.py:615
 #, python-format
 msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
 msgstr ""
 
-#: bpython/gtk_.py:92 bpython/gtk_.py:117
+#: bpython/gtk_.py:90 bpython/gtk_.py:115
 msgid "An error occurred."
 msgstr "Ein Fehler ist aufgetreten."
 
-#: bpython/gtk_.py:99
+#: bpython/gtk_.py:97
 msgid "Exception details"
 msgstr "Ausnahmedetails"
 
-#: bpython/gtk_.py:151
+#: bpython/gtk_.py:149
 msgid "Statusbar"
 msgstr "Statusleiste"
 
-#: bpython/gtk_.py:228
+#: bpython/gtk_.py:226
 msgid "tooltip"
 msgstr ""
 
-#: bpython/gtk_.py:297
+#: bpython/gtk_.py:295
 msgid "File to save to"
 msgstr ""
 
-#: bpython/gtk_.py:308
+#: bpython/gtk_.py:306
 msgid "Python files"
 msgstr "Python Dateien"
 
-#: bpython/gtk_.py:313
+#: bpython/gtk_.py:311
 msgid "All files"
 msgstr "Alle Dateien"
 
@@ -101,74 +101,82 @@ msgstr "Bette bpython ein"
 msgid "Pastebin selection"
 msgstr ""
 
-#: bpython/repl.py:776
+#: bpython/repl.py:741
 msgid "Pastebin buffer? (y/N) "
 msgstr ""
 
-#: bpython/repl.py:777
+#: bpython/repl.py:742
 msgid "Pastebin aborted"
 msgstr ""
 
-#: bpython/repl.py:784
+#: bpython/repl.py:749
 #, python-format
 msgid "Duplicate pastebin. Previous URL: %s"
 msgstr ""
 
-#: bpython/repl.py:798
+#: bpython/repl.py:763
 #, python-format
 msgid "Pastebin error for URL '%s': %s"
 msgstr ""
 
-#: bpython/repl.py:802 bpython/repl.py:821
+#: bpython/repl.py:767 bpython/repl.py:786
 msgid "Posting data to pastebin..."
-msgstr ""
+msgstr "Lade Daten hoch..."
 
-#: bpython/repl.py:807
+#: bpython/repl.py:772
 #, python-format
 msgid "Upload failed: %s"
-msgstr ""
+msgstr "Hochladen ist fehlgeschlagen: %s"
 
-#: bpython/repl.py:816 bpython/repl.py:860
+#: bpython/repl.py:781 bpython/repl.py:825
 #, python-format
 msgid "Pastebin URL: %s"
 msgstr ""
 
-#: bpython/repl.py:833
+#: bpython/repl.py:798
 msgid "Upload failed: Helper program not found."
-msgstr ""
+msgstr "Hochladen ist fehlgeschlagen: Hilfsprogramm konnte nicht gefunden "
+"werden."
 
-#: bpython/repl.py:836
+#: bpython/repl.py:801
 msgid "Upload failed: Helper program could not be run."
-msgstr ""
+msgstr "Hochladen ist fehlgeschlagen: Hilfsprogramm konnte nicht ausgeführt "
+"werden."
 
-#: bpython/repl.py:843
+#: bpython/repl.py:808
 #, python-format
 msgid "Upload failed: Helper program returned non-zero exit status %s."
-msgstr ""
+msgstr "Hochladen ist fehlgeschlagen: Hilfsprogramm beendete mit Status %s."
 
-#: bpython/repl.py:847
+#: bpython/repl.py:812
 msgid "Upload failed: No output from helper program."
-msgstr ""
+msgstr "Hochladen ist fehlgeschlagen: Keine Ausgabe von Hilfsprogramm "
+"vorhanden."
 
-#: bpython/repl.py:854
+#: bpython/repl.py:819
 msgid "Upload failed: Failed to recognize the helper program's output as an URL."
+msgstr "Hochladen ist fehlgeschlagen: Konte Ausgabe von Hilfsprogramm nicht "
+"verarbeiten."
+
+#: bpython/urwid.py:1114
+msgid "Run twisted reactor."
 msgstr ""
 
-#: bpython/urwid.py:1108
-msgid "Run a reactor (see --help-reactors)."
+#: bpython/urwid.py:1116
+msgid "Select specific reactor (see --help-reactors). Implies --twisted."
 msgstr ""
 
-#: bpython/urwid.py:1110
+#: bpython/urwid.py:1119
 msgid "List available reactors for -r."
 msgstr ""
 
-#: bpython/urwid.py:1112
+#: bpython/urwid.py:1121
 msgid ""
 "twistd plugin to run (use twistd for a list). Use \"--\" to pass further "
 "options to the plugin."
 msgstr ""
 
-#: bpython/urwid.py:1115
+#: bpython/urwid.py:1124
 msgid "Port to run an eval server on (forces Twisted)."
 msgstr ""
 
