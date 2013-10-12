@@ -54,6 +54,7 @@ def forward_word(cursor_offset, line):
 
 @on('b')
 @on('\x1bOD')
+@on('\x1bB')
 def back_word(cursor_offset, line):
     return (last_word_pos(line[:cursor_offset]), line)
 
@@ -91,13 +92,18 @@ def delete_from_cursor_back(cursor_offset, line):
 def delete_from_cursor_forward(cursor_offset, line):
     return cursor_offset, line[:cursor_offset]
 
-@on('d')
+@on('d') # option-d
 def delete_rest_of_word(cursor_offset, line):
-    raise NotImplementedError()
+    m = re.search(r'\w\b', line[cursor_offset:])
+    if not m:
+        return cursor_offset, line
+    return cursor_offset, line[:cursor_offset] + line[m.start()+cursor_offset+1:]
 
 @on('')
 def delete_word_to_cursor(cursor_offset, line):
-    raise NotImplementedError()
+    matches = list(re.finditer(r'\s\S', line[:cursor_offset]))
+    start = matches[-1].start()+1 if matches else 0
+    return start, line[:start] + line[cursor_offset:]
 
 @on('y')
 def yank_prev_prev_killed_text(cursor_offset, line):
@@ -105,7 +111,11 @@ def yank_prev_prev_killed_text(cursor_offset, line):
 
 @on('')
 def transpose_character_before_cursor(cursor_offset, line):
-    raise NotImplementedError()
+    return (min(len(line), cursor_offset + 1),
+            line[:cursor_offset-1] +
+            (line[cursor_offset] if len(line) > cursor_offset else '') +
+            line[cursor_offset - 1] +
+            line[cursor_offset+1:])
 
 @on('t')
 def transpose_word_before_cursor(cursor_offset, line):
@@ -116,7 +126,13 @@ def transpose_word_before_cursor(cursor_offset, line):
 @on('\x1b\x7f')
 @on('\xff')
 def delete_word_from_cursor_back(cursor_offset, line):
-    raise NotImplementedError()
+    """Whatever my option-delete does in bash on my mac"""
+    if not line:
+        return cursor_offset, line
+    starts = [m.start() for m in list(re.finditer(r'\b\w', line)) if m.start() < cursor_offset]
+    if starts:
+        return starts[-1], line[:starts[-1]] + line[cursor_offset:]
+    return cursor_offset, line
 
 def get_updated_char_sequences(key_dispatch, config):
     updated_char_sequences = dict(char_sequences)
