@@ -152,6 +152,7 @@ class Repl(BpythonRepl):
         self.stdin = FakeStdin(self.on_finish_running_code)
 
         self.paste_mode = False
+        self.request_paint_to_clear_screen = False
 
         self.width = None  # will both be set by a window resize event
         self.height = None
@@ -230,7 +231,7 @@ class Repl(BpythonRepl):
             raise NotImplementedError()
 
         elif e in key_dispatch[self.config.clear_screen_key]: #TODO
-            raise NotImplementedError()
+            self.request_paint_to_clear_screen = True
         elif e in key_dispatch[self.config.last_output_key]: #TODO
             raise NotImplementedError()
         elif e in key_dispatch[self.config.show_source_key]: #TODO
@@ -520,8 +521,14 @@ class Repl(BpythonRepl):
         show_status_bar = bool(self.status_bar.current_line)
         if show_status_bar:
             min_height -= 1
-        arr = FSArray(0, width)
+
         current_line_start_row = len(self.lines_for_display) - max(0, self.scroll_offset)
+        if self.request_paint_to_clear_screen:
+            self.request_paint_to_clear_screen = False
+            arr = FSArray(self.height - 1 + current_line_start_row, width)
+        else:
+            arr = FSArray(0, width)
+        #TODO test case of current line filling up the whole screen (there aren't enough rows to show it)
 
         if current_line_start_row < 0: #if current line trying to be drawn off the top of the screen
             #assert True, 'no room for current line: contiguity of history broken!'
@@ -580,6 +587,7 @@ class Repl(BpythonRepl):
 
     ## Debugging shims
     def dumb_print_output(self):
+        #TODO this currently doesn't work due to thread control passing issues
         arr, cpos = self.paint()
         arr[cpos[0], cpos[1]] = '~'
         def my_print(msg):
