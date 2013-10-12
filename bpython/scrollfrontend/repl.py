@@ -245,7 +245,7 @@ class Repl(BpythonRepl):
         elif e in ("\n", "\r", "PAD_ENTER"):
             self.on_enter()
             self.update_completion()
-        elif e in ["", "", "\x00", "\x11"]:
+        elif e in ["\x00", "\x11"]:
             pass #dunno what these are, but they screw things up #TODO find out
             #TODO use a whitelist instead of a blacklist!
         elif e == '\t': # tab

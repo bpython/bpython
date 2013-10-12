@@ -45,6 +45,7 @@ def end_of_line(cursor_offset, line):
     return len(line), line
 
 @on('f')
+@on('l')
 @on('\x1bOC')
 def forward_word(cursor_offset, line):
     patt = r"\S\s"
@@ -122,6 +123,18 @@ def transpose_word_before_cursor(cursor_offset, line):
     raise NotImplementedError()
 
 # bonus functions (not part of readline)
+
+@on('r')
+def delete_line(cursor_offset, line):
+    return 0, ""
+
+@on('u')
+def uppercase_next_word(cursor_offset, line):
+    raise NotImplementedError()
+
+@on('c')
+def titlecase_next_word(cursor_offset, line):
+    raise NotImplementedError()
 
 @on('\x1b\x7f')
 @on('\xff')
