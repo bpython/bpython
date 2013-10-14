@@ -38,9 +38,3 @@ def update_abbrs_with_vim_abbrs():
     abbrs = python_vim_abbreviations()
     ABBR.update(abbrs)
 
-if __name__ == '__main__':
-    abbrs = python_vim_abbreviations()
-    print abbrs
-    ABBR.update(abbrs)
-    print(substitute_abbreviations(0, 'improt asdf'))
-    print(substitute_abbreviations(0, 'foo(x, y() - 2.3242) + "asdf"'))
