@@ -42,8 +42,27 @@ INFOBOX_ONLY_BELOW = True #TODO make this a config option if it isn't already
 #TODO options.interactive, .quiet
 #TODO execute file if in args
 #TODO working raw_input
+#TODO use events instead of length-one queues for interthread communication
 
 from bpython.keys import cli_key_dispatch as key_dispatch
+
+#TODO not that this object is custom, it should do more (not treated like a StringIO)
+class FakeStdout(object):
+    def __init__(self):
+        self.data = StringIO()
+    def seek(self, pos, mode=0): return self.data.seek(pos, mode)
+    def tell(self): return self.data.tell()
+    def read(self, n=None):
+        data = self.data.read()
+        if isinstance(data, bytes):
+            return data.decode('utf8')
+        else:
+            return data
+    def write(self, msg):
+        if isinstance(msg, bytes):
+            return self.data.write(msg.encode('uft8'))
+        else:
+            return self.data.write(msg)
 
 class FakeStdin(object):
     def __init__(self, on_receive_tuple):
@@ -162,7 +181,7 @@ class Repl(BpythonRepl):
         self.orig_stdout = sys.stdout
         self.orig_stderr = sys.stderr
         self.orig_stdin = sys.stdin
-        sys.stdout = StringIO()
+        sys.stdout = FakeStdout()
         sys.stderr = StringIO()
         sys.stdin = self.stdin
         return self
