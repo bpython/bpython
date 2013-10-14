@@ -153,7 +153,7 @@ setup(
         'pygments'
     ],
     extras_require = {
-        'scroll': ['fmtstr>=0.0.4']
+        'scroll': ['fmtstr>=0.0.9']
     },
     tests_require = ['mock'],
     packages = ["bpython", "bpython.test", "bpython.translations", "bpdb", "bpython.scrollfrontend"],
