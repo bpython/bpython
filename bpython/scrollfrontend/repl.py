@@ -294,7 +294,7 @@ class Repl(BpythonRepl):
             self.external_editor()
         #TODO add PAD keys hack as in bpython.cli
         else:
-            self.add_normal_character(e)
+            self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
             self.update_completion()
 
     def on_enter(self):
