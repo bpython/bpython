@@ -7,6 +7,8 @@ import threading
 import Queue
 from cStringIO import StringIO
 import traceback
+import subprocess
+import tempfile
 
 from bpython.autocomplete import Autocomplete, SIMPLE
 from bpython.repl import Repl as BpythonRepl
@@ -33,6 +35,7 @@ import fmtstr.events as events
 from bpython.scrollfrontend.friendly import NotImplementedError
 
 INFOBOX_ONLY_BELOW = True #TODO make this a config option if it isn't already
+EDITOR_KEY = 'F7' #TODO put this in config if it gets to stay in
 
 #TODO implement paste mode and figure out what the deal with config.paste_time is
 #TODO figure out how config.auto_display_list=False behaves and implement it
@@ -145,8 +148,8 @@ class Repl(BpythonRepl):
             config.cli_suggestion_width = 1
 
         self.status_bar = StatusBar(_('welcome to bpython'), _(
-            " <%s> Rewind  <%s> Save  <%s> Pastebin "
-            ) % (config.undo_key, config.save_key, config.pastebin_key))
+            " <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor"
+            ) % (config.undo_key, config.save_key, config.pastebin_key, EDITOR_KEY))
         self.rl_char_sequences = get_updated_char_sequences(key_dispatch, config)
         logging.debug("starting parent init")
         super(Repl, self).__init__(interp, config)
@@ -287,6 +290,8 @@ class Repl(BpythonRepl):
             logging.debug('starting pastebin thread')
             t.start()
             self.interact.wait_for_request_or_notify()
+        elif e in key_dispatch[EDITOR_KEY]:
+            self.external_editor()
         #TODO add PAD keys hack as in bpython.cli
         else:
             self.add_normal_character(e)
@@ -702,6 +707,18 @@ class Repl(BpythonRepl):
         s = '\n'.join([x.s if isinstance(x, FmtStr) else x
                        for x in lines]) if lines else ''
         return s
+    def external_editor(self):
+        editor = os.environ.get('VISUAL', os.environ.get('EDITOR', 'vim'))
+        text = self.getstdout()
+        with tempfile.NamedTemporaryFile(suffix='.py') as temp:
+            temp.write('### current bpython session - file will be reevaluated, ### lines will not be run\n')
+            temp.write('\n'.join(line[4:] if line[:4] in ('... ', '>>> ') else '### '+line
+                                 for line in text.split('\n')))
+            temp.flush()
+            subprocess.call([editor, temp.name])
+            self.history = [line for line in open(temp.name).read().split('\n')
+                                 if (line[:4] != '### ' and line.split())]
+        self.reevaluate()
 
 def simple_repl():
     with Repl() as r:
