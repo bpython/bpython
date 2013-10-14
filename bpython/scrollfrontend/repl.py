@@ -717,7 +717,7 @@ class Repl(BpythonRepl):
             temp.flush()
             subprocess.call([editor, temp.name])
             self.history = [line for line in open(temp.name).read().split('\n')
-                                 if (line[:4] != '### ' and line.split())]
+                                 if line[:4] != '### ']
         self.reevaluate()
 
 def simple_repl():
