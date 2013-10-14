@@ -150,9 +150,11 @@ setup(
     long_description = """bpython is a fancy interface to the Python
     interpreter for Unix-like operating systems.""",
     install_requires = [
-        'pygments',
-        'fmtstr>=0.0.4'
+        'pygments'
     ],
+    extras_require = {
+        'scroll': ['fmtstr>=0.0.4']
+    },
     tests_require = ['mock'],
     packages = ["bpython", "bpython.test", "bpython.translations", "bpdb", "bpython.scrollfrontend"],
     data_files = data_files,
@@ -165,7 +167,7 @@ setup(
         'console_scripts': [
             'bpython = bpython.cli:main',
             'bpython-urwid = bpython.urwid:main',
-            'bpython-scroll = bpython.scroll:main',
+            'bpython-scroll = bpython.scroll:main [scroll]',
         ],
         'gui_scripts': [
             'bpython-gtk = bpython.gtk_:main'
