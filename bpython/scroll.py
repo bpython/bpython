@@ -3,6 +3,11 @@ from fmtstr.terminalcontrol import TerminalController
 
 from bpython.scrollfrontend.repl import Repl
 
+import sys
+if '-v' in sys.argv:
+    import logging
+    logging.basicConfig(filename='scroll.log', level=logging.DEBUG)
+
 def main():
     with TerminalController() as tc:
         with Terminal(tc, keep_last_line=True, hide_cursor=False) as term:
