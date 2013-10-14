@@ -79,13 +79,3 @@ def paint_infobox(rows, columns, matches, argspec, match, docstring, config):
 def paint_statusbar(rows, columns, msg, config):
     return fsarray([func_for_letter(config.color_scheme['main'])(msg.ljust(columns))])
 
-if __name__ == '__main__':
-    #paint_history(10, 30, ['asdf', 'adsf', 'aadadfadf']).dumb_display()
-    import inspect
-    h = paint_infobox(10, 30,
-                      matches=['asdf', 'adsf', 'aadadfadf'],
-                      argspec=inspect.getargspec(paint_infobox),
-                      match='asdf',
-                      docstring='Something Interesting',
-                      config=None)
-    h.dumb_display()
