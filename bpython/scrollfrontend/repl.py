@@ -297,14 +297,14 @@ class Repl(BpythonRepl):
             self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
             self.update_completion()
 
-    def on_enter(self):
+    def on_enter(self, insert_into_history=True):
         self.cursor_offset_in_line = -1 # so the cursor isn't touching a paren
         self.unhighlight_paren()        # in unhighlight_paren
 
         self.rl_history.append(self._current_line)
         self.rl_history.last()
         self.history.append(self._current_line)
-        self.push(self._current_line)
+        self.push(self._current_line, insert_into_history=insert_into_history)
 
     def on_finish_running_code(self, output, error, done, indent):
         if output:
@@ -393,12 +393,13 @@ class Repl(BpythonRepl):
         if self.config.auto_display_list or tab:
             self.list_win_visible = BpythonRepl.complete(self, tab)
 
-    def push(self, line):
+    def push(self, line, insert_into_history=True):
         """Push a line of code onto the buffer, run the buffer
 
         If the interpreter successfully runs the code, clear the buffer
         """
-        self.insert_into_history(line)
+        if insert_into_history:
+            self.insert_into_history(line)
         t = threading.Thread(target=self.runsource, args=(line,))
         t.daemon = True
         t.start()
@@ -682,7 +683,7 @@ class Repl(BpythonRepl):
         logging.debug("calling reprint line with %r %r", lineno, tokens)
         if self.config.syntax:
             self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
-    def reevaluate(self):
+    def reevaluate(self, insert_into_history=False):
         """bpython.Repl.undo calls this"""
         #TODO other implementations have a enter no-history method, could do
         # that instead of clearing history and getting it rewritten
@@ -700,7 +701,7 @@ class Repl(BpythonRepl):
 
         for line in old_logical_lines:
             self._current_line = line
-            self.on_enter()
+            self.on_enter(insert_into_history=insert_into_history)
         self.cursor_offset_in_line = 0
         self._current_line = ''
     def getstdout(self):
@@ -719,7 +720,7 @@ class Repl(BpythonRepl):
             subprocess.call([editor, temp.name])
             self.history = [line for line in open(temp.name).read().split('\n')
                                  if line[:4] != '### ']
-        self.reevaluate()
+        self.reevaluate(insert_into_history=True)
 
 def simple_repl():
     with Repl() as r:
