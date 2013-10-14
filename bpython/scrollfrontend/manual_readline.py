@@ -154,9 +154,3 @@ def get_updated_char_sequences(key_dispatch, config):
     updated_char_sequences[key_dispatch[config.clear_line_key]] = delete_from_cursor_back
     return updated_char_sequences
 
-if __name__ == '__main__':
-    import doctest; doctest.testmod()
-    from pprint import pprint
-    pprint(char_sequences)
-
-
