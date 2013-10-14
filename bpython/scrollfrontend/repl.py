@@ -60,7 +60,7 @@ class FakeStdout(object):
             return data
     def write(self, msg):
         if isinstance(msg, bytes):
-            return self.data.write(msg.encode('uft8'))
+            return self.data.write(msg.encode('utf8'))
         else:
             return self.data.write(msg)
 
@@ -618,23 +618,23 @@ class Repl(BpythonRepl):
         my_print(' use "$" to pastebin '.center(self.width+8, 'X'))
         my_print(' "~" is the cursor '.center(self.width+8, 'X'))
         my_print('X'*(self.width+8))
-        my_print('X..'+('.'*(self.width+2))+'..X')
+        my_print('Xxx'+('x'*(self.width+2))+'xxX')
         for line in arr:
-            my_print('X...'+(line if line else ' '*len(line))+'...X')
+            my_print('Xxxx'+(line if line else ' '*len(line))+'xxxX')
         logging.debug('line:')
         logging.debug(repr(line))
-        my_print('X..'+('.'*(self.width+2))+'..X')
+        my_print('Xxx'+('x'*(self.width+2))+'xxX')
         my_print('X'*(self.width+8))
         return max(len(arr) - self.height, 0)
 
     def dumb_input(self):
-        for c in raw_input('>'):
+        for c in self.orig_stdin.readline()[:-1]:
             if c in '/':
                 c = '\n'
             elif c in '\\':
                 c = ''
             elif c in '|':
-                def r(): raise Exception('real errors should look like this')
+                def r(): raise Exception('errors in other threads should look like this')
                 t = threading.Thread(target=r)
                 t.daemon = True
                 t.start()
@@ -703,8 +703,7 @@ class Repl(BpythonRepl):
                        for x in lines]) if lines else ''
         return s
 
-
-def test():
+def simple_repl():
     with Repl() as r:
         r.width = 50
         r.height = 10
@@ -714,4 +713,4 @@ def test():
             r.dumb_input()
 
 if __name__ == '__main__':
-    test()
+    simple_repl()
