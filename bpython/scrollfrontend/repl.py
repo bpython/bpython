@@ -398,6 +398,7 @@ class Repl(BpythonRepl):
 
         If the interpreter successfully runs the code, clear the buffer
         """
+        self.insert_into_history(line)
         t = threading.Thread(target=self.runsource, args=(line,))
         t.daemon = True
         t.start()
