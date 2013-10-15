@@ -252,7 +252,7 @@ class Repl(BpythonRepl):
         elif e in key_dispatch[self.config.yank_from_buffer_key]: #TODO
             raise NotImplementedError()
 
-        elif e in key_dispatch[self.config.clear_screen_key]: #TODO
+        elif e in key_dispatch[self.config.clear_screen_key]:
             self.request_paint_to_clear_screen = True
         elif e in key_dispatch[self.config.last_output_key]: #TODO
             raise NotImplementedError()
@@ -613,7 +613,6 @@ class Repl(BpythonRepl):
 
     ## Debugging shims
     def dumb_print_output(self):
-        #TODO this currently doesn't work due to thread control passing issues
         arr, cpos = self.paint()
         arr[cpos[0], cpos[1]] = '~'
         def my_print(msg):
