@@ -76,6 +76,16 @@ def paint_infobox(rows, columns, matches, argspec, match, docstring, config):
     #return r
     return fsarray(r[:rows-1, :])
 
+def paint_last_events(rows, columns, names):
+    width = min(max(len(name) for name in names), columns-2)
+    output_lines = []
+    output_lines.append(u'┌'+u'─'*width+u'┐')
+    for name in names[-(columns-2):]:
+        output_lines.append(u'│'+name[:width].center(width)+u'│')
+    output_lines.append(u'└'+u'─'*width+u'┘')
+    r = fsarray(output_lines)
+    return r
+
 def paint_statusbar(rows, columns, msg, config):
     return fsarray([func_for_letter(config.color_scheme['main'])(msg.ljust(columns))])
 

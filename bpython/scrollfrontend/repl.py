@@ -24,6 +24,7 @@ from fmtstr.fsarray import FSArray
 from fmtstr.fmtstr import fmtstr, FmtStr
 from fmtstr.bpythonparse import parse as bpythonparse
 from fmtstr.bpythonparse import func_for_letter, color_for_letter
+from fmtstr.events import pp_event
 
 from bpython.scrollfrontend.manual_readline import char_sequences as rl_char_sequences
 from bpython.scrollfrontend.manual_readline import get_updated_char_sequences
@@ -175,6 +176,8 @@ class Repl(BpythonRepl):
 
         self.paste_mode = False
         self.request_paint_to_clear_screen = False
+        self.last_events = [None] * 20
+        self.presentation_mode = False
 
         self.width = None  # will both be set by a window resize event
         self.height = None
@@ -216,6 +219,8 @@ class Repl(BpythonRepl):
     def process_event(self, e):
         """Returns True if shutting down, otherwise mutates state of Repl object"""
 
+        self.last_events.append(e)
+        self.last_events.pop(0)
         #logging.debug("processing event %r", e)
         if isinstance(e, events.WindowChangeEvent):
             logging.debug('window change to %d %d', e.width, e.height)
@@ -605,6 +610,14 @@ class Repl(BpythonRepl):
         if show_status_bar and not about_to_exit:
             arr[max(arr.height, min_height), :] = paint.paint_statusbar(1, width, self.status_bar.current_line, self.config)
 
+            if self.presentation_mode:
+                logging.debug('last key box code running')
+                rows = arr.height - 4
+                columns = arr.width
+                last_key_box = paint.paint_last_events(rows, columns, [pp_event(x) for x in self.last_events if x])
+                arr[arr.height-last_key_box.height:arr.height, arr.width-last_key_box.width:arr.width] = last_key_box
+                logging.debug(last_key_box[:])
+                logging.debug(arr[:])
 
         if self.config.color_scheme['background'] not in ('d', 'D'):
             for r in range(arr.height):

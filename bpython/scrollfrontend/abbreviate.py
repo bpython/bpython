@@ -8,7 +8,6 @@ ABBR = {
         'improt' : 'import',
         'imprt'  : 'import',
         'impotr' : 'import',
-        'form'   : 'from',
         }
 
 def substitute_abbreviations(cursor_offset, line):
