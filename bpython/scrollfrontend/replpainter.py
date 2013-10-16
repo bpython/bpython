@@ -80,7 +80,7 @@ def paint_last_events(rows, columns, names):
     width = min(max(len(name) for name in names), columns-2)
     output_lines = []
     output_lines.append(u'┌'+u'─'*width+u'┐')
-    for name in names[-(columns-2):]:
+    for name in names[-(rows-2):]:
         output_lines.append(u'│'+name[:width].center(width)+u'│')
     output_lines.append(u'└'+u'─'*width+u'┘')
     r = fsarray(output_lines)
