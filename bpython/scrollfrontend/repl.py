@@ -176,7 +176,7 @@ class Repl(BpythonRepl):
 
         self.paste_mode = False
         self.request_paint_to_clear_screen = False
-        self.last_events = [None] * 20
+        self.last_events = [None] * 50
         self.presentation_mode = False
 
         self.width = None  # will both be set by a window resize event
@@ -305,6 +305,7 @@ class Repl(BpythonRepl):
     def on_enter(self, insert_into_history=True):
         self.cursor_offset_in_line = -1 # so the cursor isn't touching a paren
         self.unhighlight_paren()        # in unhighlight_paren
+        self.highlighted_paren = None
 
         self.rl_history.append(self._current_line)
         self.rl_history.last()
@@ -466,7 +467,10 @@ class Repl(BpythonRepl):
             logging.debug('sent output info')
 
     def unhighlight_paren(self):
-        """modify line in self.display_buffer to unhighlight a paren if possible"""
+        """modify line in self.display_buffer to unhighlight a paren if possible
+
+        self.highlighted_paren should be a line in ?
+        """
         if self.highlighted_paren is not None and self.config.syntax:
             lineno, saved_tokens = self.highlighted_paren
             if lineno == len(self.display_buffer):
@@ -487,7 +491,8 @@ class Repl(BpythonRepl):
         else:
             fs = fmtstr(self._current_line)
         if hasattr(self, 'old_fs') and str(fs) != str(self.old_fs):
-            logging.debug('calculating current formatted line: %r', repr(fs))
+            pass
+            #logging.debug('calculating current formatted line: %r', repr(fs))
         self.old_fs = fs
         return fs
 
@@ -521,6 +526,7 @@ class Repl(BpythonRepl):
 
     @property
     def display_buffer_lines(self):
+        """The lines build from the display buffer"""
         lines = []
         for display_line in self.display_buffer:
             display_line = (func_for_letter(self.config.color_scheme['prompt_more'])(self.ps2)
@@ -554,7 +560,7 @@ class Repl(BpythonRepl):
             min_height -= 1
 
         current_line_start_row = len(self.lines_for_display) - max(0, self.scroll_offset)
-        if self.request_paint_to_clear_screen:
+        if self.request_paint_to_clear_screen: # or show_status_bar and about_to_exit ?
             self.request_paint_to_clear_screen = False
             arr = FSArray(self.height - 1 + current_line_start_row, width)
         else:
@@ -605,19 +611,22 @@ class Repl(BpythonRepl):
                 arr[current_line_start_row - infobox.height:current_line_start_row, 0:infobox.width] = infobox
             else:
                 arr[cursor_row + 1:cursor_row + 1 + infobox.height, 0:infobox.width] = infobox
-                logging.debug('slamming infobox of shape %r into arr', infobox.shape)
+                #logging.debug('slamming infobox of shape %r into arr', infobox.shape)
 
-        if show_status_bar and not about_to_exit:
-            arr[max(arr.height, min_height), :] = paint.paint_statusbar(1, width, self.status_bar.current_line, self.config)
+        logging.debug('about to exit: %r', about_to_exit)
+        if show_status_bar:
+            if about_to_exit:
+                arr[max(arr.height, min_height), :] = FSArray(1, width)
+            else:
+                arr[max(arr.height, min_height), :] = paint.paint_statusbar(1, width, self.status_bar.current_line, self.config)
 
-            if self.presentation_mode:
-                logging.debug('last key box code running')
-                rows = arr.height - 4
-                columns = arr.width
-                last_key_box = paint.paint_last_events(rows, columns, [pp_event(x) for x in self.last_events if x])
-                arr[arr.height-last_key_box.height:arr.height, arr.width-last_key_box.width:arr.width] = last_key_box
-                logging.debug(last_key_box[:])
-                logging.debug(arr[:])
+                if self.presentation_mode:
+                    rows = arr.height
+                    columns = arr.width
+                    last_key_box = paint.paint_last_events(rows, columns, [pp_event(x) for x in self.last_events if x])
+                    arr[arr.height-last_key_box.height:arr.height, arr.width-last_key_box.width:arr.width] = last_key_box
+                    #logging.debug(last_key_box[:])
+                    #logging.debug(arr[:])
 
         if self.config.color_scheme['background'] not in ('d', 'D'):
             for r in range(arr.height):
