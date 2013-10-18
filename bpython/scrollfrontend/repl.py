@@ -137,12 +137,14 @@ class Repl(BpythonRepl):
     """
 
     ## initialization, cleanup
-    def __init__(self):
+    def __init__(self, locals_=None, config=None):
         logging.debug("starting init")
-        interp = code.InteractiveInterpreter()
+        interp = code.InteractiveInterpreter(locals=locals_)
 
-        config = Struct()
-        loadini(config, default_config_path())
+        if config is None:
+            config = Struct()
+            loadini(config, default_config_path())
+
         config.autocomplete_mode = SIMPLE # only one implemented currently
 
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
