@@ -12,7 +12,7 @@ if '-v' in sys.argv:
     sys.argv.remove('-v')
 
 def cli():
-    config, options, exec_args = bpython.args.parse(sys.argv[1:])
+    config, options, exec_args = bpython.args.parse(args=None)
     return main(config=config, options=options, exec_args=exec_args)
 
 def main(locals_=None, config=None, exec_args=None, options=None):
@@ -54,4 +54,4 @@ def main(locals_=None, config=None, exec_args=None, options=None):
                         repl.scroll_offset += scrolled
 
 if __name__ == '__main__':
-    cli()
+    sys.exit(cli())
