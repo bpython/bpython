@@ -56,16 +56,15 @@ def paint_infobox(rows, columns, matches, argspec, match, docstring, config):
     """Returns painted completions, argspec, match, docstring etc."""
     if not (rows and columns):
         return fsarray(0, 0)
+    width = columns - 2
     color = func_for_letter(config.color_scheme['main'])
-    lines = ((display_linize(blue(formatted_argspec(argspec)), columns-2) if argspec else []) +
+    lines = ((display_linize(blue(formatted_argspec(argspec)), width) if argspec else []) +
              ([fmtstr('')] if docstring else []) +
-             sum(([color(x) for x in display_linize(line, columns-2)]
+             sum(([color(x) for x in display_linize(line, width)]
                  for line in docstring.split('\n')) if docstring else [], []) +
              (matches_lines(rows, columns, matches, match, config) if matches else [])
              )
 
-    # add borders
-    width = min(columns - 2, max([len(line) for line in lines]))
     output_lines = []
     output_lines.append(u'┌'+u'─'*width+u'┐')
     for line in lines:
