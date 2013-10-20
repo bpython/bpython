@@ -71,10 +71,10 @@ def paint_infobox(rows, columns, matches, argspec, match, docstring, config):
     for line in lines:
         output_lines.append(u'│'+((line+' '*(width - len(line)))[:width])+u'│')
     output_lines.append(u'└'+u'─'*width+u'┘')
-    r = fsarray(output_lines[:rows])
+    r = fsarray(output_lines[:min(rows-1, len(output_lines)-1)] + output_lines[-1:])
     assert len(r.shape) == 2
     #return r
-    return fsarray(r[:rows-1, :])
+    return fsarray(r[:rows, :])
 
 def paint_last_events(rows, columns, names):
     width = min(max(len(name) for name in names), columns-2)

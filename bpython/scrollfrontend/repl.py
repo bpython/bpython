@@ -298,7 +298,7 @@ class Repl(BpythonRepl):
             t.start()
             self.interact.wait_for_request_or_notify()
         elif e in key_dispatch[EDITOR_KEY]:
-            self.external_editor()
+            self.send_to_external_editor()
         #TODO add PAD keys hack as in bpython.cli
         else:
             self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
@@ -601,19 +601,21 @@ class Repl(BpythonRepl):
         cursor_column = (self.cursor_offset_in_line + len(self.display_line_with_prompt) - len(self._current_line)) % width
 
         if self.list_win_visible:
-            #TODO infobox not properly expanding window! try reduce( docs about halfway down a 80x24 terminal
+            #infobox not properly expanding window! try reduce( docs about halfway down a 80x24 terminal
+            #TODO what's the desired behavior here? Currently uses only the space already on screen,
+            # scrolling down only if there would have been more space above the current line, but being forced to put below
             logging.debug('infobox display code running')
             visible_space_above = history.height
-            visible_space_below = min_height - cursor_row
-            info_max_rows = max(visible_space_above, visible_space_below)
+            visible_space_below = min_height - cursor_row - 1
 
+            info_max_rows = max(visible_space_above, visible_space_below)
             infobox = paint.paint_infobox(info_max_rows, int(width * self.config.cli_suggestion_width), self.matches, self.argspec, self.current_word, self.docstring, self.config)
 
             if visible_space_above >= infobox.height and not INFOBOX_ONLY_BELOW:
                 arr[current_line_start_row - infobox.height:current_line_start_row, 0:infobox.width] = infobox
             else:
                 arr[cursor_row + 1:cursor_row + 1 + infobox.height, 0:infobox.width] = infobox
-                #logging.debug('slamming infobox of shape %r into arr', infobox.shape)
+                logging.debug('slamming infobox of shape %r into arr of shape %r', infobox.shape, arr.shape)
 
         logging.debug('about to exit: %r', about_to_exit)
         if show_status_bar:
@@ -732,7 +734,7 @@ class Repl(BpythonRepl):
         s = '\n'.join([x.s if isinstance(x, FmtStr) else x
                        for x in lines]) if lines else ''
         return s
-    def external_editor(self):
+    def send_to_external_editor(self, filename=None):
         editor = os.environ.get('VISUAL', os.environ.get('EDITOR', 'vim'))
         text = self.getstdout()
         with tempfile.NamedTemporaryFile(suffix='.py') as temp:
