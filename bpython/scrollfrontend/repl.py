@@ -38,11 +38,11 @@ from bpython.scrollfrontend.friendly import NotImplementedError
 #TODO implement paste mode and figure out what the deal with config.paste_time is
 #TODO figure out how config.auto_display_list=False behaves and implement it
 #TODO figure out how config.list_win_visible behaves and implement it
-#TODO other autocomplete modes even though I hate them
+#TODO other autocomplete modes
 #TODO figure out what config.flush_output is
-#TODO options.interactive, .quiet
+#TODO figure out what options.quiet is
 #TODO execute file if in args
-#TODO working raw_input
+#TODO proper raw_input (currently input isn't visible while typing, includes \r, and comes in as unicode in Python 2
 #TODO use events instead of length-one queues for interthread communication
 
 from bpython.keys import cli_key_dispatch as key_dispatch
@@ -742,9 +742,9 @@ class Repl(BpythonRepl):
         editor = os.environ.get('VISUAL', os.environ.get('EDITOR', 'vim'))
         text = self.getstdout()
         with tempfile.NamedTemporaryFile(suffix='.py') as temp:
-            temp.write('### current bpython session - file will be reevaluated, ### lines will not be run\n')
+            temp.write('### current bpython session - file will be reevaluated, ### lines will not be run\n'.encode('utf8'))
             temp.write('\n'.join(line[4:] if line[:4] in ('... ', '>>> ') else '### '+line
-                                 for line in text.split('\n')))
+                                 for line in text.split('\n')).encode('utf8'))
             temp.flush()
             subprocess.call([editor, temp.name])
             self.history = [line for line in open(temp.name).read().split('\n')
