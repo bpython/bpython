@@ -82,6 +82,7 @@ def loadini(struct, configfile):
             'delete': 'C-d',
             'down_one_line': 'C-n',
             'exit': '',
+            'external_editor': 'F7',
             'last_output': 'F9',
             'pastebin': 'F8',
             'save': 'C-s',
@@ -94,6 +95,10 @@ def loadini(struct, configfile):
         'cli': {
             'suggestion_width': 0.8,
             'trim_prompts': False,
+        },
+        'scroll': {
+            'list_above' : False,
+            'fill_terminal' : False,
         },
         'gtk': {
             'font': 'monospace 10',
@@ -135,6 +140,7 @@ def loadini(struct, configfile):
     struct.delete_key = config.get('keyboard', 'delete')
     struct.exit_key = config.get('keyboard', 'exit')
     struct.last_output_key = config.get('keyboard', 'last_output')
+    struct.external_editor_key = config.get('keyboard', 'external_editor')
 
     struct.pastebin_confirm = config.getboolean('general', 'pastebin_confirm')
     struct.pastebin_private = config.getboolean('general', 'pastebin_private')
@@ -156,6 +162,9 @@ def loadini(struct, configfile):
     struct.save_append_py = config.getboolean('general', 'save_append_py')
 
     struct.gtk_font = config.get('gtk', 'font')
+
+    struct.scroll_list_above = config.getboolean('scroll', 'list_above')
+    struct.scroll_fill_terminal = config.getboolean('scroll', 'fill_terminal')
 
     color_scheme_name = config.get('general', 'color_scheme')
     color_gtk_scheme_name = config.get('gtk', 'color_scheme')

@@ -61,7 +61,7 @@ class StatusBar(BpythonInteraction):
             else:
                 self.response_queue.put(False)
             self.escape()
-        elif e == ['\x1b', '\t']:
+        elif e in ['\x1b', '\t', '\x1b\t', '\x1b\x1b']:
             self.response_queue.put(False)
             self.escape()
         else: # add normal character
@@ -110,7 +110,7 @@ class StatusBar(BpythonInteraction):
         return self.response_queue.get()
     def file_prompt(self, s):
         """Expected to return a file name, given """
-        self.prompt = s
+        self.prompt = s.replace('Esc', 'Tab')
         self.in_prompt = True
         self.request_or_notify_queue.put(s)
         r = self.response_queue.get()

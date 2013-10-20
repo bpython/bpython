@@ -35,9 +35,6 @@ import bpython.scrollfrontend.replpainter as paint
 import fmtstr.events as events
 from bpython.scrollfrontend.friendly import NotImplementedError
 
-INFOBOX_ONLY_BELOW = True #TODO make this a config option if it isn't already
-EDITOR_KEY = 'F7' #TODO put this in config if it gets to stay in
-
 #TODO implement paste mode and figure out what the deal with config.paste_time is
 #TODO figure out how config.auto_display_list=False behaves and implement it
 #TODO figure out how config.list_win_visible behaves and implement it
@@ -152,7 +149,7 @@ class Repl(BpythonRepl):
 
         self.status_bar = StatusBar(_('welcome to bpython'), _(
             " <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor"
-            ) % (config.undo_key, config.save_key, config.pastebin_key, EDITOR_KEY))
+            ) % (config.undo_key, config.save_key, config.pastebin_key, config.external_editor_key))
         self.rl_char_sequences = get_updated_char_sequences(key_dispatch, config)
         logging.debug("starting parent init")
         super(Repl, self).__init__(interp, config)
@@ -297,7 +294,7 @@ class Repl(BpythonRepl):
             logging.debug('starting pastebin thread')
             t.start()
             self.interact.wait_for_request_or_notify()
-        elif e in key_dispatch[EDITOR_KEY]:
+        elif e in key_dispatch[self.config.external_editor_key]:
             self.send_to_external_editor()
         #TODO add PAD keys hack as in bpython.cli
         else:
@@ -557,7 +554,7 @@ class Repl(BpythonRepl):
             self.clean_up_current_line_for_exit() # exception to not changing state!
 
         width, min_height = self.width, self.height
-        show_status_bar = bool(self.status_bar.current_line)
+        show_status_bar = bool(self.status_bar.current_line) and (self.config.scroll_fill_terminal or self.status_bar.has_focus)
         if show_status_bar:
             min_height -= 1
 
@@ -604,6 +601,7 @@ class Repl(BpythonRepl):
             #infobox not properly expanding window! try reduce( docs about halfway down a 80x24 terminal
             #TODO what's the desired behavior here? Currently uses only the space already on screen,
             # scrolling down only if there would have been more space above the current line, but being forced to put below
+            #TODO above description is not accurate - sometimes screen scrolls for docstring message
             logging.debug('infobox display code running')
             visible_space_above = history.height
             visible_space_below = min_height - cursor_row - 1
@@ -611,7 +609,7 @@ class Repl(BpythonRepl):
             info_max_rows = max(visible_space_above, visible_space_below)
             infobox = paint.paint_infobox(info_max_rows, int(width * self.config.cli_suggestion_width), self.matches, self.argspec, self.current_word, self.docstring, self.config)
 
-            if visible_space_above >= infobox.height and not INFOBOX_ONLY_BELOW:
+            if visible_space_above >= infobox.height and self.config.scroll_list_above:
                 arr[current_line_start_row - infobox.height:current_line_start_row, 0:infobox.width] = infobox
             else:
                 arr[cursor_row + 1:cursor_row + 1 + infobox.height, 0:infobox.width] = infobox
@@ -619,22 +617,28 @@ class Repl(BpythonRepl):
 
         logging.debug('about to exit: %r', about_to_exit)
         if show_status_bar:
-            if about_to_exit:
-                arr[max(arr.height, min_height), :] = FSArray(1, width)
-            else:
-                arr[max(arr.height, min_height), :] = paint.paint_statusbar(1, width, self.status_bar.current_line, self.config)
+            if self.config.scroll_fill_terminal:
+                if about_to_exit:
+                    arr[max(arr.height, min_height), :] = FSArray(1, width)
+                else:
+                    arr[max(arr.height, min_height), :] = paint.paint_statusbar(1, width, self.status_bar.current_line, self.config)
 
-                if self.presentation_mode:
-                    rows = arr.height
-                    columns = arr.width
-                    last_key_box = paint.paint_last_events(rows, columns, [pp_event(x) for x in self.last_events if x])
-                    arr[arr.height-last_key_box.height:arr.height, arr.width-last_key_box.width:arr.width] = last_key_box
-                    #logging.debug(last_key_box[:])
-                    #logging.debug(arr[:])
+                    if self.presentation_mode:
+                        rows = arr.height
+                        columns = arr.width
+                        last_key_box = paint.paint_last_events(rows, columns, [pp_event(x) for x in self.last_events if x])
+                        arr[arr.height-last_key_box.height:arr.height, arr.width-last_key_box.width:arr.width] = last_key_box
+            else:
+                statusbar_row = min_height + 1 if arr.height == min_height else arr.height
+                if about_to_exit:
+                    arr[statusbar_row, :] = FSArray(1, width)
+                else:
+                    arr[statusbar_row, :] = paint.paint_statusbar(1, width, self.status_bar.current_line, self.config)
 
         if self.config.color_scheme['background'] not in ('d', 'D'):
             for r in range(arr.height):
                 arr[r] = fmtstr(arr[r], bg=color_for_letter(self.config.color_scheme['background']))
+        logging.debug('returning arr of size %r', arr.shape)
         return arr, (cursor_row, cursor_column)
 
     ## Debugging shims

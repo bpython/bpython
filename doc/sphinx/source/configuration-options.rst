@@ -259,3 +259,20 @@ Default: Monospace 10
 
 The font to be used by the GTK version.
 
+scroll
+------
+This refers to the ``[scroll]`` section in your config file.
+
+.. versionadded:: 0.13
+
+fill_terminal
+^^^^^^^^^^^^^
+Default: True
+
+Whether bpython should take up the whole terminal, and always display a status bar at the bottom.
+
+list_above
+^^^^^^^^^^
+Default: False
+
+When there is space above the current line, whether the suggestions list will be displayed there instead of below the current line.
