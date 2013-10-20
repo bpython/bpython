@@ -98,7 +98,7 @@ def loadini(struct, configfile):
         },
         'scroll': {
             'list_above' : False,
-            'fill_terminal' : True,
+            'fill_terminal' : False,
         },
         'gtk': {
             'font': 'monospace 10',

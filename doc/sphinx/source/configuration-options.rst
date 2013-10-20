@@ -267,9 +267,9 @@ This refers to the ``[scroll]`` section in your config file.
 
 fill_terminal
 ^^^^^^^^^^^^^
-Default: True
+Default: False
 
-Whether bpython should take up the whole terminal, and always display a status bar at the bottom.
+Whether bpython should clear the screen on start, and always display a status bar at the bottom.
 
 list_above
 ^^^^^^^^^^
