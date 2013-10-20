@@ -654,12 +654,12 @@ class Repl(BpythonRepl):
         my_print(' use "$" to pastebin '.center(self.width+8, 'X'))
         my_print(' "~" is the cursor '.center(self.width+8, 'X'))
         my_print('X'*(self.width+8))
-        my_print('Xxx'+('x'*(self.width+2))+'xxX')
+        my_print('X``'+('`'*(self.width+2))+'``X')
         for line in arr:
-            my_print('Xxxx'+(line if line else ' '*len(line))+'xxxX')
+            my_print('X```'+(line if line else ' '*len(line))+'```X')
         logging.debug('line:')
         logging.debug(repr(line))
-        my_print('Xxx'+('x'*(self.width+2))+'xxX')
+        my_print('X``'+('`'*(self.width+2))+'``X')
         my_print('X'*(self.width+8))
         return max(len(arr) - self.height, 0)
 
