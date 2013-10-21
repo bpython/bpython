@@ -42,14 +42,20 @@ class CodeRunner(object):
         else:
             method, args, kwargs = request
             self.code_is_waiting = True
-            method(*args, **kwargs)
-            self.stuff_a_refresh_request()
+            if method:
+                method(*args, **kwargs)
+                self.stuff_a_refresh_request()
             return False
 
     def _blocking_run_code(self):
         unfinished = self.interp.runsource(self.source)
         self.requests_from_code_thread.put(('done', unfinished))
-    def _blocking_wait_for(self, method, args, kwargs):
+    def _blocking_wait_for(self, method=lambda: None, args=[], kwargs={}):
+        """The method the code would like to be called, or nothing
+
+        Nothing means calls to run_code must be...
+        does this thing even have a point? is it required for stdout.write?
+        """
         self.requests_from_code_thread.put((method, args, kwargs))
         return self.responses_for_code_thread.get()
 

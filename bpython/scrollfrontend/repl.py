@@ -48,47 +48,14 @@ from bpython.scrollfrontend.coderunner import CodeRunner, FakeOutput
 
 from bpython.keys import cli_key_dispatch as key_dispatch
 
-#TODO not that this object is custom, it should do more (not treated like a StringIO)
-class FakeStdout(object):
-    def __init__(self):
-        self.data = StringIO()
-    def read(self, n=None):
-        data = self.data.read()
-        if isinstance(data, bytes):
-            return data.decode('utf8')
-        else:
-            return data
-    def write(self, msg):
-        if isinstance(msg, bytes):
-            return self.data.write(msg.encode('utf8'))
-        else:
-            return self.data.write(msg)
-
 class FakeStdin(object):
-    def __init__(self, on_receive_tuple):
-        self.request_from_executing_code = Queue.Queue(maxsize=1)
-        self.response_queue = Queue.Queue(maxsize=1)
+    def __init__(self, coderunner, repl):
+        self.coderunner = coderunner
+        self.repl = repl
         self.has_focus = False
         self.current_line = ''
         self.cursor_offset_in_line = 0
-        self.on_receive_tuple = on_receive_tuple
-
-    def wait_for_request_or_finish(self):
-        logging.debug('waiting for message from running code (stack depth %r)', len(traceback.format_stack()))
-        msg = self.request_from_executing_code.get()
-        logging.debug('FakeStdin received message %r', msg)
-        self.process_request(msg)
-
-    def process_request(self, msg):
-        if msg == 'can haz stdin line plz':
-            logging.debug('setting focus to stdin')
-            self.has_focus = True
-        elif isinstance(msg, tuple):
-            logging.debug('calling on_finish_running_code')
-            self.on_receive_tuple(*msg)
-        else:
-            logging.debug('unrecognized message!')
-            assert False
+        self.old_num_lines = 0
 
     def process_event(self, e):
         assert self.has_focus
@@ -104,14 +71,17 @@ class FakeStdin(object):
 
         if self.current_line.endswith(("\n", "\r")):
             self.has_focus = False
-            self.response_queue.put(self.current_line)
+            line = self.current_line
             self.current_line = ''
             self.cursor_offset_in_line = 0
-            self.wait_for_request_or_finish()
+            self.repl.coderunner.run_code(input=line)
+        else:
+            self.repl.send_to_stdin(self.current_line)
 
     def readline(self):
-        self.request_from_executing_code.put('can haz stdin line plz')
-        return self.response_queue.get()
+        self.has_focus = True
+        self.repl.send_to_stdin(self.current_line)
+        return self.coderunner._blocking_wait_for(None)
 
 
 class Repl(BpythonRepl):
@@ -172,7 +142,7 @@ class Repl(BpythonRepl):
 
         self.coderunner = CodeRunner(self.interp, stuff_a_refresh_request)
         self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
-        self.stdin = FakeStdin(self.on_finish_running_code)
+        self.stdin = FakeStdin(self.coderunner, self)
 
         self.paste_mode = False
         self.request_paint_to_clear_screen = False
@@ -318,16 +288,12 @@ class Repl(BpythonRepl):
     def send_to_stdout(self, output):
         self.display_lines.extend(sum([paint.display_linize(line, self.width) for line in output.split('\n')], []))
 
-    def on_finish_running_code(self, output, error, done, indent):
-        #if output:
-        #    self.display_lines.extend(sum([paint.display_linize(line, self.width) for line in output.split('\n')], []))
-        if error:
-            self.display_lines.extend([func_for_letter(self.config.color_scheme['error'])(line)
-                                      for line in sum([paint.display_linize(line, self.width)
-                                                      for line in error.split('\n')], [])])
-        self._current_line = ' '*indent
-        self.cursor_offset_in_line = len(self._current_line)
-        self.done = done
+    def send_to_stdin(self, line):
+        self.display_lines = self.display_lines[:len(self.display_lines) - self.stdin.old_num_lines]
+        lines = paint.display_linize(line, self.width)
+        self.stdin.old_num_lines = len(lines)
+        self.display_lines.extend(paint.display_linize(line, self.width))
+
 
     def on_tab(self, back=False):
         """Do something on tab key
@@ -444,7 +410,11 @@ class Repl(BpythonRepl):
         else:
             self.display_buffer.append(fmtstr(line))
 
-        if code.compile_command('\n'.join(self.buffer)):
+        try:
+            c = code.compile_command('\n'.join(self.buffer))
+        except (ValueError, SyntaxError, ValueError):
+            c = error = True
+        if c:
             logging.debug('finished - buffer cleared')
             self.display_lines.extend(self.display_buffer_lines)
             self.display_buffer = []
@@ -457,7 +427,6 @@ class Repl(BpythonRepl):
         if r:
             unfinished = r == 'unfinished'
             self.runsource_part_2(self.saved_line, self.saved_err_spot, unfinished, self.saved_indent)
-            self.stdin.wait_for_request_or_finish()
 
     def runsource_part_2(self, line, err_spot, unfinished, indent):
         sys.stderr.seek(err_spot)
@@ -471,13 +440,21 @@ class Repl(BpythonRepl):
 
         if unfinished and not err:
             logging.debug('unfinished - line added to buffer')
-            self.stdin.request_from_executing_code.put((None, None, False, indent))
+            output, error, done = None, None, False
         else:
             if err:
                 indent = 0
             logging.debug('sending output info')
-            self.stdin.request_from_executing_code.put((None, err[:-1], True, indent))
+            output, error, done = None, err[:-1], True
             logging.debug('sent output info')
+
+        if error:
+            self.display_lines.extend([func_for_letter(self.config.color_scheme['error'])(line)
+                                      for line in sum([paint.display_linize(line, self.width)
+                                                      for line in error.split('\n')], [])])
+        self._current_line = ' '*indent
+        self.cursor_offset_in_line = len(self._current_line)
+        self.done = done
 
     def unhighlight_paren(self):
         """modify line in self.display_buffer to unhighlight a paren if possible
