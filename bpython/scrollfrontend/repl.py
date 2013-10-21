@@ -60,7 +60,7 @@ class FakeStdin(object):
     def process_event(self, e):
         assert self.has_focus
         if e in rl_char_sequences:
-            self.cursor_offset_in_line, self.current_line = rl_char_sequences[e](self.cursor_offset_in_line, self._current_line)
+            self.cursor_offset_in_line, self.current_line = rl_char_sequences[e](self.cursor_offset_in_line, self.current_line)
             #TODO EOF on ctrl-d
         else: # add normal character
             logging.debug('adding normal char %r to current line', e)
@@ -127,6 +127,7 @@ class Repl(BpythonRepl):
                                         # interact is called to interact with the status bar,
                                         # so we're just using the same object
         self._current_line = '' # line currently being edited, without '>>> '
+        self.current_output_line = '' # current line of output - stdout and stdin go here
         self.display_lines = [] # lines separated whenever logical line
                                 # length goes over what the terminal width
                                 # was at the time of original output
@@ -142,6 +143,7 @@ class Repl(BpythonRepl):
 
         self.coderunner = CodeRunner(self.interp, stuff_a_refresh_request)
         self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
+        self.stderr = FakeOutput(self.coderunner, self.send_to_stderr)
         self.stdin = FakeStdin(self.coderunner, self)
 
         self.paste_mode = False
@@ -158,14 +160,12 @@ class Repl(BpythonRepl):
         self.orig_stderr = sys.stderr
         self.orig_stdin = sys.stdin
         sys.stdout = self.stdout
-        sys.stderr = StringIO()
+        sys.stderr = self.stderr
         sys.stdin = self.stdin
         return self
 
     def __exit__(self, *args):
-        sys.stderr.seek(0)
-        s = sys.stderr.read()
-        self.orig_stderr.write(s)
+        sys.stdin = self.orig_stdin
         sys.stdout = self.orig_stdout
         sys.stderr = self.orig_stderr
 
@@ -191,7 +191,7 @@ class Repl(BpythonRepl):
 
         logging.debug("processing event %r", e)
         if isinstance(e, events.RefreshRequestEvent):
-            self.run_runsource_part_2_when_finished()
+            self.finish_command_if_done()
             return
         self.last_events.append(e)
         self.last_events.pop(0)
@@ -286,7 +286,21 @@ class Repl(BpythonRepl):
         self.push(self._current_line, insert_into_history=insert_into_history)
 
     def send_to_stdout(self, output):
-        self.display_lines.extend(sum([paint.display_linize(line, self.width) for line in output.split('\n')], []))
+        lines = output.split('\n')
+        logging.debug('display_lines: %r', self.display_lines)
+        if len(lines) and lines[0]:
+            self.current_output_line += lines[0]
+        if len(lines) > 1:
+            self.display_lines.extend(paint.display_linize(self.current_output_line, self.width))
+            self.display_lines.extend(sum([paint.display_linize(line, self.width) for line in lines[1:-1]], []))
+            self.current_output_line = lines[-1]
+        logging.debug('display_lines: %r', self.display_lines)
+
+    def send_to_stderr(self, error):
+        self.send_to_stdout(error)
+        #self.display_lines.extend([func_for_letter(self.config.color_scheme['error'])(line)
+        #                           for line in sum([paint.display_linize(line, self.width)
+        #                                            for line in error.split('\n')], [])])
 
     def send_to_stdin(self, line):
         self.display_lines = self.display_lines[:len(self.display_lines) - self.stdin.old_num_lines]
@@ -372,22 +386,12 @@ class Repl(BpythonRepl):
             self.list_win_visible = BpythonRepl.complete(self, tab)
 
     def push(self, line, insert_into_history=True):
-        """Push a line of code onto the buffer, run the buffer
+        """Push a line of code onto the buffer, start running the buffer
 
         If the interpreter successfully runs the code, clear the buffer
         """
         if insert_into_history:
             self.insert_into_history(line)
-        self.runsource(line)
-
-    def runsource(self, line):
-        """Push a line of code on to the buffer, run the buffer, clean up
-
-        Makes requests for input and announces being done as necessary via threadsafe queue
-        sends messages:
-            * request for readline
-            * (stdoutput, error, done?, amount_to_indent_next_line)
-        """
         self.buffer.append(line)
         indent = len(re.match(r'[ ]*', line).group())
 
@@ -397,10 +401,8 @@ class Repl(BpythonRepl):
             indent = max(0, indent - self.config.tab_length)
         elif line and ':' not in line and line.strip().startswith(('return', 'pass', 'raise', 'yield')):
             indent = max(0, indent - self.config.tab_length)
-        err_spot = sys.stderr.tell()
         logging.debug('running %r in interpreter', self.buffer)
         self.coderunner.load_code('\n'.join(self.buffer))
-        self.saved_err_spot = err_spot
         self.saved_indent = indent
         self.saved_line = line
 
@@ -419,39 +421,23 @@ class Repl(BpythonRepl):
             self.display_lines.extend(self.display_buffer_lines)
             self.display_buffer = []
             self.buffer = []
+            self.cursor_offset_in_line = 0
 
-        self.run_runsource_part_2_when_finished()
+        self.finish_command_if_done()
 
-    def run_runsource_part_2_when_finished(self):
+    def finish_command_if_done(self):
         r = self.coderunner.run_code()
         if r:
             unfinished = r == 'unfinished'
-            self.runsource_part_2(self.saved_line, self.saved_err_spot, unfinished, self.saved_indent)
+            err = True #TODO implement this properly - via interp.write_error I suppose
+            self.finish_command(self.saved_line, unfinished, self.saved_indent, err)
 
-    def runsource_part_2(self, line, err_spot, unfinished, indent):
-        sys.stderr.seek(err_spot)
-        err = sys.stderr.read()
+    def finish_command(self, line, unfinished, indent, err):
 
-        # easier debugging: save only errors that aren't from this interpreter
-        oldstderr = sys.stderr
-        sys.stderr = StringIO()
-        oldstderr.seek(0)
-        sys.stderr.write(oldstderr.read(err_spot))
+        done = not unfinished
 
-        if unfinished and not err:
-            logging.debug('unfinished - line added to buffer')
-            output, error, done = None, None, False
-        else:
-            if err:
-                indent = 0
-            logging.debug('sending output info')
-            output, error, done = None, err[:-1], True
-            logging.debug('sent output info')
-
-        if error:
-            self.display_lines.extend([func_for_letter(self.config.color_scheme['error'])(line)
-                                      for line in sum([paint.display_linize(line, self.width)
-                                                      for line in error.split('\n')], [])])
+        if err:
+            indent = 0
         self._current_line = ' '*indent
         self.cursor_offset_in_line = len(self._current_line)
         self.done = done
@@ -532,6 +518,14 @@ class Repl(BpythonRepl):
                 if self.done else
                 func_for_letter(self.config.color_scheme['prompt_more'])(self.ps2)) + self.current_line_formatted
 
+    @property
+    def current_cursor_line(self):
+
+        if self.coderunner.running:
+            return self.current_output_line
+        else:
+            return self.display_line_with_prompt
+
     def paint(self, about_to_exit=False):
         """Returns an array of min_height or more rows and width columns, plus cursor position
 
@@ -576,17 +570,17 @@ class Repl(BpythonRepl):
             history = paint.paint_history(current_line_start_row, width, self.lines_for_display)
             arr[:history.height,:history.width] = history
 
-        current_line = paint.paint_current_line(min_height, width, self.display_line_with_prompt)
+        current_line = paint.paint_current_line(min_height, width, self.current_cursor_line)
         arr[current_line_start_row:current_line_start_row + current_line.height,
             0:current_line.width] = current_line
 
         if current_line.height > min_height:
             return arr, (0, 0) # short circuit, no room for infobox
 
-        lines = paint.display_linize(self.display_line_with_prompt+'X', width)
+        lines = paint.display_linize(self.current_cursor_line+'X', width)
                                        # extra character for space for the cursor
         cursor_row = current_line_start_row + len(lines) - 1
-        cursor_column = (self.cursor_offset_in_line + len(self.display_line_with_prompt) - len(self._current_line)) % width
+        cursor_column = (self.cursor_offset_in_line + len(self.current_cursor_line) - len(self._current_line)) % width
 
         if self.list_win_visible:
             #infobox not properly expanding window! try reduce( docs about halfway down a 80x24 terminal
@@ -630,6 +624,7 @@ class Repl(BpythonRepl):
             for r in range(arr.height):
                 arr[r] = fmtstr(arr[r], bg=color_for_letter(self.config.color_scheme['background']))
         logging.debug('returning arr of size %r', arr.shape)
+        logging.debug('cursor pos: %r', (cursor_row, cursor_column))
         return arr, (cursor_row, cursor_column)
 
     ## Debugging shims

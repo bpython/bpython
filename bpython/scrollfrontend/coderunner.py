@@ -16,6 +16,10 @@ class CodeRunner(object):
         self.stuff_a_refresh_request = stuff_a_refresh_request
         self.code_is_waiting = False
 
+    @property
+    def running(self):
+        return self.source and self.code_thread
+
     def load_code(self, source):
         self.source = source
         self.code_thread = None
@@ -27,7 +31,7 @@ class CodeRunner(object):
         if source code is incomplete, returns "unfinished"
         """
         if self.code_thread is None:
-            assert self.source
+            assert self.source is not None
             self.code_thread = threading.Thread(target=self._blocking_run_code, name='codethread')
             self.code_thread.daemon = True
             self.code_thread.start()
@@ -38,6 +42,9 @@ class CodeRunner(object):
 
         request = self.requests_from_code_thread.get()
         if request[0] == 'done':
+            self.source = None
+            self.code_thread = None
+            self.code_is_waiting = False
             return 'unfinished' if request[1] else 'done'
         else:
             method, args, kwargs = request
