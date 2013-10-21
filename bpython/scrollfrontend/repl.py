@@ -34,6 +34,7 @@ from bpython.scrollfrontend import sitefix; sitefix.monkeypatch_quit()
 import bpython.scrollfrontend.replpainter as paint
 import fmtstr.events as events
 from bpython.scrollfrontend.friendly import NotImplementedError
+from bpython.scrollfrontend.coderunner import CodeRunner, FakeOutput
 
 #TODO implement paste mode and figure out what the deal with config.paste_time is
 #TODO figure out how config.auto_display_list=False behaves and implement it
@@ -51,8 +52,6 @@ from bpython.keys import cli_key_dispatch as key_dispatch
 class FakeStdout(object):
     def __init__(self):
         self.data = StringIO()
-    def seek(self, pos, mode=0): return self.data.seek(pos, mode)
-    def tell(self): return self.data.tell()
     def read(self, n=None):
         data = self.data.read()
         if isinstance(data, bytes):
@@ -76,7 +75,7 @@ class FakeStdin(object):
 
     def wait_for_request_or_finish(self):
         logging.debug('waiting for message from running code (stack depth %r)', len(traceback.format_stack()))
-        msg = self.request_from_executing_code.get(timeout=3)
+        msg = self.request_from_executing_code.get()
         logging.debug('FakeStdin received message %r', msg)
         self.process_request(msg)
 
@@ -112,7 +111,7 @@ class FakeStdin(object):
 
     def readline(self):
         self.request_from_executing_code.put('can haz stdin line plz')
-        return self.response_queue.get(timeout=15)
+        return self.response_queue.get()
 
 
 class Repl(BpythonRepl):
@@ -134,7 +133,7 @@ class Repl(BpythonRepl):
     """
 
     ## initialization, cleanup
-    def __init__(self, locals_=None, config=None):
+    def __init__(self, locals_=None, config=None, stuff_a_refresh_request=None):
         logging.debug("starting init")
         interp = code.InteractiveInterpreter(locals=locals_)
 
@@ -171,6 +170,8 @@ class Repl(BpythonRepl):
         self.cursor_offset_in_line = 0 # from the left, 0 means first char
         self.done = True
 
+        self.coderunner = CodeRunner(self.interp, stuff_a_refresh_request)
+        self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
         self.stdin = FakeStdin(self.on_finish_running_code)
 
         self.paste_mode = False
@@ -186,7 +187,7 @@ class Repl(BpythonRepl):
         self.orig_stdout = sys.stdout
         self.orig_stderr = sys.stderr
         self.orig_stdin = sys.stdin
-        sys.stdout = FakeStdout()
+        sys.stdout = self.stdout
         sys.stderr = StringIO()
         sys.stdin = self.stdin
         return self
@@ -218,9 +219,12 @@ class Repl(BpythonRepl):
     def process_event(self, e):
         """Returns True if shutting down, otherwise mutates state of Repl object"""
 
+        logging.debug("processing event %r", e)
+        if isinstance(e, events.RefreshRequestEvent):
+            self.run_runsource_part_2_when_finished()
+            return
         self.last_events.append(e)
         self.last_events.pop(0)
-        #logging.debug("processing event %r", e)
         if isinstance(e, events.WindowChangeEvent):
             logging.debug('window change to %d %d', e.width, e.height)
             self.width, self.height = e.width, e.height
@@ -311,9 +315,12 @@ class Repl(BpythonRepl):
         self.history.append(self._current_line)
         self.push(self._current_line, insert_into_history=insert_into_history)
 
+    def send_to_stdout(self, output):
+        self.display_lines.extend(sum([paint.display_linize(line, self.width) for line in output.split('\n')], []))
+
     def on_finish_running_code(self, output, error, done, indent):
-        if output:
-            self.display_lines.extend(sum([paint.display_linize(line, self.width) for line in output.split('\n')], []))
+        #if output:
+        #    self.display_lines.extend(sum([paint.display_linize(line, self.width) for line in output.split('\n')], []))
         if error:
             self.display_lines.extend([func_for_letter(self.config.color_scheme['error'])(line)
                                       for line in sum([paint.display_linize(line, self.width)
@@ -405,12 +412,7 @@ class Repl(BpythonRepl):
         """
         if insert_into_history:
             self.insert_into_history(line)
-        t = threading.Thread(target=self.runsource, args=(line,))
-        t.daemon = True
-        t.start()
-        logging.debug('push() is now waiting')
-        self.stdin.wait_for_request_or_finish()
-        logging.debug('push() done waiting')
+        self.runsource(line)
 
     def runsource(self, line):
         """Push a line of code on to the buffer, run the buffer, clean up
@@ -429,10 +431,12 @@ class Repl(BpythonRepl):
             indent = max(0, indent - self.config.tab_length)
         elif line and ':' not in line and line.strip().startswith(('return', 'pass', 'raise', 'yield')):
             indent = max(0, indent - self.config.tab_length)
-        out_spot = sys.stdout.tell()
         err_spot = sys.stderr.tell()
         logging.debug('running %r in interpreter', self.buffer)
-        unfinished = self.interp.runsource('\n'.join(self.buffer))
+        self.coderunner.load_code('\n'.join(self.buffer))
+        self.saved_err_spot = err_spot
+        self.saved_indent = indent
+        self.saved_line = line
 
         #current line not added to display buffer if quitting
         if self.config.syntax:
@@ -440,9 +444,23 @@ class Repl(BpythonRepl):
         else:
             self.display_buffer.append(fmtstr(line))
 
-        sys.stdout.seek(out_spot)
+        if code.compile_command('\n'.join(self.buffer)):
+            logging.debug('finished - buffer cleared')
+            self.display_lines.extend(self.display_buffer_lines)
+            self.display_buffer = []
+            self.buffer = []
+
+        self.run_runsource_part_2_when_finished()
+
+    def run_runsource_part_2_when_finished(self):
+        r = self.coderunner.run_code()
+        if r:
+            unfinished = r == 'unfinished'
+            self.runsource_part_2(self.saved_line, self.saved_err_spot, unfinished, self.saved_indent)
+            self.stdin.wait_for_request_or_finish()
+
+    def runsource_part_2(self, line, err_spot, unfinished, indent):
         sys.stderr.seek(err_spot)
-        out = sys.stdout.read()
         err = sys.stderr.read()
 
         # easier debugging: save only errors that aren't from this interpreter
@@ -455,14 +473,10 @@ class Repl(BpythonRepl):
             logging.debug('unfinished - line added to buffer')
             self.stdin.request_from_executing_code.put((None, None, False, indent))
         else:
-            logging.debug('finished - buffer cleared')
-            self.display_lines.extend(self.display_buffer_lines)
-            self.display_buffer = []
-            self.buffer = []
             if err:
                 indent = 0
             logging.debug('sending output info')
-            self.stdin.request_from_executing_code.put((out[:-1], err[:-1], True, indent))
+            self.stdin.request_from_executing_code.put((None, err[:-1], True, indent))
             logging.debug('sent output info')
 
     def unhighlight_paren(self):

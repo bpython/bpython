@@ -22,7 +22,7 @@ def main(locals_=None, config=None, exec_args=None, options=None):
 
     with TerminalController() as tc:
         with Terminal(tc, keep_last_line=True, hide_cursor=False) as term:
-            with Repl(config=config, locals_=locals_) as repl:
+            with Repl(config=config, locals_=locals_, stuff_a_refresh_request=tc.stuff_a_refresh_request) as repl:
                 rows, columns = tc.get_screen_size()
                 repl.width = columns
                 repl.height = rows
