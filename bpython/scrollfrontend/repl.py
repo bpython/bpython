@@ -70,8 +70,9 @@ class FakeStdin(object):
             self.cursor_offset_in_line += 1
 
         if self.current_line.endswith(("\n", "\r")):
-            self.has_focus = False
             line = self.current_line
+            self.repl.send_to_stdin(line)
+            self.has_focus = False
             self.current_line = ''
             self.cursor_offset_in_line = 0
             self.repl.coderunner.run_code(input=line)
@@ -127,7 +128,7 @@ class Repl(BpythonRepl):
                                         # interact is called to interact with the status bar,
                                         # so we're just using the same object
         self._current_line = '' # line currently being edited, without '>>> '
-        self.current_output_line = '' # current line of output - stdout and stdin go here
+        self.current_stdouterr_line = '' # current line of output - stdout and stdin go here
         self.display_lines = [] # lines separated whenever logical line
                                 # length goes over what the terminal width
                                 # was at the time of original output
@@ -289,11 +290,11 @@ class Repl(BpythonRepl):
         lines = output.split('\n')
         logging.debug('display_lines: %r', self.display_lines)
         if len(lines) and lines[0]:
-            self.current_output_line += lines[0]
+            self.current_stdouterr_line += lines[0]
         if len(lines) > 1:
-            self.display_lines.extend(paint.display_linize(self.current_output_line, self.width))
+            self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width))
             self.display_lines.extend(sum([paint.display_linize(line, self.width) for line in lines[1:-1]], []))
-            self.current_output_line = lines[-1]
+            self.current_stdouterr_line = lines[-1]
         logging.debug('display_lines: %r', self.display_lines)
 
     def send_to_stderr(self, error):
@@ -303,10 +304,14 @@ class Repl(BpythonRepl):
         #                                            for line in error.split('\n')], [])])
 
     def send_to_stdin(self, line):
-        self.display_lines = self.display_lines[:len(self.display_lines) - self.stdin.old_num_lines]
-        lines = paint.display_linize(line, self.width)
-        self.stdin.old_num_lines = len(lines)
-        self.display_lines.extend(paint.display_linize(line, self.width))
+        if line.endswith('\n'):
+            self.display_lines.extend(paint.display_linize(self.current_output_line[:-1], self.width))
+            self.current_output_line = ''
+        #self.display_lines = self.display_lines[:len(self.display_lines) - self.stdin.old_num_lines]
+        #lines = paint.display_linize(line, self.width)
+        #self.stdin.old_num_lines = len(lines)
+        #self.display_lines.extend(paint.display_linize(line, self.width))
+        pass
 
 
     def on_tab(self, back=False):
@@ -521,10 +526,17 @@ class Repl(BpythonRepl):
     @property
     def current_cursor_line(self):
 
-        if self.coderunner.running:
-            return self.current_output_line
-        else:
-            return self.display_line_with_prompt
+        return (self.current_output_line +
+                '' if self.coderunner.running else self.display_line_with_prompt)
+
+    @property
+    def current_output_line(self):
+        return self.current_stdouterr_line + self.stdin.current_line
+
+    @current_output_line.setter
+    def current_output_line(self, value):
+        self.current_stdouterr_line = ''
+        self.stdin.current_line = '\n'
 
     def paint(self, about_to_exit=False):
         """Returns an array of min_height or more rows and width columns, plus cursor position
@@ -580,7 +592,10 @@ class Repl(BpythonRepl):
         lines = paint.display_linize(self.current_cursor_line+'X', width)
                                        # extra character for space for the cursor
         cursor_row = current_line_start_row + len(lines) - 1
-        cursor_column = (self.cursor_offset_in_line + len(self.current_cursor_line) - len(self._current_line)) % width
+        if self.stdin.has_focus:
+            cursor_column = len(self.current_stdouterr_line) + self.stdin.cursor_offset_in_line
+        else:
+            cursor_column = len(self.current_cursor_line) - len(self._current_line) + self.cursor_offset_in_line
 
         if self.list_win_visible:
             #infobox not properly expanding window! try reduce( docs about halfway down a 80x24 terminal
