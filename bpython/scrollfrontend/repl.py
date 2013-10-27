@@ -46,6 +46,10 @@ from bpython.scrollfrontend.coderunner import CodeRunner, FakeOutput
 #TODO proper raw_input (currently input isn't visible while typing, includes \r, and comes in as unicode in Python 2
 #TODO use events instead of length-one queues for interthread communication
 
+#TODO raw_input should be bytes in python2
+#TODO ctlr-c handling at all times
+#TODO nicer passing of control between threads
+
 from bpython.keys import cli_key_dispatch as key_dispatch
 
 class FakeStdin(object):
@@ -104,7 +108,7 @@ class Repl(BpythonRepl):
     """
 
     ## initialization, cleanup
-    def __init__(self, locals_=None, config=None, stuff_a_refresh_request=None):
+    def __init__(self, locals_=None, config=None, stuff_a_refresh_request=lambda: None):
         logging.debug("starting init")
         interp = code.InteractiveInterpreter(locals=locals_)
 
@@ -407,18 +411,18 @@ class Repl(BpythonRepl):
         elif line and ':' not in line and line.strip().startswith(('return', 'pass', 'raise', 'yield')):
             indent = max(0, indent - self.config.tab_length)
         logging.debug('running %r in interpreter', self.buffer)
-        self.coderunner.load_code('\n'.join(self.buffer))
+        code_to_run = '\n'.join(self.buffer)
         self.saved_indent = indent
         self.saved_line = line
 
-        #current line not added to display buffer if quitting
+        #current line not added to display buffer if quitting #TODO I don't understand this comment
         if self.config.syntax:
             self.display_buffer.append(bpythonparse(format(self.tokenize(line), self.formatter)))
         else:
             self.display_buffer.append(fmtstr(line))
 
         try:
-            c = code.compile_command('\n'.join(self.buffer))
+            c = bool(code.compile_command('\n'.join(self.buffer)))
         except (ValueError, SyntaxError, ValueError):
             c = error = True
         if c:
@@ -428,6 +432,7 @@ class Repl(BpythonRepl):
             self.buffer = []
             self.cursor_offset_in_line = 0
 
+        self.coderunner.load_code(code_to_run)
         self.finish_command_if_done()
 
     def finish_command_if_done(self):
@@ -435,17 +440,13 @@ class Repl(BpythonRepl):
         if r:
             unfinished = r == 'unfinished'
             err = True #TODO implement this properly - via interp.write_error I suppose
-            self.finish_command(self.saved_line, unfinished, self.saved_indent, err)
 
-    def finish_command(self, line, unfinished, indent, err):
-
-        done = not unfinished
-
-        if err:
-            indent = 0
-        self._current_line = ' '*indent
-        self.cursor_offset_in_line = len(self._current_line)
-        self.done = done
+            indent = self.saved_indent
+            if err:
+                indent = 0
+            self._current_line = ' '*indent
+            self.cursor_offset_in_line = len(self._current_line)
+            self.done = not unfinished
 
     def unhighlight_paren(self):
         """modify line in self.display_buffer to unhighlight a paren if possible
