@@ -4,9 +4,6 @@ import re
 import logging
 import code
 import threading
-import Queue
-from cStringIO import StringIO
-import traceback
 import subprocess
 import tempfile
 
@@ -79,14 +76,15 @@ class FakeStdin(object):
             self.has_focus = False
             self.current_line = ''
             self.cursor_offset_in_line = 0
-            self.repl.coderunner.run_code(input=line)
+            #self.repl.coderunner.run_code(for_code=line)
+            self.repl.run_code_and_maybe_finish(for_code=line)
         else:
             self.repl.send_to_stdin(self.current_line)
 
     def readline(self):
         self.has_focus = True
         self.repl.send_to_stdin(self.current_line)
-        return self.coderunner._blocking_wait_for(None)
+        return self.coderunner.wait_and_get_value()
 
 
 class Repl(BpythonRepl):
@@ -196,7 +194,7 @@ class Repl(BpythonRepl):
 
         logging.debug("processing event %r", e)
         if isinstance(e, events.RefreshRequestEvent):
-            self.finish_command_if_done()
+            self.run_code_and_maybe_finish()
             return
         self.last_events.append(e)
         self.last_events.pop(0)
@@ -413,7 +411,6 @@ class Repl(BpythonRepl):
         logging.debug('running %r in interpreter', self.buffer)
         code_to_run = '\n'.join(self.buffer)
         self.saved_indent = indent
-        self.saved_line = line
 
         #current line not added to display buffer if quitting #TODO I don't understand this comment
         if self.config.syntax:
@@ -433,11 +430,13 @@ class Repl(BpythonRepl):
             self.cursor_offset_in_line = 0
 
         self.coderunner.load_code(code_to_run)
-        self.finish_command_if_done()
+        self.run_code_and_maybe_finish()
 
-    def finish_command_if_done(self):
-        r = self.coderunner.run_code()
+    def run_code_and_maybe_finish(self, for_code=None):
+        r = self.coderunner.run_code(for_code=for_code)
         if r:
+            logging.debug("----- Running finish command stuff -----")
+            logging.debug("run_code return value: %r", r)
             unfinished = r == 'unfinished'
             err = True #TODO implement this properly - via interp.write_error I suppose
 
@@ -462,7 +461,7 @@ class Repl(BpythonRepl):
             logging.debug('trying to unhighlight a paren on line %r', lineno)
             logging.debug('with these tokens: %r', saved_tokens)
             new = bpythonparse(format(saved_tokens, self.formatter))
-            self.display_buffer[lineno][:len(new)] = new
+            self.display_buffer[lineno] = self.display_buffer[lineno].setslice(0, len(new), new)
 
 
     ## formatting, output
@@ -526,9 +525,10 @@ class Repl(BpythonRepl):
 
     @property
     def current_cursor_line(self):
-
-        return (self.current_output_line +
+        value = (self.current_output_line +
                 '' if self.coderunner.running else self.display_line_with_prompt)
+        logging.debug('current cursor line: %r', value)
+        return value
 
     @property
     def current_output_line(self):

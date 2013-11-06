@@ -21,12 +21,20 @@ class CodeRunner(object):
         return self.source and self.code_thread
 
     def load_code(self, source):
+        """Prep code to be run"""
         self.source = source
         self.code_thread = None
 
-    def run_code(self, input=None):
+    def _unload_code(self):
+        """Called when done running code"""
+        self.source = None
+        self.code_thread = None
+        self.code_is_waiting = False
+
+    def run_code(self, for_code=None):
         """Returns Truthy values if code finishes, False otherwise
 
+        if for_code is provided, send that value to the code thread
         if source code is complete, returns "done"
         if source code is incomplete, returns "unfinished"
         """
@@ -38,32 +46,35 @@ class CodeRunner(object):
         else:
             assert self.code_is_waiting
             self.code_is_waiting = False
-            self.responses_for_code_thread.put(input)
+            self.responses_for_code_thread.put(for_code)
 
         request = self.requests_from_code_thread.get()
-        if request[0] == 'done':
-            self.source = None
-            self.code_thread = None
-            self.code_is_waiting = False
-            return 'unfinished' if request[1] else 'done'
-        else:
-            method, args, kwargs = request
+        if request in ['wait', 'refresh']:
             self.code_is_waiting = True
-            if method:
-                method(*args, **kwargs)
+            if request == 'refresh':
                 self.stuff_a_refresh_request()
             return False
+        elif request in ['done', 'unfinished']:
+            self._unload_code()
+            return request
+        else:
+            raise ValueError("Not a valid request_from_code_thread value: %r" % request)
 
     def _blocking_run_code(self):
         unfinished = self.interp.runsource(self.source)
-        self.requests_from_code_thread.put(('done', unfinished))
-    def _blocking_wait_for(self, method=lambda: None, args=[], kwargs={}):
-        """The method the code would like to be called, or nothing
+        self.requests_from_code_thread.put('unfinished' if unfinished else 'done')
+
+    def wait_and_get_value(self):
+        """Return the argument passed in to .run_code(for_code)
 
         Nothing means calls to run_code must be...
-        does this thing even have a point? is it required for stdout.write?
         """
-        self.requests_from_code_thread.put((method, args, kwargs))
+        self.requests_from_code_thread.put('wait')
+        return self.responses_for_code_thread.get()
+
+    def refresh_and_get_value(self):
+        """Returns the argument passed in to .run_code(for_code) """
+        self.requests_from_code_thread.put('refresh')
         return self.responses_for_code_thread.get()
 
 class FakeOutput(object):
@@ -71,16 +82,15 @@ class FakeOutput(object):
         self.coderunner = coderunner
         self.please = please
     def write(self, *args, **kwargs):
-        return self.coderunner._blocking_wait_for(self.please, args, kwargs)
+        self.please(*args, **kwargs)
+        return self.coderunner.refresh_and_get_value()
 
 if __name__ == '__main__':
     orig_stdout = sys.stdout
     orig_stderr = sys.stderr
     c = CodeRunner(stuff_a_refresh_request=lambda: orig_stdout.flush() or orig_stderr.flush())
     stdout = FakeOutput(c, orig_stdout.write)
-    stderr = FakeOutput(c, orig_stderr.write)
     sys.stdout = stdout
-    sys.stderr = stderr
     c.load_code('1 + 1')
     c.run_code()
     c.run_code()
