@@ -424,8 +424,9 @@ class Repl(BpythonRepl):
 
         try:
             c = bool(code.compile_command('\n'.join(self.buffer)))
-        except (ValueError, SyntaxError, ValueError):
-            c = error = True
+            self.saved_predicted_parse_error = False
+        except (ValueError, SyntaxError, OverflowError):
+            c = self.saved_predicted_parse_error = True
         if c:
             logging.debug('finished - buffer cleared')
             self.display_lines.extend(self.display_buffer_lines)
@@ -440,9 +441,10 @@ class Repl(BpythonRepl):
         r = self.coderunner.run_code(for_code=for_code)
         if r:
             logging.debug("----- Running finish command stuff -----")
-            logging.debug("run_code return value: %r", r)
+            logging.debug("saved_indent: %r", self.saved_indent)
             unfinished = r == 'unfinished'
-            err = True #TODO implement this properly - via interp.write_error I suppose
+            err = self.saved_predicted_parse_error
+            self.saved_predicted_parse_error = False
 
             indent = self.saved_indent
             if err:
