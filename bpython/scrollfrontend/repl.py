@@ -21,7 +21,6 @@ from fmtstr.fsarray import FSArray
 from fmtstr.fmtstr import fmtstr, FmtStr
 from fmtstr.bpythonparse import parse as bpythonparse
 from fmtstr.bpythonparse import func_for_letter, color_for_letter
-from fmtstr.events import pp_event, SigIntEvent
 
 from bpython.scrollfrontend.manual_readline import char_sequences as rl_char_sequences
 from bpython.scrollfrontend.manual_readline import get_updated_char_sequences
@@ -201,6 +200,7 @@ class Repl(BpythonRepl):
         if isinstance(e, events.SigIntEvent):
             logging.debug('received sigint event')
             self.keyboard_interrupt()
+            self.update_completion()
             return
         if isinstance(e, events.WindowChangeEvent):
             logging.debug('window change to %d %d', e.width, e.height)
@@ -454,8 +454,16 @@ class Repl(BpythonRepl):
             self.done = not unfinished
 
     def keyboard_interrupt(self):
+        #TODO factor out the common cleanup from running a line
+        #TODO make rewind work properly with ctrl-c somehow
+        self.cursor_offset_in_line = -1
+        self.unhighlight_paren()
+        self.display_lines.extend(self.display_buffer_lines)
         self.display_lines.extend(paint.display_linize(self.current_cursor_line, self.width))
         self.display_lines.extend(paint.display_linize("KeyboardInterrupt", self.width))
+        self.display_buffer = []
+        self.buffer = []
+        self.cursor_offset_in_line = 0
         self.saved_indent = 0
         self._current_line = ''
         self.cursor_offset_in_line = len(self._current_line)
@@ -641,7 +649,7 @@ class Repl(BpythonRepl):
                     if self.presentation_mode:
                         rows = arr.height
                         columns = arr.width
-                        last_key_box = paint.paint_last_events(rows, columns, [pp_event(x) for x in self.last_events if x])
+                        last_key_box = paint.paint_last_events(rows, columns, [events.pp_event(x) for x in self.last_events if x])
                         arr[arr.height-last_key_box.height:arr.height, arr.width-last_key_box.width:arr.width] = last_key_box
             else:
                 statusbar_row = min_height + 1 if arr.height == min_height else arr.height

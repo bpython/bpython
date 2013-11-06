@@ -48,12 +48,12 @@ class CodeRunner(object):
             self.code_thread = threading.Thread(target=self._blocking_run_code, name='codethread')
             self.code_thread.daemon = True
             self.orig_sigint_handler = signal.getsignal(signal.SIGINT)
-            signal.signal(signal.SIGINT, signal.default_int_handler)
+            signal.signal(signal.SIGINT, self.sigint_handler)
             self.code_thread.start()
         else:
             assert self.code_is_waiting
             self.code_is_waiting = False
-            signal.signal(signal.SIGINT, signal.default_int_handler)
+            signal.signal(signal.SIGINT, self.sigint_handler)
             if self.sigint_happened:
                 self.sigint_happened = False
                 self.responses_for_code_thread.put(SigintHappened)
@@ -61,7 +61,6 @@ class CodeRunner(object):
                 self.responses_for_code_thread.put(for_code)
 
         request = self.requests_from_code_thread.get()
-        signal.signal(signal.SIGINT, self.sigint_handler_while_fufilling_code_request)
         if request in ['wait', 'refresh']:
             self.code_is_waiting = True
             if request == 'refresh':
@@ -69,16 +68,19 @@ class CodeRunner(object):
             return False
         elif request in ['done', 'unfinished']:
             self._unload_code()
-            if self.orig_sigint_handler:
-                signal.signal(signal.SIGINT, self.orig_sigint_handler)
+            signal.signal(signal.SIGINT, self.orig_sigint_handler)
             self.orig_sigint_handler = None
             return request
         else:
             raise ValueError("Not a valid request_from_code_thread value: %r" % request)
 
-    def sigint_handler_while_fufilling_code_request(self, *args):
-        logging.debug('while fufilling code request sigint handler running!')
-        self.sigint_happened = True
+    def sigint_handler(self, *args):
+        if threading.current_thread() is self.code_thread:
+            logging.debug('sigint while running user code!')
+            raise KeyboardInterrupt()
+        else:
+            logging.debug('sigint while fufilling code request sigint handler running!')
+            self.sigint_happened = True
 
     def _blocking_run_code(self):
         unfinished = self.interp.runsource(self.source)
