@@ -21,7 +21,7 @@ from fmtstr.fsarray import FSArray
 from fmtstr.fmtstr import fmtstr, FmtStr
 from fmtstr.bpythonparse import parse as bpythonparse
 from fmtstr.bpythonparse import func_for_letter, color_for_letter
-from fmtstr.events import pp_event
+from fmtstr.events import pp_event, SigIntEvent
 
 from bpython.scrollfrontend.manual_readline import char_sequences as rl_char_sequences
 from bpython.scrollfrontend.manual_readline import get_updated_char_sequences
@@ -198,6 +198,10 @@ class Repl(BpythonRepl):
             return
         self.last_events.append(e)
         self.last_events.pop(0)
+        if isinstance(e, events.SigIntEvent):
+            logging.debug('received sigint event')
+            self.keyboard_interrupt()
+            return
         if isinstance(e, events.WindowChangeEvent):
             logging.debug('window change to %d %d', e.width, e.height)
             self.width, self.height = e.width, e.height
@@ -446,6 +450,14 @@ class Repl(BpythonRepl):
             self._current_line = ' '*indent
             self.cursor_offset_in_line = len(self._current_line)
             self.done = not unfinished
+
+    def keyboard_interrupt(self):
+        self.display_lines.extend(paint.display_linize(self.current_cursor_line, self.width))
+        self.display_lines.extend(paint.display_linize("KeyboardInterrupt", self.width))
+        self.saved_indent = 0
+        self._current_line = ''
+        self.cursor_offset_in_line = len(self._current_line)
+        self.done = True
 
     def unhighlight_paren(self):
         """modify line in self.display_buffer to unhighlight a paren if possible
