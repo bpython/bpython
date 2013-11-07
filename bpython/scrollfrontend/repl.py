@@ -43,8 +43,7 @@ from bpython.scrollfrontend.coderunner import CodeRunner, FakeOutput
 #TODO use events instead of length-one queues for interthread communication
 
 #TODO raw_input should be bytes in python2
-#TODO ctlr-c handling at all times
-#TODO nicer passing of control between threads
+
 
 from bpython.keys import cli_key_dispatch as key_dispatch
 
@@ -105,7 +104,7 @@ class Repl(BpythonRepl):
     """
 
     ## initialization, cleanup
-    def __init__(self, locals_=None, config=None, stuff_a_refresh_request=lambda: None):
+    def __init__(self, locals_=None, config=None, stuff_a_refresh_request=lambda: None, banner=None):
         logging.debug("starting init")
         interp = code.InteractiveInterpreter(locals=locals_)
 
@@ -113,12 +112,15 @@ class Repl(BpythonRepl):
             config = Struct()
             loadini(config, default_config_path())
 
+        if banner is None:
+            banner = _('welcome to bpython')
+
         config.autocomplete_mode = SIMPLE # only one implemented currently
 
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 1
 
-        self.status_bar = StatusBar(_('welcome to bpython'), _(
+        self.status_bar = StatusBar(banner, _(
             " <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor"
             ) % (config.undo_key, config.save_key, config.pastebin_key, config.external_editor_key))
         self.rl_char_sequences = get_updated_char_sequences(key_dispatch, config)
@@ -304,10 +306,10 @@ class Repl(BpythonRepl):
         logging.debug('display_lines: %r', self.display_lines)
 
     def send_to_stderr(self, error):
-        self.send_to_stdout(error)
-        #self.display_lines.extend([func_for_letter(self.config.color_scheme['error'])(line)
-        #                           for line in sum([paint.display_linize(line, self.width)
-        #                                            for line in error.split('\n')], [])])
+        #self.send_to_stdout(error)
+        self.display_lines.extend([func_for_letter(self.config.color_scheme['error'])(line)
+                                   for line in sum([paint.display_linize(line, self.width)
+                                                    for line in error.split('\n')], [])])
 
     def send_to_stdin(self, line):
         if line.endswith('\n'):

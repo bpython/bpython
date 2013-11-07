@@ -167,7 +167,7 @@ setup(
         'console_scripts': [
             'bpython = bpython.cli:main',
             'bpython-urwid = bpython.urwid:main',
-            'bpython-scroll = bpython.scroll:cli [scroll]',
+            'bpython-scroll = bpython.scroll:main [scroll]',
         ],
         'gui_scripts': [
             'bpython-gtk = bpython.gtk_:main'
