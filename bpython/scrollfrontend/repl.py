@@ -200,6 +200,11 @@ class Repl(BpythonRepl):
     def process_event(self, e):
         """Returns True if shutting down, otherwise mutates state of Repl object"""
 
+        if not isinstance(e, events.Event):
+            self.last_events.append(e)
+            self.last_events.pop(0)
+
+        result = None
         logging.debug("processing event %r", e)
         if isinstance(e, events.RefreshRequestEvent):
             assert self.refresh_requests > 0
@@ -207,26 +212,22 @@ class Repl(BpythonRepl):
             assert self.coderunner.code_is_waiting or self.reevaluating
             if self.coderunner.code_is_waiting:
                 self.run_code_and_maybe_finish()
-            if self.refresh_requests == 0 and self.reevaluating:
+            if self.refresh_requests == 0 and self.reevaluating and not self.stdin.has_focus:
                 self.reevaluate()
-            return
-        self.last_events.append(e)
-        self.last_events.pop(0)
-        if isinstance(e, events.SigIntEvent):
+        elif isinstance(e, events.SigIntEvent):
             logging.debug('received sigint event')
             self.keyboard_interrupt()
             self.update_completion()
             return
-        if isinstance(e, events.WindowChangeEvent):
+        elif isinstance(e, events.WindowChangeEvent):
             logging.debug('window change to %d %d', e.width, e.height)
             self.width, self.height = e.width, e.height
-            return
-        if self.status_bar.has_focus:
-            return self.status_bar.process_event(e)
-        if self.stdin.has_focus:
-            return self.stdin.process_event(e)
+        elif self.status_bar.has_focus:
+            result = self.status_bar.process_event(e)
+        elif self.stdin.has_focus:
+            result = self.stdin.process_event(e)
 
-        if e in self.rl_char_sequences:
+        elif e in self.rl_char_sequences:
             self.cursor_offset_in_line, self._current_line = self.rl_char_sequences[e](self.cursor_offset_in_line, self._current_line)
             self.update_completion()
 
@@ -295,6 +296,11 @@ class Repl(BpythonRepl):
         else:
             self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
             self.update_completion()
+
+        if self.reevaluating and self.refresh_requests == 0 and not self.stdin.has_focus:
+            self.stuff_a_refresh_request()
+
+        return result
 
     def on_enter(self, insert_into_history=True):
         self.cursor_offset_in_line = -1 # so the cursor isn't touching a paren
@@ -752,7 +758,7 @@ class Repl(BpythonRepl):
             self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
     def reevaluate(self, insert_into_history=False):
         """bpython.Repl.undo calls this"""
-        #TODO This almost works, but events are necessary to keep it going!
+        #TODO This almost works, but stdin.readline() doesn't work yet
         if not self.reevaluating:
             self.reevaluating = self.reevaluation_generator(insert_into_history=insert_into_history)
         try:
@@ -779,11 +785,7 @@ class Repl(BpythonRepl):
         for line in old_logical_lines:
             self._current_line = line
             self.on_enter(insert_into_history=insert_into_history)
-            if self.refresh_requests > 0:
-                yield line # use up remaining refresh requests
-            else:
-                self.stuff_a_refresh_request()
-                yield line
+            yield line
         self.cursor_offset_in_line = 0
         self._current_line = ''
 
