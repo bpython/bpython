@@ -63,6 +63,9 @@ class FakeStdin(object):
         if e in rl_char_sequences:
             self.cursor_offset_in_line, self.current_line = rl_char_sequences[e](self.cursor_offset_in_line, self.current_line)
             #TODO EOF on ctrl-d
+        elif isinstance(e, events.SigIntEvent):
+            self.coderunner.sigint_happened = True
+            self.repl.run_code_and_maybe_finish()
         else: # add normal character
             logging.debug('adding normal char %r to current line', e)
             c = e if py3 else e.encode('utf8')
@@ -227,11 +230,6 @@ class Repl(BpythonRepl):
         if isinstance(e, events.RefreshRequestEvent):
             assert self.coderunner.code_is_waiting
             self.run_code_and_maybe_finish()
-        elif isinstance(e, events.SigIntEvent):
-            logging.debug('received sigint event')
-            self.keyboard_interrupt()
-            self.update_completion()
-            return
         elif isinstance(e, events.WindowChangeEvent):
             logging.debug('window change to %d %d', e.width, e.height)
             self.width, self.height = e.width, e.height
@@ -239,6 +237,12 @@ class Repl(BpythonRepl):
             result = self.status_bar.process_event(e)
         elif self.stdin.has_focus:
             result = self.stdin.process_event(e)
+
+        elif isinstance(e, events.SigIntEvent):
+            logging.debug('received sigint event')
+            self.keyboard_interrupt()
+            self.update_completion()
+            return
 
         elif e in self.rl_char_sequences:
             self.cursor_offset_in_line, self._current_line = self.rl_char_sequences[e](self.cursor_offset_in_line, self._current_line)
@@ -274,8 +278,6 @@ class Repl(BpythonRepl):
             raise NotImplementedError()
         elif e in key_dispatch[self.config.suspend_key]: #TODO
             raise SystemExit()
-        elif e == "":
-            raise KeyboardInterrupt()
         elif e in ("",) + key_dispatch[self.config.exit_key]:
             raise SystemExit()
         elif e in ("\n", "\r", "PAD_ENTER"):
