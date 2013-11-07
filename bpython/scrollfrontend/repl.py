@@ -56,6 +56,7 @@ class FakeStdin(object):
         self.current_line = ''
         self.cursor_offset_in_line = 0
         self.old_num_lines = 0
+        self.readline_results = []
 
     def process_event(self, e):
         assert self.has_focus
@@ -83,8 +84,22 @@ class FakeStdin(object):
     def readline(self):
         self.has_focus = True
         self.repl.send_to_stdin(self.current_line)
-        return self.coderunner.wait_and_get_value()
+        value = self.coderunner.wait_and_get_value()
+        self.readline_results.append(value)
+        return value
 
+class ReevaluateFakeStdin(object):
+    def __init__(self, fakestdin, repl):
+        self.fakestdin = fakestdin
+        self.repl = repl
+        self.readline_results = fakestdin.readline_results[:]
+    def readline(self):
+        if self.readline_results:
+            value = self.readline_results.pop(0)
+        else:
+            value = 'no saved input available'
+        self.repl.send_to_stdout(value)
+        return value
 
 class Repl(BpythonRepl):
     """
@@ -146,10 +161,13 @@ class Repl(BpythonRepl):
         self.cursor_offset_in_line = 0 # from the left, 0 means first char
         self.done = True
 
+        self.reevaluating = False
+        self.fake_refresh_request = False
         def request_refresh():
-            self.refresh_requests += 1
-            stuff_a_refresh_request()
-        self.refresh_requests = 0
+            if self.reevaluating:
+                self.fake_refresh_request = True
+            else:
+                stuff_a_refresh_request()
         self.stuff_a_refresh_request = request_refresh
         self.coderunner = CodeRunner(self.interp, request_refresh)
         self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
@@ -160,7 +178,6 @@ class Repl(BpythonRepl):
         self.request_paint_to_clear_screen = False
         self.last_events = [None] * 50
         self.presentation_mode = False
-        self.reevaluating = False
 
         self.width = None  # will both be set by a window resize event
         self.height = None
@@ -207,13 +224,8 @@ class Repl(BpythonRepl):
         result = None
         logging.debug("processing event %r", e)
         if isinstance(e, events.RefreshRequestEvent):
-            assert self.refresh_requests > 0
-            self.refresh_requests -= 1
-            assert self.coderunner.code_is_waiting or self.reevaluating
-            if self.coderunner.code_is_waiting:
-                self.run_code_and_maybe_finish()
-            if self.refresh_requests == 0 and self.reevaluating and not self.stdin.has_focus:
-                self.reevaluate()
+            assert self.coderunner.code_is_waiting
+            self.run_code_and_maybe_finish()
         elif isinstance(e, events.SigIntEvent):
             logging.debug('received sigint event')
             self.keyboard_interrupt()
@@ -296,9 +308,6 @@ class Repl(BpythonRepl):
         else:
             self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
             self.update_completion()
-
-        if self.reevaluating and self.refresh_requests == 0 and not self.stdin.has_focus:
-            self.stuff_a_refresh_request()
 
         return result
 
@@ -759,16 +768,9 @@ class Repl(BpythonRepl):
     def reevaluate(self, insert_into_history=False):
         """bpython.Repl.undo calls this"""
         #TODO This almost works, but stdin.readline() doesn't work yet
-        if not self.reevaluating:
-            self.reevaluating = self.reevaluation_generator(insert_into_history=insert_into_history)
-        try:
-            self.reevaluating.next()
-        except StopIteration:
-            self.reevaluating = False
-
-    def reevaluation_generator(self, insert_into_history):
         #TODO other implementations have a enter no-history method, could do
         # that instead of clearing history and getting it rewritten
+
         old_logical_lines = self.history
         self.history = []
         self.display_lines = []
@@ -782,10 +784,17 @@ class Repl(BpythonRepl):
         self.display_buffer = []
         self.highlighted_paren = None
 
+        self.reevaluating = True
+        sys.stdin = ReevaluateFakeStdin(self.stdin, self)
         for line in old_logical_lines:
             self._current_line = line
             self.on_enter(insert_into_history=insert_into_history)
-            yield line
+            while self.fake_refresh_request:
+                self.fake_refresh_request = False
+                self.process_event(events.RefreshRequestEvent())
+        sys.stdin = self.stdin
+        self.reevaluating = False
+
         self.cursor_offset_in_line = 0
         self._current_line = ''
 
