@@ -16,6 +16,7 @@ from bpython import importcompletion
 from bpython import translations
 translations.init()
 from bpython.translations import _
+from bpython._py3compat import py3
 
 from fmtstr.fsarray import FSArray
 from fmtstr.fmtstr import fmtstr, FmtStr
@@ -42,7 +43,6 @@ from bpython.scrollfrontend.coderunner import CodeRunner, FakeOutput
 #TODO proper raw_input (currently input isn't visible while typing, includes \r, and comes in as unicode in Python 2
 #TODO use events instead of length-one queues for interthread communication
 
-#TODO raw_input should be bytes in python2
 #TODO check py3 compatibility
 
 
@@ -65,8 +65,9 @@ class FakeStdin(object):
             #TODO EOF on ctrl-d
         else: # add normal character
             logging.debug('adding normal char %r to current line', e)
+            c = e if py3 else e.encode('utf8')
             self.current_line = (self.current_line[:self.cursor_offset_in_line] +
-                                 e +
+                                 c +
                                  self.current_line[self.cursor_offset_in_line:])
             self.cursor_offset_in_line += 1
 
