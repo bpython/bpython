@@ -153,7 +153,8 @@ setup(
         'pygments'
     ],
     extras_require = {
-        'scroll': ['fmtstr>=0.0.14']
+        'scroll': ['fmtstr>=0.0.16'],
+        'urwid' : ['urwid']
     },
     tests_require = ['mock'],
     packages = ["bpython", "bpython.test", "bpython.translations", "bpdb", "bpython.scrollfrontend"],
@@ -166,7 +167,7 @@ setup(
     entry_points = {
         'console_scripts': [
             'bpython = bpython.cli:main',
-            'bpython-urwid = bpython.urwid:main',
+            'bpython-urwid = bpython.urwid:main [urwid]',
             'bpython-scroll = bpython.scroll:main [scroll]',
         ],
         'gui_scripts': [
