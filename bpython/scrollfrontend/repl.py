@@ -25,7 +25,6 @@ from fmtstr.bpythonparse import func_for_letter, color_for_letter
 
 from bpython.scrollfrontend.manual_readline import char_sequences as rl_char_sequences
 from bpython.scrollfrontend.manual_readline import get_updated_char_sequences
-from bpython.scrollfrontend.abbreviate import substitute_abbreviations
 from bpython.scrollfrontend.interaction import StatusBar
 from bpython.scrollfrontend import sitefix; sitefix.monkeypatch_quit()
 import bpython.scrollfrontend.replpainter as paint
@@ -410,7 +409,6 @@ class Repl(BpythonRepl):
         if self.config.cli_trim_prompts and self._current_line.startswith(">>> "):
             self._current_line = self._current_line[4:]
             self.cursor_offset_in_line = max(0, self.cursor_offset_in_line - 4)
-        self.cursor_offset_in_line, self._current_line = substitute_abbreviations(self.cursor_offset_in_line, self._current_line)
         #TODO deal with characters that take up more than one space? do we care?
 
     def update_completion(self, tab=False):
