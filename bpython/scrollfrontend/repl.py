@@ -43,6 +43,7 @@ from bpython.scrollfrontend.coderunner import CodeRunner, FakeOutput
 #TODO use events instead of length-one queues for interthread communication
 
 #TODO raw_input should be bytes in python2
+#TODO check py3 compatibility
 
 
 from bpython.keys import cli_key_dispatch as key_dispatch
@@ -145,7 +146,12 @@ class Repl(BpythonRepl):
         self.cursor_offset_in_line = 0 # from the left, 0 means first char
         self.done = True
 
-        self.coderunner = CodeRunner(self.interp, stuff_a_refresh_request)
+        def request_refresh():
+            self.refresh_requests += 1
+            stuff_a_refresh_request()
+        self.refresh_requests = 0
+        self.stuff_a_refresh_request = request_refresh
+        self.coderunner = CodeRunner(self.interp, request_refresh)
         self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
         self.stderr = FakeOutput(self.coderunner, self.send_to_stderr)
         self.stdin = FakeStdin(self.coderunner, self)
@@ -154,6 +160,7 @@ class Repl(BpythonRepl):
         self.request_paint_to_clear_screen = False
         self.last_events = [None] * 50
         self.presentation_mode = False
+        self.reevaluating = False
 
         self.width = None  # will both be set by a window resize event
         self.height = None
@@ -195,7 +202,13 @@ class Repl(BpythonRepl):
 
         logging.debug("processing event %r", e)
         if isinstance(e, events.RefreshRequestEvent):
-            self.run_code_and_maybe_finish()
+            assert self.refresh_requests > 0
+            self.refresh_requests -= 1
+            assert self.coderunner.code_is_waiting or self.reevaluating
+            if self.coderunner.code_is_waiting:
+                self.run_code_and_maybe_finish()
+            if self.refresh_requests == 0 and self.reevaluating:
+                self.reevaluate()
             return
         self.last_events.append(e)
         self.last_events.pop(0)
@@ -263,7 +276,6 @@ class Repl(BpythonRepl):
             self.on_tab(back=True)
         elif e in ('',) + key_dispatch[self.config.undo_key]:
             self.undo()
-            self.update_completion()
         elif e in ('\x13',) + key_dispatch[self.config.save_key]: # ctrl-s for save
             t = threading.Thread(target=self.write2file)
             t.daemon = True
@@ -740,6 +752,15 @@ class Repl(BpythonRepl):
             self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
     def reevaluate(self, insert_into_history=False):
         """bpython.Repl.undo calls this"""
+        #TODO This almost works, but events are necessary to keep it going!
+        if not self.reevaluating:
+            self.reevaluating = self.reevaluation_generator(insert_into_history=insert_into_history)
+        try:
+            self.reevaluating.next()
+        except StopIteration:
+            self.reevaluating = False
+
+    def reevaluation_generator(self, insert_into_history):
         #TODO other implementations have a enter no-history method, could do
         # that instead of clearing history and getting it rewritten
         old_logical_lines = self.history
@@ -748,6 +769,7 @@ class Repl(BpythonRepl):
 
         self.done = True # this keeps the first prompt correct
         self.interp = code.InteractiveInterpreter()
+        self.coderunner.interp = self.interp
         self.completer = Autocomplete(self.interp.locals, self.config)
         self.completer.autocomplete_mode = 'simple'
         self.buffer = []
@@ -757,8 +779,14 @@ class Repl(BpythonRepl):
         for line in old_logical_lines:
             self._current_line = line
             self.on_enter(insert_into_history=insert_into_history)
+            if self.refresh_requests > 0:
+                yield line # use up remaining refresh requests
+            else:
+                self.stuff_a_refresh_request()
+                yield line
         self.cursor_offset_in_line = 0
         self._current_line = ''
+
     def getstdout(self):
         lines = self.lines_for_display + [self.current_line_formatted]
         s = '\n'.join([x.s if isinstance(x, FmtStr) else x
