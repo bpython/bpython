@@ -8,6 +8,9 @@ import logging
 class SigintHappened(object):
     pass
 
+class SystemExitFromCodeThread(SystemExit):
+    pass
+
 class CodeRunner(object):
     """Runs user code in an interpreter, taking care of stdout/in/err"""
     def __init__(self, interp=None, stuff_a_refresh_request=lambda:None):
@@ -71,6 +74,9 @@ class CodeRunner(object):
             signal.signal(signal.SIGINT, self.orig_sigint_handler)
             self.orig_sigint_handler = None
             return request
+        elif request in ['SystemExit']:
+            self._unload_code()
+            raise SystemExitFromCodeThread()
         else:
             raise ValueError("Not a valid request_from_code_thread value: %r" % request)
 
@@ -83,7 +89,11 @@ class CodeRunner(object):
             self.sigint_happened = True
 
     def _blocking_run_code(self):
-        unfinished = self.interp.runsource(self.source)
+        try:
+            unfinished = self.interp.runsource(self.source)
+        except SystemExit:
+            self.requests_from_code_thread.put('SystemExit')
+            return
         self.requests_from_code_thread.put('unfinished' if unfinished else 'done')
 
     def wait_and_get_value(self):
