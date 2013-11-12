@@ -809,13 +809,14 @@ class Repl(BpythonRepl):
         return s
     def send_to_external_editor(self, filename=None):
         editor = os.environ.get('VISUAL', os.environ.get('EDITOR', 'vim'))
+        editor_args = editor.split()
         text = self.getstdout()
         with tempfile.NamedTemporaryFile(suffix='.py') as temp:
             temp.write('### current bpython session - file will be reevaluated, ### lines will not be run\n'.encode('utf8'))
             temp.write('\n'.join(line[4:] if line[:4] in ('... ', '>>> ') else '### '+line
                                  for line in text.split('\n')).encode('utf8'))
             temp.flush()
-            subprocess.call([editor, temp.name])
+            subprocess.call(editor_args + [temp.name])
             self.history = [line for line in open(temp.name).read().split('\n')
                                  if line[:4] != '### ']
         self.reevaluate(insert_into_history=True)
