@@ -109,6 +109,7 @@ def get_interpreter(config, locals_=None):
     if config.scroll_auto_import:
 
         locals_ = locals_ if locals_ is not None else {}
+        autoimported = []
 
         class AutoImporter(dict):
             def __getitem__(self, item):
@@ -116,11 +117,16 @@ def get_interpreter(config, locals_=None):
                     return locals_[item]
                 else:
                     try:
-                        return __import__(item)
+                        module = __import__(item)
+                        autoimported.append(item)
+                        return module
                     except ImportError:
                         raise KeyError(item)
             def __setitem__(self, item, value):
                 locals_[item] = value
+            @property
+            def autoimported(self):
+                return autoimported
 
         ns = AutoImporter()
         return code.InteractiveInterpreter(locals=ns)
@@ -843,8 +849,9 @@ class Repl(BpythonRepl):
 
     def getstdout(self):
         lines = self.lines_for_display + [self.current_line_formatted]
-        s = '\n'.join([x.s if isinstance(x, FmtStr) else x
-                       for x in lines]) if lines else ''
+        s = '\n'.join(['%simport %s' % (self.ps1, name) for name in self.interp.locals.autoimported] if self.config.scroll_auto_import else [] +
+                      [x.s if isinstance(x, FmtStr) else x for x in lines]
+                     ) if lines else ''
         return s
     def send_to_external_editor(self, filename=None):
         editor = os.environ.get('VISUAL', os.environ.get('EDITOR', 'vim'))
