@@ -159,8 +159,7 @@ class Repl(BpythonRepl):
             config = Struct()
             loadini(config, default_config_path())
 
-        if config.scroll_auto_import:
-            interp = get_interpreter(config, locals_=locals_)
+        interp = get_interpreter(config, locals_=locals_)
 
         if banner is None:
             banner = _('welcome to bpython')
