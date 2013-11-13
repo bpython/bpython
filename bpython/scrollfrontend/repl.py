@@ -104,6 +104,29 @@ class ReevaluateFakeStdin(object):
         self.repl.send_to_stdout(value)
         return value
 
+
+def get_interpreter(config, locals_=None):
+    if config.scroll_auto_import:
+
+        locals_ = locals_ if locals_ is not None else {}
+
+        class AutoImporter(dict):
+            def __getitem__(self, item):
+                if item in locals_:
+                    return locals_[item]
+                else:
+                    try:
+                        return __import__(item)
+                    except ImportError:
+                        raise KeyError(item)
+            def __setitem__(self, item, value):
+                locals_[item] = value
+
+        ns = AutoImporter()
+        return code.InteractiveInterpreter(locals=ns)
+    else:
+        return code.InteractiveInterpreter(locals=locals_)
+
 class Repl(BpythonRepl):
     """
 
@@ -125,11 +148,13 @@ class Repl(BpythonRepl):
     ## initialization, cleanup
     def __init__(self, locals_=None, config=None, stuff_a_refresh_request=lambda: None, banner=None):
         logging.debug("starting init")
-        interp = code.InteractiveInterpreter(locals=locals_)
 
         if config is None:
             config = Struct()
             loadini(config, default_config_path())
+
+        if config.scroll_auto_import:
+            interp = get_interpreter(config, locals_=locals_)
 
         if banner is None:
             banner = _('welcome to bpython')
@@ -322,7 +347,7 @@ class Repl(BpythonRepl):
         self.rl_history.last()
         self.history.append(self._current_line)
         line = self._current_line
-        self._current_line = ''
+        #self._current_line = ''
         self.cursor_offset_in_line = 0
         self.push(line, insert_into_history=insert_into_history)
 
@@ -654,6 +679,9 @@ class Repl(BpythonRepl):
         if self.stdin.has_focus:
             cursor_column = len(self.current_stdouterr_line) - self.stdin.cursor_offset_in_line
             assert cursor_column >= 0, cursor_column
+        elif self.coderunner.running:
+            cursor_column = len(self.current_cursor_line) + self.cursor_offset_in_line
+            assert cursor_column >= 0, (cursor_column, len(self.current_cursor_line), len(self._current_line), self.cursor_offset_in_line)
         else:
             cursor_column = len(self.current_cursor_line) - len(self._current_line) + self.cursor_offset_in_line
             assert cursor_column >= 0, (cursor_column, len(self.current_cursor_line), len(self._current_line), self.cursor_offset_in_line)
@@ -791,7 +819,7 @@ class Repl(BpythonRepl):
         self.display_lines = []
 
         self.done = True # this keeps the first prompt correct
-        self.interp = code.InteractiveInterpreter()
+        self.interp = get_interpreter(self.config)
         self.coderunner.interp = self.interp
         self.completer = Autocomplete(self.interp.locals, self.config)
         self.completer.autocomplete_mode = 'simple'

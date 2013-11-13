@@ -99,6 +99,7 @@ def loadini(struct, configfile):
         'scroll': {
             'list_above' : False,
             'fill_terminal' : False,
+            'auto_import' : False,
         },
         'gtk': {
             'font': 'monospace 10',
@@ -165,6 +166,7 @@ def loadini(struct, configfile):
 
     struct.scroll_list_above = config.getboolean('scroll', 'list_above')
     struct.scroll_fill_terminal = config.getboolean('scroll', 'fill_terminal')
+    struct.scroll_auto_import = config.getboolean('scroll', 'auto_import')
 
     color_scheme_name = config.get('general', 'color_scheme')
     color_gtk_scheme_name = config.get('gtk', 'color_scheme')
