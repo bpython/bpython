@@ -353,7 +353,6 @@ class Repl(BpythonRepl):
         self.history.append(self._current_line)
         line = self._current_line
         #self._current_line = ''
-        self.cursor_offset_in_line = 0
         self.push(line, insert_into_history=insert_into_history)
 
     def send_to_stdout(self, output):
