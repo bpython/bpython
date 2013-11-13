@@ -86,5 +86,5 @@ def paint_last_events(rows, columns, names):
     return r
 
 def paint_statusbar(rows, columns, msg, config):
-    return fsarray([func_for_letter(config.color_scheme['main'])(msg.ljust(columns))])
+    return fsarray([func_for_letter(config.color_scheme['main'])(msg.ljust(columns))[:columns]])
 
