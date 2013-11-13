@@ -139,7 +139,7 @@ class Repl(BpythonRepl):
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 1
 
-        self.status_bar = StatusBar(banner, _(
+        self.status_bar = StatusBar(banner if config.scroll_fill_terminal else '', _(
             " <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor"
             ) % (config.undo_key, config.save_key, config.pastebin_key, config.external_editor_key))
         self.rl_char_sequences = get_updated_char_sequences(key_dispatch, config)
@@ -604,7 +604,7 @@ class Repl(BpythonRepl):
             self.clean_up_current_line_for_exit() # exception to not changing state!
 
         width, min_height = self.width, self.height
-        show_status_bar = bool(self.status_bar.current_line) and (self.config.scroll_fill_terminal or self.status_bar.has_focus)
+        show_status_bar = bool(self.status_bar._message) or (self.config.scroll_fill_terminal or self.status_bar.has_focus)
         if show_status_bar:
             min_height -= 1
 
