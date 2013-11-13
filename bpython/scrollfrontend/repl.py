@@ -648,10 +648,11 @@ class Repl(BpythonRepl):
         lines = paint.display_linize(self.current_cursor_line+'X', width)
                                        # extra character for space for the cursor
         cursor_row = current_line_start_row + len(lines) - 1
-        if self.stdin.has_focus:
+        if self.stdin.has_focus or self.current_stdouterr_line: #self.stdin.has_focus:
             cursor_column = len(self.current_stdouterr_line) + self.stdin.cursor_offset_in_line
         else:
             cursor_column = len(self.current_cursor_line) - len(self._current_line) + self.cursor_offset_in_line
+        assert cursor_column >= 0, cursor_column
 
         if self.list_win_visible:
             #infobox not properly expanding window! try reduce( docs about halfway down a 80x24 terminal
@@ -701,7 +702,7 @@ class Repl(BpythonRepl):
     ## Debugging shims
     def dumb_print_output(self):
         arr, cpos = self.paint()
-        arr[cpos[0], cpos[1]] = '~'
+        arr[cpos[0]:cpos[0]+1, cpos[1]:cpos[1]+1] = ['~']
         def my_print(msg):
             self.orig_stdout.write(str(msg)+'\n')
         my_print('X'*(self.width+8))
@@ -720,8 +721,14 @@ class Repl(BpythonRepl):
         my_print('X'*(self.width+8))
         return max(len(arr) - self.height, 0)
 
-    def dumb_input(self):
-        for c in self.orig_stdin.readline()[:-1]:
+    def dumb_input(self, requested_refreshes=[]):
+        chars = list(self.orig_stdin.readline()[:-1])
+        while chars or requested_refreshes:
+            if requested_refreshes:
+                requested_refreshes.pop()
+                self.process_event(events.RefreshRequestEvent())
+                continue
+            c = chars.pop(0)
             if c in '/':
                 c = '\n'
             elif c in '\\':
@@ -822,13 +829,16 @@ class Repl(BpythonRepl):
         self.reevaluate(insert_into_history=True)
 
 def simple_repl():
-    with Repl() as r:
+    refreshes = []
+    def request_refresh():
+        refreshes.append(1)
+    with Repl(stuff_a_refresh_request=request_refresh) as r:
         r.width = 50
         r.height = 10
         while True:
             scrolled = r.dumb_print_output()
             r.scroll_offset += scrolled
-            r.dumb_input()
+            r.dumb_input(refreshes)
 
 if __name__ == '__main__':
     simple_repl()
