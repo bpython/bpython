@@ -321,7 +321,10 @@ class Repl(BpythonRepl):
         self.rl_history.append(self._current_line)
         self.rl_history.last()
         self.history.append(self._current_line)
-        self.push(self._current_line, insert_into_history=insert_into_history)
+        line = self._current_line
+        self._current_line = ''
+        self.cursor_offset_in_line = 0
+        self.push(line, insert_into_history=insert_into_history)
 
     def send_to_stdout(self, output):
         lines = output.split('\n')
@@ -438,7 +441,7 @@ class Repl(BpythonRepl):
 
         if line.endswith(':'):
             indent = max(0, indent + self.config.tab_length)
-        elif line and line.count(' ') == len(self._current_line):
+        elif line and line.count(' ') == len(line):
             indent = max(0, indent - self.config.tab_length)
         elif line and ':' not in line and line.strip().startswith(('return', 'pass', 'raise', 'yield')):
             indent = max(0, indent - self.config.tab_length)
@@ -578,7 +581,7 @@ class Repl(BpythonRepl):
     @property
     def current_cursor_line(self):
         value = (self.current_output_line +
-                '' if self.coderunner.running else self.display_line_with_prompt)
+                ('' if self.coderunner.running else self.display_line_with_prompt))
         logging.debug('current cursor line: %r', value)
         return value
 
@@ -648,11 +651,12 @@ class Repl(BpythonRepl):
         lines = paint.display_linize(self.current_cursor_line+'X', width)
                                        # extra character for space for the cursor
         cursor_row = current_line_start_row + len(lines) - 1
-        if self.stdin.has_focus or self.current_stdouterr_line: #self.stdin.has_focus:
-            cursor_column = len(self.current_stdouterr_line) + self.stdin.cursor_offset_in_line
+        if self.stdin.has_focus:
+            cursor_column = len(self.current_stdouterr_line) - self.stdin.cursor_offset_in_line
+            assert cursor_column >= 0, cursor_column
         else:
             cursor_column = len(self.current_cursor_line) - len(self._current_line) + self.cursor_offset_in_line
-        assert cursor_column >= 0, cursor_column
+            assert cursor_column >= 0, (cursor_column, len(self.current_cursor_line), len(self._current_line), self.cursor_offset_in_line)
 
         if self.list_win_visible:
             #infobox not properly expanding window! try reduce( docs about halfway down a 80x24 terminal
