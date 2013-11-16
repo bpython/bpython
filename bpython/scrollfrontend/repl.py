@@ -104,31 +104,34 @@ class ReevaluateFakeStdin(object):
         self.repl.send_to_stdout(value)
         return value
 
-
 def get_interpreter(config, locals_=None):
-    if config.scroll_auto_import:
+    if config.scroll_auto_import and sys.version_info[0] == 3 and sys.version_info[1] >= 3:
 
-        locals_ = locals_ if locals_ is not None else {}
+        default = {'__name__': '__main__',
+                   '__doc__': None,
+                   '__cached__': None,
+                   '__package__': None,}
+        locals_ = default if locals_ is None else locals_
         autoimported = []
 
         class AutoImporter(dict):
             def __getitem__(self, item):
-                if item in locals_:
-                    return locals_[item]
+                if dict.__contains__(self, item):
+                    return dict.__getitem__(self, item)
                 else:
                     try:
                         module = __import__(item)
                         autoimported.append(item)
+                        globals()[item] = module
                         return module
                     except ImportError:
                         raise KeyError(item)
-            def __setitem__(self, item, value):
-                locals_[item] = value
             @property
             def autoimported(self):
                 return autoimported
 
         ns = AutoImporter()
+        ns.update(locals_)
         return code.InteractiveInterpreter(locals=ns)
     else:
         return code.InteractiveInterpreter(locals=locals_)
