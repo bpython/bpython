@@ -322,6 +322,7 @@ class Repl(BpythonRepl):
             self.on_tab(back=True)
         elif e in key_dispatch[self.config.undo_key]: #ctrl-r for undo
             self.undo()
+            self.update_completion()
         elif e in key_dispatch[self.config.save_key]: # ctrl-s for save
             t = threading.Thread(target=self.write2file)
             t.daemon = True
