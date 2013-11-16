@@ -42,7 +42,7 @@ def main(args=None, locals_=None, banner=None):
                         term.render_to_terminal(array, cursor_pos)
                         raise SystemExit(exit_value)
                 else:
-                    sys.path.insert(0, '')
+                    sys.path.insert(0, '') # expected for interactive sessions (python does it)
 
                 while True:
                     try:
