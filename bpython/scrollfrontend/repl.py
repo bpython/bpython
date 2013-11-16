@@ -34,15 +34,11 @@ from bpython.scrollfrontend.coderunner import CodeRunner, FakeOutput
 
 #TODO implement paste mode and figure out what the deal with config.paste_time is
 #TODO figure out how config.auto_display_list=False behaves and implement it
-#TODO figure out how config.list_win_visible behaves and implement it
-#TODO other autocomplete modes
+#TODO figure out how config.list_win_visible behaves and implement it, or toss
+#TODO other autocomplete modes (also fix in other bpython implementations)
 #TODO figure out what config.flush_output is
 #TODO figure out what options.quiet is
-#TODO execute file if in args
-#TODO proper raw_input (currently input isn't visible while typing, includes \r, and comes in as unicode in Python 2
 #TODO use events instead of length-one queues for interthread communication
-
-#TODO check py3 compatibility
 
 
 from bpython.keys import cli_key_dispatch as key_dispatch
@@ -252,6 +248,8 @@ class Repl(BpythonRepl):
     ## Event handling
     def process_event(self, e):
         """Returns True if shutting down, otherwise mutates state of Repl object"""
+        # event names uses here are curses compatible, or the full names
+        # for a full list of what should have pretty names, see fmtstr.events.CURSES_TABLE
 
         if not isinstance(e, events.Event):
             self.last_events.append(e)
@@ -281,12 +279,12 @@ class Repl(BpythonRepl):
             self.update_completion()
 
         # readline history commands
-        elif e in ("[A", "KEY_UP") + key_dispatch[self.config.up_one_line_key]:
+        elif e in ("KEY_UP",) + key_dispatch[self.config.up_one_line_key]:
             self.rl_history.enter(self._current_line)
             self._current_line = self.rl_history.back(False)
             self.cursor_offset_in_line = len(self._current_line)
             self.update_completion()
-        elif e in ("[B", "KEY_DOWN") + key_dispatch[self.config.down_one_line_key]:
+        elif e in ("KEY_DOWN",) + key_dispatch[self.config.down_one_line_key]:
             self.rl_history.enter(self._current_line)
             self._current_line = self.rl_history.forward(False)
             self.cursor_offset_in_line = len(self._current_line)
@@ -320,18 +318,18 @@ class Repl(BpythonRepl):
             #TODO use a whitelist instead of a blacklist!
         elif e == '\t': # tab
             self.on_tab()
-        elif e in ('[Z', "KEY_BTAB"): # shift-tab
+        elif e in ("KEY_BTAB",): # shift-tab
             self.on_tab(back=True)
-        elif e in ('',) + key_dispatch[self.config.undo_key]:
+        elif e in key_dispatch[self.config.undo_key]: #ctrl-r for undo
             self.undo()
-        elif e in ('\x13',) + key_dispatch[self.config.save_key]: # ctrl-s for save
+        elif e in key_dispatch[self.config.save_key]: # ctrl-s for save
             t = threading.Thread(target=self.write2file)
             t.daemon = True
             logging.debug('starting write2file thread')
             t.start()
             self.interact.wait_for_request_or_notify()
         # F8 for pastebin
-        elif e in ('\x1b[19~',) + key_dispatch[self.config.pastebin_key]:
+        elif e in key_dispatch[self.config.pastebin_key]:
             t = threading.Thread(target=self.pastebin)
             t.daemon = True
             logging.debug('starting pastebin thread')
@@ -853,8 +851,9 @@ class Repl(BpythonRepl):
 
     def getstdout(self):
         lines = self.lines_for_display + [self.current_line_formatted]
-        s = '\n'.join(['%simport %s' % (self.ps1, name) for name in self.interp.locals.autoimported] if self.config.scroll_auto_import else [] +
-                      [x.s if isinstance(x, FmtStr) else x for x in lines]
+        imports = (['%simport %s' % (self.ps1, name) for name in self.interp.locals.autoimported]
+                   if hasattr(self.interp.locals, 'autoimported') else [])
+        s = '\n'.join(imports + [x.s if isinstance(x, FmtStr) else x for x in lines]
                      ) if lines else ''
         return s
     def send_to_external_editor(self, filename=None):

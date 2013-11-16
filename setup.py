@@ -153,7 +153,7 @@ setup(
         'pygments'
     ],
     extras_require = {
-        'scroll': ['fmtstr>=0.0.17'],
+        'scroll': ['fmtstr>=0.0.18'],
         'urwid' : ['urwid']
     },
     tests_require = ['mock'],
