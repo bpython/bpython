@@ -134,7 +134,7 @@ def formatted_argspec(argspec, columns, config):
 
 def formatted_docstring(docstring, columns, config):
     color = func_for_letter(config.color_scheme['comment'])
-    return sum(([color(x) for x in (display_linize(line, width) if line else fmtstr(''))]
+    return sum(([color(x) for x in (display_linize(line, columns) if line else fmtstr(''))]
                 for line in docstring.split('\n')), [])
 
 def paint_infobox(rows, columns, matches, argspec, match, docstring, config):
