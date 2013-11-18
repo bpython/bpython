@@ -148,10 +148,11 @@ def paint_infobox(rows, columns, matches, argspec, match, docstring, config):
              )
 
     output_lines = []
-    output_lines.append(u'┌─'+u'─'*width+u'─┐')
+    border_color = func_for_letter(config.color_scheme['main'])
+    output_lines.append(border_color(u'┌─'+u'─'*width+u'─┐'))
     for line in lines:
-        output_lines.append(u'│ '+((line+' '*(width - len(line)))[:width])+u' │')
-    output_lines.append(u'└─'+u'─'*width+u'─┘')
+        output_lines.append(border_color(u'│ ')+((line+' '*(width - len(line)))[:width])+border_color(u' │'))
+    output_lines.append(border_color(u'└─'+u'─'*width+u'─┘'))
     r = fsarray(output_lines[:min(rows-1, len(output_lines)-1)] + output_lines[-1:])
     assert len(r.shape) == 2
     #return r
