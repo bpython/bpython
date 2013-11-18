@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*- 
+import logging
 
 from fmtstr.fmtfuncs import *
 from fmtstr.fsarray import fsarray
 from fmtstr.bpythonparse import func_for_letter
+from fmtstr.fmtstr import fmtstr, linesplit
 
-import logging
+from bpython._py3compat import py3
+if not py3:
+    import inspect
+
 
 #TODO take the boring parts of repl.paint out into here?
 
@@ -52,19 +57,94 @@ def matches_lines(rows, columns, matches, current, config):
     logging.debug('matches_lines: %r' % matches_lines)
     return matches_lines
 
-def formatted_argspec(argspec):
-    return argspec[0] + ': (' + ", ".join(argspec[1][0]) + ')'
+def formatted_argspec(argspec, columns, config):
+    is_bound_method = argspec[2]
+    func = argspec[0]
+    args = argspec[1][0]
+    kwargs = argspec[1][3]
+    _args = argspec[1][1] #*args
+    _kwargs = argspec[1][2] #**kwargs
+    is_bound_method = argspec[2]
+    in_arg = argspec[3]
+    if py3:
+        kwonly = argspec[1][4]
+        kwonly_defaults = argspec[1][5] or dict()
+
+    arg_color = func_for_letter(config.color_scheme['name'])
+    func_color = func_for_letter(config.color_scheme['name'].swapcase())
+    punctuation_color = func_for_letter(config.color_scheme['punctuation'])
+    token_color = func_for_letter(config.color_scheme['token'])
+    bolds = {token_color: lambda x: bold(token_color(x)),
+            arg_color: lambda x: bold(arg_color(x))}
+
+    s = func_color(func) + arg_color(': (')
+
+    if is_bound_method and isinstance(in_arg, int): #TODO what values could this have?
+        in_arg += 1
+
+    for i, arg in enumerate(args):
+        kw = None
+        if kwargs and i >= len(args) - len(kwargs):
+            kw = repr(kwargs[i - (len(args) - len(kwargs))])
+        color = token_color if in_arg in (i, arg) else arg_color
+        if i == in_arg or arg == in_arg:
+            color = bolds[color]
+
+        if not py3:
+            s += color(inspect.strseq(arg, str))
+        else:
+            s += color(arg)
+
+        if kw is not None:
+            s += punctuation_color('=')
+            s += token_color(kw)
+
+        if i != len(args) - 1:
+            s += punctuation_color(', ')
+
+    if _args:
+        if args:
+            s += punctuation_color(', ')
+        s += token_color('*%s' % (_args,))
+
+    #TODO what in the world is this about? Just transcribing from bpython/cli for now
+    if py3 and kwonly:
+        if not _args:
+            if args:
+                s += punctuation_color(', ')
+            s += punctuation_color('*')
+        marker = object()
+        for arg in kwonly:
+            s += punctuation_color(', ')
+            color = token_color
+            if in_arg:
+                color = bolds[color]
+            s += color(arg)
+            default = kwonly_defaults.get(arg, marker)
+            if default is not marker:
+                s += punctuation_color('=')
+                s += token_color(repr(default))
+
+    if _kwargs:
+        if args or _args or (py3 and kwonly):
+            s += token_color('**%s' % (_kwargs,))
+    s += punctuation_color(')')
+
+    return linesplit(s, columns)
+
+def formatted_docstring(docstring, columns, config):
+    color = func_for_letter(config.color_scheme['comment'])
+    return sum(([color(x) for x in (display_linize(line, width) if line else fmtstr(''))]
+                for line in docstring.split('\n')), [])
 
 def paint_infobox(rows, columns, matches, argspec, match, docstring, config):
     """Returns painted completions, argspec, match, docstring etc."""
     if not (rows and columns):
         return fsarray(0, 0)
     width = columns - 4
-    color = func_for_letter(config.color_scheme['main'])
-    lines = ((display_linize(blue(formatted_argspec(argspec)), width) if argspec else []) +
-             sum(([color(x) for x in (display_linize(line, width) if line else fmtstr(''))]
-                 for line in docstring.split('\n')) if docstring else [], []) +
-             (matches_lines(rows, columns, matches, match, config) if matches else [])
+    lines = ((formatted_argspec(argspec, width, config) if argspec else []) +
+             (matches_lines(rows, width, matches, match, config) if matches else []) +
+             (formatted_docstring(docstring, width, config) if docstring else [])
              )
 
     output_lines = []
