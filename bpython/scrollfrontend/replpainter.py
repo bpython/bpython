@@ -13,6 +13,9 @@ import logging
 # * return an array not larger than the height they were asked for
 
 def display_linize(msg, columns):
+    """Returns lines obtained by splitting msg over multiple lines.
+
+    Warning: if msg is empty, returns an empty list of lines"""
     display_lines = ([msg[start:end]
                         for start, end in zip(
                             range(0, len(msg), columns),
@@ -50,26 +53,25 @@ def matches_lines(rows, columns, matches, current, config):
     return matches_lines
 
 def formatted_argspec(argspec):
-    return argspec[0] + '(' + ", ".join(argspec[1][0]) + ')'
+    return argspec[0] + ': (' + ", ".join(argspec[1][0]) + ')'
 
 def paint_infobox(rows, columns, matches, argspec, match, docstring, config):
     """Returns painted completions, argspec, match, docstring etc."""
     if not (rows and columns):
         return fsarray(0, 0)
-    width = columns - 2
+    width = columns - 4
     color = func_for_letter(config.color_scheme['main'])
     lines = ((display_linize(blue(formatted_argspec(argspec)), width) if argspec else []) +
-             ([fmtstr('')] if docstring else []) +
-             sum(([color(x) for x in display_linize(line, width)]
+             sum(([color(x) for x in (display_linize(line, width) if line else fmtstr(''))]
                  for line in docstring.split('\n')) if docstring else [], []) +
              (matches_lines(rows, columns, matches, match, config) if matches else [])
              )
 
     output_lines = []
-    output_lines.append(u'┌'+u'─'*width+u'┐')
+    output_lines.append(u'┌─'+u'─'*width+u'─┐')
     for line in lines:
-        output_lines.append(u'│'+((line+' '*(width - len(line)))[:width])+u'│')
-    output_lines.append(u'└'+u'─'*width+u'┘')
+        output_lines.append(u'│ '+((line+' '*(width - len(line)))[:width])+u' │')
+    output_lines.append(u'└─'+u'─'*width+u'─┘')
     r = fsarray(output_lines[:min(rows-1, len(output_lines)-1)] + output_lines[-1:])
     assert len(r.shape) == 2
     #return r
