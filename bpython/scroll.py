@@ -5,6 +5,7 @@ from fmtstr.terminal import Terminal
 from fmtstr.terminalcontrol import TerminalController
 
 from bpython.scrollfrontend.repl import Repl
+from bpython.scrollfrontend.coderunner import SystemExitFromCodeThread
 from bpython import args as bpargs
 from bpython.translations import _
 
@@ -47,6 +48,10 @@ def main(args=None, locals_=None, banner=None):
                 while True:
                     try:
                         repl.process_event(tc.get_event())
+                    except SystemExitFromCodeThread:
+                        array, cursor_pos = repl.paint(about_to_exit=2)
+                        term.render_to_terminal(array, cursor_pos)
+                        raise
                     except SystemExit:
                         array, cursor_pos = repl.paint(about_to_exit=True)
                         term.render_to_terminal(array, cursor_pos)

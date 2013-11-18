@@ -674,6 +674,8 @@ class Repl(BpythonRepl):
             arr[:history.height,:history.width] = history
 
         current_line = paint.paint_current_line(min_height, width, self.current_cursor_line)
+        if about_to_exit == 2: # hack for quit() in user code
+            current_line_start_row = current_line_start_row - current_line.height
         logging.debug("---current line row slice %r, %r", current_line_start_row, current_line_start_row + current_line.height)
         logging.debug("---current line col slice %r, %r", 0, current_line.width)
         arr[current_line_start_row:current_line_start_row + current_line.height,
