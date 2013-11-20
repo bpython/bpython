@@ -42,7 +42,8 @@ def paint_current_line(rows, columns, current_display_line):
     return fsarray([(line+' '*columns)[:columns] for line in lines])
 
 def matches_lines(rows, columns, matches, current, config):
-    highlight_color = lambda x: red(on_blue(x))
+    highlight_color = func_for_letter(config.color_scheme['operator'].lower())
+    #TODO ...that's not really what operator is for
     if not matches:
         return []
     color = func_for_letter(config.color_scheme['main'])
