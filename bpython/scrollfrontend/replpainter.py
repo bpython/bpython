@@ -28,15 +28,15 @@ def display_linize(msg, columns):
 def paint_history(rows, columns, display_lines):
     lines = []
     for r, line in zip(range(rows), display_lines[-rows:]):
-        lines.append((fmtstr(line)+' '*1000)[:columns])
-    r = fsarray(lines)
+        lines.append(fmtstr(line))
+    r = fsarray(lines, width=columns)
     assert r.shape[0] <= rows, repr(r.shape)+' '+repr(rows)
     assert r.shape[1] <= columns, repr(r.shape)+' '+repr(columns)
     return r
 
 def paint_current_line(rows, columns, current_display_line):
     lines = display_linize(current_display_line, columns)
-    return fsarray([(line+' '*columns)[:columns] for line in lines])
+    return fsarray(lines, width=columns)
 
 def matches_lines(rows, columns, matches, current, config):
     highlight_color = func_for_letter(config.color_scheme['operator'].lower())
@@ -48,7 +48,7 @@ def matches_lines(rows, columns, matches, current, config):
     words_wide = max(1, (columns - 1) // (max_match_width + 1))
     matches_lines = [fmtstr(' ').join(color(m.ljust(max_match_width))
                                         if m != current
-                                        else highlight_color(m) + ' '*(max_match_width - len(m))
+                                        else highlight_color(m.ljust(max_match_width))
                                       for m in matches[i:i+words_wide])
                      for i in range(0, len(matches), words_wide)]
     logging.debug('match: %r' % current)
@@ -56,6 +56,7 @@ def matches_lines(rows, columns, matches, current, config):
     return matches_lines
 
 def formatted_argspec(argspec, columns, config):
+    # Pretty directly taken from bpython.cli
     is_bound_method = argspec[2]
     func = argspec[0]
     args = argspec[1][0]
@@ -153,9 +154,7 @@ def paint_infobox(rows, columns, matches, argspec, match, docstring, config):
         output_lines.append(border_color(u'│ ')+((line+' '*(width - len(line)))[:width])+border_color(u' │'))
     output_lines.append(border_color(u'└─'+u'─'*width+u'─┘'))
     r = fsarray(output_lines[:min(rows-1, len(output_lines)-1)] + output_lines[-1:])
-    assert len(r.shape) == 2
-    #return r
-    return fsarray(r[:rows, :])
+    return r
 
 def paint_last_events(rows, columns, names):
     width = min(max(len(name) for name in names), columns-2)
@@ -164,8 +163,7 @@ def paint_last_events(rows, columns, names):
     for name in names[-(rows-2):]:
         output_lines.append(u'│'+name[:width].center(width)+u'│')
     output_lines.append(u'└'+u'─'*width+u'┘')
-    r = fsarray(output_lines)
-    return r
+    return fsarray(output_lines)
 
 def paint_statusbar(rows, columns, msg, config):
     return fsarray([func_for_letter(config.color_scheme['main'])(msg.ljust(columns))[:columns]])
