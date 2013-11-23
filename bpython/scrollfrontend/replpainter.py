@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 import logging
 
-from fmtstr.fmtfuncs import *
+from fmtstr.fmtfuncs import bold
 from fmtstr.fsarray import fsarray
 from fmtstr.bpythonparse import func_for_letter
 from fmtstr.fmtstr import fmtstr, linesplit
@@ -10,12 +10,9 @@ from bpython._py3compat import py3
 if not py3:
     import inspect
 
-
-#TODO take the boring parts of repl.paint out into here?
-
 # All paint functions should
 # * return an array of the width they were asked for
-# * return an array not larger than the height they were asked for
+# * return an array not taller than the height they were asked for
 
 def display_linize(msg, columns):
     """Returns lines obtained by splitting msg over multiple lines.
@@ -128,7 +125,8 @@ def formatted_argspec(argspec, columns, config):
 
     if _kwargs:
         if args or _args or (py3 and kwonly):
-            s += token_color('**%s' % (_kwargs,))
+            s += punctuation_color(', ')
+        s += token_color('**%s' % (_kwargs,))
     s += punctuation_color(')')
 
     return linesplit(s, columns)
