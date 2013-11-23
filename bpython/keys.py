@@ -26,13 +26,14 @@ import string
 
 class KeyMap:
 
-    def __init__(self):
+    def __init__(self, default=''):
         self.map = {}
+        self.default = default
 
     def __getitem__(self, key):
         if not key:
             # Unbound key
-            return str()
+            return self.default
         elif key in self.map:
             return self.map[key]
         else:
@@ -45,8 +46,8 @@ class KeyMap:
     def __setitem__(self, key, value):
         self.map[key] = value
 
-cli_key_dispatch = KeyMap()
-urwid_key_dispatch = KeyMap()
+cli_key_dispatch = KeyMap(tuple())
+urwid_key_dispatch = KeyMap('')
 
 # fill dispatch with letters
 for c in string.ascii_lowercase:
