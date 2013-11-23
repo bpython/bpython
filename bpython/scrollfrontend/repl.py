@@ -100,38 +100,6 @@ class ReevaluateFakeStdin(object):
         self.repl.send_to_stdout(value)
         return value
 
-def get_interpreter(config, locals_=None):
-    if config.scroll_auto_import and sys.version_info[0] == 3 and sys.version_info[1] >= 3:
-
-        default = {'__name__': '__main__',
-                   '__doc__': None,
-                   '__cached__': None,
-                   '__package__': None,}
-        locals_ = default if locals_ is None else locals_
-        autoimported = []
-
-        class AutoImporter(dict):
-            def __getitem__(self, item):
-                if dict.__contains__(self, item):
-                    return dict.__getitem__(self, item)
-                else:
-                    try:
-                        module = __import__(item)
-                        autoimported.append(item)
-                        globals()[item] = module
-                        return module
-                    except ImportError:
-                        raise KeyError(item)
-            @property
-            def autoimported(self):
-                return autoimported
-
-        ns = AutoImporter()
-        ns.update(locals_)
-        return code.InteractiveInterpreter(locals=ns)
-    else:
-        return code.InteractiveInterpreter(locals=locals_)
-
 class Repl(BpythonRepl):
     """
 
@@ -158,7 +126,7 @@ class Repl(BpythonRepl):
             config = Struct()
             loadini(config, default_config_path())
 
-        interp = get_interpreter(config, locals_=locals_)
+        interp = code.InteractiveInterpreter(locals=locals_)
 
         if banner is None:
             banner = _('welcome to bpython')
@@ -830,7 +798,7 @@ class Repl(BpythonRepl):
         self.display_lines = []
 
         self.done = True # this keeps the first prompt correct
-        self.interp = get_interpreter(self.config)
+        self.interp = code.InteractiveInterpreter()
         self.coderunner.interp = self.interp
         self.completer = Autocomplete(self.interp.locals, self.config)
         self.completer.autocomplete_mode = 'simple'
@@ -854,9 +822,7 @@ class Repl(BpythonRepl):
 
     def getstdout(self):
         lines = self.lines_for_display + [self.current_line_formatted]
-        imports = (['%simport %s' % (self.ps1, name) for name in self.interp.locals.autoimported]
-                   if hasattr(self.interp.locals, 'autoimported') else [])
-        s = '\n'.join(imports + [x.s if isinstance(x, FmtStr) else x for x in lines]
+        s = '\n'.join([x.s if isinstance(x, FmtStr) else x for x in lines]
                      ) if lines else ''
         return s
     def send_to_external_editor(self, filename=None):
