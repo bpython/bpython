@@ -79,9 +79,9 @@ def backspace(cursor_offset, line):
     if cursor_offset == 0:
         return cursor_offset, line
     if not line[:cursor_offset].strip(): #if just whitespace left of cursor
-        front_white = len(line[:cursor_offset]) - len(line[:cursor_offset].lstrip())
-        to_delete = ((front_white - 1) % INDENT) + 1
-        return cursor_offset - to_delete, line[:to_delete] + line[cursor_offset:]
+        #front_white = len(line[:cursor_offset]) - len(line[:cursor_offset].lstrip())
+        to_delete = ((cursor_offset - 1) % INDENT) + 1
+        return cursor_offset - to_delete, line[:cursor_offset - to_delete] + line[cursor_offset:]
     return (cursor_offset - 1,
             line[:cursor_offset - 1] + line[cursor_offset:])
 
