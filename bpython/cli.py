@@ -162,6 +162,9 @@ class FakeStdin(object):
     def isatty(self):
         return True
 
+    def fileno(self):
+        return 0
+
     def readline(self, size=-1):
         """I can't think of any reason why anything other than readline would
         be useful in the context of an interactive interpreter so this is the
