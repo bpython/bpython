@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*- 
 import logging
+import os
 
 from curtsies.fmtfuncs import bold
 from curtsies.fsarray import fsarray
@@ -41,16 +42,27 @@ def paint_current_line(rows, columns, current_display_line):
 def matches_lines(rows, columns, matches, current, config):
     highlight_color = func_for_letter(config.color_scheme['operator'].lower())
     #TODO ...that's not really what operator is for
+
     if not matches:
         return []
     color = func_for_letter(config.color_scheme['main'])
     max_match_width = max(len(m) for m in matches)
     words_wide = max(1, (columns - 1) // (max_match_width + 1))
+    if os.path.sep in matches[0]: # filename completion
+        pass
+    elif '.' in matches[0]:
+        matches = [m.rstrip('.').rsplit('.')[-1] for m in matches]
+        if current:
+            current = current.rstrip('.').rsplit('.')[-1]
+    else:
+        pass
+
     matches_lines = [fmtstr(' ').join(color(m.ljust(max_match_width))
                                         if m != current
                                         else highlight_color(m.ljust(max_match_width))
                                       for m in matches[i:i+words_wide])
                      for i in range(0, len(matches), words_wide)]
+
     logging.debug('match: %r' % current)
     logging.debug('matches_lines: %r' % matches_lines)
     return matches_lines
