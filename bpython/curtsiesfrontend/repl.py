@@ -481,6 +481,11 @@ class Repl(BpythonRepl):
             indent = self.saved_indent
             if err:
                 indent = 0
+
+            if self.current_stdouterr_line:
+                self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width))
+                self.current_stdouterr_line = ''
+
             self._current_line = ' '*indent
             self.cursor_offset_in_line = len(self._current_line)
             self.done = not unfinished
@@ -493,6 +498,7 @@ class Repl(BpythonRepl):
         self.display_lines.extend(self.display_buffer_lines)
         self.display_lines.extend(paint.display_linize(self.current_cursor_line, self.width))
         self.display_lines.extend(paint.display_linize("KeyboardInterrupt", self.width))
+
         self.display_buffer = []
         self.buffer = []
         self.cursor_offset_in_line = 0
