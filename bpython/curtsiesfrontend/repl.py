@@ -136,7 +136,7 @@ class Repl(BpythonRepl):
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 1
 
-        self.status_bar = StatusBar(banner if config.scroll_fill_terminal else '', _(
+        self.status_bar = StatusBar(banner if config.curtsies_fill_terminal else '', _(
             " <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor"
             ) % (config.undo_key, config.save_key, config.pastebin_key, config.external_editor_key))
         self.rl_char_sequences = get_updated_char_sequences(key_dispatch, config)
@@ -612,14 +612,14 @@ class Repl(BpythonRepl):
             self.clean_up_current_line_for_exit() # exception to not changing state!
 
         width, min_height = self.width, self.height
-        show_status_bar = bool(self.status_bar._message) or (self.config.scroll_fill_terminal or self.status_bar.has_focus)
+        show_status_bar = bool(self.status_bar._message) or (self.config.curtsies_fill_terminal or self.status_bar.has_focus)
         if show_status_bar:
             min_height -= 1
 
         current_line_start_row = len(self.lines_for_display) - max(0, self.scroll_offset)
         if self.request_paint_to_clear_screen: # or show_status_bar and about_to_exit ?
             self.request_paint_to_clear_screen = False
-            if self.config.scroll_fill_terminal: #TODO clean up this logic - really necessary check?
+            if self.config.cursties_fill_terminal: #TODO clean up this logic - really necessary check?
                 arr = FSArray(self.height - 1 + current_line_start_row, width)
             else:
                 arr = FSArray(self.height + current_line_start_row, width)
@@ -683,7 +683,7 @@ class Repl(BpythonRepl):
             info_max_rows = max(visible_space_above, visible_space_below)
             infobox = paint.paint_infobox(info_max_rows, int(width * self.config.cli_suggestion_width), self.matches, self.argspec, self.current_word, self.docstring, self.config)
 
-            if visible_space_above >= infobox.height and self.config.scroll_list_above:
+            if visible_space_above >= infobox.height and self.config.curtsies_list_above:
                 arr[current_line_start_row - infobox.height:current_line_start_row, 0:infobox.width] = infobox
             else:
                 arr[cursor_row + 1:cursor_row + 1 + infobox.height, 0:infobox.width] = infobox
@@ -691,7 +691,7 @@ class Repl(BpythonRepl):
 
         logging.debug('about to exit: %r', about_to_exit)
         if show_status_bar:
-            if self.config.scroll_fill_terminal:
+            if self.config.curtsies_fill_terminal:
                 if about_to_exit:
                     arr[max(arr.height, min_height), :] = FSArray(1, width)
                 else:

@@ -259,9 +259,9 @@ Default: Monospace 10
 
 The font to be used by the GTK version.
 
-scroll
-------
-This refers to the ``[scroll]`` section in your config file.
+curtsies
+--------
+This refers to the ``[curtsies]`` section in your config file.
 
 .. versionadded:: 0.13
 

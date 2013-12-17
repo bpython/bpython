@@ -96,7 +96,7 @@ def loadini(struct, configfile):
             'suggestion_width': 0.8,
             'trim_prompts': False,
         },
-        'scroll': {
+        'curtsies': {
             'list_above' : False,
             'fill_terminal' : False,
         },
@@ -163,8 +163,8 @@ def loadini(struct, configfile):
 
     struct.gtk_font = config.get('gtk', 'font')
 
-    struct.scroll_list_above = config.getboolean('scroll', 'list_above')
-    struct.scroll_fill_terminal = config.getboolean('scroll', 'fill_terminal')
+    struct.curtsies_list_above = config.getboolean('curtsies', 'list_above')
+    struct.curtsies_fill_terminal = config.getboolean('curtsies', 'fill_terminal')
 
     color_scheme_name = config.get('general', 'color_scheme')
     color_gtk_scheme_name = config.get('gtk', 'color_scheme')
