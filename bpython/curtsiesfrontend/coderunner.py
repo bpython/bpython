@@ -74,7 +74,7 @@ class CodeRunner(object):
             signal.signal(signal.SIGINT, self.orig_sigint_handler)
             self.orig_sigint_handler = None
             return request
-        elif request in ['SystemExit']:
+        elif request in ['SystemExit']: #use the object?
             self._unload_code()
             raise SystemExitFromCodeThread()
         else:

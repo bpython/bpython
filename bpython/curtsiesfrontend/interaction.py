@@ -3,7 +3,7 @@ import time
 
 from bpython.repl import Interaction as BpythonInteraction
 
-from bpython.scrollfrontend.manual_readline import char_sequences as rl_char_sequences
+from bpython.curtsiesfrontend.manual_readline import char_sequences as rl_char_sequences
 
 class StatusBar(BpythonInteraction):
     """StatusBar and Interaction for Repl

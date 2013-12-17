@@ -1,11 +1,16 @@
+from __future__ import absolute_import
+
 import sys
 from optparse import Option
 
-from fmtstr.terminal import Terminal
-from fmtstr.terminalcontrol import TerminalController
+import curtsies
+import curtsies.window
+import curtsies.terminal
+Window = curtsies.window.Window
+Terminal = curtsies.terminal.Terminal
 
-from bpython.scrollfrontend.repl import Repl
-from bpython.scrollfrontend.coderunner import SystemExitFromCodeThread
+from bpython.curtsiesfrontend.repl import Repl
+from bpython.curtsiesfrontend.coderunner import SystemExitFromCodeThread
 from bpython import args as bpargs
 from bpython.translations import _
 
@@ -19,8 +24,10 @@ def main(args=None, locals_=None, banner=None):
         import logging
         logging.basicConfig(filename='scroll.log', level=logging.DEBUG)
 
-    with TerminalController() as tc:
-        with Terminal(tc, keep_last_line=True, hide_cursor=False) as term:
+    # do parsing before doing any frontend stuff
+    with Terminal() as tc:
+        with Window(tc, keep_last_line=True, hide_cursor=False) as term:
+            #TODO why need to make repl first
             with Repl(config=config,
                       locals_=locals_,
                       stuff_a_refresh_request=tc.stuff_a_refresh_request,
@@ -33,6 +40,7 @@ def main(args=None, locals_=None, banner=None):
                 if exec_args:
                     assert options, "don't pass in exec_args without options"
                     try:
+                        # THIS IS NORMAL PYTHON
                         #TODO replace this so that stdout is properly harvested for display!
                         bpargs.exec_code(repl.interp, exec_args)
                     except SystemExit, e:
@@ -49,6 +57,7 @@ def main(args=None, locals_=None, banner=None):
                     try:
                         repl.process_event(tc.get_event())
                     except SystemExitFromCodeThread:
+                        #Get rid of nasty constant
                         array, cursor_pos = repl.paint(about_to_exit=2)
                         term.render_to_terminal(array, cursor_pos)
                         raise
@@ -60,6 +69,7 @@ def main(args=None, locals_=None, banner=None):
                         array, cursor_pos = repl.paint()
                         scrolled = term.render_to_terminal(array, cursor_pos)
                         repl.scroll_offset += scrolled
+                        # Could calculate this in repl?
 
 if __name__ == '__main__':
     sys.exit(main())

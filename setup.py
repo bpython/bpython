@@ -153,11 +153,11 @@ setup(
         'pygments'
     ],
     extras_require = {
-        'scroll': ['fmtstr>=0.0.23'],
+        'curtsies': ['curtsies>=0.0.24'],
         'urwid' : ['urwid']
     },
     tests_require = ['mock'],
-    packages = ["bpython", "bpython.test", "bpython.translations", "bpdb", "bpython.scrollfrontend"],
+    packages = ["bpython", "bpython.test", "bpython.translations", "bpdb", "bpython.curtsiesfrontend"],
     data_files = data_files,
     package_data = {
         'bpython': ['logo.png'],
@@ -168,7 +168,7 @@ setup(
         'console_scripts': [
             'bpython = bpython.cli:main',
             'bpython-urwid = bpython.urwid:main [urwid]',
-            'bpython-scroll = bpython.scroll:main [scroll]',
+            'bpython-curtsies = bpython.curtsies:main [curtsies]',
         ],
         'gui_scripts': [
             'bpython-gtk = bpython.gtk_:main'
@@ -176,7 +176,7 @@ setup(
     },
     scripts = ([] if using_setuptools else ['data/bpython',
                                             'data/bpython-gtk',
-                                            'data/bpython-scroll',
+                                            'data/bpython-curtsies',
                                             'data/bpython-urwid']),
     cmdclass = cmdclass,
     test_suite = 'bpython.test'

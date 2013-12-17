@@ -18,19 +18,19 @@ translations.init()
 from bpython.translations import _
 from bpython._py3compat import py3
 
-from fmtstr.fsarray import FSArray
-from fmtstr.fmtstr import fmtstr, FmtStr
-from fmtstr.bpythonparse import parse as bpythonparse
-from fmtstr.bpythonparse import func_for_letter, color_for_letter
+from curtsies.fsarray import FSArray
+from curtsies.fmtstr import fmtstr, FmtStr
+from curtsies.bpythonparse import parse as bpythonparse
+from curtsies.bpythonparse import func_for_letter, color_for_letter
 
-from bpython.scrollfrontend.manual_readline import char_sequences as rl_char_sequences
-from bpython.scrollfrontend.manual_readline import get_updated_char_sequences
-from bpython.scrollfrontend.interaction import StatusBar
-from bpython.scrollfrontend import sitefix; sitefix.monkeypatch_quit()
-import bpython.scrollfrontend.replpainter as paint
-import fmtstr.events as events
-from bpython.scrollfrontend.friendly import NotImplementedError
-from bpython.scrollfrontend.coderunner import CodeRunner, FakeOutput
+from bpython.curtsiesfrontend.manual_readline import char_sequences as rl_char_sequences
+from bpython.curtsiesfrontend.manual_readline import get_updated_char_sequences
+from bpython.curtsiesfrontend.interaction import StatusBar
+from bpython.curtsiesfrontend import sitefix; sitefix.monkeypatch_quit()
+import bpython.curtsiesfrontend.replpainter as paint
+import curtsies.events as events
+from bpython.curtsiesfrontend.friendly import NotImplementedError
+from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 
 #TODO implement paste mode and figure out what the deal with config.paste_time is
 #TODO figure out how config.auto_display_list=False behaves and implement it
@@ -217,7 +217,7 @@ class Repl(BpythonRepl):
     def process_event(self, e):
         """Returns True if shutting down, otherwise mutates state of Repl object"""
         # event names uses here are curses compatible, or the full names
-        # for a full list of what should have pretty names, see fmtstr.events.CURSES_TABLE
+        # for a full list of what should have pretty names, see curtsies.events.CURSES_TABLE
 
         if not isinstance(e, events.Event):
             self.last_events.append(e)
