@@ -848,9 +848,12 @@ class Repl(BpythonRepl):
                                  for line in text.split('\n')).encode('utf8'))
             temp.flush()
             subprocess.call(editor_args + [temp.name])
-            self.history = [line for line in open(temp.name).read().split('\n')
+            lines = open(temp.name).read().split('\n')
+            self.history = [line for line in lines
                                  if line[:4] != '### ']
         self.reevaluate(insert_into_history=True)
+        self._current_line = lines[-1][4:]
+        self.cursor_offset_in_line = len(self._current_line)
 
 def simple_repl():
     refreshes = []
