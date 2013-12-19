@@ -4,6 +4,7 @@ import re
 import logging
 import code
 import threading
+import greenlet
 import subprocess
 import tempfile
 
@@ -60,6 +61,9 @@ class FakeStdin(object):
             #TODO EOF on ctrl-d
         elif isinstance(e, events.SigIntEvent):
             self.coderunner.sigint_happened = True
+            self.has_focus = False
+            self.current_line = ''
+            self.cursor_offset_in_line = 0
             self.repl.run_code_and_maybe_finish()
         else: # add normal character
             logging.debug('adding normal char %r to current line', e)
@@ -203,7 +207,8 @@ class Repl(BpythonRepl):
         t.start()
 
     def importcompletion_thread(self):
-        """quick tasks we want to do bits of during downtime"""
+        """task that should run on startup in the background"""
+        #TODO use locks or something to avoid error on import completion right at startup
         while importcompletion.find_coroutine(): # returns None when fully initialized
             pass
 
@@ -292,18 +297,12 @@ class Repl(BpythonRepl):
             self.undo()
             self.update_completion()
         elif e in key_dispatch[self.config.save_key]: # ctrl-s for save
-            t = threading.Thread(target=self.write2file)
-            t.daemon = True
-            logging.debug('starting write2file thread')
-            t.start()
-            self.interact.wait_for_request_or_notify()
+            g = greenlet.greenlet(self.write2file)
+            g.switch()
         # F8 for pastebin
         elif e in key_dispatch[self.config.pastebin_key]:
-            t = threading.Thread(target=self.pastebin)
-            t.daemon = True
-            logging.debug('starting pastebin thread')
-            t.start()
-            self.interact.wait_for_request_or_notify()
+            g = greenlet.greenlet(self.pastebin)
+            g.switch()
         elif e in key_dispatch[self.config.external_editor_key]:
             self.send_to_external_editor()
         #TODO add PAD keys hack as in bpython.cli
@@ -482,6 +481,8 @@ class Repl(BpythonRepl):
             if err:
                 indent = 0
 
+            #TODO This should be printed ABOVE the error that just happened instead
+            # or maybe just thrown away and not shown
             if self.current_stdouterr_line:
                 self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width))
                 self.current_stdouterr_line = ''

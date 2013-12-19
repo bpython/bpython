@@ -1,4 +1,4 @@
-import Queue
+import greenlet
 import time
 
 from bpython.repl import Interaction as BpythonInteraction
@@ -28,8 +28,8 @@ class StatusBar(BpythonInteraction):
         self.message_start_time = time.time()
         self.message_time = 3
         self.permanent_text = permanent_text
-        self.response_queue = Queue.Queue(maxsize=1)
-        self.request_or_notify_queue = Queue.Queue()
+        self.main_greenlet = greenlet.getcurrent()
+        self.request_greenlet = None
 
     @property
     def has_focus(self):
@@ -53,16 +53,17 @@ class StatusBar(BpythonInteraction):
         elif e == "":
             raise SystemExit()
         elif self.in_prompt and e in ("\n", "\r"):
-            self.response_queue.put(self._current_line)
+            line = self._current_line
             self.escape()
+            self.main_greenlet_switch(line)
         elif self.in_confirm:
             if e in ('y', 'Y'):
-                self.response_queue.put(True)
+                self.request_greenlet.switch(True)
             else:
-                self.response_queue.put(False)
+                self.request_greenlet.switch(False)
             self.escape()
         elif e in ['\x1b', '\t', '\x1b\t', '\x1b\x1b']:
-            self.response_queue.put(False)
+            self.request_greenlet.switch(False)
             self.escape()
         else: # add normal character
             self._current_line = (self._current_line[:self.cursor_offset_in_line] +
@@ -72,7 +73,6 @@ class StatusBar(BpythonInteraction):
 
     def escape(self):
         """unfocus from statusbar, clear prompt state, wait for notify call"""
-        self.wait_for_request_or_notify()
         self.in_prompt = False
         self.in_confirm = False
         self.prompt = ''
@@ -89,30 +89,23 @@ class StatusBar(BpythonInteraction):
             return self._message
         return self.permanent_text
 
-    def wait_for_request_or_notify(self):
-        try:
-            r = self.request_or_notify_queue.get(True, 1)
-        except Queue.Empty:
-            raise Exception('Main thread blocked because task thread not calling back')
-        return r
-
-    # interaction interface - should be called from other threads
+    # interaction interface - should be called from other greenlets
     def notify(self, msg, n=3):
+        self.request_greenlet = greenlet.getcurrent()
         self.message_time = n
         self.message(msg)
-        self.request_or_notify_queue.put(msg)
-    # below Really ought to be called from threads other than the mainloop because they block
+        self.main_greenlet.switch(msg)
+
+    # below Really ought to be called from greenlets other than main because they block
     def confirm(self, q):
         """Expected to return True or False, given question prompt q"""
+        self.request_greenlet = greenlet.getcurrent()
         self.prompt = q
         self.in_confirm = True
-        self.request_or_notify_queue.put(q)
-        return self.response_queue.get()
+        return self.main_greenlet.switch(q)
     def file_prompt(self, s):
         """Expected to return a file name, given """
+        self.request_greenlet = greenlet.getcurrent()
         self.prompt = s.replace('Esc', 'Tab')
         self.in_prompt = True
-        self.request_or_notify_queue.put(s)
-        r = self.response_queue.get()
-        return r
-
+        return self.main_greenlet.switch(s)

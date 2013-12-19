@@ -1,8 +1,7 @@
 import code
-import Queue
 import signal
 import sys
-import threading
+import greenlet
 import logging
 
 class SigintHappened(object):
@@ -16,9 +15,8 @@ class CodeRunner(object):
     def __init__(self, interp=None, stuff_a_refresh_request=lambda:None):
         self.interp = interp or code.InteractiveInterpreter()
         self.source = None
-        self.code_thread = None
-        self.requests_from_code_thread = Queue.Queue(maxsize=1)
-        self.responses_for_code_thread = Queue.Queue(maxsize=1)
+        self.main_greenlet = greenlet.getcurrent()
+        self.code_greenlet = None
         self.stuff_a_refresh_request = stuff_a_refresh_request
         self.code_is_waiting = False
         self.sigint_happened = False
@@ -26,44 +24,42 @@ class CodeRunner(object):
 
     @property
     def running(self):
-        return self.source and self.code_thread
+        return self.source and self.code_greenlet
 
     def load_code(self, source):
         """Prep code to be run"""
         self.source = source
-        self.code_thread = None
+        self.code_greenlet = None
 
     def _unload_code(self):
         """Called when done running code"""
         self.source = None
-        self.code_thread = None
+        self.code_greenlet = None
         self.code_is_waiting = False
 
     def run_code(self, for_code=None):
         """Returns Truthy values if code finishes, False otherwise
 
-        if for_code is provided, send that value to the code thread
+        if for_code is provided, send that value to the code greenlet
         if source code is complete, returns "done"
         if source code is incomplete, returns "unfinished"
         """
-        if self.code_thread is None:
+        if self.code_greenlet is None:
             assert self.source is not None
-            self.code_thread = threading.Thread(target=self._blocking_run_code, name='codethread')
-            self.code_thread.daemon = True
+            self.code_greenlet = greenlet.greenlet(self._blocking_run_code)
             self.orig_sigint_handler = signal.getsignal(signal.SIGINT)
             signal.signal(signal.SIGINT, self.sigint_handler)
-            self.code_thread.start()
+            request = self.code_greenlet.switch()
         else:
             assert self.code_is_waiting
             self.code_is_waiting = False
             signal.signal(signal.SIGINT, self.sigint_handler)
             if self.sigint_happened:
                 self.sigint_happened = False
-                self.responses_for_code_thread.put(SigintHappened)
+                request = self.code_greenlet.switch(SigintHappened)
             else:
-                self.responses_for_code_thread.put(for_code)
+                request = self.code_greenlet.switch(for_code)
 
-        request = self.requests_from_code_thread.get()
         if request in ['wait', 'refresh']:
             self.code_is_waiting = True
             if request == 'refresh':
@@ -78,10 +74,10 @@ class CodeRunner(object):
             self._unload_code()
             raise SystemExitFromCodeThread()
         else:
-            raise ValueError("Not a valid request_from_code_thread value: %r" % request)
+            raise ValueError("Not a valid value from code greenlet: %r" % request)
 
     def sigint_handler(self, *args):
-        if threading.current_thread() is self.code_thread:
+        if greenlet.getcurrent() is self.code_greenlet:
             logging.debug('sigint while running user code!')
             raise KeyboardInterrupt()
         else:
@@ -92,25 +88,22 @@ class CodeRunner(object):
         try:
             unfinished = self.interp.runsource(self.source)
         except SystemExit:
-            self.requests_from_code_thread.put('SystemExit')
-            return
-        self.requests_from_code_thread.put('unfinished' if unfinished else 'done')
+            return 'SystemExit'
+        return 'unfinished' if unfinished else 'done'
 
     def wait_and_get_value(self):
         """Return the argument passed in to .run_code(for_code)
 
         Nothing means calls to run_code must be...
         """
-        self.requests_from_code_thread.put('wait')
-        value = self.responses_for_code_thread.get()
+        value = self.main_greenlet.switch('wait')
         if value is SigintHappened:
             raise KeyboardInterrupt()
         return value
 
     def refresh_and_get_value(self):
         """Returns the argument passed in to .run_code(for_code) """
-        self.requests_from_code_thread.put('refresh')
-        value = self.responses_for_code_thread.get()
+        value = self.main_greenlet.switch('refresh')
         if value is SigintHappened:
             raise KeyboardInterrupt()
         return value
