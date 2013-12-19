@@ -140,9 +140,20 @@ class Repl(BpythonRepl):
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 1
 
+        self.reevaluating = False
+        self.fake_refresh_request = False
+        def request_refresh():
+            if self.reevaluating:
+                self.fake_refresh_request = True
+            else:
+                stuff_a_refresh_request()
+        self.stuff_a_refresh_request = request_refresh
+
         self.status_bar = StatusBar(banner if config.curtsies_fill_terminal else '', _(
             " <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor"
-            ) % (config.undo_key, config.save_key, config.pastebin_key, config.external_editor_key))
+            ) % (config.undo_key, config.save_key, config.pastebin_key, config.external_editor_key),
+            stuff_a_refresh_request=self.stuff_a_refresh_request
+            )
         self.rl_char_sequences = get_updated_char_sequences(key_dispatch, config)
         logging.debug("starting parent init")
         super(Repl, self).__init__(interp, config)
@@ -165,14 +176,6 @@ class Repl(BpythonRepl):
         self.cursor_offset_in_line = 0 # from the left, 0 means first char
         self.done = True
 
-        self.reevaluating = False
-        self.fake_refresh_request = False
-        def request_refresh():
-            if self.reevaluating:
-                self.fake_refresh_request = True
-            else:
-                stuff_a_refresh_request()
-        self.stuff_a_refresh_request = request_refresh
         self.coderunner = CodeRunner(self.interp, request_refresh)
         self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
         self.stderr = FakeOutput(self.coderunner, self.send_to_stderr)
@@ -231,8 +234,11 @@ class Repl(BpythonRepl):
         result = None
         logging.debug("processing event %r", e)
         if isinstance(e, events.RefreshRequestEvent):
-            assert self.coderunner.code_is_waiting
-            self.run_code_and_maybe_finish()
+            if self.status_bar.has_focus:
+                self.status_bar.process_event(e)
+            else:
+                assert self.coderunner.code_is_waiting
+                self.run_code_and_maybe_finish()
         elif isinstance(e, events.WindowChangeEvent):
             logging.debug('window change to %d %d', e.width, e.height)
             self.width, self.height = e.width, e.height

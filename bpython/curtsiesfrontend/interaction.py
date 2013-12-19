@@ -1,5 +1,6 @@
 import greenlet
 import time
+import curtsies.events as events
 
 from bpython.repl import Interaction as BpythonInteraction
 
@@ -18,11 +19,12 @@ class StatusBar(BpythonInteraction):
     functionality in a evented or callback style, but trying to integrate
     bpython.Repl code.
     """
-    def __init__(self, initial_message='', permanent_text=""):
+    def __init__(self, initial_message='', permanent_text="", stuff_a_refresh_request=lambda: None):
         self._current_line = ''
         self.cursor_offset_in_line = 0
         self.in_prompt = False
         self.in_confirm = False
+        self.waiting_for_refresh = False
         self.prompt = ''
         self._message = initial_message
         self.message_start_time = time.time()
@@ -30,10 +32,11 @@ class StatusBar(BpythonInteraction):
         self.permanent_text = permanent_text
         self.main_greenlet = greenlet.getcurrent()
         self.request_greenlet = None
+        self.stuff_a_refresh_request = stuff_a_refresh_request
 
     @property
     def has_focus(self):
-        return self.in_prompt or self.in_confirm
+        return self.in_prompt or self.in_confirm or self.waiting_for_refresh
 
     def message(self, msg):
         self.message_start_time = time.time()
@@ -45,8 +48,11 @@ class StatusBar(BpythonInteraction):
 
     def process_event(self, e):
         """Returns True if shutting down"""
-        assert self.in_prompt or self.in_confirm
-        if e in rl_char_sequences:
+        assert self.in_prompt or self.in_confirm or self.waiting_for_refresh
+        if isinstance(e, events.RefreshRequestEvent):
+            self.waiting_for_refresh = False
+            self.request_greenlet.switch()
+        elif e in rl_char_sequences:
             self.cursor_offset_in_line, self._current_line = rl_char_sequences[e](self.cursor_offset_in_line, self._current_line)
         elif e == "":
             raise KeyboardInterrupt()
@@ -55,7 +61,7 @@ class StatusBar(BpythonInteraction):
         elif self.in_prompt and e in ("\n", "\r"):
             line = self._current_line
             self.escape()
-            self.main_greenlet_switch(line)
+            self.request_greenlet.switch(line)
         elif self.in_confirm:
             if e in ('y', 'Y'):
                 self.request_greenlet.switch(True)
@@ -94,6 +100,8 @@ class StatusBar(BpythonInteraction):
         self.request_greenlet = greenlet.getcurrent()
         self.message_time = n
         self.message(msg)
+        self.waiting_for_refresh = True
+        self.stuff_a_refresh_request()
         self.main_greenlet.switch(msg)
 
     # below Really ought to be called from greenlets other than main because they block
@@ -108,4 +116,5 @@ class StatusBar(BpythonInteraction):
         self.request_greenlet = greenlet.getcurrent()
         self.prompt = s.replace('Esc', 'Tab')
         self.in_prompt = True
-        return self.main_greenlet.switch(s)
+        result = self.main_greenlet.switch(s)
+        return result
