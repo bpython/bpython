@@ -288,7 +288,8 @@ class Repl(BpythonRepl):
         elif e in key_dispatch[self.config.suspend_key]: #TODO
             raise SystemExit()
         elif e in ("",) + key_dispatch[self.config.exit_key]:
-            raise SystemExit()
+            if self._current_line == '':
+                raise SystemExit()
         elif e in ("\n", "\r", "PAD_ENTER"):
             self.on_enter()
             self.update_completion()
