@@ -41,7 +41,6 @@ def paint_current_line(rows, columns, current_display_line):
 
 def matches_lines(rows, columns, matches, current, config):
     highlight_color = func_for_letter(config.color_scheme['operator'].lower())
-    #TODO ...that's not really what operator is for
 
     if not matches:
         return []
@@ -118,7 +117,6 @@ def formatted_argspec(argspec, columns, config):
             s += punctuation_color(', ')
         s += token_color('*%s' % (_args,))
 
-    #TODO what in the world is this about? Just transcribing from bpython/cli for now
     if py3 and kwonly:
         if not _args:
             if args:

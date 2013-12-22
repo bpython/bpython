@@ -41,7 +41,7 @@ def main(args=None, locals_=None, banner=None):
                     assert options, "don't pass in exec_args without options"
                     try:
                         # THIS IS NORMAL PYTHON
-                        #TODO replace this so that stdout is properly harvested for display!
+                        #TODO replace this so that stdout is properly harvested for display and rewind works
                         bpargs.exec_code(repl.interp, exec_args)
                     except SystemExit, e:
                         exit_value = e.args
@@ -69,7 +69,8 @@ def main(args=None, locals_=None, banner=None):
                         array, cursor_pos = repl.paint()
                         scrolled = term.render_to_terminal(array, cursor_pos)
                         repl.scroll_offset += scrolled
-                        # Could calculate this in repl?
+                        # Could this be calculated in the repl, avoiding this
+                        # two-way communication?
 
 if __name__ == '__main__':
     sys.exit(main())

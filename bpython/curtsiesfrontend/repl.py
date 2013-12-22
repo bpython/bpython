@@ -39,8 +39,7 @@ from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 #TODO other autocomplete modes (also fix in other bpython implementations)
 #TODO figure out what config.flush_output is
 #TODO figure out what options.quiet is
-#TODO use events instead of length-one queues for interthread communication
-
+#TODO add buffering to stdout to speed up output.
 
 from bpython.keys import cli_key_dispatch as key_dispatch
 
@@ -58,7 +57,6 @@ class FakeStdin(object):
         assert self.has_focus
         if e in rl_char_sequences:
             self.cursor_offset_in_line, self.current_line = rl_char_sequences[e](self.cursor_offset_in_line, self.current_line)
-            #TODO EOF on ctrl-d
         elif isinstance(e, events.SigIntEvent):
             self.coderunner.sigint_happened = True
             self.has_focus = False
@@ -285,7 +283,7 @@ class Repl(BpythonRepl):
             raise NotImplementedError()
         elif e in key_dispatch[self.config.show_source_key]: #TODO
             raise NotImplementedError()
-        elif e in key_dispatch[self.config.suspend_key]: #TODO
+        elif e in key_dispatch[self.config.suspend_key]:
             raise SystemExit()
         elif e in ("",) + key_dispatch[self.config.exit_key]:
             if self._current_line == '':
@@ -500,7 +498,7 @@ class Repl(BpythonRepl):
 
     def keyboard_interrupt(self):
         #TODO factor out the common cleanup from running a line
-        #TODO make rewind work properly with ctrl-c somehow
+        #TODO make rewind work properly with ctrl-c'd infinite loops
         self.cursor_offset_in_line = -1
         self.unhighlight_paren()
         self.display_lines.extend(self.display_buffer_lines)
@@ -680,10 +678,6 @@ class Repl(BpythonRepl):
             assert cursor_column >= 0, (cursor_column, len(self.current_cursor_line), len(self._current_line), self.cursor_offset_in_line)
 
         if self.list_win_visible:
-            #infobox not properly expanding window! try reduce( docs about halfway down a 80x24 terminal
-            #TODO what's the desired behavior here? Currently uses only the space already on screen,
-            # scrolling down only if there would have been more space above the current line, but being forced to put below
-            #TODO above description is not accurate - sometimes screen scrolls for docstring message
             logging.debug('infobox display code running')
             visible_space_above = history.height
             visible_space_below = min_height - cursor_row - 1
@@ -803,10 +797,6 @@ class Repl(BpythonRepl):
             self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
     def reevaluate(self, insert_into_history=False):
         """bpython.Repl.undo calls this"""
-        #TODO This almost works, but stdin.readline() doesn't work yet
-        #TODO other implementations have a enter no-history method, could do
-        # that instead of clearing history and getting it rewritten
-
         old_logical_lines = self.history
         self.history = []
         self.display_lines = []
