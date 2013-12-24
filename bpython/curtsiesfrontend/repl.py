@@ -625,7 +625,7 @@ class Repl(BpythonRepl):
         current_line_start_row = len(self.lines_for_display) - max(0, self.scroll_offset)
         if self.request_paint_to_clear_screen: # or show_status_bar and about_to_exit ?
             self.request_paint_to_clear_screen = False
-            if self.config.cursties_fill_terminal: #TODO clean up this logic - really necessary check?
+            if self.config.curtsies_fill_terminal: #TODO clean up this logic - really necessary check?
                 arr = FSArray(self.height - 1 + current_line_start_row, width)
             else:
                 arr = FSArray(self.height + current_line_start_row, width)
