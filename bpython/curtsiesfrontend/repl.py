@@ -179,10 +179,10 @@ class Repl(BpythonRepl):
         self.stderr = FakeOutput(self.coderunner, self.send_to_stderr)
         self.stdin = FakeStdin(self.coderunner, self)
 
-        self.paste_mode = False
         self.request_paint_to_clear_screen = False
         self.last_events = [None] * 50
         self.presentation_mode = False
+        self.paste_events = None
 
         self.width = None  # will both be set by a window resize event
         self.height = None
@@ -219,6 +219,22 @@ class Repl(BpythonRepl):
         self.cursor_offset_in_line = -1
         self.unhighlight_paren()
 
+    def process_paste_events(self):
+        for ee in self.paste_events:
+            if isinstance(ee, events.Event):
+                pass
+            else:
+                if ee in ("\n", "\r", "PAD_ENTER"):
+                    self.on_enter()
+                    break
+                elif isinstance(ee, events.Event):
+                    pass # ignore events in a paste
+                else:
+                    self.add_normal_character(ee if len(ee) == 1 else ee[-1]) #strip control seq
+        else:
+            self.self.paste_events = None
+            self.update_completion()
+
     ## Event handling
     def process_event(self, e):
         """Returns True if shutting down, otherwise mutates state of Repl object"""
@@ -232,7 +248,9 @@ class Repl(BpythonRepl):
         result = None
         logging.debug("processing event %r", e)
         if isinstance(e, events.RefreshRequestEvent):
-            if self.status_bar.has_focus:
+            if self.paste_events:
+                self.process_paste_events()
+            elif self.status_bar.has_focus:
                 self.status_bar.process_event(e)
             else:
                 assert self.coderunner.code_is_waiting
@@ -250,6 +268,9 @@ class Repl(BpythonRepl):
             self.keyboard_interrupt()
             self.update_completion()
             return
+        elif isinstance(e, events.PasteEvent):
+            self.paste_events = (event for event in e.events)
+            self.process_paste_events()
 
         elif e in self.rl_char_sequences:
             self.cursor_offset_in_line, self._current_line = self.rl_char_sequences[e](self.cursor_offset_in_line, self._current_line)
@@ -421,8 +442,6 @@ class Repl(BpythonRepl):
         """Update autocomplete info; self.matches and self.argspec"""
         #TODO do we really have to do something this ugly? Can we rename it?
         # this method stolen from bpython.cli
-        if self.paste_mode:
-            return
 
         if self.list_win_visible and not self.config.auto_display_list:
             self.list_win_visible = False

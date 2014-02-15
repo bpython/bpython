@@ -25,7 +25,7 @@ def main(args=None, locals_=None, banner=None):
         logging.basicConfig(filename='scroll.log', level=logging.DEBUG)
 
     # do parsing before doing any frontend stuff
-    with Terminal() as tc:
+    with Terminal(paste_mode=True) as tc:
         with Window(tc, keep_last_line=True, hide_cursor=False) as term:
             #TODO why need to make repl first
             with Repl(config=config,
