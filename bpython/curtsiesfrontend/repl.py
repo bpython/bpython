@@ -141,7 +141,7 @@ class Repl(BpythonRepl):
         self.reevaluating = False
         self.fake_refresh_request = False
         def request_refresh():
-            if self.reevaluating:
+            if self.reevaluating or self.paste_mode:
                 self.fake_refresh_request = True
             else:
                 stuff_a_refresh_request()
@@ -182,7 +182,7 @@ class Repl(BpythonRepl):
         self.request_paint_to_clear_screen = False
         self.last_events = [None] * 50
         self.presentation_mode = False
-        self.paste_events = None
+        self.paste_mode = False
 
         self.width = None  # will both be set by a window resize event
         self.height = None
@@ -219,22 +219,6 @@ class Repl(BpythonRepl):
         self.cursor_offset_in_line = -1
         self.unhighlight_paren()
 
-    def process_paste_events(self):
-        for ee in self.paste_events:
-            if isinstance(ee, events.Event):
-                pass
-            else:
-                if ee in ("\n", "\r", "PAD_ENTER"):
-                    self.on_enter()
-                    break
-                elif isinstance(ee, events.Event):
-                    pass # ignore events in a paste
-                else:
-                    self.add_normal_character(ee if len(ee) == 1 else ee[-1]) #strip control seq
-        else:
-            self.self.paste_events = None
-            self.update_completion()
-
     ## Event handling
     def process_event(self, e):
         """Returns True if shutting down, otherwise mutates state of Repl object"""
@@ -248,9 +232,7 @@ class Repl(BpythonRepl):
         result = None
         logging.debug("processing event %r", e)
         if isinstance(e, events.RefreshRequestEvent):
-            if self.paste_events:
-                self.process_paste_events()
-            elif self.status_bar.has_focus:
+            if self.status_bar.has_focus:
                 self.status_bar.process_event(e)
             else:
                 assert self.coderunner.code_is_waiting
@@ -269,8 +251,19 @@ class Repl(BpythonRepl):
             self.update_completion()
             return
         elif isinstance(e, events.PasteEvent):
-            self.paste_events = (event for event in e.events)
-            self.process_paste_events()
+            self.paste_mode = True
+            for ee in e.events:
+                if ee in ("\n", "\r", "PAD_ENTER"):
+                    self.on_enter()
+                    while self.fake_refresh_request:
+                        self.fake_refresh_request = False
+                        self.process_event(events.RefreshRequestEvent())
+                elif isinstance(ee, events.Event):
+                    pass # ignore events in a paste
+                else:
+                    self.add_normal_character(ee if len(ee) == 1 else ee[-1]) #strip control seq
+            self.paste_mode = False
+            self.update_completion()
 
         elif e in self.rl_char_sequences:
             self.cursor_offset_in_line, self._current_line = self.rl_char_sequences[e](self.cursor_offset_in_line, self._current_line)
