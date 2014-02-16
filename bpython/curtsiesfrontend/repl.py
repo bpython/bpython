@@ -511,7 +511,7 @@ class Repl(BpythonRepl):
             #TODO This should be printed ABOVE the error that just happened instead
             # or maybe just thrown away and not shown
             if self.current_stdouterr_line:
-                self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width))
+                self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width), blank_line=True)
                 self.current_stdouterr_line = ''
 
             self._current_line = ' '*indent

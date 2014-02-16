@@ -15,7 +15,7 @@ if not py3:
 # * return an array of the width they were asked for
 # * return an array not taller than the height they were asked for
 
-def display_linize(msg, columns):
+def display_linize(msg, columns, blank_line=False):
     """Returns lines obtained by splitting msg over multiple lines.
 
     Warning: if msg is empty, returns an empty list of lines"""
@@ -23,7 +23,7 @@ def display_linize(msg, columns):
                         for start, end in zip(
                             range(0, len(msg), columns),
                             range(columns, len(msg)+columns, columns))]
-                    if msg else [])
+                    if msg else ([''] if blank_line else []))
     return display_lines
 
 def paint_history(rows, columns, display_lines):
