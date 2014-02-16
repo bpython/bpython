@@ -452,17 +452,21 @@ class Repl(BpythonRepl):
         if insert_into_history:
             self.insert_into_history(line)
         self.buffer.append(line)
-        indent = len(re.match(r'[ ]*', line).group())
 
-        if line.endswith(':'):
-            indent = max(0, indent + self.config.tab_length)
-        elif line and line.count(' ') == len(line):
-            indent = max(0, indent - self.config.tab_length)
-        elif line and ':' not in line and line.strip().startswith(('return', 'pass', 'raise', 'yield')):
-            indent = max(0, indent - self.config.tab_length)
+        if self.paste_mode:
+            self.saved_indent = 0
+        else:
+            indent = len(re.match(r'[ ]*', line).group())
+            if line.endswith(':'):
+                indent = max(0, indent + self.config.tab_length)
+            elif line and line.count(' ') == len(line):
+                indent = max(0, indent - self.config.tab_length)
+            elif line and ':' not in line and line.strip().startswith(('return', 'pass', 'raise', 'yield')):
+                indent = max(0, indent - self.config.tab_length)
+            self.saved_indent = indent
+
         logging.debug('running %r in interpreter', self.buffer)
         code_to_run = '\n'.join(self.buffer)
-        self.saved_indent = indent
 
         #current line not added to display buffer if quitting #TODO I don't understand this comment
         if self.config.syntax:
