@@ -55,7 +55,10 @@ class FakeStdin(object):
 
     def process_event(self, e):
         assert self.has_focus
-        if e in rl_char_sequences:
+        if isinstance(e, events.PasteEvent):
+            for ee in e.events:
+                self.add_normal_character(ee if len(ee) == 1 else ee[-1]) #strip control seq
+        elif e in rl_char_sequences:
             self.cursor_offset_in_line, self.current_line = rl_char_sequences[e](self.cursor_offset_in_line, self.current_line)
         elif isinstance(e, events.SigIntEvent):
             self.coderunner.sigint_happened = True
@@ -64,12 +67,7 @@ class FakeStdin(object):
             self.cursor_offset_in_line = 0
             self.repl.run_code_and_maybe_finish()
         else: # add normal character
-            logging.debug('adding normal char %r to current line', e)
-            c = e if py3 else e.encode('utf8')
-            self.current_line = (self.current_line[:self.cursor_offset_in_line] +
-                                 c +
-                                 self.current_line[self.cursor_offset_in_line:])
-            self.cursor_offset_in_line += 1
+            self.add_normal_character(e)
 
         if self.current_line.endswith(("\n", "\r")):
             line = self.current_line
@@ -81,6 +79,14 @@ class FakeStdin(object):
             self.repl.run_code_and_maybe_finish(for_code=line)
         else:
             self.repl.send_to_stdin(self.current_line)
+
+    def add_normal_character(self, e):
+        logging.debug('adding normal char %r to current line', e)
+        c = e if py3 else e.encode('utf8')
+        self.current_line = (self.current_line[:self.cursor_offset_in_line] +
+                             c +
+                             self.current_line[self.cursor_offset_in_line:])
+        self.cursor_offset_in_line += 1
 
     def readline(self):
         self.has_focus = True

@@ -52,6 +52,9 @@ class StatusBar(BpythonInteraction):
         if isinstance(e, events.RefreshRequestEvent):
             self.waiting_for_refresh = False
             self.request_greenlet.switch()
+        elif isinstance(e, events.PasteEvent):
+            for ee in e.events:
+                self.add_normal_character(ee if len(ee) == 1 else ee[-1]) #strip control seq
         elif e in rl_char_sequences:
             self.cursor_offset_in_line, self._current_line = rl_char_sequences[e](self.cursor_offset_in_line, self._current_line)
         elif e == "":
@@ -72,10 +75,13 @@ class StatusBar(BpythonInteraction):
             self.request_greenlet.switch(False)
             self.escape()
         else: # add normal character
-            self._current_line = (self._current_line[:self.cursor_offset_in_line] +
-                                 e +
-                                 self._current_line[self.cursor_offset_in_line:])
-            self.cursor_offset_in_line += 1
+            self.add_normal_character(e)
+
+    def add_normal_character(self, e):
+        self._current_line = (self._current_line[:self.cursor_offset_in_line] +
+                             e +
+                             self._current_line[self.cursor_offset_in_line:])
+        self.cursor_offset_in_line += 1
 
     def escape(self):
         """unfocus from statusbar, clear prompt state, wait for notify call"""
