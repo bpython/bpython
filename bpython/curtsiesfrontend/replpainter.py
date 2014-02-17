@@ -36,7 +36,7 @@ def paint_history(rows, columns, display_lines):
     return r
 
 def paint_current_line(rows, columns, current_display_line):
-    lines = display_linize(current_display_line, columns)
+    lines = display_linize(current_display_line, columns, True)
     return fsarray(lines, width=columns)
 
 def matches_lines(rows, columns, matches, current, config):
