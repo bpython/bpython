@@ -33,8 +33,6 @@ import curtsies.events as events
 from bpython.curtsiesfrontend.friendly import NotImplementedError
 from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 
-#TODO implement paste mode and figure out what the deal with config.paste_time is
-#TODO figure out how config.auto_display_list=False behaves and implement it
 #TODO figure out how config.list_win_visible behaves and implement it, or toss
 #TODO other autocomplete modes (also fix in other bpython implementations)
 #TODO figure out what config.flush_output is
