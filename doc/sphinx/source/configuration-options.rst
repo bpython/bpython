@@ -1,6 +1,7 @@
 General
 -------
-This refers to the ``[general]`` section in your `$XDG_CONFIG_HOME/bpython/config` file.
+This refers to the ``[general]`` section in your
+`$XDG_CONFIG_HOME/bpython/config` file.
 
 auto_display_list
 ^^^^^^^^^^^^^^^^^
@@ -9,10 +10,9 @@ When this is off, you can hit tab to see the suggestions.
 
 autocomplete_mode
 ^^^^^^^^^^^^^^^^^
-There are three modes for autocomplete. simple, substring, and fuzzy.
-Simple matches methods with a common prefix, substring matches methods with a common
-subsequence, and fuzzy matches methods with common characters (default:
-simple).
+There are three modes for autocomplete. simple, substring, and fuzzy.  Simple
+matches methods with a common prefix, substring matches methods with a common
+subsequence, and fuzzy matches methods with common characters (default: simple).
 
 .. versionadded:: 0.12
 
@@ -22,7 +22,8 @@ Syntax highlighting as you type (default: True).
 
 arg_spec
 ^^^^^^^^
-Display the arg spec (list of arguments) for callables, when possible (default: True).
+Display the arg spec (list of arguments) for callables, when possible (default:
+True).
 
 hist_file
 ^^^^^^^^^
@@ -42,8 +43,8 @@ Soft tab size (default 4, see pep-8)
 
 pastebin_url
 ^^^^^^^^^^^^
-The pastebin url to post to (without a trailing slash). This pastebin has
-to be a pastebin which uses LodgeIt. Examples are: http://paste.pocoo.org/xmlrpc/ and
+The pastebin url to post to (without a trailing slash). This pastebin has to be
+a pastebin which uses LodgeIt. Examples are: http://paste.pocoo.org/xmlrpc/ and
 http://bpaste.net/xmlrpc/ (default: http://bpaste.net/xmlrpc/)
 
 pastebin_private
@@ -55,20 +56,23 @@ Default: True).
 
 pastebin_show_url
 ^^^^^^^^^^^^^^^^^
-The url under which the new paste can be reached. ``$paste_id`` will be
-replaced by the ID of the new paste. Examples are: http://bpaste.net/show/$paste_id/
-and http://paste.pocoo.org/show/$paste_id/ (default: http://bpaste.net/show/$paste_id/)
+The url under which the new paste can be reached. ``$paste_id`` will be replaced
+by the ID of the new paste. Examples are: http://bpaste.net/show/$paste_id/ and
+http://paste.pocoo.org/show/$paste_id/ (default:
+http://bpaste.net/show/$paste_id/)
 
 pastebin_helper
 ^^^^^^^^^^^^^^^
 
 The name of a helper executable that should perform pastebin upload on bpython's
-behalf. If set, this overrides `pastebin_url`. It also overrides `pastebin_show_url`,
-as the helper is expected to return the full URL to the pastebin as the first word of
-its output. The data is supplied to the helper via STDIN.
+behalf. If set, this overrides `pastebin_url`. It also overrides
+`pastebin_show_url`, as the helper is expected to return the full URL to the
+pastebin as the first word of its output. The data is supplied to the helper via
+STDIN.
 
 An example helper program is ``pastebinit``, available for most systems. The
-following helper program can be used to create `gists <http://gist.github.com>`_:
+following helper program can be used to create `gists
+<http://gist.github.com>`_:
 
 .. code-block:: python
 
@@ -117,12 +121,8 @@ color_scheme
 ^^^^^^^^^^^^
 See :ref:`themes` for more information.
 
-Color schemes should be put in ``$XDG_CONFIG_HOME/bpython/``
-
-e.g to use the theme ``$XDG_CONFIG_HOME/bpython/foo.theme`` set ``color_scheme = foo``
-
-If you set the colorscheme to `foo` this will be translated to 
-``$XDG_CONFIG_HOME/bpython/foo.theme`` so be sure to put the file in that directory.
+Color schemes should be put in ``$XDG_CONFIG_HOME/bpython/``. For example, to
+use the theme ``$XDG_CONFIG_HOME/bpython/foo.theme`` set ``color_scheme = foo``
 
 Leave blank or set to "default" to use the default (builtin) theme.
 
@@ -138,11 +138,13 @@ Whether to append ``.py`` to the filename while saving the input to a file.
 
 Keyboard
 --------
-This section refers to the ``[keyboard]`` section in your ``$XDG_CONFIG_HOME/bpython/config``.
+This section refers to the ``[keyboard]`` section in your
+``$XDG_CONFIG_HOME/bpython/config``.
 
-You can set various keyboard shortcuts to be used by bpython. However, we have yet to map all keys
-to their respective control codes. If you configure a key combination which is not yet supported
-by bpython it will raise an exception telling you the key does not exist in bpython.keys.
+You can set various keyboard shortcuts to be used by bpython. However, we have
+yet to map all keys to their respective control codes. If you configure a key
+combination which is not yet supported by bpython it will raise an exception
+telling you the key does not exist in bpython.keys.
 
 Valid keys are:
 
@@ -251,7 +253,8 @@ Trims lines starting with '>>> ' when set to True.
 
 GTK
 ---
-This refers to the ``[gtk]`` section in your `$XDG_CONFIG_HOME/bpython/config` file.
+This refers to the ``[gtk]`` section in your `$XDG_CONFIG_HOME/bpython/config`
+file.
 
 font
 ^^^^
@@ -270,10 +273,12 @@ fill_terminal
 ^^^^^^^^^^^^^
 Default: False
 
-Whether bpython should clear the screen on start, and always display a status bar at the bottom.
+Whether bpython should clear the screen on start, and always display a status
+bar at the bottom.
 
 list_above
 ^^^^^^^^^^
 Default: False
 
-When there is space above the current line, whether the suggestions list will be displayed there instead of below the current line.
+When there is space above the current line, whether the suggestions list will be
+displayed there instead of below the current line.
