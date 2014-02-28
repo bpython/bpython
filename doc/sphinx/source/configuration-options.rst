@@ -262,7 +262,6 @@ Default: Monospace 10
 
 The font to be used by the GTK version.
 
-=======
 curtsies
 --------
 This refers to the ``[curtsies]`` section in your config file.
