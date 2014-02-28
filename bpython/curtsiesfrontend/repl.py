@@ -627,7 +627,7 @@ class Repl(BpythonRepl):
         self.current_stdouterr_line = ''
         self.stdin.current_line = '\n'
 
-    def paint(self, about_to_exit=False):
+    def paint(self, about_to_exit=False, user_quit=False):
         """Returns an array of min_height or more rows and width columns, plus cursor position
 
         Paints the entire screen - ideally the terminal display layer will take a diff and only
@@ -676,7 +676,7 @@ class Repl(BpythonRepl):
             arr[:history.height,:history.width] = history
 
         current_line = paint.paint_current_line(min_height, width, self.current_cursor_line)
-        if about_to_exit == 2: # hack for quit() in user code
+        if user_quit: # quit() or exit() in interp
             current_line_start_row = current_line_start_row - current_line.height
         logging.debug("---current line row slice %r, %r", current_line_start_row, current_line_start_row + current_line.height)
         logging.debug("---current line col slice %r, %r", 0, current_line.width)
