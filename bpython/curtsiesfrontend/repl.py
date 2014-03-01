@@ -35,7 +35,6 @@ from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 
 #TODO figure out how config.list_win_visible behaves and implement it, or stop using it
 #TODO other autocomplete modes (also fix in other bpython implementations)
-#TODO figure out what options.quiet is
 #TODO add buffering to stdout to speed up output.
 
 from bpython.keys import cli_key_dispatch as key_dispatch
