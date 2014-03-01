@@ -125,14 +125,18 @@ class Repl(BpythonRepl):
     """
 
     ## initialization, cleanup
-    def __init__(self, locals_=None, config=None, stuff_a_refresh_request=lambda: None, banner=None):
+    def __init__(self, locals_=None, config=None, stuff_a_refresh_request=lambda: None, banner=None, interp=None):
         logging.debug("starting init")
 
         if config is None:
             config = Struct()
             loadini(config, default_config_path())
 
-        interp = code.InteractiveInterpreter(locals=locals_)
+        self.weak_rewind = bool(locals_ or interp)
+
+        if interp is None:
+            interp = code.InteractiveInterpreter(locals=locals_)
+
 
         if banner is None:
             banner = _('welcome to bpython')
@@ -822,10 +826,13 @@ class Repl(BpythonRepl):
         self.display_lines = []
 
         self.done = True # this keeps the first prompt correct
-        self.interp = code.InteractiveInterpreter()
-        self.coderunner.interp = self.interp
-        self.completer = Autocomplete(self.interp.locals, self.config)
-        self.completer.autocomplete_mode = 'simple'
+
+        if not self.weak_rewind:
+            self.interp = code.InteractiveInterpreter()
+            self.coderunner.interp = self.interp
+            self.completer = Autocomplete(self.interp.locals, self.config)
+            self.completer.autocomplete_mode = 'simple'
+
         self.buffer = []
         self.display_buffer = []
         self.highlighted_paren = None
