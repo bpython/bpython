@@ -35,7 +35,6 @@ from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 
 #TODO figure out how config.list_win_visible behaves and implement it, or stop using it
 #TODO other autocomplete modes (also fix in other bpython implementations)
-#TODO add buffering to stdout to speed up output.
 
 from bpython.keys import cli_key_dispatch as key_dispatch
 
@@ -311,9 +310,6 @@ class Repl(BpythonRepl):
         elif e in ("\n", "\r", "PAD_ENTER"):
             self.on_enter()
             self.update_completion()
-        elif e in ["\x00", "\x11"]:
-            pass #dunno what these are, but they screw things up #TODO find out
-            #TODO use a whitelist instead of a blacklist!
         elif e == '\t': # tab
             self.on_tab()
         elif e in ("KEY_BTAB",): # shift-tab
@@ -435,12 +431,9 @@ class Repl(BpythonRepl):
         if self.config.cli_trim_prompts and self._current_line.startswith(">>> "):
             self._current_line = self._current_line[4:]
             self.cursor_offset_in_line = max(0, self.cursor_offset_in_line - 4)
-        #TODO deal with characters that take up more than one space? do we care?
 
     def update_completion(self, tab=False):
         """Update autocomplete info; self.matches and self.argspec"""
-        #TODO do we really have to do something this ugly? Can we rename it?
-        # this method stolen from bpython.cli
 
         if self.list_win_visible and not self.config.auto_display_list:
             self.list_win_visible = False
@@ -520,7 +513,6 @@ class Repl(BpythonRepl):
 
     def keyboard_interrupt(self):
         #TODO factor out the common cleanup from running a line
-        #TODO make rewind work properly with ctrl-c'd infinite loops
         self.cursor_offset_in_line = -1
         self.unhighlight_paren()
         self.display_lines.extend(self.display_buffer_lines)
