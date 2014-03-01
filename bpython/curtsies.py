@@ -20,7 +20,7 @@ def main(args=None, locals_=None, banner=None):
     config, options, exec_args = bpargs.parse(args, (
         'scroll options', None, [
             Option('--log', '-L', action='store_true',
-                help=_("log debug messages to scroll.log")),
+                help=_("log debug messages to bpython-curtsies.log")),
             Option('--type', '-t', action='store_true',
                 help=_("enter lines of file as though interactively typed")),
             ]))
@@ -53,7 +53,6 @@ def main(args=None, locals_=None, banner=None):
 def mainloop(config, locals_, banner, interp=None, paste=None):
     with Terminal(paste_mode=True) as tc:
         with Window(tc, keep_last_line=True, hide_cursor=False) as term:
-            #TODO why need to make repl first
             with Repl(config=config,
                       locals_=locals_,
                       stuff_a_refresh_request=tc.stuff_a_refresh_request,
