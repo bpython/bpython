@@ -115,6 +115,13 @@ class FakeOutput(object):
     def write(self, *args, **kwargs):
         self.please(*args, **kwargs)
         return self.coderunner.refresh_and_get_value()
+    def writelines(self, l):
+        for s in l:
+            self.write(s)
+    def flush(self):
+        pass
+    def isatty(self):
+        return True
 
 def test_simple():
     orig_stdout = sys.stdout

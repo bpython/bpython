@@ -7,6 +7,7 @@ import threading
 import greenlet
 import subprocess
 import tempfile
+import errno
 
 from bpython.autocomplete import Autocomplete, SIMPLE
 from bpython.repl import Repl as BpythonRepl
@@ -89,6 +90,26 @@ class FakeStdin(object):
         value = self.coderunner.wait_and_get_value()
         self.readline_results.append(value)
         return value
+
+    def readlines(self, size=-1):
+        return list(iter(self.readline, ''))
+
+    def __iter__(self):
+        return iter(self.readlines())
+
+    def isatty(self):
+        return True
+
+    def flush(self):
+        """Flush the internal buffer. This is a no-op. Flushing stdin
+        doesn't make any sense anyway."""
+
+    def write(self, value):
+        # XXX IPython expects sys.stdin.write to exist, there will no doubt be
+        # others, so here's a hack to keep them happy
+        raise IOError(errno.EBADF, "sys.stdin is read-only")
+
+    #TODO write a read() method
 
 class ReevaluateFakeStdin(object):
     def __init__(self, fakestdin, repl):
