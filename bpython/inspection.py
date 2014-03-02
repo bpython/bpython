@@ -219,7 +219,11 @@ def getargspec(func, f):
     # Check if it's a real bound method or if it's implicitly calling __init__
     # (i.e. FooClass(...) and not FooClass.__init__(...) -- the former would
     # not take 'self', the latter would:
-    func_name = getattr(f, '__name__', None)
+    try:
+        func_name = getattr(f, '__name__', None)
+    except:
+        # if calling foo.__name__ would result in an error
+        func_name = None
 
     try:
         is_bound_method = ((inspect.ismethod(f) and f.im_self is not None)
