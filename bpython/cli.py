@@ -1877,7 +1877,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     sys.stderr = FakeStream(clirepl)
 
     if args:
-        exit_value = 0
+        exit_value = ()
         try:
             bpython.args.exec_code(interpreter, args)
         except SystemExit, e:
