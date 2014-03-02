@@ -117,10 +117,11 @@ def calculate_screen_lines(tokens, width, cursor=0):
             pos %= width
     return lines
 
-def forward_if_not_active(func):
+def forward_if_not_current(func):
     @functools.wraps(func)
     def newfunc(self, *args, **kwargs):
-        if self.active:
+        dest = self.get_dest()
+        if self is dest:
             return func(self, *args, **kwargs)
         else:
             return getattr(self.get_dest(), newfunc.__name__)(*args, **kwargs)
@@ -134,14 +135,13 @@ class FakeStream(object):
     def __init__(self, interface, get_dest):
         self.encoding = getpreferredencoding()
         self.interface = interface
-        self.active = True
         self.get_dest = get_dest
 
-    @forward_if_not_active
+    @forward_if_not_current
     def write(self, s):
         self.interface.write(s)
 
-    @forward_if_not_active
+    @forward_if_not_current
     def writelines(self, l):
         for s in l:
             self.write(s)
@@ -1941,8 +1941,6 @@ def main(args=None, locals_=None, banner=None):
             main_curses, exec_args, config, options.interactive, locals_,
             banner=banner)
     finally:
-        sys.stderr.active = False
-        sys.stdout.active = False
         sys.stdin = orig_stdin
         sys.stderr = orig_stderr
         sys.stdout = orig_stdout
