@@ -323,7 +323,7 @@ class Repl(BpythonRepl):
         elif e in key_dispatch[self.config.external_editor_key]:
             self.send_to_external_editor()
         #TODO add PAD keys hack as in bpython.cli
-        elif e in [""]:
+        elif e in ["\x18"]:
             self.send_current_block_to_external_editor()
         else:
             self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
