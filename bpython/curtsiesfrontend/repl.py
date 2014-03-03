@@ -7,6 +7,7 @@ import threading
 import greenlet
 import subprocess
 import tempfile
+import errno
 
 from bpython.autocomplete import Autocomplete, SIMPLE
 from bpython.repl import Repl as BpythonRepl
@@ -33,13 +34,8 @@ import curtsies.events as events
 from bpython.curtsiesfrontend.friendly import NotImplementedError
 from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 
-#TODO implement paste mode and figure out what the deal with config.paste_time is
-#TODO figure out how config.auto_display_list=False behaves and implement it
-#TODO figure out how config.list_win_visible behaves and implement it, or toss
+#TODO figure out how config.list_win_visible behaves and implement it, or stop using it
 #TODO other autocomplete modes (also fix in other bpython implementations)
-#TODO figure out what config.flush_output is
-#TODO figure out what options.quiet is
-#TODO add buffering to stdout to speed up output.
 
 from bpython.keys import cli_key_dispatch as key_dispatch
 
@@ -95,6 +91,26 @@ class FakeStdin(object):
         self.readline_results.append(value)
         return value
 
+    def readlines(self, size=-1):
+        return list(iter(self.readline, ''))
+
+    def __iter__(self):
+        return iter(self.readlines())
+
+    def isatty(self):
+        return True
+
+    def flush(self):
+        """Flush the internal buffer. This is a no-op. Flushing stdin
+        doesn't make any sense anyway."""
+
+    def write(self, value):
+        # XXX IPython expects sys.stdin.write to exist, there will no doubt be
+        # others, so here's a hack to keep them happy
+        raise IOError(errno.EBADF, "sys.stdin is read-only")
+
+    #TODO write a read() method
+
 class ReevaluateFakeStdin(object):
     def __init__(self, fakestdin, repl):
         self.fakestdin = fakestdin
@@ -127,14 +143,18 @@ class Repl(BpythonRepl):
     """
 
     ## initialization, cleanup
-    def __init__(self, locals_=None, config=None, stuff_a_refresh_request=lambda: None, banner=None):
+    def __init__(self, locals_=None, config=None, stuff_a_refresh_request=lambda: None, banner=None, interp=None):
         logging.debug("starting init")
 
         if config is None:
             config = Struct()
             loadini(config, default_config_path())
 
-        interp = code.InteractiveInterpreter(locals=locals_)
+        self.weak_rewind = bool(locals_ or interp)
+
+        if interp is None:
+            interp = code.InteractiveInterpreter(locals=locals_)
+
 
         if banner is None:
             banner = _('welcome to bpython')
@@ -311,9 +331,6 @@ class Repl(BpythonRepl):
         elif e in ("\n", "\r", "PAD_ENTER"):
             self.on_enter()
             self.update_completion()
-        elif e in ["\x00", "\x11"]:
-            pass #dunno what these are, but they screw things up #TODO find out
-            #TODO use a whitelist instead of a blacklist!
         elif e == '\t': # tab
             self.on_tab()
         elif e in ("KEY_BTAB",): # shift-tab
@@ -435,12 +452,9 @@ class Repl(BpythonRepl):
         if self.config.cli_trim_prompts and self._current_line.startswith(">>> "):
             self._current_line = self._current_line[4:]
             self.cursor_offset_in_line = max(0, self.cursor_offset_in_line - 4)
-        #TODO deal with characters that take up more than one space? do we care?
 
     def update_completion(self, tab=False):
         """Update autocomplete info; self.matches and self.argspec"""
-        #TODO do we really have to do something this ugly? Can we rename it?
-        # this method stolen from bpython.cli
 
         if self.list_win_visible and not self.config.auto_display_list:
             self.list_win_visible = False
@@ -520,7 +534,6 @@ class Repl(BpythonRepl):
 
     def keyboard_interrupt(self):
         #TODO factor out the common cleanup from running a line
-        #TODO make rewind work properly with ctrl-c'd infinite loops
         self.cursor_offset_in_line = -1
         self.unhighlight_paren()
         self.display_lines.extend(self.display_buffer_lines)
@@ -627,7 +640,7 @@ class Repl(BpythonRepl):
         self.current_stdouterr_line = ''
         self.stdin.current_line = '\n'
 
-    def paint(self, about_to_exit=False):
+    def paint(self, about_to_exit=False, user_quit=False):
         """Returns an array of min_height or more rows and width columns, plus cursor position
 
         Paints the entire screen - ideally the terminal display layer will take a diff and only
@@ -676,7 +689,7 @@ class Repl(BpythonRepl):
             arr[:history.height,:history.width] = history
 
         current_line = paint.paint_current_line(min_height, width, self.current_cursor_line)
-        if about_to_exit == 2: # hack for quit() in user code
+        if user_quit: # quit() or exit() in interp
             current_line_start_row = current_line_start_row - current_line.height
         logging.debug("---current line row slice %r, %r", current_line_start_row, current_line_start_row + current_line.height)
         logging.debug("---current line col slice %r, %r", 0, current_line.width)
@@ -824,10 +837,13 @@ class Repl(BpythonRepl):
         self.display_lines = []
 
         self.done = True # this keeps the first prompt correct
-        self.interp = code.InteractiveInterpreter()
-        self.coderunner.interp = self.interp
-        self.completer = Autocomplete(self.interp.locals, self.config)
-        self.completer.autocomplete_mode = 'simple'
+
+        if not self.weak_rewind:
+            self.interp = code.InteractiveInterpreter()
+            self.coderunner.interp = self.interp
+            self.completer = Autocomplete(self.interp.locals, self.config)
+            self.completer.autocomplete_mode = 'simple'
+
         self.buffer = []
         self.display_buffer = []
         self.highlighted_paren = None
