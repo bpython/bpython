@@ -48,6 +48,7 @@ import curses
 import math
 import re
 import time
+import functools
 
 import struct
 if platform.system() != 'Windows':
@@ -116,18 +117,31 @@ def calculate_screen_lines(tokens, width, cursor=0):
             pos %= width
     return lines
 
+def forward_if_not_current(func):
+    @functools.wraps(func)
+    def newfunc(self, *args, **kwargs):
+        dest = self.get_dest()
+        if self is dest:
+            return func(self, *args, **kwargs)
+        else:
+            return getattr(self.get_dest(), newfunc.__name__)(*args, **kwargs)
+    return newfunc
+
 
 class FakeStream(object):
     """Provide a fake file object which calls functions on the interface
     provided."""
 
-    def __init__(self, interface):
+    def __init__(self, interface, get_dest):
         self.encoding = getpreferredencoding()
         self.interface = interface
+        self.get_dest = get_dest
 
+    @forward_if_not_current
     def write(self, s):
         self.interface.write(s)
 
+    @forward_if_not_current
     def writelines(self, l):
         for s in l:
             self.write(s)
@@ -1916,8 +1930,8 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     clirepl._C = cols
 
     sys.stdin = FakeStdin(clirepl)
-    sys.stdout = FakeStream(clirepl)
-    sys.stderr = FakeStream(clirepl)
+    sys.stdout = FakeStream(clirepl, lambda: sys.stdout)
+    sys.stderr = FakeStream(clirepl, lambda: sys.stderr)
 
     if args:
         exit_value = ()
