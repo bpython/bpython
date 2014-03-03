@@ -30,6 +30,7 @@ import os
 import pydoc
 import subprocess
 import sys
+import tempfile
 import textwrap
 import traceback
 import unicodedata
@@ -1064,3 +1065,12 @@ def extract_exit_value(args):
         return args[0]
     else:
         return args
+
+def send_to_external_editor(text, filename=None):
+    editor = os.environ.get('VISUAL', os.environ.get('EDITOR', 'vim'))
+    editor_args = editor.split()
+    with tempfile.NamedTemporaryFile(suffix='.py') as temp:
+        temp.write(text)
+        temp.flush()
+        subprocess.call(editor_args + [temp.name])
+        return open(temp.name).read()

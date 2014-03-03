@@ -279,15 +279,7 @@ class Repl(BpythonRepl):
         elif isinstance(e, events.PasteEvent):
             self.paste_mode = True
             for ee in e.events:
-                if ee in ("\n", "\r", "PAD_ENTER"):
-                    self.on_enter()
-                    while self.fake_refresh_request:
-                        self.fake_refresh_request = False
-                        self.process_event(events.RefreshRequestEvent())
-                elif isinstance(ee, events.Event):
-                    pass # ignore events in a paste
-                else:
-                    self.add_normal_character(ee if len(ee) == 1 else ee[-1]) #strip control seq
+                self.process_simple_event(ee)
             self.paste_mode = False
             self.update_completion()
 
@@ -348,6 +340,8 @@ class Repl(BpythonRepl):
         elif e in key_dispatch[self.config.external_editor_key]:
             self.send_to_external_editor()
         #TODO add PAD keys hack as in bpython.cli
+        elif e in ["\x18"]:
+            self.send_current_block_to_external_editor()
         else:
             self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
             self.update_completion()
@@ -883,6 +877,50 @@ class Repl(BpythonRepl):
         self.reevaluate(insert_into_history=True)
         self._current_line = lines[-1][4:]
         self.cursor_offset_in_line = len(self._current_line)
+
+    def get_current_block(self):
+        return '\n'.join(self.buffer + [self._current_line])
+
+    def clear_current_block(self):
+        self.display_buffer = []
+        [self.history.pop() for _ in self.buffer]
+        self.buffer = []
+        self.cursor_offset_in_line = 0
+        self.saved_indent = 0
+        self._current_line = ''
+        self.cursor_offset_in_line = len(self._current_line)
+        self.done = True
+
+    def send_current_block_to_external_editor(self, filename=None):
+        editor = os.environ.get('VISUAL', os.environ.get('EDITOR', 'vim'))
+        editor_args = editor.split()
+        text = self.get_current_block()
+        self.clear_current_block()
+        with tempfile.NamedTemporaryFile(suffix='.py') as temp:
+            temp.write(text.encode('utf8'))
+            temp.flush()
+            subprocess.call(editor_args + [temp.name])
+            lines = [line for line in open(temp.name).read().split('\n')]
+            while not lines[-1].split():
+                lines.pop()
+            events = '\n'.join(lines + ([''] if len(lines) == 1 else ['', '']))
+        self.paste_mode = True
+        for e in events:
+            self.process_simple_event(e)
+        self.paste_mode = False
+        self._current_line = ''
+        self.cursor_offset_in_line = len(self._current_line)
+
+    def process_simple_event(self, e):
+        if e in ("\n", "\r", "PAD_ENTER"):
+            self.on_enter()
+            while self.fake_refresh_request:
+                self.fake_refresh_request = False
+                self.process_event(events.RefreshRequestEvent())
+        elif isinstance(e, events.Event):
+            pass # ignore events
+        else:
+            self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
 
 def simple_repl():
     refreshes = []

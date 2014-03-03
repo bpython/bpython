@@ -995,6 +995,9 @@ class CLIRepl(repl.Repl):
                 self.do_exit = True
                 return None
 
+        elif key == '\x18':
+            return self.send_current_line_to_editor()
+
         elif key[0:3] == 'PAD' and not key in ('PAD0', 'PADSTOP'):
             pad_keys = {
                 'PADMINUS': '-',
@@ -1108,10 +1111,10 @@ class CLIRepl(repl.Repl):
         self.push('from bpython._internal import _help as help\n', False)
 
         self.iy, self.ix = self.scr.getyx()
-        more = False
+        self.more = False
         while not self.do_exit:
             self.f_string = ''
-            self.prompt(more)
+            self.prompt(self.more)
             try:
                 inp = self.get_line()
             except KeyboardInterrupt:
@@ -1132,8 +1135,8 @@ class CLIRepl(repl.Repl):
             else:
                 self.stdout_hist += inp.encode(getpreferredencoding()) + '\n'
             stdout_position = len(self.stdout_hist)
-            more = self.push(inp)
-            if not more:
+            self.more = self.push(inp)
+            if not self.more:
                 self.prev_block_finished = stdout_position
                 self.s = ''
         return self.exit_value
@@ -1203,8 +1206,8 @@ class CLIRepl(repl.Repl):
             # I decided it was easier to just do this manually
             # than to make the print_line and history stuff more flexible.
             self.scr.addstr('\n')
-            more = self.push(line)
-            self.prompt(more)
+            self.more = self.push(line)
+            self.prompt(self.more)
             self.iy, self.ix = self.scr.getyx()
 
         self.cpos = 0
@@ -1505,6 +1508,46 @@ class CLIRepl(repl.Repl):
         self.addstr(self.cut_buffer)
         self.print_line(self.s, clr=True)
 
+    def send_current_line_to_editor(self):
+        lines = repl.send_to_external_editor(self.s).split('\n')
+        self.s = ''
+        self.print_line(self.s)
+        while lines and not lines[-1]:
+            lines.pop()
+        if not lines:
+            return ''
+
+        self.f_string = ''
+        self.cpos = -1 # Set cursor position to -1 to prevent paren matching
+
+        self.iy, self.ix = self.scr.getyx()
+        self.evaluating = True
+        for line in lines:
+            if py3:
+                self.stdout_hist += line + '\n'
+            else:
+                self.stdout_hist += line.encode(getpreferredencoding()) + '\n'
+            self.history.append(line)
+            self.print_line(line)
+            self.s_hist[-1] += self.f_string
+            self.scr.addstr('\n')
+            self.more = self.push(line)
+            self.prompt(self.more)
+            self.iy, self.ix = self.scr.getyx()
+        self.evaluating = False
+
+        self.cpos = 0
+        indent = repl.next_indentation(self.s, self.config.tab_length)
+        self.s = ''
+        self.scr.refresh()
+
+        if self.buffer:
+            for _ in xrange(indent):
+                self.tab()
+
+        self.print_line(self.s)
+        self.scr.redrawwin()
+        return ''
 
 class Statusbar(object):
     """This class provides the status bar at the bottom of the screen.
