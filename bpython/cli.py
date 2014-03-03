@@ -1939,6 +1939,9 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
         clirepl.write(banner)
         clirepl.write('\n')
     exit_value = clirepl.repl()
+    if hasattr(sys, 'exitfunc'):
+        sys.exitfunc()
+        delattr(sys, 'exitfunc')
 
     main_win.erase()
     main_win.refresh()
