@@ -28,6 +28,7 @@ import errno
 import inspect
 import os
 import pydoc
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -993,6 +994,17 @@ class Repl(object):
         """This is used as the exception callback for the Interpreter instance.
         It prevents autoindentation from occuring after a traceback."""
 
+    def send_to_external_editor(self, text, filename=None):
+        editor = (self.config.editor or
+                  os.environ.get('VISUAL', os.environ.get('EDITOR', 'vim')))
+        editor_args = shlex.split(editor)
+        with tempfile.NamedTemporaryFile(suffix='.py') as temp:
+            temp.write(text)
+            temp.flush()
+            if subprocess.call(editor_args + [temp.name]) == 0:
+                with open(temp.name) as f:
+                    return f.read()
+
 
 def next_indentation(line, tab_length):
     """Given a code line, return the indentation of the next line."""
@@ -1066,11 +1078,3 @@ def extract_exit_value(args):
     else:
         return args
 
-def send_to_external_editor(text, filename=None):
-    editor = os.environ.get('VISUAL', os.environ.get('EDITOR', 'vim'))
-    editor_args = editor.split()
-    with tempfile.NamedTemporaryFile(suffix='.py') as temp:
-        temp.write(text)
-        temp.flush()
-        subprocess.call(editor_args + [temp.name])
-        return open(temp.name).read()

@@ -1523,7 +1523,7 @@ class CLIRepl(repl.Repl):
         self.print_line(self.s, clr=True)
 
     def send_current_line_to_editor(self):
-        lines = repl.send_to_external_editor(self.s).split('\n')
+        lines = self.send_to_external_editor(self.s).split('\n')
         self.s = ''
         self.print_line(self.s)
         while lines and not lines[-1]:

@@ -338,7 +338,7 @@ class Repl(BpythonRepl):
             g = greenlet.greenlet(self.pastebin)
             g.switch()
         elif e in key_dispatch[self.config.external_editor_key]:
-            self.send_to_external_editor()
+            self.send_session_to_external_editor()
         #TODO add PAD keys hack as in bpython.cli
         elif e in ["\x18"]:
             self.send_current_block_to_external_editor()
@@ -861,19 +861,13 @@ class Repl(BpythonRepl):
         s = '\n'.join([x.s if isinstance(x, FmtStr) else x for x in lines]
                      ) if lines else ''
         return s
-    def send_to_external_editor(self, filename=None):
-        editor = os.environ.get('VISUAL', os.environ.get('EDITOR', 'vim'))
-        editor_args = editor.split()
-        text = self.getstdout()
-        with tempfile.NamedTemporaryFile(suffix='.py') as temp:
-            temp.write('### current bpython session - file will be reevaluated, ### lines will not be run\n'.encode('utf8'))
-            temp.write('\n'.join(line[4:] if line[:4] in ('... ', '>>> ') else '### '+line
-                                 for line in text.split('\n')).encode('utf8'))
-            temp.flush()
-            subprocess.call(editor_args + [temp.name])
-            lines = open(temp.name).read().split('\n')
-            self.history = [line for line in lines
-                                 if line[:4] != '### ']
+    def send_session_to_external_editor(self, filename=None):
+        for_editor = '### current bpython session - file will be reevaluated, ### lines will not be run\n'.encode('utf8')
+        for_editor += ('\n'.join(line[4:] if line[:4] in ('... ', '>>> ') else '### '+line
+                       for line in self.getstdout().split('\n')).encode('utf8'))
+        text = self.send_to_external_editor(for_editor)
+        lines = open(text).split('\n')
+        self.history = [line for line in lines if line[:4] != '### ']
         self.reevaluate(insert_into_history=True)
         self._current_line = lines[-1][4:]
         self.cursor_offset_in_line = len(self._current_line)
@@ -892,18 +886,12 @@ class Repl(BpythonRepl):
         self.done = True
 
     def send_current_block_to_external_editor(self, filename=None):
-        editor = os.environ.get('VISUAL', os.environ.get('EDITOR', 'vim'))
-        editor_args = editor.split()
-        text = self.get_current_block()
+        text = self.send_to_external_editor(self.get_current_block())
+        lines = [line for line in text.split('\n')]
+        while not lines[-1].split():
+            lines.pop()
+        events = '\n'.join(lines + ([''] if len(lines) == 1 else ['', '']))
         self.clear_current_block()
-        with tempfile.NamedTemporaryFile(suffix='.py') as temp:
-            temp.write(text.encode('utf8'))
-            temp.flush()
-            subprocess.call(editor_args + [temp.name])
-            lines = [line for line in open(temp.name).read().split('\n')]
-            while not lines[-1].split():
-                lines.pop()
-            events = '\n'.join(lines + ([''] if len(lines) == 1 else ['', '']))
         self.paste_mode = True
         for e in events:
             self.process_simple_event(e)

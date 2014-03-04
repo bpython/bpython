@@ -72,7 +72,8 @@ def loadini(struct, configfile):
             'pastebin_private': True,
             'pastebin_show_url': 'http://bpaste.net/show/$paste_id/',
             'pastebin_helper': '',
-            'save_append_py': False
+            'save_append_py': False,
+            'editor': 'vi',
         },
         'keyboard': {
             'clear_line': 'C-u',
@@ -121,6 +122,7 @@ def loadini(struct, configfile):
     struct.highlight_show_source = config.getboolean('general',
                                                      'highlight_show_source')
     struct.hist_file = config.get('general', 'hist_file')
+    struct.editor = config.get('general', 'editor')
     struct.hist_length = config.getint('general', 'hist_length')
     struct.hist_duplicates = config.getboolean('general', 'hist_duplicates')
     struct.flush_output = config.getboolean('general', 'flush_output')
