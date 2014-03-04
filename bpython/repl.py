@@ -995,6 +995,7 @@ class Repl(object):
         It prevents autoindentation from occuring after a traceback."""
 
     def send_to_external_editor(self, text, filename=None):
+        """Returns modified text from an editor, or the oriignal text if editor exited with non-zero"""
         editor = (self.config.editor or
                   os.environ.get('VISUAL', os.environ.get('EDITOR', 'vim')))
         editor_args = shlex.split(editor)
@@ -1004,6 +1005,8 @@ class Repl(object):
             if subprocess.call(editor_args + [temp.name]) == 0:
                 with open(temp.name) as f:
                     return f.read()
+            else:
+                return text
 
 
 def next_indentation(line, tab_length):
