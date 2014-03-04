@@ -996,9 +996,7 @@ class Repl(object):
 
     def send_to_external_editor(self, text, filename=None):
         """Returns modified text from an editor, or the oriignal text if editor exited with non-zero"""
-        editor = (self.config.editor or
-                  os.environ.get('VISUAL', os.environ.get('EDITOR', 'vim')))
-        editor_args = shlex.split(editor)
+        editor_args = shlex.split(self.config.editor)
         with tempfile.NamedTemporaryFile(suffix='.py') as temp:
             temp.write(text)
             temp.flush()

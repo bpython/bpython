@@ -866,7 +866,7 @@ class Repl(BpythonRepl):
         for_editor += ('\n'.join(line[4:] if line[:4] in ('... ', '>>> ') else '### '+line
                        for line in self.getstdout().split('\n')).encode('utf8'))
         text = self.send_to_external_editor(for_editor)
-        lines = open(text).split('\n')
+        lines = text.split('\n')
         self.history = [line for line in lines if line[:4] != '### ']
         self.reevaluate(insert_into_history=True)
         self._current_line = lines[-1][4:]
@@ -888,7 +888,7 @@ class Repl(BpythonRepl):
     def send_current_block_to_external_editor(self, filename=None):
         text = self.send_to_external_editor(self.get_current_block())
         lines = [line for line in text.split('\n')]
-        while not lines[-1].split():
+        while lines and not lines[-1].split():
             lines.pop()
         events = '\n'.join(lines + ([''] if len(lines) == 1 else ['', '']))
         self.clear_current_block()

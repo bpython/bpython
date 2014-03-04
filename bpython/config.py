@@ -73,7 +73,7 @@ def loadini(struct, configfile):
             'pastebin_show_url': 'http://bpaste.net/show/$paste_id/',
             'pastebin_helper': '',
             'save_append_py': False,
-            'editor': 'vi',
+            'editor': os.environ.get('VISUAL', os.environ.get('EDITOR', 'vi'))
         },
         'keyboard': {
             'clear_line': 'C-u',
