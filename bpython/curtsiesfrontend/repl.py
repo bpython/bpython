@@ -5,8 +5,6 @@ import logging
 import code
 import threading
 import greenlet
-import subprocess
-import tempfile
 import errno
 
 from bpython.autocomplete import Autocomplete, SIMPLE
@@ -363,11 +361,10 @@ class Repl(BpythonRepl):
     def send_to_stdout(self, output):
         lines = output.split('\n')
         logging.debug('display_lines: %r', self.display_lines)
-        if len(lines) and lines[0]:
-            self.current_stdouterr_line += lines[0]
+        self.current_stdouterr_line += lines[0]
         if len(lines) > 1:
-            self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width))
-            self.display_lines.extend(sum([paint.display_linize(line, self.width) for line in lines[1:-1]], []))
+            self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width, blank_line=True))
+            self.display_lines.extend(sum([paint.display_linize(line, self.width, blank_line=True) for line in lines[1:-1]], []))
             self.current_stdouterr_line = lines[-1]
         logging.debug('display_lines: %r', self.display_lines)
 
