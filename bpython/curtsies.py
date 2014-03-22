@@ -46,7 +46,7 @@ def main(args=None, locals_=None, banner=None):
             if not options.interactive:
                 raise SystemExit(exit_value)
     else:
-        sys.path.insert(0, '') # expected for interactive sessions (python does it)
+        sys.path.insert(0, '') # expected for interactive sessions (vanilla python does it)
 
     mainloop(config, locals_, banner, interp, paste)
 
@@ -65,12 +65,8 @@ def mainloop(config, locals_, banner, interp=None, paste=None):
                 def process_event(e):
                     try:
                         repl.process_event(e)
-                    except SystemExitFromCodeGreenlet:
-                        array, cursor_pos = repl.paint(about_to_exit=True, user_quit=True)
-                        term.render_to_terminal(array, cursor_pos)
-                        raise
-                    except SystemExit:
-                        array, cursor_pos = repl.paint(about_to_exit=True)
+                    except (SystemExitFromCodeGreenlet, SystemExit) as err:
+                        array, cursor_pos = repl.paint(about_to_exit=True, user_quit=isinstance(err, SystemExitFromCodeGreenlet))
                         term.render_to_terminal(array, cursor_pos)
                         raise
                     else:
