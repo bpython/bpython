@@ -55,7 +55,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None):
         with Window(tc, keep_last_line=True, hide_cursor=False) as term:
             with Repl(config=config,
                       locals_=locals_,
-                      stuff_a_refresh_request=tc.stuff_a_refresh_request,
+                      request_refresh=tc.stuff_a_refresh_request,
                       banner=banner,
                       interp=interp) as repl:
                 rows, columns = tc.get_screen_size()

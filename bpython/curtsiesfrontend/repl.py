@@ -142,11 +142,11 @@ class Repl(BpythonRepl):
     """
 
     ## initialization, cleanup
-    def __init__(self, locals_=None, config=None, stuff_a_refresh_request=lambda: None, banner=None, interp=None):
+    def __init__(self, locals_=None, config=None, request_refresh=lambda: None, banner=None, interp=None):
         """
         locals_ is a mapping of locals to pass into the interpreter
         config is a bpython config.Struct with config attributes
-        stuff_a_refresh_request is a function that will be called when the Repl
+        request_refresh is a function that will be called when the Repl
             wants to refresh the display, but wants control returned to it afterwards
         banner is a string to display briefly in the status bar
         interp is an interpreter to use
@@ -173,17 +173,17 @@ class Repl(BpythonRepl):
 
         self.reevaluating = False
         self.fake_refresh_requested = False
-        def request_refresh():
+        def smarter_request_refresh():
             if self.reevaluating or self.paste_mode:
                 self.fake_refresh_requested = True
             else:
-                stuff_a_refresh_request()
-        self.stuff_a_refresh_request = request_refresh
+                request_refresh()
+        self.request_refresh = smarter_request_refresh
 
         self.status_bar = StatusBar(banner if config.curtsies_fill_terminal else '', _(
             " <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor"
             ) % (config.undo_key, config.save_key, config.pastebin_key, config.external_editor_key),
-            stuff_a_refresh_request=self.stuff_a_refresh_request
+            refresh_request=self.request_refresh
             )
         self.rl_char_sequences = get_updated_char_sequences(key_dispatch, config)
         logging.debug("starting parent init")
@@ -920,7 +920,7 @@ def simple_repl():
     refreshes = []
     def request_refresh():
         refreshes.append(1)
-    with Repl(stuff_a_refresh_request=request_refresh) as r:
+    with Repl(refresh_request=request_refresh) as r:
         r.width = 50
         r.height = 10
         while True:

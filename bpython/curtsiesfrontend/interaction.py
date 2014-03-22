@@ -19,7 +19,7 @@ class StatusBar(BpythonInteraction):
     functionality in a evented or callback style, but trying to integrate
     bpython.Repl code.
     """
-    def __init__(self, initial_message='', permanent_text="", stuff_a_refresh_request=lambda: None):
+    def __init__(self, initial_message='', permanent_text="", refresh_request=lambda: None):
         self._current_line = ''
         self.cursor_offset_in_line = 0
         self.in_prompt = False
@@ -32,7 +32,7 @@ class StatusBar(BpythonInteraction):
         self.permanent_text = permanent_text
         self.main_greenlet = greenlet.getcurrent()
         self.request_greenlet = None
-        self.stuff_a_refresh_request = stuff_a_refresh_request
+        self.refresh_request = refresh_request
 
     @property
     def has_focus(self):
@@ -107,7 +107,7 @@ class StatusBar(BpythonInteraction):
         self.message_time = n
         self.message(msg)
         self.waiting_for_refresh = True
-        self.stuff_a_refresh_request()
+        self.refresh_request()
         self.main_greenlet.switch(msg)
 
     # below Really ought to be called from greenlets other than main because they block
