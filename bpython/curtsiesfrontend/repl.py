@@ -41,7 +41,7 @@ class FakeStdin(object):
     def __init__(self, coderunner, repl):
         self.coderunner = coderunner
         self.repl = repl
-        self.has_focus = False
+        self.has_focus = False # whether FakeStdin receives keypress events
         self.current_line = ''
         self.cursor_offset_in_line = 0
         self.old_num_lines = 0
@@ -85,7 +85,7 @@ class FakeStdin(object):
     def readline(self):
         self.has_focus = True
         self.repl.send_to_stdin(self.current_line)
-        value = self.coderunner.wait_and_get_value()
+        value = self.coderunner.request_from_main_greenlet()
         self.readline_results.append(value)
         return value
 

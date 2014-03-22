@@ -43,14 +43,15 @@ class SystemExitRequest(RequestFromCodeGreenlet):
 class CodeRunner(object):
     """Runs user code in an interpreter.
 
-    Running code requests a refresh by calling refresh_and_get_value(), which
+    Running code requests a refresh by calling
+    request_from_main_greenlet(force_refresh=True), which
     suspends execution of the code and switches back to the main greenlet
 
     After load_code() is called with the source code to be run,
     the run_code() method should be called to start running the code.
     The running code may request screen refreshes and user input
-    by calling the refresh_and_get_value and wait_and_get_value calls
-    respectively. When these are called, the running source code cedes
+    by calling request_from_main_greenlet.
+    When this are called, the running source code cedes
     control, and the current run_code() method call returns.
 
     The return value of run_code() determines whether the method ought
@@ -154,19 +155,15 @@ class CodeRunner(object):
             return SystemExitRequest
         return Unfinished if unfinished else Done
 
-    def wait_and_get_value(self):
+    def request_from_main_greenlet(self, force_refresh=False):
         """Return the argument passed in to .run_code(for_code)
 
-        Nothing means calls to run_code must be...
+        Nothing means calls to run_code must be... ???
         """
-        value = self.main_greenlet.switch(Wait)
-        if value is SigintHappened:
-            raise KeyboardInterrupt()
-        return value
-
-    def refresh_and_get_value(self):
-        """Returns the argument passed in to .run_code(for_code) """
-        value = self.main_greenlet.switch(Refresh)
+        if force_refresh:
+            value = self.main_greenlet.switch(Refresh)
+        else:
+            value = self.main_greenlet.switch(Wait)
         if value is SigintHappened:
             raise KeyboardInterrupt()
         return value
@@ -177,7 +174,7 @@ class FakeOutput(object):
         self.on_write = on_write
     def write(self, *args, **kwargs):
         self.on_write(*args, **kwargs)
-        return self.coderunner.refresh_and_get_value()
+        return self.coderunner.request_from_main_greenlet(force_refresh=True)
     def writelines(self, l):
         for s in l:
             self.write(s)
