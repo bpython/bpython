@@ -20,10 +20,10 @@ def display_linize(msg, columns, blank_line=False):
 
     Warning: if msg is empty, returns an empty list of lines"""
     display_lines = ([msg[start:end]
-                        for start, end in zip(
-                            range(0, len(msg), columns),
-                            range(columns, len(msg)+columns, columns))]
-                    if msg else ([''] if blank_line else []))
+                      for start, end in zip(
+                          range(0, len(msg), columns),
+                          range(columns, len(msg)+columns, columns))]
+                     if msg else ([''] if blank_line else []))
     return display_lines
 
 def paint_history(rows, columns, display_lines):
@@ -57,8 +57,8 @@ def matches_lines(rows, columns, matches, current, config):
         pass
 
     matches_lines = [fmtstr(' ').join(color(m.ljust(max_match_width))
-                                        if m != current
-                                        else highlight_color(m.ljust(max_match_width))
+                                      if m != current
+                                      else highlight_color(m.ljust(max_match_width))
                                       for m in matches[i:i+words_wide])
                      for i in range(0, len(matches), words_wide)]
 
@@ -154,8 +154,7 @@ def paint_infobox(rows, columns, matches, argspec, match, docstring, config):
     width = columns - 4
     lines = ((formatted_argspec(argspec, width, config) if argspec else []) +
              (matches_lines(rows, width, matches, match, config) if matches else []) +
-             (formatted_docstring(docstring, width, config) if docstring else [])
-             )
+             (formatted_docstring(docstring, width, config) if docstring else []))
 
     output_lines = []
     border_color = func_for_letter(config.color_scheme['main'])
@@ -179,4 +178,3 @@ def paint_last_events(rows, columns, names):
 
 def paint_statusbar(rows, columns, msg, config):
     return fsarray([func_for_letter(config.color_scheme['main'])(msg.ljust(columns))[:columns]])
-
