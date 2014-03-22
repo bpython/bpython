@@ -1,11 +1,12 @@
-import sys
+import code
+import contextlib
+import errno
+import greenlet
+import logging
 import os
 import re
-import logging
-import code
+import sys
 import threading
-import greenlet
-import errno
 
 from bpython.autocomplete import Autocomplete, SIMPLE
 from bpython.repl import Repl as BpythonRepl
@@ -210,7 +211,7 @@ class Repl(BpythonRepl):
         self.stderr = FakeOutput(self.coderunner, self.send_to_stderr)
         self.stdin = FakeStdin(self.coderunner, self)
 
-        self.request_paint_to_clear_screen = False
+        self.request_paint_to_clear_screen = False # next paint should clear screen
         self.last_events = [None] * 50
         self.presentation_mode = False
         self.paste_mode = False
@@ -287,10 +288,9 @@ class Repl(BpythonRepl):
             self.update_completion()
             return
         elif isinstance(e, events.PasteEvent):
-            self.paste_mode = True
-            for ee in e.events:
-                self.process_simple_event(ee)
-            self.paste_mode = False
+            with self.in_paste_mode():
+                for ee in e.events:
+                    self.process_simple_event(ee)
             self.update_completion()
 
         elif e in self.rl_char_sequences:
@@ -896,10 +896,9 @@ class Repl(BpythonRepl):
             lines.pop()
         events = '\n'.join(lines + ([''] if len(lines) == 1 else ['', '']))
         self.clear_current_block()
-        self.paste_mode = True
-        for e in events:
-            self.process_simple_event(e)
-        self.paste_mode = False
+        with self.in_paste_mode():
+            for e in events:
+                self.process_simple_event(e)
         self._current_line = ''
         self.cursor_offset_in_line = len(self._current_line)
 
@@ -913,6 +912,13 @@ class Repl(BpythonRepl):
             pass # ignore events
         else:
             self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
+
+    @contextlib.contextmanager
+    def in_paste_mode(self):
+        orig_value = self.paste_mode
+        self.paste_mode = True
+        yield
+        self.paste_mode = orig_value
 
 def simple_repl():
     refreshes = []
