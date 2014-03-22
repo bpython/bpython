@@ -1,9 +1,12 @@
 """For running Python code that could interrupt itself at any time
-
 in order to, for example, ask for a read on stdin, or a write on stdout
 
-The CodeRunner spawns a greenlet to run code it, and that code can suspend
-its own execution to ask the main thread to refresh the display or get information.
+The CodeRunner spawns a greenlet to run code in, and that code can suspend
+its own execution to ask the main greenlet to refresh the display or get information.
+
+Greenlets are basically threads that can explicitly switch control to each other.
+You can replace the word "greenlet" with "thread" in these docs if that makes more
+sense to you.
 """
 
 import code
@@ -13,17 +16,35 @@ import greenlet
 import logging
 
 class SigintHappened(object):
-    """If this class is returned, a SIGINT happened while the main thread"""
+    """If this class is returned, a SIGINT happened while the main greenlet"""
 
-class SystemExitFromCodeThread(SystemExit):
-    """If this class is returned, a SystemExit happened while in the code thread"""
-    pass
+class SystemExitFromCodeGreenlet(SystemExit):
+    """If this class is returned, a SystemExit happened while in the code greenlet"""
+
+
+class RequestFromCodeGreenlet(object):
+    """Message from the code greenlet"""
+
+class Wait(RequestFromCodeGreenlet):
+    """Running code would like the main loop to run for a bit"""
+
+class Refresh(RequestFromCodeGreenlet):
+    """Running code would like the main loop to refresh the display"""
+
+class Done(RequestFromCodeGreenlet):
+    """Running code is done running"""
+
+class Unfinished(RequestFromCodeGreenlet):
+    """Source code wasn't executed because it wasn't fully formed"""
+
+class SystemExitRequest(RequestFromCodeGreenlet):
+    """Running code raised a SystemExit"""
 
 class CodeRunner(object):
     """Runs user code in an interpreter.
 
     Running code requests a refresh by calling refresh_and_get_value(), which
-    suspends execution of the code and switches back to the main thread
+    suspends execution of the code and switches back to the main greenlet
 
     After load_code() is called with the source code to be run,
     the run_code() method should be called to start running the code.
@@ -37,10 +58,12 @@ class CodeRunner(object):
 
     Once the screen refresh has occurred or the requested user input
     has been gathered, run_code() should be called again, passing in any
-    requested user input. This continues until run_code returns 'done'.
+    requested user input. This continues until run_code returns Done.
 
-    Question: How does the caller of run_code know that user input ought
-    to be returned?
+    The code greenlet is responsible for telling the main greenlet
+    what it wants returned in the next run_code call - CodeRunner
+    just passes whatever is passed in to run_code(for_code) to the
+    code greenlet
     """
     def __init__(self, interp=None, stuff_a_refresh_request=lambda:None):
         """
@@ -56,7 +79,7 @@ class CodeRunner(object):
         self.code_greenlet = None
         self.stuff_a_refresh_request = stuff_a_refresh_request
         self.code_is_waiting = False # waiting for response from main thread
-        self.sigint_happened = False
+        self.sigint_happened_in_main_greenlet = False # sigint happened while in main thread
         self.orig_sigint_handler = None
 
     @property
@@ -93,27 +116,27 @@ class CodeRunner(object):
             assert self.code_is_waiting
             self.code_is_waiting = False
             signal.signal(signal.SIGINT, self.sigint_handler)
-            if self.sigint_happened:
-                self.sigint_happened = False
+            if self.sigint_happened_in_main_greenlet:
+                self.sigint_happened_in_main_greenlet = False
                 request = self.code_greenlet.switch(SigintHappened)
             else:
                 request = self.code_greenlet.switch(for_code)
 
-        if request in ['wait', 'refresh']:
+        if not issubclass(request, RequestFromCodeGreenlet):
+            raise ValueError("Not a valid value from code greenlet: %r" % request)
+        if request in [Wait, Refresh]:
             self.code_is_waiting = True
-            if request == 'refresh':
+            if request == Refresh:
                 self.stuff_a_refresh_request()
             return False
-        elif request in ['done', 'unfinished']:
+        elif request in [Done, Unfinished]:
             self._unload_code()
             signal.signal(signal.SIGINT, self.orig_sigint_handler)
             self.orig_sigint_handler = None
             return request
-        elif request in ['SystemExit']: #use the object?
+        elif request in [SystemExitRequest]:
             self._unload_code()
-            raise SystemExitFromCodeThread()
-        else:
-            raise ValueError("Not a valid value from code greenlet: %r" % request)
+            raise SystemExitFromCodeGreenlet()
 
     def sigint_handler(self, *args):
         """SIGINT handler to use while code is running or request being fufilled"""
@@ -128,22 +151,22 @@ class CodeRunner(object):
         try:
             unfinished = self.interp.runsource(self.source)
         except SystemExit:
-            return 'SystemExit'
-        return 'unfinished' if unfinished else 'done'
+            return SystemExitRequest
+        return Unfinished if unfinished else Done
 
     def wait_and_get_value(self):
         """Return the argument passed in to .run_code(for_code)
 
         Nothing means calls to run_code must be...
         """
-        value = self.main_greenlet.switch('wait')
+        value = self.main_greenlet.switch(Wait)
         if value is SigintHappened:
             raise KeyboardInterrupt()
         return value
 
     def refresh_and_get_value(self):
         """Returns the argument passed in to .run_code(for_code) """
-        value = self.main_greenlet.switch('refresh')
+        value = self.main_greenlet.switch(Refresh)
         if value is SigintHappened:
             raise KeyboardInterrupt()
         return value

@@ -12,7 +12,7 @@ Window = curtsies.window.Window
 Terminal = curtsies.terminal.Terminal
 
 from bpython.curtsiesfrontend.repl import Repl
-from bpython.curtsiesfrontend.coderunner import SystemExitFromCodeThread
+from bpython.curtsiesfrontend.coderunner import SystemExitFromCodeGreenlet
 from bpython import args as bpargs
 from bpython.translations import _
 
@@ -65,7 +65,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None):
                 def process_event(e):
                     try:
                         repl.process_event(e)
-                    except SystemExitFromCodeThread:
+                    except SystemExitFromCodeGreenlet:
                         array, cursor_pos = repl.paint(about_to_exit=True, user_quit=True)
                         term.render_to_terminal(array, cursor_pos)
                         raise

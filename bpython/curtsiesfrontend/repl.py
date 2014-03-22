@@ -55,7 +55,7 @@ class FakeStdin(object):
         elif e in rl_char_sequences:
             self.cursor_offset_in_line, self.current_line = rl_char_sequences[e](self.cursor_offset_in_line, self.current_line)
         elif isinstance(e, events.SigIntEvent):
-            self.coderunner.sigint_happened = True
+            self.coderunner.sigint_happened_in_main_greenlet = True
             self.has_focus = False
             self.current_line = ''
             self.cursor_offset_in_line = 0
