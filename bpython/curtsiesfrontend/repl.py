@@ -123,12 +123,13 @@ class ReevaluateFakeStdin(object):
         return value
 
 class Repl(BpythonRepl):
-    """
+    """Python Repl
 
-    takes in:
+    Reacts to events like
      -terminal dimensions and change events
      -keystrokes
-     -number of scroll downs necessary to render array
+    Behavior altered by
+     -number of scroll downs that were necessary to render array after each display
      -initial cursor position
     outputs:
      -2D array to be rendered
@@ -142,18 +143,26 @@ class Repl(BpythonRepl):
 
     ## initialization, cleanup
     def __init__(self, locals_=None, config=None, stuff_a_refresh_request=lambda: None, banner=None, interp=None):
+        """
+        locals_ is a mapping of locals to pass into the interpreter
+        config is a bpython config.Struct with config attributes
+        stuff_a_refresh_request is a function that will be called when the Repl
+            wants to refresh the display, but wants control returned to it afterwards
+        banner is a string to display briefly in the status bar
+        interp is an interpreter to use
+        """
+
         logging.debug("starting init")
 
         if config is None:
             config = Struct()
             loadini(config, default_config_path())
 
-        self.weak_rewind = bool(locals_ or interp)
-
+        self.weak_rewind = bool(locals_ or interp) # If creating a new interpreter on undo
+                                                   # would be unsafe because initial
+                                                   # state was passed in
         if interp is None:
             interp = code.InteractiveInterpreter(locals=locals_)
-
-
         if banner is None:
             banner = _('welcome to bpython')
 
@@ -163,10 +172,10 @@ class Repl(BpythonRepl):
             config.cli_suggestion_width = 1
 
         self.reevaluating = False
-        self.fake_refresh_request = False
+        self.fake_refresh_requested = False
         def request_refresh():
             if self.reevaluating or self.paste_mode:
-                self.fake_refresh_request = True
+                self.fake_refresh_requested = True
             else:
                 stuff_a_refresh_request()
         self.stuff_a_refresh_request = request_refresh
@@ -844,8 +853,8 @@ class Repl(BpythonRepl):
         for line in old_logical_lines:
             self._current_line = line
             self.on_enter(insert_into_history=insert_into_history)
-            while self.fake_refresh_request:
-                self.fake_refresh_request = False
+            while self.fake_refresh_requested:
+                self.fake_refresh_requested = False
                 self.process_event(events.RefreshRequestEvent())
         sys.stdin = self.stdin
         self.reevaluating = False
@@ -899,8 +908,8 @@ class Repl(BpythonRepl):
     def process_simple_event(self, e):
         if e in ("\n", "\r", "PAD_ENTER"):
             self.on_enter()
-            while self.fake_refresh_request:
-                self.fake_refresh_request = False
+            while self.fake_refresh_requested:
+                self.fake_refresh_requested = False
                 self.process_event(events.RefreshRequestEvent())
         elif isinstance(e, events.Event):
             pass # ignore events
