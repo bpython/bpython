@@ -30,7 +30,7 @@ from bpython.curtsiesfrontend import sitefix; sitefix.monkeypatch_quit()
 import bpython.curtsiesfrontend.replpainter as paint
 import curtsies.events as events
 from bpython.curtsiesfrontend.friendly import NotImplementedError
-from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
+from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput, Unfinished
 
 #TODO figure out how config.list_win_visible behaves and implement it, or stop using it
 #TODO other autocomplete modes (also fix in other bpython implementations)
@@ -206,7 +206,7 @@ class Repl(BpythonRepl):
         self.cursor_offset_in_line = 0 # from the left, 0 means first char
         self.done = True # whether the current block is finished yet
 
-        self.coderunner = CodeRunner(self.interp, request_refresh)
+        self.coderunner = CodeRunner(self.interp, self.request_refresh)
         self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
         self.stderr = FakeOutput(self.coderunner, self.send_to_stderr)
         self.stdin = FakeStdin(self.coderunner, self)
@@ -513,7 +513,7 @@ class Repl(BpythonRepl):
         if r:
             logging.debug("----- Running finish command stuff -----")
             logging.debug("saved_indent: %r", self.saved_indent)
-            unfinished = r == 'unfinished'
+            unfinished = r == Unfinished
             err = self.saved_predicted_parse_error
             self.saved_predicted_parse_error = False
 
