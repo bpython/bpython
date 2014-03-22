@@ -165,9 +165,7 @@ class Repl(BpythonRepl):
             interp = code.InteractiveInterpreter(locals=locals_)
         if banner is None:
             banner = _('welcome to bpython')
-
         config.autocomplete_mode = SIMPLE # only one implemented currently
-
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 1
 
@@ -198,14 +196,15 @@ class Repl(BpythonRepl):
                                 # length goes over what the terminal width
                                 # was at the time of original output
         self.history = [] # this is every line that's been executed;
-                                # it gets smaller on rewind
+                          # it gets smaller on rewind
         self.display_buffer = [] # formatted version of lines in the buffer
                                  # kept around so we can unhighlight parens
                                  # using self.reprint_line as called by
                                  # bpython.Repl
-        self.scroll_offset = 0
+        self.scroll_offset = 0 # how many times display has been scrolled down
+                               # because there wasn't room to display everything
         self.cursor_offset_in_line = 0 # from the left, 0 means first char
-        self.done = True
+        self.done = True # whether the current block is finished yet
 
         self.coderunner = CodeRunner(self.interp, request_refresh)
         self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
