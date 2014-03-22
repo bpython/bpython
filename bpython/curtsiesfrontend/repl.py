@@ -204,7 +204,6 @@ class Repl(BpythonRepl):
         self.scroll_offset = 0 # how many times display has been scrolled down
                                # because there wasn't room to display everything
         self.cursor_offset_in_line = 0 # from the left, 0 means first char
-        self.done = True # whether the current block is finished yet
 
         self.coderunner = CodeRunner(self.interp, self.request_refresh)
         self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
@@ -219,6 +218,11 @@ class Repl(BpythonRepl):
         self.width = None  # will both be set by a window resize event
         self.height = None
         self.start_background_tasks()
+
+    @property
+    def done(self):
+        """Whether the last block is complete - which prompt to use, ps1 or ps2"""
+        return not self.buffer
 
     def __enter__(self):
         self.orig_stdout = sys.stdout
@@ -529,7 +533,6 @@ class Repl(BpythonRepl):
 
             self._current_line = ' '*indent
             self.cursor_offset_in_line = len(self._current_line)
-            self.done = not unfinished
 
     def keyboard_interrupt(self):
         #TODO factor out the common cleanup from running a line
@@ -545,7 +548,6 @@ class Repl(BpythonRepl):
         self.saved_indent = 0
         self._current_line = ''
         self.cursor_offset_in_line = len(self._current_line)
-        self.done = True
 
     def unhighlight_paren(self):
         """modify line in self.display_buffer to unhighlight a paren if possible
@@ -835,8 +837,6 @@ class Repl(BpythonRepl):
         self.history = []
         self.display_lines = []
 
-        self.done = True # this keeps the first prompt correct
-
         if not self.weak_rewind:
             self.interp = code.InteractiveInterpreter()
             self.coderunner.interp = self.interp
@@ -888,7 +888,6 @@ class Repl(BpythonRepl):
         self.saved_indent = 0
         self._current_line = ''
         self.cursor_offset_in_line = len(self._current_line)
-        self.done = True
 
     def send_current_block_to_external_editor(self, filename=None):
         text = self.send_to_external_editor(self.get_current_block())
