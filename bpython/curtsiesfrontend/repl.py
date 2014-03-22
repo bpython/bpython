@@ -31,7 +31,7 @@ from bpython.curtsiesfrontend import sitefix; sitefix.monkeypatch_quit()
 import bpython.curtsiesfrontend.replpainter as paint
 import curtsies.events as events
 from bpython.curtsiesfrontend.friendly import NotImplementedError
-from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput, Unfinished
+from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 
 #TODO figure out how config.list_win_visible behaves and implement it, or stop using it
 #TODO other autocomplete modes (also fix in other bpython implementations)
@@ -237,15 +237,16 @@ class Repl(BpythonRepl):
         sys.stderr = self.orig_stderr
 
     def start_background_tasks(self):
-        t = threading.Thread(target=self.importcompletion_thread)
+        """starts tasks that should run on startup in the background"""
+
+        def importcompletion_thread():
+            #TODO use locks or something to avoid error on import completion right at startup
+            while importcompletion.find_coroutine(): # returns None when fully initialized
+                pass
+
+        t = threading.Thread(target=importcompletion_thread)
         t.daemon = True
         t.start()
-
-    def importcompletion_thread(self):
-        """task that should run on startup in the background"""
-        #TODO use locks or something to avoid error on import completion right at startup
-        while importcompletion.find_coroutine(): # returns None when fully initialized
-            pass
 
     def clean_up_current_line_for_exit(self):
         """Called when trying to exit to prep for final paint"""
@@ -255,7 +256,8 @@ class Repl(BpythonRepl):
 
     ## Event handling
     def process_event(self, e):
-        """Returns True if shutting down, otherwise mutates state of Repl object"""
+        """Returns True if shutting down, otherwise returns None.
+        Mostly mutates state of Repl object"""
         # event names uses here are curses compatible, or the full names
         # for a full list of what should have pretty names, see curtsies.events.CURSES_TABLE
 
@@ -263,7 +265,6 @@ class Repl(BpythonRepl):
             self.last_events.append(e)
             self.last_events.pop(0)
 
-        result = None
         logging.debug("processing event %r", e)
         if isinstance(e, events.RefreshRequestEvent):
             if self.status_bar.has_focus:
@@ -275,9 +276,9 @@ class Repl(BpythonRepl):
             logging.debug('window change to %d %d', e.width, e.height)
             self.width, self.height = e.width, e.height
         elif self.status_bar.has_focus:
-            result = self.status_bar.process_event(e)
+            return self.status_bar.process_event(e)
         elif self.stdin.has_focus:
-            result = self.stdin.process_event(e)
+            return self.stdin.process_event(e)
 
         elif isinstance(e, events.SigIntEvent):
             logging.debug('received sigint event')
@@ -353,8 +354,6 @@ class Repl(BpythonRepl):
             self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
             self.update_completion()
 
-        return result
-
     def on_enter(self, insert_into_history=True):
         self.cursor_offset_in_line = -1 # so the cursor isn't touching a paren
         self.unhighlight_paren()        # in unhighlight_paren
@@ -366,33 +365,6 @@ class Repl(BpythonRepl):
         line = self._current_line
         #self._current_line = ''
         self.push(line, insert_into_history=insert_into_history)
-
-    def send_to_stdout(self, output):
-        lines = output.split('\n')
-        logging.debug('display_lines: %r', self.display_lines)
-        self.current_stdouterr_line += lines[0]
-        if len(lines) > 1:
-            self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width, blank_line=True))
-            self.display_lines.extend(sum([paint.display_linize(line, self.width, blank_line=True) for line in lines[1:-1]], []))
-            self.current_stdouterr_line = lines[-1]
-        logging.debug('display_lines: %r', self.display_lines)
-
-    def send_to_stderr(self, error):
-        #self.send_to_stdout(error)
-        self.display_lines.extend([func_for_letter(self.config.color_scheme['error'])(line)
-                                   for line in sum([paint.display_linize(line, self.width)
-                                                    for line in error.split('\n')], [])])
-
-    def send_to_stdin(self, line):
-        if line.endswith('\n'):
-            self.display_lines.extend(paint.display_linize(self.current_output_line[:-1], self.width))
-            self.current_output_line = ''
-        #self.display_lines = self.display_lines[:len(self.display_lines) - self.stdin.old_num_lines]
-        #lines = paint.display_linize(line, self.width)
-        #self.stdin.old_num_lines = len(lines)
-        #self.display_lines.extend(paint.display_linize(line, self.width))
-        pass
-
 
     def on_tab(self, back=False):
         """Do something on tab key
@@ -549,7 +521,6 @@ class Repl(BpythonRepl):
         if r:
             logging.debug("----- Running finish command stuff -----")
             logging.debug("saved_indent: %r", self.saved_indent)
-            unfinished = r == Unfinished
             err = self.saved_predicted_parse_error
             self.saved_predicted_parse_error = False
 
@@ -573,13 +544,7 @@ class Repl(BpythonRepl):
         self.display_lines.extend(self.display_buffer_lines)
         self.display_lines.extend(paint.display_linize(self.current_cursor_line, self.width))
         self.display_lines.extend(paint.display_linize("KeyboardInterrupt", self.width))
-
-        self.display_buffer = []
-        self.buffer = []
-        self.cursor_offset_in_line = 0
-        self.saved_indent = 0
-        self._current_line = ''
-        self.cursor_offset_in_line = len(self._current_line)
+        self.clear_current_block(remove_from_history=False)
 
     def unhighlight_paren(self):
         """modify line in self.display_buffer to unhighlight a paren if possible
@@ -597,10 +562,10 @@ class Repl(BpythonRepl):
             new = bpythonparse(format(saved_tokens, self.formatter))
             self.display_buffer[lineno] = self.display_buffer[lineno].setslice(0, len(new), new)
 
-
-    def clear_current_block(self):
+    def clear_current_block(self, remove_from_history=True):
         self.display_buffer = []
-        [self.history.pop() for _ in self.buffer]
+        if remove_from_history:
+            [self.history.pop() for _ in self.buffer]
         self.buffer = []
         self.cursor_offset_in_line = 0
         self.saved_indent = 0
@@ -609,6 +574,33 @@ class Repl(BpythonRepl):
 
     def get_current_block(self):
         return '\n'.join(self.buffer + [self._current_line])
+
+    def send_to_stdout(self, output):
+        lines = output.split('\n')
+        logging.debug('display_lines: %r', self.display_lines)
+        self.current_stdouterr_line += lines[0]
+        if len(lines) > 1:
+            self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width, blank_line=True))
+            self.display_lines.extend(sum([paint.display_linize(line, self.width, blank_line=True) for line in lines[1:-1]], []))
+            self.current_stdouterr_line = lines[-1]
+        logging.debug('display_lines: %r', self.display_lines)
+
+    def send_to_stderr(self, error):
+        #self.send_to_stdout(error)
+        self.display_lines.extend([func_for_letter(self.config.color_scheme['error'])(line)
+                                   for line in sum([paint.display_linize(line, self.width)
+                                                    for line in error.split('\n')], [])])
+
+    def send_to_stdin(self, line):
+        if line.endswith('\n'):
+            self.display_lines.extend(paint.display_linize(self.current_output_line[:-1], self.width))
+            self.current_output_line = ''
+        #self.display_lines = self.display_lines[:len(self.display_lines) - self.stdin.old_num_lines]
+        #lines = paint.display_linize(line, self.width)
+        #self.stdin.old_num_lines = len(lines)
+        #self.display_lines.extend(paint.display_linize(line, self.width))
+        pass
+
 
     ## formatting, output
     @property
