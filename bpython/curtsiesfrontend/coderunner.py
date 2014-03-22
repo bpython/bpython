@@ -1,3 +1,11 @@
+"""For running Python code that could interrupt itself at any time
+
+in order to, for example, ask for a read on stdin, or a write on stdout
+
+The CodeRunner spawns a greenlet to run code it, and that code can suspend
+its own execution to ask the main thread to refresh the display or get information.
+"""
+
 import code
 import signal
 import sys
@@ -5,29 +13,60 @@ import greenlet
 import logging
 
 class SigintHappened(object):
-    pass
+    """If this class is returned, a SIGINT happened while the main thread"""
 
 class SystemExitFromCodeThread(SystemExit):
+    """If this class is returned, a SystemExit happened while in the code thread"""
     pass
 
 class CodeRunner(object):
-    """Runs user code in an interpreter, taking care of stdout/in/err"""
+    """Runs user code in an interpreter.
+
+    Running code requests a refresh by calling refresh_and_get_value(), which
+    suspends execution of the code and switches back to the main thread
+
+    After load_code() is called with the source code to be run,
+    the run_code() method should be called to start running the code.
+    The running code may request screen refreshes and user input
+    by calling the refresh_and_get_value and wait_and_get_value calls
+    respectively. When these are called, the running source code cedes
+    control, and the current run_code() method call returns.
+
+    The return value of run_code() determines whether the method ought
+    to be called again to complete execution of the source code.
+
+    Once the screen refresh has occurred or the requested user input
+    has been gathered, run_code() should be called again, passing in any
+    requested user input. This continues until run_code returns 'done'.
+
+    Question: How does the caller of run_code know that user input ought
+    to be returned?
+    """
     def __init__(self, interp=None, stuff_a_refresh_request=lambda:None):
+        """
+        interp is an interpreter object to use. By default a new one is
+        created.
+
+        stuff_a_refresh_request is a function that will be called each time
+        the running code asks for a refresh - to, for example, update the screen.
+        """
         self.interp = interp or code.InteractiveInterpreter()
         self.source = None
         self.main_greenlet = greenlet.getcurrent()
         self.code_greenlet = None
         self.stuff_a_refresh_request = stuff_a_refresh_request
-        self.code_is_waiting = False
+        self.code_is_waiting = False # waiting for response from main thread
         self.sigint_happened = False
         self.orig_sigint_handler = None
 
     @property
     def running(self):
+        """Returns greenlet if code has been loaded greenlet has been started"""
         return self.source and self.code_greenlet
 
     def load_code(self, source):
         """Prep code to be run"""
+        assert self.source is None, "you shouldn't load code when some is already running"
         self.source = source
         self.code_greenlet = None
 
@@ -77,6 +116,7 @@ class CodeRunner(object):
             raise ValueError("Not a valid value from code greenlet: %r" % request)
 
     def sigint_handler(self, *args):
+        """SIGINT handler to use while code is running or request being fufilled"""
         if greenlet.getcurrent() is self.code_greenlet:
             logging.debug('sigint while running user code!')
             raise KeyboardInterrupt()
@@ -109,11 +149,11 @@ class CodeRunner(object):
         return value
 
 class FakeOutput(object):
-    def __init__(self, coderunner, please):
+    def __init__(self, coderunner, on_write):
         self.coderunner = coderunner
-        self.please = please
+        self.on_write = on_write
     def write(self, *args, **kwargs):
-        self.please(*args, **kwargs)
+        self.on_write(*args, **kwargs)
         return self.coderunner.refresh_and_get_value()
     def writelines(self, l):
         for s in l:
