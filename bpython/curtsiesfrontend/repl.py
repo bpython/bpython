@@ -220,11 +220,6 @@ class Repl(BpythonRepl):
         self.height = None
         self.start_background_tasks()
 
-    @property
-    def done(self):
-        """Whether the last block is complete - which prompt to use, ps1 or ps2"""
-        return not self.buffer
-
     def __enter__(self):
         self.orig_stdout = sys.stdout
         self.orig_stderr = sys.stderr
@@ -445,6 +440,41 @@ class Repl(BpythonRepl):
             self.current_word = (self.matches_iter.previous()
                                  if back else self.matches_iter.next())
 
+    def process_simple_event(self, e):
+        if e in ("\n", "\r", "PAD_ENTER"):
+            self.on_enter()
+            while self.fake_refresh_requested:
+                self.fake_refresh_requested = False
+                self.process_event(events.RefreshRequestEvent())
+        elif isinstance(e, events.Event):
+            pass # ignore events
+        else:
+            self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
+
+    def send_current_block_to_external_editor(self, filename=None):
+        text = self.send_to_external_editor(self.get_current_block())
+        lines = [line for line in text.split('\n')]
+        while lines and not lines[-1].split():
+            lines.pop()
+        events = '\n'.join(lines + ([''] if len(lines) == 1 else ['', '']))
+        self.clear_current_block()
+        with self.in_paste_mode():
+            for e in events:
+                self.process_simple_event(e)
+        self._current_line = ''
+        self.cursor_offset_in_line = len(self._current_line)
+
+    def send_session_to_external_editor(self, filename=None):
+        for_editor = '### current bpython session - file will be reevaluated, ### lines will not be run\n'.encode('utf8')
+        for_editor += ('\n'.join(line[4:] if line[:4] in ('... ', '>>> ') else '### '+line
+                       for line in self.getstdout().split('\n')).encode('utf8'))
+        text = self.send_to_external_editor(for_editor)
+        lines = text.split('\n')
+        self.history = [line for line in lines if line[:4] != '### ']
+        self.reevaluate(insert_into_history=True)
+        self._current_line = lines[-1][4:]
+        self.cursor_offset_in_line = len(self._current_line)
+
     ## Handler Helpers
     def add_normal_character(self, char):
         assert len(char) == 1, repr(char)
@@ -566,7 +596,24 @@ class Repl(BpythonRepl):
             self.display_buffer[lineno] = self.display_buffer[lineno].setslice(0, len(new), new)
 
 
+    def clear_current_block(self):
+        self.display_buffer = []
+        [self.history.pop() for _ in self.buffer]
+        self.buffer = []
+        self.cursor_offset_in_line = 0
+        self.saved_indent = 0
+        self._current_line = ''
+        self.cursor_offset_in_line = len(self._current_line)
+
+    def get_current_block(self):
+        return '\n'.join(self.buffer + [self._current_line])
+
     ## formatting, output
+    @property
+    def done(self):
+        """Whether the last block is complete - which prompt to use, ps1 or ps2"""
+        return not self.buffer
+
     @property
     def current_line_formatted(self):
         if self.config.syntax:
@@ -754,6 +801,13 @@ class Repl(BpythonRepl):
         logging.debug('cursor pos: %r', (cursor_row, cursor_column))
         return arr, (cursor_row, cursor_column)
 
+    @contextlib.contextmanager
+    def in_paste_mode(self):
+        orig_value = self.paste_mode
+        self.paste_mode = True
+        yield
+        self.paste_mode = orig_value
+
     ## Debugging shims
     def dumb_print_output(self):
         arr, cpos = self.paint()
@@ -866,60 +920,6 @@ class Repl(BpythonRepl):
         s = '\n'.join([x.s if isinstance(x, FmtStr) else x for x in lines]
                      ) if lines else ''
         return s
-    def send_session_to_external_editor(self, filename=None):
-        for_editor = '### current bpython session - file will be reevaluated, ### lines will not be run\n'.encode('utf8')
-        for_editor += ('\n'.join(line[4:] if line[:4] in ('... ', '>>> ') else '### '+line
-                       for line in self.getstdout().split('\n')).encode('utf8'))
-        text = self.send_to_external_editor(for_editor)
-        lines = text.split('\n')
-        self.history = [line for line in lines if line[:4] != '### ']
-        self.reevaluate(insert_into_history=True)
-        self._current_line = lines[-1][4:]
-        self.cursor_offset_in_line = len(self._current_line)
-
-    def get_current_block(self):
-        return '\n'.join(self.buffer + [self._current_line])
-
-    def clear_current_block(self):
-        self.display_buffer = []
-        [self.history.pop() for _ in self.buffer]
-        self.buffer = []
-        self.cursor_offset_in_line = 0
-        self.saved_indent = 0
-        self._current_line = ''
-        self.cursor_offset_in_line = len(self._current_line)
-
-    def send_current_block_to_external_editor(self, filename=None):
-        text = self.send_to_external_editor(self.get_current_block())
-        lines = [line for line in text.split('\n')]
-        while lines and not lines[-1].split():
-            lines.pop()
-        events = '\n'.join(lines + ([''] if len(lines) == 1 else ['', '']))
-        self.clear_current_block()
-        with self.in_paste_mode():
-            for e in events:
-                self.process_simple_event(e)
-        self._current_line = ''
-        self.cursor_offset_in_line = len(self._current_line)
-
-    def process_simple_event(self, e):
-        if e in ("\n", "\r", "PAD_ENTER"):
-            self.on_enter()
-            while self.fake_refresh_requested:
-                self.fake_refresh_requested = False
-                self.process_event(events.RefreshRequestEvent())
-        elif isinstance(e, events.Event):
-            pass # ignore events
-        else:
-            self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
-
-    @contextlib.contextmanager
-    def in_paste_mode(self):
-        orig_value = self.paste_mode
-        self.paste_mode = True
-        yield
-        self.paste_mode = orig_value
-
 def simple_repl():
     refreshes = []
     def request_refresh():
