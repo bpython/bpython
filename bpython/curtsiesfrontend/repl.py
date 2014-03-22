@@ -39,6 +39,7 @@ from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput, Unfinish
 from bpython.keys import cli_key_dispatch as key_dispatch
 
 class FakeStdin(object):
+    """Stdin object user code references so sys.stdin.read() asked user for interactive input"""
     def __init__(self, coderunner, repl):
         self.coderunner = coderunner
         self.repl = repl
@@ -111,6 +112,7 @@ class FakeStdin(object):
     #TODO write a read() method
 
 class ReevaluateFakeStdin(object):
+    """Stdin mock used during reevaluation (undo) so raw_inputs don't have to be reentered"""
     def __init__(self, fakestdin, repl):
         self.fakestdin = fakestdin
         self.repl = repl
