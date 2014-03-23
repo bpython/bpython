@@ -71,10 +71,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None):
                         raise
                     else:
                         array, cursor_pos = repl.paint()
-                        scrolled = term.render_to_terminal(array, cursor_pos)
-                        repl.scroll_offset += scrolled
-                        # Could this be calculated in the repl, avoiding this
-                        # two-way communication?
+                        term.render_to_terminal(array, cursor_pos)
 
                 if paste:
                     repl.process_event(tc.get_event()) #first event will always be a window size set

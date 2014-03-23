@@ -610,6 +610,7 @@ class Repl(BpythonRepl):
 
     @property
     def current_line_formatted(self):
+        """The colored current line (no prompt, not wrapped)"""
         if self.config.syntax:
             fs = bpythonparse(format(self.tokenize(self._current_line), self.formatter))
         else:
@@ -622,10 +623,18 @@ class Repl(BpythonRepl):
 
     @property
     def lines_for_display(self):
+        """All display lines (wrapped, colored, with prompts)"""
         return self.display_lines + self.display_buffer_lines
 
     @property
     def current_word(self):
+        """Returns the "current word", based on what's directly left of the cursor.
+        examples inclue "socket.socket.metho" or "self.reco" or "yiel" 
+
+        cw() is currently an alias, but cw() is used by bpyton.repl.Repl
+        so must match its definition of current word - changing how it behaves
+        has many repercussions.
+        """
         words = re.split(r'([\w_][\w0-9._]*[(]?)', self._current_line)
         chars = 0
         cw = None
@@ -650,7 +659,7 @@ class Repl(BpythonRepl):
 
     @property
     def display_buffer_lines(self):
-        """The lines build from the display buffer"""
+        """The display lines (wrapped, colored, with prompts) for the current buffer"""
         lines = []
         for display_line in self.display_buffer:
             display_line = (func_for_letter(self.config.color_scheme['prompt_more'])(self.ps2)
@@ -662,12 +671,14 @@ class Repl(BpythonRepl):
 
     @property
     def display_line_with_prompt(self):
+        """colored line with prompt"""
         return (func_for_letter(self.config.color_scheme['prompt'])(self.ps1)
                 if self.done else
                 func_for_letter(self.config.color_scheme['prompt_more'])(self.ps2)) + self.current_line_formatted
 
     @property
     def current_cursor_line(self):
+        """Current line, either output/input or Python prompt + code"""
         value = (self.current_output_line +
                 ('' if self.coderunner.running else self.display_line_with_prompt))
         logging.debug('current cursor line: %r', value)
@@ -675,6 +686,7 @@ class Repl(BpythonRepl):
 
     @property
     def current_output_line(self):
+        """line of output currently being written, and stdin typed"""
         return self.current_stdouterr_line + self.stdin.current_line
 
     @current_output_line.setter
@@ -683,6 +695,17 @@ class Repl(BpythonRepl):
         self.stdin.current_line = '\n'
 
     def paint(self, about_to_exit=False, user_quit=False):
+        """Returns an array of min_height or more rows and width columns, plus cursor position
+
+        Also increments self.scroll_offset by the amount the terminal must have scrolled
+        to display the entire array.
+        """
+        arr, (row, col) = self._paint(about_to_exit=about_to_exit, user_quit=user_quit)
+        if arr.height > self.height:
+            self.scroll_offset += arr.height - self.height
+        return arr, (row, col)
+
+    def _paint(self, about_to_exit=False, user_quit=False):
         """Returns an array of min_height or more rows and width columns, plus cursor position
 
         Paints the entire screen - ideally the terminal display layer will take a diff and only
