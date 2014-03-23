@@ -713,6 +713,7 @@ class Repl(BpythonRepl):
         to worry about that here, instead every frame is completely redrawn because
         less state is cool!
         """
+        # The hairiest function in the curtsies - a cleanup would be great.
 
         if about_to_exit:
             self.clean_up_current_line_for_exit() # exception to not changing state!
@@ -825,7 +826,7 @@ class Repl(BpythonRepl):
         yield
         self.paste_mode = orig_value
 
-    ## Debugging shims
+    ## Debugging shims, good example of embedding a Repl in other code
     def dumb_print_output(self):
         arr, cpos = self.paint()
         arr[cpos[0]:cpos[0]+1, cpos[1]:cpos[1]+1] = ['~']
@@ -865,7 +866,7 @@ class Repl(BpythonRepl):
                 t.daemon = True
                 t.start()
             elif c in '$':
-                c = '[19~'
+                c = key_dispatch[self.config.pastebin_key][0]
             self.process_event(c)
 
     def __repr__(self):
@@ -941,12 +942,11 @@ def simple_repl():
     refreshes = []
     def request_refresh():
         refreshes.append(1)
-    with Repl(refresh_request=request_refresh) as r:
+    with Repl(request_refresh=request_refresh) as r:
         r.width = 50
         r.height = 10
         while True:
-            scrolled = r.dumb_print_output()
-            r.scroll_offset += scrolled
+            r.dumb_print_output()
             r.dumb_input(refreshes)
 
 if __name__ == '__main__':
