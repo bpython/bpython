@@ -53,6 +53,9 @@ def complete(line, cw):
     if not cw:
         return None
 
+    if not fully_loaded:
+        return []
+
     tokens = line.split()
     if tokens[0] not in ['from', 'import']:
         return None
