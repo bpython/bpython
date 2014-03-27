@@ -53,6 +53,10 @@ def complete(line, cw):
     if not cw:
         return None
 
+    # TODO if this is done in a thread (as it prob will be in Windows) we'll need this
+    # if not fully_loaded:
+    #     return []
+
     tokens = line.split()
     if tokens[0] not in ['from', 'import']:
         return None
