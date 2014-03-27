@@ -71,7 +71,7 @@ class StatusBar(BpythonInteraction):
             else:
                 self.request_greenlet.switch(False)
             self.escape()
-        elif e in ['\x1b', '\t', '\x1b\t', '\x1b\x1b']:
+        elif e in ['\x1b']:
             self.request_greenlet.switch(False)
             self.escape()
         else: # add normal character
@@ -120,7 +120,7 @@ class StatusBar(BpythonInteraction):
     def file_prompt(self, s):
         """Expected to return a file name, given """
         self.request_greenlet = greenlet.getcurrent()
-        self.prompt = s.replace('Esc', 'Tab')
+        self.prompt = s
         self.in_prompt = True
         result = self.main_greenlet.switch(s)
         return result

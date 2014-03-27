@@ -62,6 +62,8 @@ class FakeStdin(object):
             self.current_line = ''
             self.cursor_offset_in_line = 0
             self.repl.run_code_and_maybe_finish()
+        elif e in ["\x1b"]: #ESC
+            pass
         else: # add normal character
             self.add_normal_character(e)
 
@@ -337,6 +339,8 @@ class Repl(BpythonRepl):
         #TODO add PAD keys hack as in bpython.cli
         elif e in ["\x18"]:
             self.send_current_block_to_external_editor()
+        elif e in ["\x1b"]: #ESC
+            pass
         else:
             self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
             self.update_completion()
