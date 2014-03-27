@@ -220,7 +220,6 @@ class Repl(BpythonRepl):
 
         self.width = None  # will both be set by a window resize event
         self.height = None
-        self.start_background_tasks()
 
     def __enter__(self):
         self.orig_stdout = sys.stdout
@@ -235,18 +234,6 @@ class Repl(BpythonRepl):
         sys.stdin = self.orig_stdin
         sys.stdout = self.orig_stdout
         sys.stderr = self.orig_stderr
-
-    def start_background_tasks(self):
-        """starts tasks that should run on startup in the background"""
-
-        def importcompletion_thread():
-            #TODO use locks or something to avoid error on import completion right at startup
-            while importcompletion.find_coroutine(): # returns None when fully initialized
-                pass
-
-        t = threading.Thread(target=importcompletion_thread)
-        t.daemon = True
-        t.start()
 
     def clean_up_current_line_for_exit(self):
         """Called when trying to exit to prep for final paint"""
@@ -946,6 +933,7 @@ def simple_repl():
         r.width = 50
         r.height = 10
         while True:
+            [_ for _ in importcompletion.find_iterator]
             r.dumb_print_output()
             r.dumb_input(refreshes)
 

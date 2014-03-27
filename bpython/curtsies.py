@@ -15,6 +15,7 @@ from bpython.curtsiesfrontend.repl import Repl
 from bpython.curtsiesfrontend.coderunner import SystemExitFromCodeGreenlet
 from bpython import args as bpargs
 from bpython.translations import _
+from bpython.importcompletion import find_iterator
 
 def main(args=None, locals_=None, banner=None):
     config, options, exec_args = bpargs.parse(args, (
@@ -78,7 +79,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None):
                     process_event(paste)
 
                 while True:
-                    process_event(tc.get_event())
+                    process_event(tc.get_event(idle=find_iterator))
 
 if __name__ == '__main__':
     sys.exit(main())
