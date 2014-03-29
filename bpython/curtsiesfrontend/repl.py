@@ -263,7 +263,10 @@ class Repl(BpythonRepl):
                 self.run_code_and_maybe_finish()
         elif isinstance(e, events.WindowChangeEvent):
             logging.debug('window change to %d %d', e.width, e.height)
+            #TODO when window gets larger, history is eaten up
+            self.scroll_offset -= e.cursor_dy
             self.width, self.height = e.width, e.height
+
         elif self.status_bar.has_focus:
             return self.status_bar.process_event(e)
         elif self.stdin.has_focus:
@@ -714,6 +717,7 @@ class Repl(BpythonRepl):
         if show_status_bar:
             min_height -= 1
 
+
         current_line_start_row = len(self.lines_for_display) - max(0, self.scroll_offset)
         if self.request_paint_to_clear_screen: # or show_status_bar and about_to_exit ?
             self.request_paint_to_clear_screen = False
@@ -726,7 +730,6 @@ class Repl(BpythonRepl):
         #TODO test case of current line filling up the whole screen (there aren't enough rows to show it)
 
         if current_line_start_row < 0: #if current line trying to be drawn off the top of the screen
-            #assert True, 'no room for current line: contiguity of history broken!'
             logging.debug('#<---History contiguity broken by rewind--->')
             msg = "#<---History contiguity broken by rewind--->"
             arr[0, 0:min(len(msg), width)] = [msg[:width]]

@@ -75,11 +75,11 @@ def mainloop(config, locals_, banner, interp=None, paste=None):
                         term.render_to_terminal(array, cursor_pos)
 
                 if paste:
-                    repl.process_event(tc.get_event()) #first event will always be a window size set
+                    repl.process_event(term.get_annotated_event()) #first event will always be a window size set
                     process_event(paste)
 
                 while True:
-                    process_event(tc.get_event(idle=find_iterator))
+                    process_event(term.get_annotated_event(idle=find_iterator))
 
 if __name__ == '__main__':
     sys.exit(main())
