@@ -68,11 +68,13 @@ def mainloop(config, locals_, banner, interp=None, paste=None):
                         repl.process_event(e)
                     except (SystemExitFromCodeGreenlet, SystemExit) as err:
                         array, cursor_pos = repl.paint(about_to_exit=True, user_quit=isinstance(err, SystemExitFromCodeGreenlet))
-                        term.render_to_terminal(array, cursor_pos)
+                        scrolled = term.render_to_terminal(array, cursor_pos)
+                        repl.scroll_offset += scrolled
                         raise
                     else:
                         array, cursor_pos = repl.paint()
-                        term.render_to_terminal(array, cursor_pos)
+                        scrolled = term.render_to_terminal(array, cursor_pos)
+                        repl.scroll_offset += scrolled
 
                 if paste:
                     repl.process_event(term.get_annotated_event()) #first event will always be a window size set

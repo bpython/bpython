@@ -263,7 +263,6 @@ class Repl(BpythonRepl):
                 self.run_code_and_maybe_finish()
         elif isinstance(e, events.WindowChangeEvent):
             logging.debug('window change to %d %d', e.width, e.height)
-            #TODO when window gets larger, history is eaten up
             self.scroll_offset -= e.cursor_dy
             self.width, self.height = e.width, e.height
 
@@ -554,7 +553,7 @@ class Repl(BpythonRepl):
             logging.debug('trying to unhighlight a paren on line %r', lineno)
             logging.debug('with these tokens: %r', saved_tokens)
             new = bpythonparse(format(saved_tokens, self.formatter))
-            self.display_buffer[lineno] = self.display_buffer[lineno].setslice(0, len(new), new)
+            self.display_buffer[lineno] = self.display_buffer[lineno].setslice_with_length(0, len(new), new, len(self.display_buffer[lineno]))
 
     def clear_current_block(self, remove_from_history=True):
         self.display_buffer = []
@@ -691,17 +690,6 @@ class Repl(BpythonRepl):
     def paint(self, about_to_exit=False, user_quit=False):
         """Returns an array of min_height or more rows and width columns, plus cursor position
 
-        Also increments self.scroll_offset by the amount the terminal must have scrolled
-        to display the entire array.
-        """
-        arr, (row, col) = self._paint(about_to_exit=about_to_exit, user_quit=user_quit)
-        if arr.height > self.height:
-            self.scroll_offset += arr.height - self.height
-        return arr, (row, col)
-
-    def _paint(self, about_to_exit=False, user_quit=False):
-        """Returns an array of min_height or more rows and width columns, plus cursor position
-
         Paints the entire screen - ideally the terminal display layer will take a diff and only
         write to the screen in portions that have changed, but the idea is that we don't need
         to worry about that here, instead every frame is completely redrawn because
@@ -716,7 +704,6 @@ class Repl(BpythonRepl):
         show_status_bar = bool(self.status_bar._message) or (self.config.curtsies_fill_terminal or self.status_bar.has_focus)
         if show_status_bar:
             min_height -= 1
-
 
         current_line_start_row = len(self.lines_for_display) - max(0, self.scroll_offset)
         if self.request_paint_to_clear_screen: # or show_status_bar and about_to_exit ?
