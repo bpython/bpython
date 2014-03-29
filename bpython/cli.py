@@ -507,10 +507,14 @@ class CLIRepl(repl.Repl):
 
         # look from right to left for a bad method character
         l = len(self.s)
-        is_method_char = lambda c: c.isalnum() or c in ('.', '_')
+        #MAJA  is_method_or_dict_character, [ and \' major problem
+        is_method_char = lambda c: c.isalnum() or c in ('.',
+                                                        '_', '[', '\'', ']')
 
         if not self.s or not is_method_char(self.s[l-1]):
             return
+
+        #MAJA only dictionaries should have \' (TODO)
 
         for i in range(1, l+1):
             if not is_method_char(self.s[-i]):
@@ -1420,7 +1424,7 @@ class CLIRepl(repl.Repl):
             os.kill(os.getpid(), signal.SIGSTOP)
 
     def tab(self, back=False):
-        """Process the tab key being hit. 
+        """Process the tab key being hit.
 
         If there's only whitespace
         in the line or the line is blank then process a normal tab,

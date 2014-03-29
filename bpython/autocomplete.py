@@ -53,6 +53,36 @@ class Autocomplete(rlcompleter.Completer):
         else:
             self.autocomplete_mode = SUBSTRING
 
+    def complete(self, text, state):
+        """Return the next possible completion for 'text'.
+
+        This is called successively with state == 0, 1, 2, ... until it
+        returns None.  The completion should begin with 'text'.
+
+        """
+        if self.use_main_ns:
+            self.namespace = __main__.__dict__
+
+        if state == 0:
+            if "." in text:
+                self.matches = self.attr_matches(text)
+                #print self.matches
+             # MAJA TODO: what if there's a dict in an object...?
+            elif "[" in text:
+                expr = text[:text.rindex('[')].lstrip()
+                obj = eval(expr, self.locals)
+                # use type() instead of hasattr?
+                if obj and hasattr(obj,'keys') and obj.keys():
+                    self.matches = [expr + "[%r]" % k for k in obj.keys()]
+                else:
+                    # empty dictionary
+                    self.matches = []
+            else:
+                self.matches = self.global_matches(text)
+        try:
+            return self.matches[state]
+        except IndexError:
+            return None
     def attr_matches(self, text):
         """Taken from rlcompleter.py and bent to my will.
         """
