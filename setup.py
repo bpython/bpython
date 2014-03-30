@@ -153,7 +153,7 @@ setup(
         'pygments'
     ],
     extras_require = {
-        'curtsies': ['curtsies>=0.0.30', 'greenlet'],
+        'curtsies': ['curtsies>=0.0.32', 'greenlet'],
         'urwid' : ['urwid']
     },
     tests_require = ['mock'],
