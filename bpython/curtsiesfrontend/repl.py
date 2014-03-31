@@ -282,7 +282,10 @@ class Repl(BpythonRepl):
                 return self.process_event(ctrl_char)
             with self.in_paste_mode():
                 for ee in e.events:
-                    self.process_simple_event(ee)
+                    if self.stdin.has_focus:
+                        self.stdin.process_event(ee)
+                    else:
+                        self.process_simple_event(ee)
             self.update_completion()
 
         elif e in self.rl_char_sequences:
