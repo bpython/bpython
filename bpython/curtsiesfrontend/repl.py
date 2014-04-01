@@ -628,26 +628,30 @@ class Repl(BpythonRepl):
         so must match its definition of current word - changing how it behaves
         has many repercussions.
         """
-        words = re.split(r'([\w_][\w0-9._]*[(]?)', self._current_line)
-        chars = 0
-        cw = None
-        for word in words:
-            chars += len(word)
-            if chars == self.cursor_offset_in_line and word and word.count(' ') == 0:
-                cw = word
-        if cw and re.match(r'^[\w_][\w0-9._]*[(]?$', cw):
-            return cw
+        
+        start, end, word = self._get_current_word()
+        return word
+
+    def _get_current_word(self):
+        pos = self.cursor_offset_in_line
+                
+        matches = list(re.finditer(r'[\w_][\w0-9._]*[(]?', self._current_line))
+        start = pos
+        end = pos
+        word = None
+        for m in matches:
+            if m.start() < pos and m.end() >= pos:
+                start = m.start()
+                end = m.end()
+                word = m.group()
+        return (start, end, word)
 
     @current_word.setter
     def current_word(self, value):
-        # current word means word cursor is at the end of, so delete from cursor back to [ ."']
-        pos = self.cursor_offset_in_line - 1
-        if pos > -1 and self._current_line[pos] not in tuple(' :)'):
-            pos -= 1
-        while pos > -1 and self._current_line[pos] not in tuple(' :()\'"'):
-            pos -= 1
-        start = pos + 1; del pos
-        self._current_line = self._current_line[:start] + value + self._current_line[self.cursor_offset_in_line:]
+        # current word means word cursor is at the end of
+        start, end, word = self._get_current_word()
+
+        self._current_line = self._current_line[:start] + value + self._current_line[end:]
         self.cursor_offset_in_line = start + len(value)
 
     @property
