@@ -72,7 +72,8 @@ def loadini(struct, configfile):
             'pastebin_private': True,
             'pastebin_show_url': 'http://bpaste.net/show/$paste_id/',
             'pastebin_helper': '',
-            'save_append_py': False
+            'save_append_py': False,
+            'editor': os.environ.get('VISUAL', os.environ.get('EDITOR', 'vi'))
         },
         'keyboard': {
             'clear_line': 'C-u',
@@ -82,6 +83,7 @@ def loadini(struct, configfile):
             'delete': 'C-d',
             'down_one_line': 'C-n',
             'exit': '',
+            'external_editor': 'F7',
             'last_output': 'F9',
             'pastebin': 'F8',
             'save': 'C-s',
@@ -94,6 +96,10 @@ def loadini(struct, configfile):
         'cli': {
             'suggestion_width': 0.8,
             'trim_prompts': False,
+        },
+        'curtsies': {
+            'list_above' : False,
+            'fill_terminal' : False,
         },
         'gtk': {
             'font': 'monospace 10',
@@ -116,6 +122,7 @@ def loadini(struct, configfile):
     struct.highlight_show_source = config.getboolean('general',
                                                      'highlight_show_source')
     struct.hist_file = config.get('general', 'hist_file')
+    struct.editor = config.get('general', 'editor')
     struct.hist_length = config.getint('general', 'hist_length')
     struct.hist_duplicates = config.getboolean('general', 'hist_duplicates')
     struct.flush_output = config.getboolean('general', 'flush_output')
@@ -135,6 +142,7 @@ def loadini(struct, configfile):
     struct.delete_key = config.get('keyboard', 'delete')
     struct.exit_key = config.get('keyboard', 'exit')
     struct.last_output_key = config.get('keyboard', 'last_output')
+    struct.external_editor_key = config.get('keyboard', 'external_editor')
 
     struct.pastebin_confirm = config.getboolean('general', 'pastebin_confirm')
     struct.pastebin_private = config.getboolean('general', 'pastebin_private')
@@ -156,6 +164,9 @@ def loadini(struct, configfile):
     struct.save_append_py = config.getboolean('general', 'save_append_py')
 
     struct.gtk_font = config.get('gtk', 'font')
+
+    struct.curtsies_list_above = config.getboolean('curtsies', 'list_above')
+    struct.curtsies_fill_terminal = config.getboolean('curtsies', 'fill_terminal')
 
     color_scheme_name = config.get('general', 'color_scheme')
     color_gtk_scheme_name = config.get('gtk', 'color_scheme')

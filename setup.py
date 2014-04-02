@@ -153,10 +153,11 @@ setup(
         'pygments'
     ],
     extras_require = {
-        'urwid': ['urwid']
+        'curtsies': ['curtsies>=0.0.32', 'greenlet'],
+        'urwid' : ['urwid']
     },
     tests_require = ['mock'],
-    packages = ["bpython", "bpython.test", "bpython.translations", "bpdb"],
+    packages = ["bpython", "bpython.test", "bpython.translations", "bpdb", "bpython.curtsiesfrontend"],
     data_files = data_files,
     package_data = {
         'bpython': ['logo.png'],
@@ -167,6 +168,7 @@ setup(
         'console_scripts': [
             'bpython = bpython.cli:main',
             'bpython-urwid = bpython.urwid:main [urwid]',
+            'bpython-curtsies = bpython.curtsies:main [curtsies]',
         ],
         'gui_scripts': [
             'bpython-gtk = bpython.gtk_:main'
@@ -174,6 +176,7 @@ setup(
     },
     scripts = ([] if using_setuptools else ['data/bpython',
                                             'data/bpython-gtk',
+                                            'data/bpython-curtsies',
                                             'data/bpython-urwid']),
     cmdclass = cmdclass,
     test_suite = 'bpython.test'

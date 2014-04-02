@@ -28,8 +28,10 @@ import errno
 import inspect
 import os
 import pydoc
+import shlex
 import subprocess
 import sys
+import tempfile
 import textwrap
 import traceback
 import unicodedata
@@ -992,6 +994,18 @@ class Repl(object):
         """This is used as the exception callback for the Interpreter instance.
         It prevents autoindentation from occuring after a traceback."""
 
+    def send_to_external_editor(self, text, filename=None):
+        """Returns modified text from an editor, or the oriignal text if editor exited with non-zero"""
+        editor_args = shlex.split(self.config.editor)
+        with tempfile.NamedTemporaryFile(suffix='.py') as temp:
+            temp.write(text)
+            temp.flush()
+            if subprocess.call(editor_args + [temp.name]) == 0:
+                with open(temp.name) as f:
+                    return f.read()
+            else:
+                return text
+
 
 def next_indentation(line, tab_length):
     """Given a code line, return the indentation of the next line."""
@@ -1064,3 +1078,4 @@ def extract_exit_value(args):
         return args[0]
     else:
         return args
+

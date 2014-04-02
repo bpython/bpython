@@ -32,6 +32,9 @@ tab_length = 4
 # to "default" to use the default theme
 color_scheme = default
 
+# External editor to use for editing the current line, block, or full history
+editor = vi
+
 [keyboard]
 pastebin = F8
 save = C-s
