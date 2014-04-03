@@ -95,7 +95,7 @@ def formatted_argspec(argspec, columns, config):
     for i, arg in enumerate(args):
         kw = None
         if kwargs and i >= len(args) - len(kwargs):
-            kw = repr(kwargs[i - (len(args) - len(kwargs))])
+            kw = str(kwargs[i - (len(args) - len(kwargs))])
         color = token_color if in_arg in (i, arg) else arg_color
         if i == in_arg or arg == in_arg:
             color = bolds[color]
