@@ -277,9 +277,15 @@ class Repl(BpythonRepl):
             self.update_completion()
             return
         elif isinstance(e, events.PasteEvent):
+            ctrl_char = compress_paste_event(e)
+            if ctrl_char is not None:
+                return self.process_event(ctrl_char)
             with self.in_paste_mode():
                 for ee in e.events:
-                    self.process_simple_event(ee)
+                    if self.stdin.has_focus:
+                        self.stdin.process_event(ee)
+                    else:
+                        self.process_simple_event(ee)
             self.update_completion()
 
         elif e in self.rl_char_sequences:
@@ -416,7 +422,8 @@ class Repl(BpythonRepl):
         elif isinstance(e, events.Event):
             pass # ignore events
         else:
-            self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
+            if len(e) == 1:
+                self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
 
     def send_current_block_to_external_editor(self, filename=None):
         text = self.send_to_external_editor(self.get_current_block())
@@ -923,6 +930,22 @@ class Repl(BpythonRepl):
         s = '\n'.join([x.s if isinstance(x, FmtStr) else x for x in lines]
                      ) if lines else ''
         return s
+
+def compress_paste_event(paste_event):
+    """If all events in a paste event are identical and not simple characters, returns one of them
+
+    Useful for when the UI is running so slowly that repeated keypresses end up in a paste event.
+    If we value not getting delayed and assume the user is holding down a key to produce such frequent
+    key events, it makes sense to drop some of the events.
+    """
+    if not all(paste_event.events[0] == e for e in paste_event.events):
+        return None
+    event = paste_event.events[0]
+    if len(event) > 1:# basically "is there a special curses names for this key?"
+        return event
+    else:
+        return None
+
 def simple_repl():
     refreshes = []
     def request_refresh():
