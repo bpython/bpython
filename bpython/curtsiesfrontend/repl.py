@@ -944,6 +944,10 @@ def compress_paste_event(paste_event):
     event = paste_event.events[0]
     if len(event) > 1:# basically "is there a special curses names for this key?"
         return event
+    elif ord(event) < 0x20:
+        return event
+    elif event == '\x7f':
+        return event
     else:
         return None
 
