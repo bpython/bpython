@@ -30,7 +30,6 @@ from bpython.curtsiesfrontend.interaction import StatusBar
 from bpython.curtsiesfrontend import sitefix; sitefix.monkeypatch_quit()
 import bpython.curtsiesfrontend.replpainter as paint
 import curtsies.events as events
-from bpython.curtsiesfrontend.friendly import NotImplementedError
 from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 
 #TODO figure out how config.list_win_visible behaves and implement it, or stop using it
@@ -303,23 +302,23 @@ class Repl(BpythonRepl):
             self._current_line = self.rl_history.forward(False)
             self.cursor_offset_in_line = len(self._current_line)
             self.update_completion()
-        elif e in key_dispatch[self.config.search_key]: #TODO
-            raise NotImplementedError()
+        elif e in key_dispatch[self.config.search_key]: #TODO Not Implemented
+            pass
         #TODO add rest of history commands
 
         # Need to figure out what these are, but I think they belong in manual_realine
         # under slightly different names
-        elif e in key_dispatch[self.config.cut_to_buffer_key]: #TODO
-            raise NotImplementedError()
-        elif e in key_dispatch[self.config.yank_from_buffer_key]: #TODO
-            raise NotImplementedError()
+        elif e in key_dispatch[self.config.cut_to_buffer_key]: #TODO Not Implemented
+            pass
+        elif e in key_dispatch[self.config.yank_from_buffer_key]: #TODO Not Implemented
+            pass
 
         elif e in key_dispatch[self.config.clear_screen_key]:
             self.request_paint_to_clear_screen = True
-        elif e in key_dispatch[self.config.last_output_key]: #TODO
-            raise NotImplementedError()
-        elif e in key_dispatch[self.config.show_source_key]: #TODO
-            raise NotImplementedError()
+        elif e in key_dispatch[self.config.last_output_key]: #TODO Not Implemented
+            pass
+        elif e in key_dispatch[self.config.show_source_key]: #TODO Not Implemented
+            pass
         elif e in key_dispatch[self.config.suspend_key]:
             raise SystemExit()
         elif e in ("",) + key_dispatch[self.config.exit_key]:
