@@ -759,7 +759,8 @@ class Repl(BpythonRepl):
 
         lines = paint.display_linize(self.current_cursor_line+'X', width)
                                        # extra character for space for the cursor
-        cursor_row = current_line_start_row + len(lines) - 1
+        current_line_end_row = current_line_start_row + len(lines) - 1
+        cursor_row = current_line_start_row + (len(self.current_cursor_line) - len(self._current_line) + self.cursor_offset_in_line) / width
         if self.stdin.has_focus:
             cursor_column = (len(self.current_stdouterr_line) + self.stdin.cursor_offset_in_line) % width
             assert cursor_column >= 0, cursor_column
@@ -773,7 +774,7 @@ class Repl(BpythonRepl):
         if self.list_win_visible:
             logging.debug('infobox display code running')
             visible_space_above = history.height
-            visible_space_below = min_height - cursor_row - 1
+            visible_space_below = min_height - current_line_end_row - 1
 
             info_max_rows = max(visible_space_above, visible_space_below)
             infobox = paint.paint_infobox(info_max_rows, int(width * self.config.cli_suggestion_width), self.matches, self.argspec, self.current_word, self.docstring, self.config)
@@ -781,7 +782,7 @@ class Repl(BpythonRepl):
             if visible_space_above >= infobox.height and self.config.curtsies_list_above:
                 arr[current_line_start_row - infobox.height:current_line_start_row, 0:infobox.width] = infobox
             else:
-                arr[cursor_row + 1:cursor_row + 1 + infobox.height, 0:infobox.width] = infobox
+                arr[current_line_end_row + 1:current_line_end_row + 1 + infobox.height, 0:infobox.width] = infobox
                 logging.debug('slamming infobox of shape %r into arr of shape %r', infobox.shape, arr.shape)
 
         logging.debug('about to exit: %r', about_to_exit)
