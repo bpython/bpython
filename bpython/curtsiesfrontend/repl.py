@@ -833,7 +833,7 @@ class Repl(BpythonRepl):
         my_print('X'*(self.width+8))
         my_print('X``'+('`'*(self.width+2))+'``X')
         for line in arr:
-            my_print('X```'+(line if line else ' '*len(line))+'```X')
+            my_print('X```'+line.ljust(self.width)+'```X')
         logging.debug('line:')
         logging.debug(repr(line))
         my_print('X``'+('`'*(self.width+2))+'``X')
