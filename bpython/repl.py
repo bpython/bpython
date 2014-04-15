@@ -388,8 +388,6 @@ class Repl(object):
         self._C = {}
         self.prev_block_finished = 0
         self.interact = Interaction(self.config)
-        self.ps1 = '>>> '
-        self.ps2 = '... '
         # previous pastebin content to prevent duplicate pastes, filled on call
         # to repl.pastebin
         self.prev_pastebin_content = ''
@@ -402,6 +400,20 @@ class Repl(object):
         if os.path.exists(pythonhist):
             self.rl_history.load(pythonhist,
                     getpreferredencoding() or "ascii")
+
+    @property
+    def ps1(self):
+        try:
+            return str(sys.ps1)
+        except AttributeError:
+            return '>>> '
+
+    @property
+    def ps2(self):
+        try:
+            return str(sys.ps2)
+        except AttributeError:
+            return '... '
 
     def startup(self):
         """

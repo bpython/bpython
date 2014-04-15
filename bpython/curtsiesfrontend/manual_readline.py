@@ -4,7 +4,6 @@ just the ones that fit the model of transforming the current line
 and the cursor location
 in the order of description at http://www.bigsmoke.us/readline/shortcuts"""
 
-from bpython.curtsiesfrontend.friendly import NotImplementedError
 import re
 char_sequences = {}
 
@@ -104,7 +103,7 @@ def delete_word_to_cursor(cursor_offset, line):
 
 @on('\x1by')
 def yank_prev_prev_killed_text(cursor_offset, line):
-    raise NotImplementedError()
+    return cursor_offset, line #TODO Not implemented
 
 @on('\x14')
 def transpose_character_before_cursor(cursor_offset, line):
@@ -116,7 +115,7 @@ def transpose_character_before_cursor(cursor_offset, line):
 
 @on('\x1bt')
 def transpose_word_before_cursor(cursor_offset, line):
-    raise NotImplementedError()
+    return cursor_offset, line #TODO Not implemented
 
 # bonus functions (not part of readline)
 
@@ -126,11 +125,11 @@ def delete_line(cursor_offset, line):
 
 @on('\x1bu')
 def uppercase_next_word(cursor_offset, line):
-    raise NotImplementedError()
+    return cursor_offset, line #TODO Not implemented
 
 @on('\x1bc')
 def titlecase_next_word(cursor_offset, line):
-    raise NotImplementedError()
+    return cursor_offset, line #TODO Not implemented
 
 @on('\x1b\x7f')
 @on('\xff')

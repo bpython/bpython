@@ -30,7 +30,6 @@ from bpython.curtsiesfrontend.interaction import StatusBar
 from bpython.curtsiesfrontend import sitefix; sitefix.monkeypatch_quit()
 import bpython.curtsiesfrontend.replpainter as paint
 import curtsies.events as events
-from bpython.curtsiesfrontend.friendly import NotImplementedError
 from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 
 #TODO figure out how config.list_win_visible behaves and implement it, or stop using it
@@ -263,7 +262,9 @@ class Repl(BpythonRepl):
                 self.run_code_and_maybe_finish()
         elif isinstance(e, events.WindowChangeEvent):
             logging.debug('window change to %d %d', e.width, e.height)
+            self.scroll_offset -= e.cursor_dy
             self.width, self.height = e.width, e.height
+
         elif self.status_bar.has_focus:
             return self.status_bar.process_event(e)
         elif self.stdin.has_focus:
@@ -275,9 +276,15 @@ class Repl(BpythonRepl):
             self.update_completion()
             return
         elif isinstance(e, events.PasteEvent):
+            ctrl_char = compress_paste_event(e)
+            if ctrl_char is not None:
+                return self.process_event(ctrl_char)
             with self.in_paste_mode():
                 for ee in e.events:
-                    self.process_simple_event(ee)
+                    if self.stdin.has_focus:
+                        self.stdin.process_event(ee)
+                    else:
+                        self.process_simple_event(ee)
             self.update_completion()
 
         elif e in self.rl_char_sequences:
@@ -295,23 +302,23 @@ class Repl(BpythonRepl):
             self._current_line = self.rl_history.forward(False)
             self.cursor_offset_in_line = len(self._current_line)
             self.update_completion()
-        elif e in key_dispatch[self.config.search_key]: #TODO
-            raise NotImplementedError()
+        elif e in key_dispatch[self.config.search_key]: #TODO Not Implemented
+            pass
         #TODO add rest of history commands
 
         # Need to figure out what these are, but I think they belong in manual_realine
         # under slightly different names
-        elif e in key_dispatch[self.config.cut_to_buffer_key]: #TODO
-            raise NotImplementedError()
-        elif e in key_dispatch[self.config.yank_from_buffer_key]: #TODO
-            raise NotImplementedError()
+        elif e in key_dispatch[self.config.cut_to_buffer_key]: #TODO Not Implemented
+            pass
+        elif e in key_dispatch[self.config.yank_from_buffer_key]: #TODO Not Implemented
+            pass
 
         elif e in key_dispatch[self.config.clear_screen_key]:
             self.request_paint_to_clear_screen = True
-        elif e in key_dispatch[self.config.last_output_key]: #TODO
-            raise NotImplementedError()
-        elif e in key_dispatch[self.config.show_source_key]: #TODO
-            raise NotImplementedError()
+        elif e in key_dispatch[self.config.last_output_key]: #TODO Not Implemented
+            pass
+        elif e in key_dispatch[self.config.show_source_key]: #TODO Not Implemented
+            pass
         elif e in key_dispatch[self.config.suspend_key]:
             raise SystemExit()
         elif e in ("",) + key_dispatch[self.config.exit_key]:
@@ -414,7 +421,8 @@ class Repl(BpythonRepl):
         elif isinstance(e, events.Event):
             pass # ignore events
         else:
-            self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
+            if len(e) == 1:
+                self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
 
     def send_current_block_to_external_editor(self, filename=None):
         text = self.send_to_external_editor(self.get_current_block())
@@ -551,7 +559,7 @@ class Repl(BpythonRepl):
             logging.debug('trying to unhighlight a paren on line %r', lineno)
             logging.debug('with these tokens: %r', saved_tokens)
             new = bpythonparse(format(saved_tokens, self.formatter))
-            self.display_buffer[lineno] = self.display_buffer[lineno].setslice(0, len(new), new)
+            self.display_buffer[lineno] = self.display_buffer[lineno].setslice_with_length(0, len(new), new, len(self.display_buffer[lineno]))
 
     def clear_current_block(self, remove_from_history=True):
         self.display_buffer = []
@@ -626,26 +634,30 @@ class Repl(BpythonRepl):
         so must match its definition of current word - changing how it behaves
         has many repercussions.
         """
-        words = re.split(r'([\w_][\w0-9._]*[(]?)', self._current_line)
-        chars = 0
-        cw = None
-        for word in words:
-            chars += len(word)
-            if chars == self.cursor_offset_in_line and word and word.count(' ') == 0:
-                cw = word
-        if cw and re.match(r'^[\w_][\w0-9._]*[(]?$', cw):
-            return cw
+        
+        start, end, word = self._get_current_word()
+        return word
+
+    def _get_current_word(self):
+        pos = self.cursor_offset_in_line
+                
+        matches = list(re.finditer(r'[\w_][\w0-9._]*[(]?', self._current_line))
+        start = pos
+        end = pos
+        word = None
+        for m in matches:
+            if m.start() < pos and m.end() >= pos:
+                start = m.start()
+                end = m.end()
+                word = m.group()
+        return (start, end, word)
 
     @current_word.setter
     def current_word(self, value):
-        # current word means word cursor is at the end of, so delete from cursor back to [ ."']
-        pos = self.cursor_offset_in_line - 1
-        if pos > -1 and self._current_line[pos] not in tuple(' :)'):
-            pos -= 1
-        while pos > -1 and self._current_line[pos] not in tuple(' :()\'"'):
-            pos -= 1
-        start = pos + 1; del pos
-        self._current_line = self._current_line[:start] + value + self._current_line[self.cursor_offset_in_line:]
+        # current word means word cursor is at the end of
+        start, end, word = self._get_current_word()
+
+        self._current_line = self._current_line[:start] + value + self._current_line[end:]
         self.cursor_offset_in_line = start + len(value)
 
     @property
@@ -688,17 +700,6 @@ class Repl(BpythonRepl):
     def paint(self, about_to_exit=False, user_quit=False):
         """Returns an array of min_height or more rows and width columns, plus cursor position
 
-        Also increments self.scroll_offset by the amount the terminal must have scrolled
-        to display the entire array.
-        """
-        arr, (row, col) = self._paint(about_to_exit=about_to_exit, user_quit=user_quit)
-        if arr.height > self.height:
-            self.scroll_offset += arr.height - self.height
-        return arr, (row, col)
-
-    def _paint(self, about_to_exit=False, user_quit=False):
-        """Returns an array of min_height or more rows and width columns, plus cursor position
-
         Paints the entire screen - ideally the terminal display layer will take a diff and only
         write to the screen in portions that have changed, but the idea is that we don't need
         to worry about that here, instead every frame is completely redrawn because
@@ -726,7 +727,6 @@ class Repl(BpythonRepl):
         #TODO test case of current line filling up the whole screen (there aren't enough rows to show it)
 
         if current_line_start_row < 0: #if current line trying to be drawn off the top of the screen
-            #assert True, 'no room for current line: contiguity of history broken!'
             logging.debug('#<---History contiguity broken by rewind--->')
             msg = "#<---History contiguity broken by rewind--->"
             arr[0, 0:min(len(msg), width)] = [msg[:width]]
@@ -758,7 +758,8 @@ class Repl(BpythonRepl):
 
         lines = paint.display_linize(self.current_cursor_line+'X', width)
                                        # extra character for space for the cursor
-        cursor_row = current_line_start_row + len(lines) - 1
+        current_line_end_row = current_line_start_row + len(lines) - 1
+        cursor_row = current_line_start_row + (len(self.current_cursor_line) - len(self._current_line) + self.cursor_offset_in_line) / width
         if self.stdin.has_focus:
             cursor_column = (len(self.current_stdouterr_line) + self.stdin.cursor_offset_in_line) % width
             assert cursor_column >= 0, cursor_column
@@ -772,7 +773,7 @@ class Repl(BpythonRepl):
         if self.list_win_visible:
             logging.debug('infobox display code running')
             visible_space_above = history.height
-            visible_space_below = min_height - cursor_row - 1
+            visible_space_below = min_height - current_line_end_row - 1
 
             info_max_rows = max(visible_space_above, visible_space_below)
             infobox = paint.paint_infobox(info_max_rows, int(width * self.config.cli_suggestion_width), self.matches, self.argspec, self.current_word, self.docstring, self.config)
@@ -780,7 +781,7 @@ class Repl(BpythonRepl):
             if visible_space_above >= infobox.height and self.config.curtsies_list_above:
                 arr[current_line_start_row - infobox.height:current_line_start_row, 0:infobox.width] = infobox
             else:
-                arr[cursor_row + 1:cursor_row + 1 + infobox.height, 0:infobox.width] = infobox
+                arr[current_line_end_row + 1:current_line_end_row + 1 + infobox.height, 0:infobox.width] = infobox
                 logging.debug('slamming infobox of shape %r into arr of shape %r', infobox.shape, arr.shape)
 
         logging.debug('about to exit: %r', about_to_exit)
@@ -929,6 +930,26 @@ class Repl(BpythonRepl):
         s = '\n'.join([x.s if isinstance(x, FmtStr) else x for x in lines]
                      ) if lines else ''
         return s
+
+def compress_paste_event(paste_event):
+    """If all events in a paste event are identical and not simple characters, returns one of them
+
+    Useful for when the UI is running so slowly that repeated keypresses end up in a paste event.
+    If we value not getting delayed and assume the user is holding down a key to produce such frequent
+    key events, it makes sense to drop some of the events.
+    """
+    if not all(paste_event.events[0] == e for e in paste_event.events):
+        return None
+    event = paste_event.events[0]
+    if len(event) > 1:# basically "is there a special curses names for this key?"
+        return event
+    elif ord(event) < 0x20:
+        return event
+    elif event == '\x7f':
+        return event
+    else:
+        return None
+
 def simple_repl():
     refreshes = []
     def request_refresh():

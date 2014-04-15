@@ -146,7 +146,7 @@ class CodeRunner(object):
             raise KeyboardInterrupt()
         else:
             logging.debug('sigint while fufilling code request sigint handler running!')
-            self.sigint_happened = True
+            self.sigint_happened_in_main_greenlet = True
 
     def _blocking_run_code(self):
         try:
