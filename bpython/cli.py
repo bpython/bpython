@@ -505,19 +505,18 @@ class CLIRepl(repl.Repl):
         # isn't at the end of the line, but that's what this does for now.
         if self.cpos: return
 
-        # look from right to left for a bad method character
+        # look from right to left for a bad method or dictionary character
         l = len(self.s)
-        #MAJA  is_method_or_dict_character, [ and \' major problem
-        is_method_char = lambda c: c.isalnum() or c in ('.',
-                                                        '_', '[', '\'', ']')
+        is_method_char = lambda c: c.isalnum() or c in ('.', '_')
+        dict_chars = ['[']
 
-        if not self.s or not is_method_char(self.s[l-1]):
+        if not self.s or not (is_method_char(self.s[-1])
+                                or self.s[-1] in dict_chars):
             return
 
-        #MAJA only dictionaries should have \' (TODO)
-
         for i in range(1, l+1):
-            if not is_method_char(self.s[-i]):
+            c = self.s[-i]
+            if not (is_method_char(c) or c in dict_chars):
                 i -= 1
                 break
 

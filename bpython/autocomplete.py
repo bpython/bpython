@@ -63,26 +63,39 @@ class Autocomplete(rlcompleter.Completer):
         if self.use_main_ns:
             self.namespace = __main__.__dict__
 
+        dictpattern = re.compile('[^\[\]]+\[$')
+        def complete_dict(text):
+            lastbracket_index = text.rindex('[')
+            dexpr = text[:lastbracket_index].lstrip()
+            obj = eval(dexpr, self.locals)
+            if obj and isinstance(obj, type({})) and obj.keys():
+                self.matches = [dexpr + "[{!r}]".format(k) for k in obj.keys()]
+            else:
+                # empty dictionary
+                self.matches = []
+
         if state == 0:
             if "." in text:
-                self.matches = self.attr_matches(text)
-                #print self.matches
-             # MAJA TODO: what if there's a dict in an object...?
-            elif "[" in text:
-                expr = text[:text.rindex('[')].lstrip()
-                obj = eval(expr, self.locals)
-                # use type() instead of hasattr?
-                if obj and hasattr(obj,'keys') and obj.keys():
-                    self.matches = [expr + "[%r]" % k for k in obj.keys()]
+                if dictpattern.match(text):
+                    complete_dict(text)
                 else:
-                    # empty dictionary
-                    self.matches = []
+                    # Examples: 'foo.b' or 'foo[bar.'
+                    for i in range(1, len(text) + 1):
+                        if text[-i] == '[':
+                            i -= 1
+                            break
+                    methodtext = text[-i:]
+                    self.matches = [''.join([text[:-i], m]) for m in
+                                    self.attr_matches(methodtext)]
+            elif dictpattern.match(text):
+                complete_dict(text)
             else:
                 self.matches = self.global_matches(text)
         try:
             return self.matches[state]
         except IndexError:
             return None
+
     def attr_matches(self, text):
         """Taken from rlcompleter.py and bent to my will.
         """
