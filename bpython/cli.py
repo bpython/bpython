@@ -1277,15 +1277,22 @@ class CLIRepl(repl.Repl):
             max_h = y + 1
         max_w = int(w * self.config.cli_suggestion_width)
         self.list_win.erase()
+
         if items:
             sep = '.'
-            if os.path.sep in items[0]:
-                # Filename completion
-                sep = os.path.sep
-            if sep in items[0]:
-                items = [x.rstrip(sep).rsplit(sep)[-1] for x in items]
+            separators = ['.', os.path.sep, '[']
+            lastindex = max([items[0].rfind(c) for c in separators])
+            if lastindex > -1:
+                sep = items[0][lastindex]
+            items = [x.rstrip(sep).rsplit(sep)[-1] for x in items]
+            if current_item:
+                current_item = current_item.rstrip(sep).rsplit(sep)[-1]
+
+            if items[0].endswith(']'):
+                # dictionary key suggestions
+                items = [x.rstrip(']') for x in items]
                 if current_item:
-                    current_item = current_item.rstrip(sep).rsplit(sep)[-1]
+                    current_item = current_item.rstrip(']')
 
         if topline:
             height_offset = self.mkargspec(topline, down) + 1
