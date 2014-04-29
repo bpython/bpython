@@ -1,3 +1,4 @@
+from __future__ import with_statement
 from __future__ import absolute_import
 
 import sys
@@ -66,7 +67,8 @@ def mainloop(config, locals_, banner, interp=None, paste=None):
                 def process_event(e):
                     try:
                         repl.process_event(e)
-                    except (SystemExitFromCodeGreenlet, SystemExit) as err:
+                    except (SystemExitFromCodeGreenlet, SystemExit):
+                        err = sys.exc_info()[1]
                         array, cursor_pos = repl.paint(about_to_exit=True, user_quit=isinstance(err, SystemExitFromCodeGreenlet))
                         scrolled = term.render_to_terminal(array, cursor_pos)
                         repl.scroll_offset += scrolled

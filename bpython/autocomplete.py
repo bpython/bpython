@@ -21,6 +21,7 @@
 # THE SOFTWARE.
 #
 
+from __future__ import with_statement
 import __builtin__
 import rlcompleter
 import re
