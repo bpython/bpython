@@ -7,6 +7,7 @@ import os
 import re
 import sys
 import threading
+import unicodedata
 
 from bpython.autocomplete import Autocomplete, SIMPLE
 from bpython.repl import Repl as BpythonRepl
@@ -451,6 +452,8 @@ class Repl(BpythonRepl):
     ## Handler Helpers
     def add_normal_character(self, char):
         assert len(char) == 1, repr(char)
+        if is_nop(char):
+            return
         self._current_line = (self._current_line[:self.cursor_offset_in_line] +
                              char +
                              self._current_line[self.cursor_offset_in_line:])
@@ -930,6 +933,9 @@ class Repl(BpythonRepl):
         s = '\n'.join([x.s if isinstance(x, FmtStr) else x for x in lines]
                      ) if lines else ''
         return s
+
+def is_nop(char):
+    return unicodedata.category(char) == 'Cc'
 
 def compress_paste_event(paste_event):
     """If all events in a paste event are identical and not simple characters, returns one of them
