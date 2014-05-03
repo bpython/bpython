@@ -4,6 +4,7 @@
 
 import os
 import platform
+import sys
 
 from distutils.command.build import build
 
@@ -132,6 +133,35 @@ data_files = [
 ]
 data_files.extend(man_pages)
 
+extras_require = {
+    'urwid' : ['urwid']
+}
+
+packages = ['bpython', 'bpython.test', 'bpython.translations', 'bpdb']
+
+entry_points = {
+    'console_scripts': [
+        'bpython = bpython.cli:main',
+        'bpython-urwid = bpython.urwid:main [urwid]'
+    ],
+    'gui_scripts': [
+        'bpython-gtk = bpython.gtk_:main'
+    ]
+}
+
+scripts = [] if using_setuptools else ['data/bpython',
+                                       'data/bpython-gtk',
+                                       'data/bpython-urwid']
+
+if sys.version_info[:2] >= (2, 6):
+    # curtsies only supports 2.6 and onwards
+    extras_require['curtsies'] = ['curtsies>=0.0.32', 'greenlet']
+    packages.append("bpython.curtsiesfrontend")
+    entry_points['console_scripts'].append(
+        'bpython-curtsies = bpython.curtsies:main [curtsies]')
+    if not using_setuptools:
+        scripts.append('data/bpython-curtsies')
+
 # translations
 mo_files = list()
 for language in os.listdir(translations_dir):
@@ -152,32 +182,17 @@ setup(
     install_requires = [
         'pygments'
     ],
-    extras_require = {
-        'curtsies': ['curtsies>=0.0.32', 'greenlet'],
-        'urwid' : ['urwid']
-    },
+    extras_require = extras_require,
     tests_require = ['mock'],
-    packages = ["bpython", "bpython.test", "bpython.translations", "bpdb", "bpython.curtsiesfrontend"],
+    packages = packages,
     data_files = data_files,
     package_data = {
         'bpython': ['logo.png'],
         'bpython.translations': mo_files,
         'bpython.test': ['test.config', 'test.theme']
     },
-    entry_points = {
-        'console_scripts': [
-            'bpython = bpython.cli:main',
-            'bpython-urwid = bpython.urwid:main [urwid]',
-            'bpython-curtsies = bpython.curtsies:main [curtsies]',
-        ],
-        'gui_scripts': [
-            'bpython-gtk = bpython.gtk_:main'
-         ]
-    },
-    scripts = ([] if using_setuptools else ['data/bpython',
-                                            'data/bpython-gtk',
-                                            'data/bpython-curtsies',
-                                            'data/bpython-urwid']),
+    entry_points = entry_points,
+    scripts = scripts,
     cmdclass = cmdclass,
     test_suite = 'bpython.test'
 )
