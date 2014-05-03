@@ -477,10 +477,6 @@ class Repl(BpythonRepl):
 
         If the interpreter successfully runs the code, clear the buffer
         """
-        if insert_into_history:
-            self.insert_into_history(line)
-        self.buffer.append(line)
-
         if self.paste_mode:
             self.saved_indent = 0
         else:
@@ -493,15 +489,23 @@ class Repl(BpythonRepl):
                 indent = max(0, indent - self.config.tab_length)
             self.saved_indent = indent
 
-        logging.debug('running %r in interpreter', self.buffer)
-        code_to_run = '\n'.join(self.buffer)
-
         #current line not added to display buffer if quitting #TODO I don't understand this comment
         if self.config.syntax:
-            self.display_buffer.append(bpythonparse(format(self.tokenize(line), self.formatter)))
+            display_line = bpythonparse(format(self.tokenize(line), self.formatter))
+            # careful: self.tokenize requires that the line not be in self.buffer yet!
+
+            logging.debug('display line being pushed to buffer: %r -> %r', line, display_line)
+            self.display_buffer.append(display_line)
         else:
             self.display_buffer.append(fmtstr(line))
 
+        if insert_into_history:
+            self.insert_into_history(line)
+        self.buffer.append(line)
+
+        code_to_run = '\n'.join(self.buffer)
+
+        logging.debug('running %r in interpreter', self.buffer)
         try:
             c = bool(code.compile_command('\n'.join(self.buffer)))
             self.saved_predicted_parse_error = False
@@ -614,6 +618,7 @@ class Repl(BpythonRepl):
         """The colored current line (no prompt, not wrapped)"""
         if self.config.syntax:
             fs = bpythonparse(format(self.tokenize(self._current_line), self.formatter))
+            logging.debug('Display line %r -> %r', self._current_line, fs)
         else:
             fs = fmtstr(self._current_line)
         if hasattr(self, 'old_fs') and str(fs) != str(self.old_fs):
