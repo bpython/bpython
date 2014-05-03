@@ -397,6 +397,8 @@ class Repl(BpythonRepl):
             if not self.config.auto_display_list and not self.list_win_visible:
                 return True #TODO why?
             cw = self.current_string() or self.current_word
+            logging.debug('current string: %r', self.current_string())
+            logging.debug('current word: %r', self.current_word)
             if not cw:
                 return
 
@@ -628,19 +630,19 @@ class Repl(BpythonRepl):
     @property
     def current_word(self):
         """Returns the "current word", based on what's directly left of the cursor.
-        examples inclue "socket.socket.metho" or "self.reco" or "yiel" 
+        examples inclue "socket.socket.metho" or "self.reco" or "yiel"
 
         cw() is currently an alias, but cw() is used by bpyton.repl.Repl
         so must match its definition of current word - changing how it behaves
         has many repercussions.
         """
-        
+
         start, end, word = self._get_current_word()
         return word
 
     def _get_current_word(self):
         pos = self.cursor_offset_in_line
-                
+
         matches = list(re.finditer(r'[\w_][\w0-9._]*[(]?', self._current_line))
         start = pos
         end = pos
