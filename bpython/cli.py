@@ -150,6 +150,10 @@ class FakeStream(object):
         # some third party (amongst them mercurial) depend on this
         return True
 
+    def flush(self):
+        self.interface.flush()
+
+
 class FakeStdin(object):
     """Provide a fake stdin type for things like raw_input() etc."""
 
@@ -1420,7 +1424,7 @@ class CLIRepl(repl.Repl):
             os.kill(os.getpid(), signal.SIGSTOP)
 
     def tab(self, back=False):
-        """Process the tab key being hit. 
+        """Process the tab key being hit.
 
         If there's only whitespace
         in the line or the line is blank then process a normal tab,
