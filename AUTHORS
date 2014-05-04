@@ -1,7 +1,5 @@
-bpython is written and maintained by Bob Farrell and Andreas Stuehrk
-<robertanthonyfarrell at gmail dot com>,
-<andy-python at hammerhartes dot de>.
-
+bpython is written and maintained by Bob Farrell
+<robertanthonyfarrell at gmail dot com>.
 
 Other contributors are (in alphabetical order):
 
@@ -17,6 +15,7 @@ Other contributors are (in alphabetical order):
 * Pavel Panchekha <pavpanchekha at gmail dot com>
 * Sebastian Ramacher <sebastian plus dev at ramacher dot at>
 * Amjith Ramanujam <amjith dot r at gmail dot com>
+* Andreas Stührk <andy@hammerhartes.de>
 * Simon de Vlieger <simon at ikanobori dot jp>
 * Marien Zwart <marien dot zwart at gmail dot com>
 
