@@ -24,8 +24,13 @@
 from __future__ import with_statement
 import __builtin__
 import rlcompleter
+import line
 import re
+import os
+from glob import glob
 from bpython import inspection
+from bpython import importcompletion
+from bpython._py3compat import py3
 
 # Needed for special handling of __abstractmethods__
 # abc only exists since 2.6, so check both that it exists and that it's
@@ -44,6 +49,10 @@ FUZZY = 'fuzzy'
 
 class Autocomplete(rlcompleter.Completer):
     """
+#TOMHERE TODO This doesn't need to be a class anymore - we're overriding every single method
+    We're not really using it for the right thing anyway - we're hacking it to produce
+    self.matches then stealing them instead of following the expected interface of calling
+    complete each time.
     """
 
     def __init__(self, namespace = None, config = None):
@@ -176,3 +185,58 @@ class Autocomplete(rlcompleter.Completer):
             s = r'.*%s.*' % '.*'.join(list(text))
             return re.search(s, word)
 
+def filename_matches(cs):
+    matches = []
+    username = cs.split(os.path.sep, 1)[0]
+    user_dir = os.path.expanduser(username)
+    for filename in glob(os.path.expanduser(cs + '*')):
+        if os.path.isdir(filename):
+            filename += os.path.sep
+        if cs.startswith('~'):
+            filename = username + filename[len(user_dir):]
+        matches.append(filename)
+    return cs
+
+def find_matches(cursor_offset, current_line, locals_, current_string_callback, completer, magic_methods, argspec):
+    """Returns a list of matches and function to use for replacing words on tab"""
+
+    if line.current_string(cursor_offset, current_line):
+        matches = filename_matches(line.current_string(cursor_offset, current_line))
+        return matches, line.current_string
+
+    if line.current_word(cursor_offset, current_line) is None:
+        return [], None
+
+    matches = importcompletion.complete(cursor_offset, current_line)
+    return matches, line.current_word
+
+    cw = line.current_word(cursor_offset, current_line)[2]
+
+    try:
+        completer.complete(cw, 0)
+    #except Exception:
+    #    # This sucks, but it's either that or list all the exceptions that could
+    #    # possibly be raised here, so if anyone wants to do that, feel free to send me
+    #    # a patch. XXX: Make sure you raise here if you're debugging the completion
+    #    # stuff !
+    #    e = True
+    #else:
+        e = False
+        matches = completer.matches
+        matches.extend(magic_methods(cw))
+    except KeyboardInterrupt:
+        pass
+
+    if not e and argspec:
+        matches.extend(name + '=' for name in argspec[1][0]
+                       if isinstance(name, basestring) and name.startswith(cw))
+        if py3:
+            matches.extend(name + '=' for name in argspec[1][4]
+                           if name.startswith(cw))
+
+    # unless the first character is a _ filter out all attributes starting with a _
+    if not e and not cw.split('.')[-1].startswith('_'):
+        matches = [match for match in matches
+                   if not match.split('.')[-1].startswith('_')]
+
+    return sorted(set(matches)), line.current_word

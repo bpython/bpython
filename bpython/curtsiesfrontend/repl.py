@@ -395,12 +395,11 @@ class Repl(BpythonRepl):
                 self.add_normal_character(' ')
             return
 
-        #TODO I'm not sure what's going on in the next 10 lines, particularly list_win_visible
         # get the (manually typed or common-sequence completed from manually typed) current word
         if self.matches_iter:
             cw = self.matches_iter.current_word
         else:
-            self.complete(tab=True) #TODO why do we call this here?
+            self.complete(tab=True)
             if not self.config.auto_display_list and not self.list_win_visible:
                 return True #TODO why?
             cw = self.current_string() or self.current_word
@@ -417,6 +416,8 @@ class Repl(BpythonRepl):
             self.matches_iter.update(cseq, self.matches)
             return
 
+        #TODO save how to do the replacement as a function on self.matches
+        # so it can be used here
         if self.matches:
             self.current_word = (self.matches_iter.previous()
                                  if back else self.matches_iter.next())

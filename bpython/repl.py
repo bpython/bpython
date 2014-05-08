@@ -550,12 +550,7 @@ class Repl(object):
         else:
             return source
 
-    def complete(self, tab=False):
-        """Construct a full list of possible completions and construct and
-        display them in a window. Also check if there's an available argspec
-        (via the inspect module) and bang that on top of the completions too.
-        The return value is whether the list_win is visible or not."""
-
+    def set_docstring(self):
         self.docstring = None
         if not self.get_args():
             self.argspec = None
@@ -570,6 +565,28 @@ class Repl(object):
                 if not self.docstring:
                     self.docstring = None
 
+    def magic_method_completions(self, cw):
+        if (self.config.complete_magic_methods and self.buffer and
+            self.buffer[0].startswith("class ") and
+            self.current_line().lstrip().startswith("def ")):
+            return [name for name in self.config.magic_methods
+                    if name.startswith(cw)]
+        else:
+            return []
+
+    def complete(self, tab=False):
+        """Construct a full list of possible completions and construct and
+        display them in a window. Also check if there's an available argspec
+        (via the inspect module) and bang that on top of the completions too.
+        The return value is whether the list_win is visible or not."""
+
+        #TODO keep factoring out parts of complete
+        # so we can reuse code when we reimplement complete
+        # in bpython.curtsiesfrontend.repl
+        # Maybe move things to autocomplete instead of here?
+
+        self.set_docstring()
+
         cw = self.cw()
         cs = self.current_string()
         if not cw:
@@ -579,16 +596,7 @@ class Repl(object):
             return bool(self.argspec)
 
         if cs and tab:
-            # Filename completion
-            self.matches = list()
-            username = cs.split(os.path.sep, 1)[0]
-            user_dir = os.path.expanduser(username)
-            for filename in glob(os.path.expanduser(cs + '*')):
-                if os.path.isdir(filename):
-                    filename += os.path.sep
-                if cs.startswith('~'):
-                    filename = username + filename[len(user_dir):]
-                self.matches.append(filename)
+            self.matches = filename_matches(cs)
             self.matches_iter.update(cs, self.matches)
             return bool(self.matches)
         elif cs:
@@ -599,7 +607,7 @@ class Repl(object):
 
         # Check for import completion
         e = False
-        matches = importcompletion.complete(self.current_line(), cw)
+        matches = importcompletion.complete(len(self.current_line()) - self.cpos, self.current_line())
         if matches is not None and not matches:
             self.matches = []
             self.matches_iter.update()
@@ -617,11 +625,7 @@ class Repl(object):
                 e = True
             else:
                 matches = self.completer.matches
-                if (self.config.complete_magic_methods and self.buffer and
-                    self.buffer[0].startswith("class ") and
-                    self.current_line().lstrip().startswith("def ")):
-                    matches.extend(name for name in self.config.magic_methods
-                                   if name.startswith(cw))
+                matches.extend(self.magic_method_completions(cw))
 
         if not e and self.argspec:
             matches.extend(name + '=' for name in self.argspec[1][0]
@@ -1091,3 +1095,14 @@ def extract_exit_value(args):
     else:
         return args
 
+def filename_matches(cs):
+    matches = []
+    username = cs.split(os.path.sep, 1)[0]
+    user_dir = os.path.expanduser(username)
+    for filename in glob(os.path.expanduser(cs + '*')):
+        if os.path.isdir(filename):
+            filename += os.path.sep
+        if cs.startswith('~'):
+            filename = username + filename[len(user_dir):]
+        matches.append(filename)
+    return cs

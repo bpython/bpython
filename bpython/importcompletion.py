@@ -22,6 +22,7 @@
 
 from __future__ import with_statement
 
+from bpython import line as lineparts
 import imp
 import os
 import sys
@@ -48,65 +49,69 @@ modules = set()
 fully_loaded = False
 
 
-def complete(line, cw):
+def complete(cursor_offset, line):
     """Construct a full list of possibly completions for imports."""
-    if not cw:
-        return None
-
     # TODO if this is done in a thread (as it prob will be in Windows) we'll need this
     # if not fully_loaded:
     #     return []
-
     tokens = line.split()
-    if tokens[0] not in ['from', 'import']:
+    if 'from' not in tokens and 'import' not in tokens:
         return None
 
-    completing_from = False
-    if tokens[0] == 'from':
-        if len(tokens) > 3:
-            if '.' in cw:
-                # This will result in a SyntaxError, so do not return
-                # any matches
-                return None
-            completing_from = True
-            cw = '%s.%s' % (tokens[1], cw)
-        elif len(tokens) == 3:
-            if 'import '.startswith(cw):
-                return ['import ']
-            else:
-                # Will result in a SyntaxError
-                return None
+    result = lineparts.current_word(cursor_offset, line)
+    if result is None:
+        return None
 
-    matches = list()
-    for name in modules:
-        if not (name.startswith(cw) and name.find('.', len(cw)) == -1):
-            continue
-        if completing_from:
-            name = name[len(tokens[1]) + 1:]
-        matches.append(name)
-    if completing_from and tokens[1] in sys.modules:
-        # from x import y -> search for attributes starting with y if
-        # x is in sys.modules
-        _, _, cw = cw.rpartition('.')
-        module = sys.modules[tokens[1]]
-        matches.extend(name for name in dir(module) if name.startswith(cw))
-    elif len(tokens) == 2:
-        # from x.y or import x.y -> search for attributes starting
-        # with y if x is in sys.modules and the attribute is also in
-        # sys.modules
-        module_name, _, cw = cw.rpartition('.')
-        if module_name in sys.modules:
-            module = sys.modules[module_name]
-            for name in dir(module):
-                if not name.startswith(cw):
-                    continue
-                submodule_name = '%s.%s' % (module_name, name)
-                if submodule_name in sys.modules:
-                    matches.append(submodule_name)
-    if not matches:
-        return []
-    return matches
+    def module_matches(cw, prefix=''):
+        """Modules names to replace cw with"""
+        full = '%s.%s' % (prefix, cw) if prefix else cw
+        matches = [name for name in modules
+                   if (name.startswith(full) and
+                       name.find('.', len(full)) == -1)]
+        if prefix:
+            return [match[len(prefix)+1:] for match in matches]
+        else:
+            return matches
 
+    def attr_matches(cw, prefix='', only_modules=False):
+        """Attributes to replace name with"""
+        full = '%s.%s' % (prefix, cw) if prefix else cw
+        module_name, _, name_after_dot = full.rpartition('.')
+        if module_name not in sys.modules:
+            return []
+        module = sys.modules[module_name]
+        if only_modules:
+            matches = [name for name in dir(module)
+                    if name.startswith(name_after_dot) and
+                    '%s.%s' % (module_name, name) in sys.modules]
+        else:
+            matches = [name for name in dir(module) if name.startswith(name_after_dot)]
+        module_part, _, _ = cw.rpartition('.')
+        if module_part:
+            return ['%s.%s' % (module_part, m) for m in matches]
+        return matches
+
+    def module_attr_matches(name):
+        """Only attributes which are modules to replace name with"""
+        return attr_matches(name, prefix='', only_modules=True)
+
+    if lineparts.current_from_import_from(cursor_offset, line) is not None:
+        if lineparts.current_from_import_import(cursor_offset, line) is not None:
+            # `from a import <b|>` completion
+            return (module_matches(lineparts.current_from_import_import(cursor_offset, line)[2],
+                                   lineparts.current_from_import_from(cursor_offset, line)[2]) +
+                    attr_matches(lineparts.current_from_import_import(cursor_offset, line)[2],
+                                 lineparts.current_from_import_from(cursor_offset, line)[2]))
+        else:
+            # `from <a|>` completion
+            return (module_attr_matches(lineparts.current_from_import_from(cursor_offset, line)[2]) +
+                    module_matches(lineparts.current_from_import_from(cursor_offset, line)[2]))
+    elif lineparts.current_import(cursor_offset, line):
+        # `import <a|>` completion
+        return (module_matches(lineparts.current_import(cursor_offset, line)[2]) +
+                module_attr_matches(lineparts.current_import(cursor_offset, line)[2]))
+    else:
+        return None
 
 def find_modules(path):
     """Find all modules (and packages) for a given directory."""
