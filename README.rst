@@ -8,6 +8,13 @@ Pygments
 Sphinx != 1.1.2 (for the documentation only)
 (apt-get install python-sphinx)
 
+bpython-curtsies
+----------------
+``bpython-curtsies`` requires the following additional packages:
+
+- curtsies
+- greenlet
+
 Introduction
 ============
 A few people asked for stuff like syntax highlighting and autocomplete for the
