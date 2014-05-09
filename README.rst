@@ -3,17 +3,24 @@ bpython - A fancy curses interface to the Python interactive interpreter
 
 Dependencies
 ============
-Pygments
-(apt-get install python-pygments)
-Sphinx != 1.1.2 (for the documentation only)
-(apt-get install python-sphinx)
+
+* Pygments (apt-get install python-pygments)
+* Sphinx != 1.1.2 (for the documentation only) (apt-get install python-sphinx)
+* mock (for the testsuite only)
+* babel (optional, for internationalization)
 
 bpython-curtsies
 ----------------
 ``bpython-curtsies`` requires the following additional packages:
 
-- curtsies
-- greenlet
+* curtsies >= 0.0.32
+* greenlet
+
+bpython-urwid
+-------------
+``bpython-urwid`` requires the following additional packages:
+
+* urwid
 
 Introduction
 ============
