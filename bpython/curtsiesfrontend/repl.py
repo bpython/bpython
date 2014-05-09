@@ -651,7 +651,7 @@ class Repl(BpythonRepl):
     def _get_current_word(self):
         pos = self.cursor_offset_in_line
 
-        matches = list(re.finditer(r'[\w_][\w0-9._]*[(]?', self._current_line))
+        matches = list(re.finditer(r'''[\w_][\w0-9._\[\]']*[(]?''', self._current_line))
         start = pos
         end = pos
         word = None
