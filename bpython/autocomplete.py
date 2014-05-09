@@ -54,6 +54,49 @@ class Autocomplete(rlcompleter.Completer):
         else:
             self.autocomplete_mode = SUBSTRING
 
+    def complete(self, text, state):
+        """Return the next possible completion for 'text'.
+
+        This is called successively with state == 0, 1, 2, ... until it
+        returns None.  The completion should begin with 'text'.
+
+        """
+        if self.use_main_ns:
+            self.namespace = __main__.__dict__
+
+        dictpattern = re.compile('[^\[\]]+\[$')
+        def complete_dict(text):
+            lastbracket_index = text.rindex('[')
+            dexpr = text[:lastbracket_index].lstrip()
+            obj = eval(dexpr, self.locals)
+            if obj and isinstance(obj, type({})) and obj.keys():
+                self.matches = [dexpr + "[{!r}]".format(k) for k in obj.keys()]
+            else:
+                # empty dictionary
+                self.matches = []
+
+        if state == 0:
+            if "." in text:
+                if dictpattern.match(text):
+                    complete_dict(text)
+                else:
+                    # Examples: 'foo.b' or 'foo[bar.'
+                    for i in range(1, len(text) + 1):
+                        if text[-i] == '[':
+                            i -= 1
+                            break
+                    methodtext = text[-i:]
+                    self.matches = [''.join([text[:-i], m]) for m in
+                                    self.attr_matches(methodtext)]
+            elif dictpattern.match(text):
+                complete_dict(text)
+            else:
+                self.matches = self.global_matches(text)
+        try:
+            return self.matches[state]
+        except IndexError:
+            return None
+
     def attr_matches(self, text):
         """Taken from rlcompleter.py and bent to my will.
         """

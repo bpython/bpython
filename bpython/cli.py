@@ -512,15 +512,18 @@ class CLIRepl(repl.Repl):
         # isn't at the end of the line, but that's what this does for now.
         if self.cpos: return
 
-        # look from right to left for a bad method character
+        # look from right to left for a bad method or dictionary character
         l = len(self.s)
         is_method_char = lambda c: c.isalnum() or c in ('.', '_')
+        dict_chars = ['[']
 
-        if not self.s or not is_method_char(self.s[l-1]):
+        if not self.s or not (is_method_char(self.s[-1])
+                                or self.s[-1] in dict_chars):
             return
 
         for i in range(1, l+1):
-            if not is_method_char(self.s[-i]):
+            c = self.s[-i]
+            if not (is_method_char(c) or c in dict_chars):
                 i -= 1
                 break
 
@@ -1281,15 +1284,22 @@ class CLIRepl(repl.Repl):
             max_h = y + 1
         max_w = int(w * self.config.cli_suggestion_width)
         self.list_win.erase()
+
         if items:
             sep = '.'
-            if os.path.sep in items[0]:
-                # Filename completion
-                sep = os.path.sep
-            if sep in items[0]:
-                items = [x.rstrip(sep).rsplit(sep)[-1] for x in items]
+            separators = ['.', os.path.sep, '[']
+            lastindex = max([items[0].rfind(c) for c in separators])
+            if lastindex > -1:
+                sep = items[0][lastindex]
+            items = [x.rstrip(sep).rsplit(sep)[-1] for x in items]
+            if current_item:
+                current_item = current_item.rstrip(sep).rsplit(sep)[-1]
+
+            if items[0].endswith(']'):
+                # dictionary key suggestions
+                items = [x.rstrip(']') for x in items]
                 if current_item:
-                    current_item = current_item.rstrip(sep).rsplit(sep)[-1]
+                    current_item = current_item.rstrip(']')
 
         if topline:
             height_offset = self.mkargspec(topline, down) + 1
