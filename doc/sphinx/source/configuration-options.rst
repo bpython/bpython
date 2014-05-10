@@ -245,7 +245,7 @@ Default: F7
 
 Edit current line in an external editor.
 
-.. versionedadded:: 0.13
+.. versionadded:: 0.13
 
 CLI
 ---
