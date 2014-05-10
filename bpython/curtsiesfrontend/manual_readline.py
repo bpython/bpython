@@ -43,6 +43,7 @@ def end_of_line(cursor_offset, line):
 @on('\x1bl')
 @on('\x1bOC')
 @on('\x1b[5C')
+@on('\x1b[1;5C')
 def forward_word(cursor_offset, line):
     patt = r"\S\s"
     match = re.search(patt, line[cursor_offset:]+' ')
@@ -53,6 +54,7 @@ def forward_word(cursor_offset, line):
 @on('\x1bOD')
 @on('\x1bB')
 @on('\x1b[5D')
+@on('\x1b[1;5D')
 def back_word(cursor_offset, line):
     return (last_word_pos(line[:cursor_offset]), line)
 
