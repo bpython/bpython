@@ -12,6 +12,8 @@ Synopsis
 
 **bpython-urwid** [*options*] [*file* [*args*]]
 
+**bpython-curtsies** [*options*] [*file* [*args*]]
+
 
 Description
 -----------
@@ -88,7 +90,7 @@ Files
 **$XDG_CONFIG_HOME/bpython/config**
 
 Your bpython config. See sample-config (in /usr/share/doc/bpython/examples on
-Debian) for various options you can use, or read :manpage:`python-config(5)`.
+Debian) for various options you can use, or read :manpage:`bpython-config(5)`.
 
 Known bugs
 ----------

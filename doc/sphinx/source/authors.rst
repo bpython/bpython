@@ -5,23 +5,25 @@ Authors
 If you contributed to bpython and want to be on this list please find us
 (:ref:`community`) and let us know!
 
-bpython is written and maintained by Bob Farrell and Andreas Stuehrk
-<robertanthonyfarrell at gmail dot com>,
-<andy-python at hammerhartes dot de>.
-
+bpython is written and maintained by Bob Farrell
+<robertanthonyfarrell at gmail dot com>.
 
 Other contributors are (in alphabetical order):
 
+* Thomas Ballinger <thomasballinger at gmail dot com>
 * Federico Ceratto <federico dot ceratto at gmail dot com>
 * Ingrid Cheung
+* Maja Frydrychowicz
 * Martha Girdler <martha at cheezburger dot com>
 * Eike Hein <sho at eikehein dot com>
 * Allison Kaptur <allison dot kaptur at gmail dot com>
+* Jason Laster <jason dot laster dot 11 at gmail dot com>
 * Brandon Navra <brandon dot navra at gmail dot com>
 * Michele Orrù <maker dot py at gmail dot com>
 * Pavel Panchekha <pavpanchekha at gmail dot com>
-* Sebastian Ramacher <s dot ramacher at gmx dot at>
+* Sebastian Ramacher <sebastian+dev@ramacher.at>
 * Amjith Ramanujam <amjith dot r at gmail dot com>
+* Andreas Stührk <andy@hammerhartes.de>
 * Simon de Vlieger <simon at ikanobori dot jp>
 * Marien Zwart <marien dot zwart at gmail dot com>
 

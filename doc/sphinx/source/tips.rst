@@ -20,5 +20,5 @@ Where the `~/python/bpython`-path is the path to where your bpython source code
 resides.
 
 You can offcourse add multiple aliasses (make sure you have pygments installed
-on all python versions though), so you can run bpython with 2.4, 2.5, 2.6, 2.7
-and the 3 series.
+on all python versions though), so you can run bpython with 2.6, 2.7 and the 3
+series.
