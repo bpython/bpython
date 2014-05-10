@@ -1,6 +1,65 @@
 Changelog
 =========
 
+0.13
+----
+
+There are a few new features, a bunch of bugfixes, and a new frontend
+for bpython in this release.
+
+* Dictionary key completion, thanks to Maja Frydrychowicz (#226).
+  To use normal completion and ignore these key completions, type a space.
+* Edit current line in external editor: ctrl-x (#161)
+
+Fixes:
+
+* Python 2.5 compatibility, thanks to Michael Schuller (#279). Python 2.5
+  is not officially supported, but after few changes Michael introduced, he
+  says it's working fine.
+* FakeStream has flush(), so works correctly with
+  django.core.email.backends.console thanks to Marc Sibson (#259)
+* FakeStdin has fileno() (#232)
+* Changes to sys.ps1 and sys.ps2 are respected thanks to Michael Schulle (#267)
+* atexit registered functions run on exit (#258)
+* fixed an error on exit code when running a script with bpython script.py (#260)
+* setup.py extras are used to define dependencies for urwid and
+  curtsies frontends
+
+There's a new frontend for bpython: bpython-curtsies. Curtsies is a terminal
+wrapper written to making native scrolling work in bpython. (#56, #245)
+Try bpython-curtsies for the bpython experience with a vanilla python
+layout. (demo:
+http://ballingt.com/assets/bpython-curtsies-scroll-demo-large.gif)
+
+This curtsies frontend addresses some issues unfixed in bpython-cli, and has
+a few extra features:
+
+* Editing full interpreter history in external editor with F7, which is rerun
+  as in rewind
+* A new interpreter is used for rewind, unless bpython-curtsies was started
+  with custom locals or in interactive mode (#71)
+* Ctrl-c behaves more like vanilla python (#177)
+* Completion still works if cursor at the end of the line (#147)
+* Movement keys meta-b, meta-f, and meta-backspace, ctrl-left and ctrl-right
+  are all honored (#246, #201)
+* Non-ascii characters work in the file save prompt (#236)
+* New --type / -t option to run the contents of a file as though they were
+  typed into the bpython-curtsies prompt
+
+A few things about bpython-curtsies are worse than regular bpython:
+
+* Bad things can happen when using several threads (#265)
+* output prints slowly (#262)
+* bpython-curtsies can't be backgrounded and resumed correctly (via ctrl-z,
+  fg) (#274)
+
+There are two new options in the new [curtsies] section of the bpython config
+
+* list_above: whether completion window can cover text above the current line;
+  defaults to True
+* fill_terminal: whether bpython-curtsies should be fullscreen (like bpython);
+  defaults to False
+
 0.12
 ----
 
@@ -473,3 +532,4 @@ way with curses and sizing of windows and things...
 I've also got bpython to try looking into pydoc if no matches
 are found for the argspec, which means the builtins have argspecs
 too now, hooray.
+
