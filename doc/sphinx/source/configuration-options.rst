@@ -136,6 +136,12 @@ Whether to append ``.py`` to the filename while saving the input to a file.
 
 .. versionadded:: 0.13
 
+editor
+^^^^^^
+Editor for externally editing the current line.
+
+.. versionadded:: 0.13
+
 Keyboard
 --------
 This section refers to the ``[keyboard]`` section in your
@@ -232,6 +238,14 @@ exit
 Default: C-d
 
 Exits bpython (use on empty line)
+
+external_editor
+^^^^^^^^^^^^^^^
+Default: F7
+
+Edit current line in an external editor.
+
+.. versionedadded:: 0.13
 
 CLI
 ---
