@@ -1,8 +1,80 @@
 Changelog
 =========
 
-Since v0.11
-___________
+0.13
+----
+
+There are a few new features, a bunch of bugfixes, and a new frontend
+for bpython in this release.
+
+* Dictionary key completion, thanks to Maja Frydrychowicz (#226).
+  To use normal completion and ignore these key completions, type a space.
+* Edit current line in external editor: ctrl-x (#161)
+
+Fixes:
+
+* Python 2.5 compatibility, thanks to Michael Schuller (#279). Python 2.5
+  is not officially supported, but after few changes Michael introduced, he
+  says it's working fine.
+* FakeStream has flush(), so works correctly with
+  django.core.email.backends.console thanks to Marc Sibson (#259)
+* FakeStdin has fileno() (#232)
+* Changes to sys.ps1 and sys.ps2 are respected thanks to Michael Schulle (#267)
+* atexit registered functions run on exit (#258)
+* fixed an error on exit code when running a script with bpython script.py (#260)
+* setup.py extras are used to define dependencies for urwid and
+  curtsies frontends
+
+There's a new frontend for bpython: bpython-curtsies. Curtsies is a terminal
+wrapper written to making native scrolling work in bpython. (#56, #245)
+Try bpython-curtsies for the bpython experience with a vanilla python
+layout. (demo:
+http://ballingt.com/assets/bpython-curtsies-scroll-demo-large.gif)
+
+This curtsies frontend addresses some issues unfixed in bpython-cli, and has
+a few extra features:
+
+* Editing full interpreter history in external editor with F7, which is rerun
+  as in rewind
+* A new interpreter is used for rewind, unless bpython-curtsies was started
+  with custom locals or in interactive mode (#71)
+* Ctrl-c behaves more like vanilla python (#177)
+* Completion still works if cursor at the end of the line (#147)
+* Movement keys meta-b, meta-f, and meta-backspace, ctrl-left and ctrl-right
+  are all honored (#246, #201)
+* Non-ascii characters work in the file save prompt (#236)
+* New --type / -t option to run the contents of a file as though they were
+  typed into the bpython-curtsies prompt
+
+A few things about bpython-curtsies are worse than regular bpython:
+
+* Bad things can happen when using several threads (#265)
+* output prints slowly (#262)
+* bpython-curtsies can't be backgrounded and resumed correctly (via ctrl-z,
+  fg) (#274)
+
+There are two new options in the new [curtsies] section of the bpython config
+
+* list_above: whether completion window can cover text above the current line;
+  defaults to True
+* fill_terminal: whether bpython-curtsies should be fullscreen (like bpython);
+  defaults to False
+
+0.12
+----
+
+We want to give special thanks to the Hacker School project-
+(https://www.hackerschool.com/) for choosing bpython as their pet hacking
+project. In special we would like to thank the following people for contributing
+their code to bpython:
+
+- Martha Girdler
+- Allison Kaptur
+- Ingrid Cheung
+
+We'd also like to thank Eike Hein for contributing his pastebin code which now
+makes it possible to paste using a 3rd party program unlocking a whole slew of
+pastebins for bpython users.
 
 * Added a new pastebin_helper config option to name an executable that should
   perform pastebin upload on bpython's behalf. If set, this overrides
@@ -11,6 +83,16 @@ ___________
 * Fixed a bug causing pastebin upload to fail after a previous attempt was
   unsuccessful. A duplicate pastebin error would be displayed in this case,
   despite the original upload having failed.
+* Added more key shortcuts to bpython.urwid
+* Smarter dedenting after certain expressions
+* #74 fixed broken completion when auto_display_list was disabled
+
+We also have done numerous cleanup actions including building the man pages from
+our documentation. Including the documentation in the source directory. Some
+minor changes to the README to have EOL 79 and changes to urwid to work better
+without twisted installed.
+
+* Fix ungetch issues with Python 3.3. See issues #230, #231.
 
 v0.11
 -----
@@ -38,7 +120,6 @@ v0.10
 As a highlight of the release, Michele Orrù added i18n support to bpython.
 
 Some issues have been resolved as well:
-
 * Config files are now located according to the XDG Base Directory
   Specification. The support for the old bpythonrc files has been
   dropped and ~/.bpython.ini as config file location is no longer supported.
@@ -74,7 +155,7 @@ integrates with a Twisted reactor and through that with things like the GTK
 event loop.
 
 At the same time we have done a lot of work on the GTK frontend. The GTK
-frontend is now 'usable'. Please give that a spin as well by running python-gtk
+frontend is now 'usable'. Please give that a spin as well by running bpython-gtk
 on you system.
 
 We also welcome a new contributor in the name of Michele Orrù who we hope will
@@ -82,12 +163,17 @@ help us fix even more bugs and improve functionality.
 
 As always, please submit any bugs you might find to our bugtracker.
 
-* Pastebin confirmation added; we were getting a lot of people accidentally pastebinning sensitive information so I think this is a good idea.
+* Pastebin confirmation added; we were getting a lot of people accidentally
+  pastebinning sensitive information so I think this is a good idea.
 * Don't read PYTHONSTARTUP when executed with -i.
-* BPDB was merged in. BPDB is an extension to PDB which allows you to press B in a PDB session which will let you be dropped into a bpython sessions with the current PDB locals(). For usage, see the documentation.
+* BPDB was merged in. BPDB is an extension to PDB which allows you to press B
+  in a PDB session which will let you be dropped into a bpython sessions with
+  the current PDB locals(). For usage, see the documentation.
 * The clear word shortcut (default: C-w) now deletes to the buffer.
 * More tests have been added to bpython.
-* The pastebin now checks for a previous paste (during the session) with the exact same content to guard against twitchy fingers pastebinning multiple times.
+* The pastebin now checks for a previous paste (during the session) with the
+  exact same content to guard against twitchy fingers pastebinning multiple
+  times.
 * Let import completion return "import " instead of "import".
 
 * GTK now has pastebin, both for full log as well as the current selection.
@@ -97,21 +183,24 @@ As always, please submit any bugs you might find to our bugtracker.
 * GTK now has show source functionality.
 * GTK saves the pastebin url to the clipboard.
 * GTK now has it's own configuration section.
-* Set focus to the GTK text widget to allow for easier embedding in PIDA and others which fixes issues #121.
+* Set focus to the GTK text widget to allow for easier embedding in PIDA and
+  others which fixes issues #121.
 
-* #87: Add a closed attribute to Repl to fix mercurial.ui.ui expecting stderr to have this attribute.
+* #87: Add a closed attribute to Repl to fix mercurial.ui.ui expecting stderr
+  to have this attribute.
 * #108: Unicode characters in docsrting crash bpython
 * #118: Load_theme is not defined.
 * #99: Configurable font now documented.
 * #123: <F8> Pastebin can't handle 'ESC' key
-* #124: Unwanted input when using <arrow>/<FXX> keys in the statusbar prompt
+* #124: Unwanted input when using <arrow>/<FXX> keys in the statusbar prompt.
+
 
 v0.9.6.2
 --------
 Unfortunately another bugfix release as I (Bob) broke py3 support.
 
 * #84: bpython doesn't work with Python 3
-       Thanks very much to Henry Prêcheur for both the bug report and the 
+       Thanks very much to Henry Prêcheur for both the bug report and the
        patch.
 
 v0.9.6.1
@@ -131,7 +220,8 @@ A bugfix/feature release (and a start at gtk). Happy Christmas everyone!
 * #72: Auto dedentation
 * #78: Theme without a certain value raises exception
 
-- add the possibility for a banner to be shown on bpython startup (when embedded or in code) written by Caio Ramao.
+- add the possibility for a banner to be shown on bpython startup (when
+  embedded or in code) written by Caio Romao.
 - add a hack to add a write() method to our fake stdin object
 - Don't use curses interface when stdout is not attached to a terminal. 
 - PEP-8 conformance.
@@ -442,3 +532,4 @@ way with curses and sizing of windows and things...
 I've also got bpython to try looking into pydoc if no matches
 are found for the argspec, which means the builtins have argspecs
 too now, hooray.
+
