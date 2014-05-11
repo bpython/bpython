@@ -53,7 +53,7 @@ class FakeStdin(object):
         assert self.has_focus
         if isinstance(e, events.PasteEvent):
             for ee in e.events:
-                self.add_normal_character(ee if len(ee) == 1 else ee[-1]) #strip control seq
+                self.add_normal_character(ee)
         elif e in rl_char_sequences:
             self.cursor_offset_in_line, self.current_line = rl_char_sequences[e](self.cursor_offset_in_line, self.current_line)
         elif isinstance(e, events.SigIntEvent):
@@ -79,6 +79,8 @@ class FakeStdin(object):
             self.repl.send_to_stdin(self.current_line)
 
     def add_normal_character(self, e):
+        if len(e) > 1 or is_nop(e):
+            return
         logging.debug('adding normal char %r to current line', e)
         c = e if py3 else e.encode('utf8')
         self.current_line = (self.current_line[:self.cursor_offset_in_line] +
@@ -350,7 +352,7 @@ class Repl(BpythonRepl):
         elif e in ["\x1b"]: #ESC
             pass
         else:
-            self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
+            self.add_normal_character(e)
             self.update_completion()
 
     def on_enter(self, insert_into_history=True):
@@ -424,8 +426,7 @@ class Repl(BpythonRepl):
         elif isinstance(e, events.Event):
             pass # ignore events
         else:
-            if len(e) == 1:
-                self.add_normal_character(e if len(e) == 1 else e[-1]) #strip control seq
+            self.add_normal_character(e)
 
     def send_current_block_to_external_editor(self, filename=None):
         text = self.send_to_external_editor(self.get_current_block())
@@ -453,8 +454,7 @@ class Repl(BpythonRepl):
 
     ## Handler Helpers
     def add_normal_character(self, char):
-        assert len(char) == 1, repr(char)
-        if is_nop(char):
+        if len(char) > 1 or is_nop(char):
             return
         self._current_line = (self._current_line[:self.cursor_offset_in_line] +
                              char +
@@ -942,7 +942,7 @@ class Repl(BpythonRepl):
         return s
 
 def is_nop(char):
-    return unicodedata.category(char) == 'Cc'
+    return unicodedata.category(unicode(char)) == 'Cc'
 
 def compress_paste_event(paste_event):
     """If all events in a paste event are identical and not simple characters, returns one of them
