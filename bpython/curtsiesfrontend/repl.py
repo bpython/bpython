@@ -53,7 +53,8 @@ class FakeStdin(object):
         assert self.has_focus
         if isinstance(e, events.PasteEvent):
             for ee in e.events:
-                self.add_normal_character(ee)
+                if ee not in rl_char_sequences:
+                    self.add_input_character(ee)
         elif e in rl_char_sequences:
             self.cursor_offset_in_line, self.current_line = rl_char_sequences[e](self.cursor_offset_in_line, self.current_line)
         elif isinstance(e, events.SigIntEvent):
@@ -65,7 +66,7 @@ class FakeStdin(object):
         elif e in ["\x1b"]: #ESC
             pass
         else: # add normal character
-            self.add_normal_character(e)
+            self.add_input_character(e)
 
         if self.current_line.endswith(("\n", "\r")):
             line = self.current_line
@@ -78,9 +79,8 @@ class FakeStdin(object):
         else:
             self.repl.send_to_stdin(self.current_line)
 
-    def add_normal_character(self, e):
-        if len(e) > 1 or is_nop(e):
-            return
+    def add_input_character(self, e):
+        assert len(e) == 1, 'added multiple characters: %r' % e
         logging.debug('adding normal char %r to current line', e)
         c = e if py3 else e.encode('utf8')
         self.current_line = (self.current_line[:self.cursor_offset_in_line] +
