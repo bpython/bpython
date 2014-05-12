@@ -65,17 +65,18 @@ class FakeStdin(object):
             self.repl.run_code_and_maybe_finish()
         elif e in ["\x1b"]: #ESC
             pass
+        elif e in ["\n", "\r"]:
+            line = self.current_line
+            self.repl.send_to_stdin(line + '\n')
+            self.has_focus = False
+            self.current_line = ''
+            self.cursor_offset_in_line = 0
+            self.repl.run_code_and_maybe_finish(for_code=line)
         else: # add normal character
             self.add_input_character(e)
 
         if self.current_line.endswith(("\n", "\r")):
-            line = self.current_line
-            self.repl.send_to_stdin(line)
-            self.has_focus = False
-            self.current_line = ''
-            self.cursor_offset_in_line = 0
-            #self.repl.coderunner.run_code(for_code=line)
-            self.repl.run_code_and_maybe_finish(for_code=line)
+            pass
         else:
             self.repl.send_to_stdin(self.current_line)
 
@@ -270,14 +271,8 @@ class Repl(BpythonRepl):
 
         elif self.status_bar.has_focus:
             return self.status_bar.process_event(e)
-        elif self.stdin.has_focus:
-            return self.stdin.process_event(e)
 
-        elif isinstance(e, events.SigIntEvent):
-            logging.debug('received sigint event')
-            self.keyboard_interrupt()
-            self.update_completion()
-            return
+        # handles paste events for both stdin and repl
         elif isinstance(e, events.PasteEvent):
             ctrl_char = compress_paste_event(e)
             if ctrl_char is not None:
@@ -289,6 +284,15 @@ class Repl(BpythonRepl):
                     else:
                         self.process_simple_event(ee)
             self.update_completion()
+
+        elif self.stdin.has_focus:
+            return self.stdin.process_event(e)
+
+        elif isinstance(e, events.SigIntEvent):
+            logging.debug('received sigint event')
+            self.keyboard_interrupt()
+            self.update_completion()
+            return
 
         elif e in self.rl_char_sequences:
             self.cursor_offset_in_line, self._current_line = self.rl_char_sequences[e](self.cursor_offset_in_line, self._current_line)
@@ -601,7 +605,7 @@ class Repl(BpythonRepl):
 
     def send_to_stdin(self, line):
         if line.endswith('\n'):
-            self.display_lines.extend(paint.display_linize(self.current_output_line[:-1], self.width))
+            self.display_lines.extend(paint.display_linize(self.current_output_line, self.width))
             self.current_output_line = ''
         #self.display_lines = self.display_lines[:len(self.display_lines) - self.stdin.old_num_lines]
         #lines = paint.display_linize(line, self.width)
