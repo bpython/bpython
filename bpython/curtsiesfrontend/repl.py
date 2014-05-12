@@ -769,16 +769,17 @@ class Repl(BpythonRepl):
         lines = paint.display_linize(self.current_cursor_line+'X', width)
                                        # extra character for space for the cursor
         current_line_end_row = current_line_start_row + len(lines) - 1
-        cursor_row = current_line_start_row + (len(self.current_cursor_line) - len(self._current_line) + self.cursor_offset_in_line) / width
+
         if self.stdin.has_focus:
-            cursor_column = (len(self.current_stdouterr_line) + self.stdin.cursor_offset_in_line) % width
+            cursor_row, cursor_column = divmod(len(self.current_stdouterr_line) + self.stdin.cursor_offset_in_line, width)
             assert cursor_column >= 0, cursor_column
-        elif self.coderunner.running:
-            cursor_column = (len(self.current_cursor_line) + self.cursor_offset_in_line) % width
+        elif self.coderunner.running: #TODO does this ever happen?
+            cursor_row, cursor_column = divmod(len(self.current_cursor_line) + self.cursor_offset_in_line, width)
             assert cursor_column >= 0, (cursor_column, len(self.current_cursor_line), len(self._current_line), self.cursor_offset_in_line)
         else:
-            cursor_column = (len(self.current_cursor_line) - len(self._current_line) + self.cursor_offset_in_line) % width
+            cursor_row, cursor_column = divmod(len(self.current_cursor_line) - len(self._current_line) + self.cursor_offset_in_line, width)
             assert cursor_column >= 0, (cursor_column, len(self.current_cursor_line), len(self._current_line), self.cursor_offset_in_line)
+        cursor_row += current_line_start_row
 
         if self.list_win_visible:
             logging.debug('infobox display code running')
