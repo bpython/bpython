@@ -1,0 +1,5 @@
+Pygments
+argparse
+curtsies
+distribute
+greenlet
