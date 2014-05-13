@@ -1,14 +1,14 @@
 # Translations template for bpython.
-# Copyright (C) 2013 ORGANIZATION
+# Copyright (C) 2014 ORGANIZATION
 # This file is distributed under the same license as the bpython project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: bpython mercurial\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-10-10 23:29+0200\n"
+"POT-Creation-Date: 2014-05-13 10:50+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,117 +40,81 @@ msgstr ""
 msgid "Print version and exit."
 msgstr ""
 
-#: bpython/cli.py:304 bpython/urwid.py:553
+#: bpython/cli.py:325 bpython/urwid.py:553
 msgid "y"
 msgstr ""
 
-#: bpython/cli.py:304 bpython/urwid.py:553
+#: bpython/cli.py:325 bpython/urwid.py:553
 msgid "yes"
 msgstr ""
 
-#: bpython/cli.py:977 bpython/gtk_.py:483
+#: bpython/cli.py:1001
 msgid "Cannot show source."
 msgstr ""
 
-#: bpython/cli.py:1677 bpython/urwid.py:615
+#: bpython/cli.py:1751 bpython/urwid.py:615
 #, python-format
 msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
 msgstr ""
 
-#: bpython/gtk_.py:90 bpython/gtk_.py:115
-msgid "An error occurred."
+#: bpython/curtsies.py:24
+msgid "log debug messages to bpython-curtsies.log"
 msgstr ""
 
-#: bpython/gtk_.py:97
-msgid "Exception details"
+#: bpython/curtsies.py:26
+msgid "enter lines of file as though interactively typed"
 msgstr ""
 
-#: bpython/gtk_.py:149
-msgid "Statusbar"
-msgstr ""
-
-#: bpython/gtk_.py:226
-msgid "tooltip"
-msgstr ""
-
-#: bpython/gtk_.py:295
-msgid "File to save to"
-msgstr ""
-
-#: bpython/gtk_.py:306
-msgid "Python files"
-msgstr ""
-
-#: bpython/gtk_.py:311
-msgid "All files"
-msgstr ""
-
-#: bpython/gtk_.py:771
-msgid "gtk-specific options"
-msgstr ""
-
-#: bpython/gtk_.py:772
-msgid "Options specific to bpython's Gtk+ front end"
-msgstr ""
-
-#: bpython/gtk_.py:774
-msgid "Embed bpython"
-msgstr ""
-
-#: bpython/gtk_.py:830
-msgid "Pastebin selection"
-msgstr ""
-
-#: bpython/repl.py:741
+#: bpython/repl.py:755
 msgid "Pastebin buffer? (y/N) "
 msgstr ""
 
-#: bpython/repl.py:742
+#: bpython/repl.py:756
 msgid "Pastebin aborted"
-msgstr ""
-
-#: bpython/repl.py:749
-#, python-format
-msgid "Duplicate pastebin. Previous URL: %s"
 msgstr ""
 
 #: bpython/repl.py:763
 #, python-format
+msgid "Duplicate pastebin. Previous URL: %s"
+msgstr ""
+
+#: bpython/repl.py:777
+#, python-format
 msgid "Pastebin error for URL '%s': %s"
 msgstr ""
 
-#: bpython/repl.py:767 bpython/repl.py:786
+#: bpython/repl.py:781 bpython/repl.py:800
 msgid "Posting data to pastebin..."
 msgstr ""
 
-#: bpython/repl.py:772
+#: bpython/repl.py:786
 #, python-format
 msgid "Upload failed: %s"
 msgstr ""
 
-#: bpython/repl.py:781 bpython/repl.py:825
+#: bpython/repl.py:795 bpython/repl.py:839
 #, python-format
 msgid "Pastebin URL: %s"
 msgstr ""
 
-#: bpython/repl.py:798
+#: bpython/repl.py:812
 msgid "Upload failed: Helper program not found."
 msgstr ""
 
-#: bpython/repl.py:801
+#: bpython/repl.py:815
 msgid "Upload failed: Helper program could not be run."
 msgstr ""
 
-#: bpython/repl.py:808
+#: bpython/repl.py:822
 #, python-format
 msgid "Upload failed: Helper program returned non-zero exit status %s."
 msgstr ""
 
-#: bpython/repl.py:812
+#: bpython/repl.py:826
 msgid "Upload failed: No output from helper program."
 msgstr ""
 
-#: bpython/repl.py:819
+#: bpython/repl.py:833
 msgid "Upload failed: Failed to recognize the helper program's output as an URL."
 msgstr ""
 
@@ -174,5 +138,14 @@ msgstr ""
 
 #: bpython/urwid.py:1124
 msgid "Port to run an eval server on (forces Twisted)."
+msgstr ""
+
+#: bpython/curtsiesfrontend/repl.py:175
+msgid "welcome to bpython"
+msgstr ""
+
+#: bpython/curtsiesfrontend/repl.py:189
+#, python-format
+msgid " <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor"
 msgstr ""
 

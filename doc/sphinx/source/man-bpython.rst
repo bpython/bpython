@@ -8,8 +8,6 @@ Synopsis
 
 **bpython** [*options*] [*file* [*args*]]
 
-**bpython-gtk** [*options*] [*file* [*args*]]
-
 **bpython-urwid** [*options*] [*file* [*args*]]
 
 **bpython-curtsies** [*options*] [*file* [*args*]]
@@ -72,11 +70,6 @@ following options if Twisted is available:
                                     plugin.
 -s <port>, --server=<port>          Run an eval server on port <port>. This
                                     options forces the use of a Twisted reactor.
-
-
-:program:`bpython-gtk` also supports the following options:
-
---socket-id=<socket-id>             Embed bpython.
 
 Keys
 ----

@@ -3,7 +3,6 @@ include AUTHORS
 include CHANGELOG
 include LICENSE
 include data/bpython
-include data/bpython-gtk
 include data/bpython.desktop
 include doc/sphinx/source/conf.py
 include doc/sphinx/source/*.rst

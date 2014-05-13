@@ -143,14 +143,10 @@ entry_points = {
     'console_scripts': [
         'bpython = bpython.cli:main',
         'bpython-urwid = bpython.urwid:main [urwid]'
-    ],
-    'gui_scripts': [
-        'bpython-gtk = bpython.gtk_:main'
     ]
 }
 
 scripts = [] if using_setuptools else ['data/bpython',
-                                       'data/bpython-gtk',
                                        'data/bpython-urwid']
 
 if sys.version_info[:2] >= (2, 6):

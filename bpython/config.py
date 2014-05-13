@@ -100,10 +100,7 @@ def loadini(struct, configfile):
         'curtsies': {
             'list_above' : False,
             'fill_terminal' : False,
-        },
-        'gtk': {
-            'font': 'monospace 10',
-            'color_scheme': 'default'}})
+        }})
     if not config.read(config_path):
         # No config file. If the user has it in the old place then complain
         if os.path.isfile(os.path.expanduser('~/.bpython.ini')):
@@ -163,13 +160,10 @@ def loadini(struct, configfile):
     struct.autocomplete_mode = config.get('general', 'autocomplete_mode')
     struct.save_append_py = config.getboolean('general', 'save_append_py')
 
-    struct.gtk_font = config.get('gtk', 'font')
-
     struct.curtsies_list_above = config.getboolean('curtsies', 'list_above')
     struct.curtsies_fill_terminal = config.getboolean('curtsies', 'fill_terminal')
 
     color_scheme_name = config.get('general', 'color_scheme')
-    color_gtk_scheme_name = config.get('gtk', 'color_scheme')
 
     default_colors = {
             'keyword': 'y',
@@ -186,24 +180,6 @@ def loadini(struct, configfile):
             'main': 'c',
             'paren': 'R',
             'prompt': 'c',
-            'prompt_more': 'g',
-        }
-
-    default_gtk_colors = {
-            'keyword': 'b',
-            'name': 'k',
-            'comment': 'b',
-            'string': 'm',
-            'error': 'r',
-            'number': 'G',
-            'operator': 'B',
-            'punctuation': 'g',
-            'token': 'C',
-            'background': 'w',
-            'output': 'k',
-            'main': 'c',
-            'paren': 'R',
-            'prompt': 'b',
             'prompt_more': 'g',
         }
 
@@ -228,22 +204,6 @@ def loadini(struct, configfile):
         else:
             sys.stderr.write("Could not load theme '%s'.\n" %
                                                          (color_scheme_name, ))
-            sys.exit(1)
-
-    if color_gtk_scheme_name == 'default':
-        struct.color_gtk_scheme = default_gtk_colors
-    else:
-        struct.color_gtk_scheme = dict()
-        # Note: This is a new config option, hence we don't have a
-        # fallback directory.
-        path = os.path.expanduser(os.path.join(get_config_home(),
-                                               color_gtk_scheme_name + '.theme'))
-
-        try:
-            load_theme(struct, path, struct.color_gtk_scheme, default_colors)
-        except EnvironmentError:
-            sys.stderr.write("Could not load gtk theme '%s'.\n" %
-                                                    (color_gtk_scheme_name, ))
             sys.exit(1)
 
     # checks for valid key configuration this part still sucks
