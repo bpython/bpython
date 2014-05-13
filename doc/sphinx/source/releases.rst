@@ -26,3 +26,26 @@ After it is decided to release a new version of bpython the following checklist 
   * Simon (:ref:`authors`) also checks if all numbers on the website have been updated.
 
 * 24 hours later package maintainers could update their stuff.
+
+Checklist
+---------
+
+A checklist to perform some manual tests before a release:
+
+Check that all of the following work before a release:
+
+* Runs under Python 2.5, 2.6 and 3.1 (after 2to3).
+* Save
+* Rewind
+* Pastebin
+* Pager
+* Inspect source
+* History
+* Tab completion
+* Argument inspection
+* All keybinds
+* All packaged themes
+* Command line arguments correctly passed to scripts
+* Delegate to standard Python appropriately
+* Update CHANGELOG
+* Update __version__
