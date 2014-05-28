@@ -146,7 +146,7 @@ class TestCurrentDict(LineTestCase):
 class TestCurrentString(LineTestCase):
     def setUp(self):
         self.func = current_string
-    def test_simple(self):
+    def test_closed(self):
         self.assertAccess('"<as|df>"')
         self.assertAccess('"<asdf|>"')
         self.assertAccess('"<|asdf>"')
@@ -155,6 +155,15 @@ class TestCurrentString(LineTestCase):
         self.assertAccess("'''<asdf|>'''")
         self.assertAccess('"""<asdf|>"""')
         self.assertAccess('asdf.afd("a") + "<asdf|>"')
+    def test_open(self):
+        self.assertAccess('"<as|df>')
+        self.assertAccess('"<asdf|>')
+        self.assertAccess('"<|asdf>')
+        self.assertAccess("'<asdf|>")
+        self.assertAccess("'<|asdf>")
+        self.assertAccess("'''<asdf|>")
+        self.assertAccess('"""<asdf|>')
+        self.assertAccess('asdf.afd("a") + "<asdf|>')
 
 class TestCurrentObject(LineTestCase):
     def setUp(self):

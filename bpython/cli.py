@@ -459,7 +459,7 @@ class CLIRepl(repl.Repl):
         if self.list_win_visible and not self.config.auto_display_list:
             self.scr.touchwin()
             self.list_win_visible = False
-            self.matches_iter.update()
+            self.matches_iter.clear()
             return
 
         if self.config.auto_display_list or tab:
@@ -1484,43 +1484,42 @@ class CLIRepl(repl.Repl):
             cseq = os.path.commonprefix(seq)
 
         if cseq and mode != autocomplete.FUZZY:
+            print 'doing cseq'
             expanded_string = cseq[len(cw):]
-            self.s += expanded_string
-            expanded = bool(expanded_string)
+            expanded = bool(expanded_string) #TODO move this logic below to matches_iter
+            _, self.s = self.matches_iter.substitute(self.matches_iter.current_word + expanded_string)
             self.print_line(self.s)
             if len(self.matches) == 1 and self.config.auto_display_list:
                 self.scr.touchwin()
             if expanded:
-                self.matches_iter.update(cseq, self.matches)
+                self.matches_iter.update(len(self.s) - self.cpos,
+                                         self.s,
+                                         self.matches)
         else:
             expanded = False
 
         # 4. swap current word for a match list item
         if not expanded and self.matches:
-            # reset s if this is the nth result
-            if self.matches_iter:
-                self.s = self.s[:-len(self.matches_iter.current())] + cw
+            print 'doing swap'
 
             current_match = back and self.matches_iter.previous() \
                                   or self.matches_iter.next()
 
-            # update s with the new match
-            if current_match:
-                try:
-                    self.show_list(self.matches, self.argspec, current_match)
-                except curses.error:
-                    # XXX: This is a massive hack, it will go away when I get
-                    # cusswords into a good enough state that we can start
-                    # using it.
-                    self.list_win.border()
-                    self.list_win.refresh()
+            try:
+                self.show_list(self.matches, self.argspec, current_match)
+            except curses.error:
+                # XXX: This is a massive hack, it will go away when I get
+                # cusswords into a good enough state that we can start
+                # using it.
+                self.list_win.border()
+                self.list_win.refresh()
 
-                if self.config.autocomplete_mode == autocomplete.SIMPLE:
-                    self.s += current_match[len(cw):]
-                else:
-                    self.s = self.s[:-len(cw)] + current_match
+            if self.config.autocomplete_mode == autocomplete.SIMPLE:
+                _, self.s = self.matches_iter.cur_line()
+            else:
+                self.s = self.s[:-len(cw)] + current_match
 
-                self.print_line(self.s, True)
+            self.print_line(self.s, True)
         return True
 
     def undo(self, n=1):

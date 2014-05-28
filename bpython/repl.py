@@ -50,7 +50,7 @@ from bpython import importcompletion, inspection
 from bpython._py3compat import PythonLexer, py3
 from bpython.formatter import Parenthesis
 from bpython.translations import _
-from bpython.autocomplete import Autocomplete
+import bpython.autocomplete as autocomplete
 
 
 # Needed for special handling of __abstractmethods__
@@ -280,6 +280,9 @@ class MatchesIterator(object):
         self.current_word = current_word
         self.matches = list(matches)
         self.index = -1
+        self.orig_cursor_offset = None
+        self.orig_line = None
+        self.replacer = None
 
     def __nonzero__(self):
         return self.index != -1
@@ -303,11 +306,33 @@ class MatchesIterator(object):
 
         return self.matches[self.index]
 
-    def update(self, current_word='', matches=[]):
-        if current_word != self.current_word:
-            self.current_word = current_word
-            self.matches = list(matches)
+    def cur_line(self):
+        """Returns a cursor offset and line pair with the current substitution made"""
+        return self.substitute(self.current())
+
+    def substitute(self, match):
+        if match.startswith("'"):
+            raise ValueError(match)
+        start, end, word = self.replacer(self.orig_cursor_offset, self.orig_line)
+        result = start + len(match), self.orig_line[:start] + match + self.orig_line[end:]
+        return result
+
+    def update(self, cursor_offset, current_line, matches, replacer=None):
+        if cursor_offset != self.orig_cursor_offset or current_line != self.orig_line:
+            if replacer is not None:
+                self.replacer = replacer
+            if matches and self.replacer is not None:
+                self.start, self.end, self.current_word = self.replacer(cursor_offset, current_line)
+            self.orig_cursor_offset = cursor_offset
+            self.orig_line = current_line
             self.index = -1
+            self.matches = list(matches)
+
+    def clear(self):
+        self.cursor_offset = -1
+        self.current_line = ''
+        self.current_word = ''
+        self.replacer = None
 
 
 class Interaction(object):
@@ -378,7 +403,6 @@ class Repl(object):
         self.s_hist = []
         self.history = []
         self.evaluating = False
-        self.completer = Autocomplete(self.interp.locals, config)
         self.matches = []
         self.matches_iter = MatchesIterator()
         self.argspec = None
@@ -580,83 +604,30 @@ class Repl(object):
         (via the inspect module) and bang that on top of the completions too.
         The return value is whether the list_win is visible or not."""
 
-        #TODO keep factoring out parts of complete
-        # so we can reuse code when we reimplement complete
-        # in bpython.curtsiesfrontend.repl
-        # Maybe move things to autocomplete instead of here?
-
         self.set_docstring()
 
-        cw = self.cw()
-        cs = self.current_string()
-        if not cw:
-            self.matches = []
-            self.matches_iter.update()
-        if not (cw or cs):
-            return bool(self.argspec)
+        matches, replacer = autocomplete.find_matches(
+                len(self.current_line()) - self.cpos,
+                self.current_line(),
+                self.interp.locals,
+                self.argspec,
+                self.config,
+                self.magic_method_completions)
 
-        if cs and tab:
-            self.matches = filename_matches(cs)
-            self.matches_iter.update(cs, self.matches)
-            return bool(self.matches)
-        elif cs:
-            # Do not provide suggestions inside strings, as one cannot tab
-            # them so they would be really confusing.
-            self.matches_iter.update()
-            return False
+        self.matches = matches
+        self.matches_iter.update(len(self.current_line()) - self.cpos,
+                                 self.current_line(), self.matches, replacer=replacer)
 
-        # Check for import completion
-        e = False
-        matches = importcompletion.complete(len(self.current_line()) - self.cpos, self.current_line())
-        if matches is not None and not matches:
-            self.matches = []
-            self.matches_iter.update()
-            return False
-
-        if matches is None:
-            # Nope, no import, continue with normal completion
-            try:
-                self.completer.complete(cw, 0)
-            except Exception:
-                # This sucks, but it's either that or list all the exceptions that could
-                # possibly be raised here, so if anyone wants to do that, feel free to send me
-                # a patch. XXX: Make sure you raise here if you're debugging the completion
-                # stuff !
-                raise
-                e = True
-            else:
-                matches = self.completer.matches
-                matches.extend(self.magic_method_completions(cw))
-
-        if not e and self.argspec:
-            matches.extend(name + '=' for name in self.argspec[1][0]
-                           if isinstance(name, basestring) and name.startswith(cw))
-            if py3:
-                matches.extend(name + '=' for name in self.argspec[1][4]
-                               if name.startswith(cw))
-
-        # unless the first character is a _ filter out all attributes starting with a _
-        if not e and not cw.split('.')[-1].startswith('_'):
-            matches = [match for match in matches
-                       if not match.split('.')[-1].startswith('_')]
-
-        if e or not matches:
-            self.matches = []
-            self.matches_iter.update()
-            if not self.argspec:
-                return False
+        if matches is None or len(matches) == 0:
+            return bool(self.matches or self.argspec)
         else:
-            # remove duplicates
-            self.matches = sorted(set(matches))
-
-
-        if len(self.matches) == 1 and not self.config.auto_display_list:
-            self.list_win_visible = True
-            self.tab()
-            return False
-
-        self.matches_iter.update(cw, self.matches)
-        return True
+            if len(self.matches) == 1 and not self.config.auto_display_list:
+                self.list_win_visible = True
+                self.tab()
+                return False
+            self.matches_iter.update(len(self.current_line()) - self.cpos,
+                                     self.current_line(), self.matches, replacer)
+            return True
 
     def format_docstring(self, docstring, width, height):
         """Take a string and try to format it into a sane list of strings to be

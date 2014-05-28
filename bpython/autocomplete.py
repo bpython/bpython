@@ -48,17 +48,10 @@ SIMPLE = 'simple'
 SUBSTRING = 'substring'
 FUZZY = 'fuzzy'
 
-class Autocomplete(rlcompleter.Completer):
-    def __init__(self, namespace, config):
-        self.namespace = namespace
-        self.config = config
-    def complete(self, cw, _):
-        self.matches = complete(cw, namespace=self.namespace, config=self.config)
-
 def complete(text, namespace=None, config=None):
     """Return list of matches """
     if namespace is None:
-        namespace = __main__.__dict__
+        namespace = __main__.__dict__ #TODO figure out if this __main__ still makes sense
 
     if hasattr(config, 'autocomplete_mode'):
         autocomplete_mode = config.autocomplete_mode
@@ -182,37 +175,40 @@ def filename_matches(cs):
         if cs.startswith('~'):
             filename = username + filename[len(user_dir):]
         matches.append(filename)
-    return cs
+    return matches
 
-def find_matches(cursor_offset, current_line, locals_, current_string_callback, completer, magic_methods, argspec):
+def find_matches(cursor_offset, current_line, locals_, argspec, config, magic_methods):
     """Returns a list of matches and function to use for replacing words on tab"""
 
+    #TODO use the smarter current_string() in Repl that knows about the buffer
+    #TODO don't pass in config, pass in the settings themselves
+    #TODO if importcompletion returns None, that means short circuit return, not
+    #     try something else
     if line.current_string(cursor_offset, current_line):
-        matches = filename_matches(line.current_string(cursor_offset, current_line))
+        matches = filename_matches(line.current_string(cursor_offset, current_line)[2])
         return matches, line.current_string
 
     if line.current_word(cursor_offset, current_line) is None:
         return [], None
 
     matches = importcompletion.complete(cursor_offset, current_line)
-    return matches, line.current_word
+    if matches:
+        return matches, line.current_word
 
     cw = line.current_word(cursor_offset, current_line)[2]
 
     try:
-        completer.complete(cw, 0)
-    #except Exception:
-    #    # This sucks, but it's either that or list all the exceptions that could
-    #    # possibly be raised here, so if anyone wants to do that, feel free to send me
-    #    # a patch. XXX: Make sure you raise here if you're debugging the completion
-    #    # stuff !
-    #    e = True
-    #else:
+        matches = complete(cw, namespace=locals_, config=config)
+    except Exception:
+        # This sucks, but it's either that or list all the exceptions that could
+        # possibly be raised here, so if anyone wants to do that, feel free to send me
+        # a patch. XXX: Make sure you raise here if you're debugging the completion
+        # stuff !
+        e = True
+        raise
+    else:
         e = False
-        matches = completer.matches
         matches.extend(magic_methods(cw))
-    except KeyboardInterrupt:
-        pass
 
     if not e and argspec:
         matches.extend(name + '=' for name in argspec[1][0]

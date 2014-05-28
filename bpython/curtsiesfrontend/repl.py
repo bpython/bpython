@@ -827,6 +827,7 @@ class Repl(BpythonRepl):
         logging.debug('cursor pos: %r', (cursor_row, cursor_column))
         return arr, (cursor_row, cursor_column)
 
+
     @contextlib.contextmanager
     def in_paste_mode(self):
         orig_value = self.paste_mode
