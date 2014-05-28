@@ -622,6 +622,7 @@ class Repl(object):
                 # possibly be raised here, so if anyone wants to do that, feel free to send me
                 # a patch. XXX: Make sure you raise here if you're debugging the completion
                 # stuff !
+                raise
                 e = True
             else:
                 matches = self.completer.matches

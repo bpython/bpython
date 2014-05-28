@@ -23,6 +23,7 @@
 
 from __future__ import with_statement
 import __builtin__
+import __main__
 import rlcompleter
 import line
 import re
@@ -48,142 +49,128 @@ SUBSTRING = 'substring'
 FUZZY = 'fuzzy'
 
 class Autocomplete(rlcompleter.Completer):
-    """
-#TOMHERE TODO This doesn't need to be a class anymore - we're overriding every single method
-    We're not really using it for the right thing anyway - we're hacking it to produce
-    self.matches then stealing them instead of following the expected interface of calling
-    complete each time.
-    """
+    def __init__(self, namespace, config):
+        self.namespace = namespace
+        self.config = config
+    def complete(self, cw, _):
+        self.matches = complete(cw, namespace=self.namespace, config=self.config)
 
-    def __init__(self, namespace = None, config = None):
-        rlcompleter.Completer.__init__(self, namespace)
-        self.locals = namespace
-        if hasattr(config, 'autocomplete_mode'):
-            self.autocomplete_mode = config.autocomplete_mode
+def complete(text, namespace=None, config=None):
+    """Return list of matches """
+    if namespace is None:
+        namespace = __main__.__dict__
+
+    if hasattr(config, 'autocomplete_mode'):
+        autocomplete_mode = config.autocomplete_mode
+    else:
+        autocomplete_mode = SUBSTRING
+
+    dictpattern = re.compile('[^\[\]]+\[$')
+    def complete_dict(text):
+        lastbracket_index = text.rindex('[')
+        dexpr = text[:lastbracket_index].lstrip()
+        obj = eval(dexpr, namespace)
+        if obj and isinstance(obj, type({})) and obj.keys():
+            return [dexpr + "[{!r}]".format(k) for k in obj.keys()]
         else:
-            self.autocomplete_mode = SUBSTRING
-
-    def complete(self, text, state):
-        """Return the next possible completion for 'text'.
-
-        This is called successively with state == 0, 1, 2, ... until it
-        returns None.  The completion should begin with 'text'.
-
-        """
-        if self.use_main_ns:
-            self.namespace = __main__.__dict__
-
-        dictpattern = re.compile('[^\[\]]+\[$')
-        def complete_dict(text):
-            lastbracket_index = text.rindex('[')
-            dexpr = text[:lastbracket_index].lstrip()
-            obj = eval(dexpr, self.locals)
-            if obj and isinstance(obj, type({})) and obj.keys():
-                self.matches = [dexpr + "[{!r}]".format(k) for k in obj.keys()]
-            else:
-                # empty dictionary
-                self.matches = []
-
-        if state == 0:
-            if "." in text:
-                if dictpattern.match(text):
-                    complete_dict(text)
-                else:
-                    # Examples: 'foo.b' or 'foo[bar.'
-                    for i in range(1, len(text) + 1):
-                        if text[-i] == '[':
-                            i -= 1
-                            break
-                    methodtext = text[-i:]
-                    self.matches = [''.join([text[:-i], m]) for m in
-                                    self.attr_matches(methodtext)]
-            elif dictpattern.match(text):
-                complete_dict(text)
-            else:
-                self.matches = self.global_matches(text)
-        try:
-            return self.matches[state]
-        except IndexError:
-            return None
-
-    def attr_matches(self, text):
-        """Taken from rlcompleter.py and bent to my will.
-        """
-
-        # Gna, Py 2.6's rlcompleter searches for __call__ inside the
-        # instance instead of the type, so we monkeypatch to prevent
-        # side-effects (__getattr__/__getattribute__)
-        m = re.match(r"(\w+(\.\w+)*)\.(\w*)", text)
-        if not m:
+            # empty dictionary
             return []
 
-        expr, attr = m.group(1, 3)
-        if expr.isdigit():
-            # Special case: float literal, using attrs here will result in
-            # a SyntaxError
-            return []
-        obj = eval(expr, self.locals)
-        with inspection.AttrCleaner(obj):
-            matches = self.attr_lookup(obj, expr, attr)
-        return matches
-
-    def attr_lookup(self, obj, expr, attr):
-        """Second half of original attr_matches method factored out so it can
-        be wrapped in a safe try/finally block in case anything bad happens to
-        restore the original __getattribute__ method."""
-        words = dir(obj)
-        if hasattr(obj, '__class__'):
-            words.append('__class__')
-            words = words + rlcompleter.get_class_members(obj.__class__)
-            if has_abc and not isinstance(obj.__class__, abc.ABCMeta):
-                try:
-                    words.remove('__abstractmethods__')
-                except ValueError:
-                    pass
-
-        matches = []
-        n = len(attr)
-        for word in words:
-            if self.method_match(word, n, attr) and word != "__builtins__":
-                matches.append("%s.%s" % (expr, word))
-        return matches
-
-    def _callable_postfix(self, value, word):
-        """rlcompleter's _callable_postfix done right."""
-        with inspection.AttrCleaner(value):
-            if inspection.is_callable(value):
-                word += '('
-        return word
-
-    def global_matches(self, text):
-        """Compute matches when text is a simple name.
-        Return a list of all keywords, built-in functions and names currently
-        defined in self.namespace that match.
-        """
-
-        hash = {}
-        n = len(text)
-        import keyword
-        for word in keyword.kwlist:
-            if self.method_match(word, n, text):
-                hash[word] = 1
-        for nspace in [__builtin__.__dict__, self.namespace]:
-            for word, val in nspace.items():
-                if self.method_match(word, len(text), text) and word != "__builtins__":
-                    hash[self._callable_postfix(val, word)] = 1
-        matches = hash.keys()
-        matches.sort()
-        return matches
-
-    def method_match(self, word, size, text):
-        if self.autocomplete_mode == SIMPLE:
-            return word[:size] == text
-        elif self.autocomplete_mode == SUBSTRING:
-            s = r'.*%s.*' % text
-            return re.search(s, word)
+    if "." in text:
+        if dictpattern.match(text):
+            return complete_dict(text)
         else:
-            s = r'.*%s.*' % '.*'.join(list(text))
-            return re.search(s, word)
+            # Examples: 'foo.b' or 'foo[bar.'
+            for i in range(1, len(text) + 1):
+                if text[-i] == '[':
+                    i -= 1
+                    break
+            methodtext = text[-i:]
+            return [''.join([text[:-i], m]) for m in
+                                attr_matches(methodtext, namespace, autocomplete_mode)]
+    elif dictpattern.match(text):
+        return complete_dict(text)
+    else:
+        return global_matches(text, namespace, autocomplete_mode)
+
+def attr_matches(text, namespace, autocomplete_mode):
+    """Taken from rlcompleter.py and bent to my will.
+    """
+
+    # Gna, Py 2.6's rlcompleter searches for __call__ inside the
+    # instance instead of the type, so we monkeypatch to prevent
+    # side-effects (__getattr__/__getattribute__)
+    m = re.match(r"(\w+(\.\w+)*)\.(\w*)", text)
+    if not m:
+        return []
+
+    expr, attr = m.group(1, 3)
+    if expr.isdigit():
+        # Special case: float literal, using attrs here will result in
+        # a SyntaxError
+        return []
+    obj = eval(expr, namespace)
+    with inspection.AttrCleaner(obj):
+        matches = attr_lookup(obj, expr, attr, autocomplete_mode)
+    return matches
+
+def attr_lookup(obj, expr, attr, autocomplete_mode):
+    """Second half of original attr_matches method factored out so it can
+    be wrapped in a safe try/finally block in case anything bad happens to
+    restore the original __getattribute__ method."""
+    words = dir(obj)
+    if hasattr(obj, '__class__'):
+        words.append('__class__')
+        words = words + rlcompleter.get_class_members(obj.__class__)
+        if has_abc and not isinstance(obj.__class__, abc.ABCMeta):
+            try:
+                words.remove('__abstractmethods__')
+            except ValueError:
+                pass
+
+    matches = []
+    n = len(attr)
+    for word in words:
+        if method_match(word, n, attr, autocomplete_mode) and word != "__builtins__":
+            matches.append("%s.%s" % (expr, word))
+    return matches
+
+def _callable_postfix(value, word):
+    """rlcompleter's _callable_postfix done right."""
+    with inspection.AttrCleaner(value):
+        if inspection.is_callable(value):
+            word += '('
+    return word
+
+def global_matches(text, namespace, autocomplete_mode):
+    """Compute matches when text is a simple name.
+    Return a list of all keywords, built-in functions and names currently
+    defined in self.namespace that match.
+    """
+
+    hash = {}
+    n = len(text)
+    import keyword
+    for word in keyword.kwlist:
+        if method_match(word, n, text, autocomplete_mode):
+            hash[word] = 1
+    for nspace in [__builtin__.__dict__, namespace]:
+        for word, val in nspace.items():
+            if method_match(word, len(text), text, autocomplete_mode) and word != "__builtins__":
+                hash[_callable_postfix(val, word)] = 1
+    matches = hash.keys()
+    matches.sort()
+    return matches
+
+def method_match(word, size, text, autocomplete_mode):
+    if autocomplete_mode == SIMPLE:
+        return word[:size] == text
+    elif autocomplete_mode == SUBSTRING:
+        s = r'.*%s.*' % text
+        return re.search(s, word)
+    else:
+        s = r'.*%s.*' % '.*'.join(list(text))
+        return re.search(s, word)
 
 def filename_matches(cs):
     matches = []
