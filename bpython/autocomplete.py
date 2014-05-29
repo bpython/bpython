@@ -48,7 +48,7 @@ SIMPLE = 'simple'
 SUBSTRING = 'substring'
 FUZZY = 'fuzzy'
 
-def complete(text, namespace=None, config=None):
+def attr_complete(text, namespace=None, config=None):
     """Return list of matches """
     if namespace is None:
         namespace = __main__.__dict__ #TODO figure out if this __main__ still makes sense
@@ -177,49 +177,124 @@ def filename_matches(cs):
         matches.append(filename)
     return matches
 
-def find_matches(cursor_offset, current_line, locals_, argspec, config, magic_methods):
-    """Returns a list of matches and function to use for replacing words on tab"""
+def last_part_of_filename(filename):
+    filename.rstrip(os.sep).rsplit(os.sep)[-1]
+    if os.sep in filename[:-1]:
+        return filename[filename.rindex(os.sep, 0, -1)+1:]
+    else:
+        return filename
+
+def after_last_dot(name):
+    return name.rstrip('.').rsplit('.')[-1]
+
+def dict_key_format(filename):
+    # dictionary key suggestions
+    #items = [x.rstrip(']') for x in items]
+    #if current_item:
+    #    current_item = current_item.rstrip(']')
+    pass
+
+def get_completer(cursor_offset, current_line, locals_, argspec, config, magic_methods):
+    """Returns a list of matches and a class for what kind of completion is happening
+
+    If no completion type is relevant, returns None, None"""
 
     #TODO use the smarter current_string() in Repl that knows about the buffer
     #TODO don't pass in config, pass in the settings themselves
-    #TODO if importcompletion returns None, that means short circuit return, not
-    #     try something else
-    if line.current_string(cursor_offset, current_line):
-        matches = filename_matches(line.current_string(cursor_offset, current_line)[2])
-        return matches, line.current_string
 
-    if line.current_word(cursor_offset, current_line) is None:
-        return [], None
+    matches = ImportCompletion.matches(cursor_offset, current_line)
+    if matches is not None:
+        return sorted(set(matches)), ImportCompletion
 
-    matches = importcompletion.complete(cursor_offset, current_line)
-    if matches:
-        return matches, line.current_word
+    matches = FilenameCompletion.matches(cursor_offset, current_line)
+    if matches is not None:
+        return sorted(set(matches)), FilenameCompletion
 
-    cw = line.current_word(cursor_offset, current_line)[2]
-
-    try:
-        matches = complete(cw, namespace=locals_, config=config)
-    except Exception:
-        # This sucks, but it's either that or list all the exceptions that could
-        # possibly be raised here, so if anyone wants to do that, feel free to send me
-        # a patch. XXX: Make sure you raise here if you're debugging the completion
-        # stuff !
-        e = True
-        raise
-    else:
-        e = False
+    matches = AttrCompletion.matches(cursor_offset, current_line, locals_=locals_, config=config)
+    if matches is not None:
+        cw = AttrCompletion.locate(cursor_offset, current_line)[2]
         matches.extend(magic_methods(cw))
+        if argspec:
+            matches.extend(name + '=' for name in argspec[1][0]
+                           if isinstance(name, basestring) and name.startswith(cw))
+            if py3:
+                matches.extend(name + '=' for name in argspec[1][4]
+                               if name.startswith(cw))
 
-    if not e and argspec:
-        matches.extend(name + '=' for name in argspec[1][0]
-                       if isinstance(name, basestring) and name.startswith(cw))
-        if py3:
-            matches.extend(name + '=' for name in argspec[1][4]
-                           if name.startswith(cw))
+        # unless the first character is a _ filter out all attributes starting with a _
+        if not cw.split('.')[-1].startswith('_'):
+            matches = [match for match in matches
+                       if not match.split('.')[-1].startswith('_')]
 
-    # unless the first character is a _ filter out all attributes starting with a _
-    if not e and not cw.split('.')[-1].startswith('_'):
-        matches = [match for match in matches
-                   if not match.split('.')[-1].startswith('_')]
+        return sorted(set(matches)), AttrCompletion
 
-    return sorted(set(matches)), line.current_word
+    return None, None
+
+
+class BaseCompletionType(object):
+    """Describes different completion types"""
+    def matches(cls, cursor_offset, line):
+        """Returns a list of possible matches given a line and cursor, or None
+        if this completion type isn't applicable.
+
+        ie, import completion doesn't make sense if there cursor isn't after
+        an import or from statement
+
+        Completion types are used to:
+            * `locate(cur, line)` their target word to replace given a line and cursor
+            * find `matches(cur, line)` that might replace that word
+            * `format(match)` matches to be displayed to the user
+            * determine whether suggestions should be `shown_before_tab`
+            * `substitute(cur, line, match)` in a match for what's found with `target`
+            """
+        raise NotImplementedError
+    def locate(cls, cursor_offset, line):
+        """Returns a start, stop, and word given a line and cursor, or None
+        if no target for this type of completion is found under the cursor"""
+        raise NotImplementedError
+    def format(cls, word):
+        return word
+    shown_before_tab = True # whether suggestions should be shown before the
+                           # user hits tab, or only once that has happened
+    def substitute(cls, cursor_offset, line, match):
+        """Returns a cursor offset and line with match swapped in"""
+        start, end, word = cls.locate(cursor_offset, line)
+        result = start + len(match), line[:start] + match + line[end:]
+        return result
+
+class ImportCompletion(BaseCompletionType):
+    matches = staticmethod(importcompletion.complete)
+    locate = staticmethod(line.current_word)
+    format = staticmethod(after_last_dot)
+
+class FilenameCompletion(BaseCompletionType):
+    shown_before_tab = False
+    @classmethod
+    def matches(cls, cursor_offset, current_line):
+        cs = line.current_string(cursor_offset, current_line)
+        if cs is None:
+            return None
+        return filename_matches(cs[2])
+    locate = staticmethod(line.current_string)
+    format = staticmethod(last_part_of_filename)
+
+class AttrCompletion(BaseCompletionType):
+    @classmethod
+    def matches(cls, cursor_offset, line, locals_, config):
+        r = cls.locate(cursor_offset, line)
+        if r is None:
+            return None
+        cw = r[2]
+        try:
+            return attr_complete(cw, namespace=locals_, config=config)
+        except Exception:
+            # This sucks, but it's either that or list all the exceptions that could
+            # possibly be raised here, so if anyone wants to do that, feel free to send me
+            # a patch. XXX: Make sure you raise here if you're debugging the completion
+            # stuff !
+            e = True
+            raise
+        else:
+            e = False
+    locate = staticmethod(line.current_word)
+    format = staticmethod(after_last_dot)

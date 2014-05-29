@@ -449,7 +449,11 @@ class CLIRepl(repl.Repl):
             self.scr.clrtoeol()
 
     def complete(self, tab=False):
-        """Get Autcomplete list and window."""
+        """Get Autcomplete list and window.
+
+        Called whenever these should be updated, and called
+        with tab
+        """
         if self.paste_mode and self.list_win_visible:
             self.scr.touchwin()
 
@@ -466,7 +470,7 @@ class CLIRepl(repl.Repl):
             self.list_win_visible = repl.Repl.complete(self, tab)
             if self.list_win_visible:
                 try:
-                    self.show_list(self.matches, self.argspec)
+                    self.show_list(self.matches_iter.matches, topline=self.argspec, formatter=self.matches_iter.completer.format)
                 except curses.error:
                     # XXX: This is a massive hack, it will go away when I get
                     # cusswords into a good enough state that we can start
@@ -1270,7 +1274,8 @@ class CLIRepl(repl.Repl):
         self.s_hist.append(s.rstrip())
 
 
-    def show_list(self, items, topline=None, current_item=None):
+    def show_list(self, items, topline=None, formatter=None, current_item=None):
+
         shared = Struct()
         shared.cols = 0
         shared.rows = 0
@@ -1286,20 +1291,9 @@ class CLIRepl(repl.Repl):
         self.list_win.erase()
 
         if items:
-            sep = '.'
-            separators = ['.', os.path.sep, '[']
-            lastindex = max([items[0].rfind(c) for c in separators])
-            if lastindex > -1:
-                sep = items[0][lastindex]
-            items = [x.rstrip(sep).rsplit(sep)[-1] for x in items]
+            items = [formatter(x) for x in items]
             if current_item:
-                current_item = current_item.rstrip(sep).rsplit(sep)[-1]
-
-            if items[0].endswith(']'):
-                # dictionary key suggestions
-                items = [x.rstrip(']') for x in items]
-                if current_item:
-                    current_item = current_item.rstrip(']')
+                current_item = formatter(current_item)
 
         if topline:
             height_offset = self.mkargspec(topline, down) + 1
@@ -1448,8 +1442,6 @@ class CLIRepl(repl.Repl):
         and don't indent if there are only whitespace in the line.
         """
 
-        mode = self.config.autocomplete_mode
-
         # 1. check if we should add a tab character
         if self.atbol() and not back:
             x_pos = len(self.s) - self.cpos
@@ -1461,64 +1453,33 @@ class CLIRepl(repl.Repl):
             self.print_line(self.s)
             return True
 
-        # 2. get the current word
+        # 2. run complete() if we aren't already iterating through matches
         if not self.matches_iter:
             self.complete(tab=True)
-            if not self.config.auto_display_list and not self.list_win_visible:
-                return True
-
-            cw = self.current_string() or self.cw()
-            if not cw:
-                return True
-        else:
-            cw = self.matches_iter.current_word
 
         # 3. check to see if we can expand the current word
-        cseq = None
-        if mode == autocomplete.SUBSTRING:
-            if all([len(match.split(cw)) == 2 for match in self.matches]):
-                seq = [cw + match.split(cw)[1] for match in self.matches]
-                cseq = os.path.commonprefix(seq)
-        else:
-            seq = self.matches
-            cseq = os.path.commonprefix(seq)
-
-        if cseq and mode != autocomplete.FUZZY:
-            print 'doing cseq'
-            expanded_string = cseq[len(cw):]
-            expanded = bool(expanded_string) #TODO move this logic below to matches_iter
-            _, self.s = self.matches_iter.substitute(self.matches_iter.current_word + expanded_string)
+        if self.matches_iter.is_cseq():
+            _, self.s = self.matches_iter.substitute_cseq()
             self.print_line(self.s)
-            if len(self.matches) == 1 and self.config.auto_display_list:
-                self.scr.touchwin()
-            if expanded:
-                self.matches_iter.update(len(self.s) - self.cpos,
-                                         self.s,
-                                         self.matches)
-        else:
-            expanded = False
+            if not self.matches_iter and self.config.auto_display_list:
+                self.complete()
+                #self.scr.touchwin() #TODO necessary?
 
         # 4. swap current word for a match list item
-        if not expanded and self.matches:
-            print 'doing swap'
-
+        elif self.matches_iter.matches:
             current_match = back and self.matches_iter.previous() \
                                   or self.matches_iter.next()
-
             try:
-                self.show_list(self.matches, self.argspec, current_match)
+                self.show_list(self.matches_iter.matches, topline=self.argspec,
+                               formatter=self.matches_iter.completer.format,
+                               current_item=current_match)
             except curses.error:
                 # XXX: This is a massive hack, it will go away when I get
                 # cusswords into a good enough state that we can start
                 # using it.
                 self.list_win.border()
                 self.list_win.refresh()
-
-            if self.config.autocomplete_mode == autocomplete.SIMPLE:
-                _, self.s = self.matches_iter.cur_line()
-            else:
-                self.s = self.s[:-len(cw)] + current_match
-
+            _, self.s = self.matches_iter.cur_line()
             self.print_line(self.s, True)
         return True
 
