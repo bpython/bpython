@@ -308,8 +308,6 @@ class MatchesIterator(object):
 
     def substitute(self, match):
         """Returns a cursor offset and line with match substituted in"""
-        if match.startswith("'"):
-            raise ValueError(match)
         start, end, word = self.completer.locate(self.orig_cursor_offset, self.orig_line)
         result = start + len(match), self.orig_line[:start] + match + self.orig_line[end:]
         return result
@@ -321,9 +319,12 @@ class MatchesIterator(object):
         """Returns a new line by substituting a common sequence in, and update matches"""
         cseq = os.path.commonprefix(self.matches)
         new_cursor_offset, new_line = self.substitute(cseq)
-        self.update(new_cursor_offset, new_line, self.matches, self.completer)
         if len(self.matches) == 1:
             self.clear()
+        else:
+            self.update(new_cursor_offset, new_line, self.matches, self.completer)
+            if len(self.matches) == 1:
+                self.clear()
         return new_cursor_offset, new_line
 
     def update(self, cursor_offset, current_line, matches, completer):
@@ -335,7 +336,7 @@ class MatchesIterator(object):
         assert matches is not None
         self.matches = matches
         self.completer = completer
-        assert self.completer.locate(self.orig_cursor_offset, self.orig_line) is not None
+        assert self.completer.locate(self.orig_cursor_offset, self.orig_line) is not None, (self.completer.locate, self.orig_cursor_offset, self.orig_line)
         self.index = -1
         self.start, self.end, self.current_word = self.completer.locate(self.orig_cursor_offset, self.orig_line)
 

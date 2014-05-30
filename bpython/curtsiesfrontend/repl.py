@@ -738,7 +738,7 @@ class Repl(BpythonRepl):
             visible_space_below = min_height - current_line_end_row - 1
 
             info_max_rows = max(visible_space_above, visible_space_below)
-            infobox = paint.paint_infobox(info_max_rows, int(width * self.config.cli_suggestion_width), self.matches_iter.matches, self.argspec, self.current_match, self.docstring, self.config)
+            infobox = paint.paint_infobox(info_max_rows, int(width * self.config.cli_suggestion_width), self.matches_iter.matches, self.argspec, self.current_match, self.docstring, self.config, self.matches_iter.completer.format)
 
             if visible_space_above >= infobox.height and self.config.curtsies_list_above:
                 arr[current_line_start_row - infobox.height:current_line_start_row, 0:infobox.width] = infobox

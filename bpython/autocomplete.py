@@ -25,7 +25,7 @@ from __future__ import with_statement
 import __builtin__
 import __main__
 import rlcompleter
-import line
+import line as lineparts
 import re
 import os
 from glob import glob
@@ -210,6 +210,10 @@ def get_completer(cursor_offset, current_line, locals_, argspec, config, magic_m
     if matches is not None:
         return sorted(set(matches)), FilenameCompletion
 
+    matches = DictKeyCompletion.matches(cursor_offset, current_line, locals_=locals_, config=config)
+    if matches is not None:
+        return sorted(set(matches)), DictKeyCompletion
+
     matches = AttrCompletion.matches(cursor_offset, current_line, locals_=locals_, config=config)
     if matches is not None:
         cw = AttrCompletion.locate(cursor_offset, current_line)[2]
@@ -264,18 +268,18 @@ class BaseCompletionType(object):
 
 class ImportCompletion(BaseCompletionType):
     matches = staticmethod(importcompletion.complete)
-    locate = staticmethod(line.current_word)
+    locate = staticmethod(lineparts.current_word)
     format = staticmethod(after_last_dot)
 
 class FilenameCompletion(BaseCompletionType):
     shown_before_tab = False
     @classmethod
     def matches(cls, cursor_offset, current_line):
-        cs = line.current_string(cursor_offset, current_line)
+        cs = lineparts.current_string(cursor_offset, current_line)
         if cs is None:
             return None
         return filename_matches(cs[2])
-    locate = staticmethod(line.current_string)
+    locate = staticmethod(lineparts.current_string)
     format = staticmethod(last_part_of_filename)
 
 class AttrCompletion(BaseCompletionType):
@@ -292,9 +296,25 @@ class AttrCompletion(BaseCompletionType):
             # possibly be raised here, so if anyone wants to do that, feel free to send me
             # a patch. XXX: Make sure you raise here if you're debugging the completion
             # stuff !
-            e = True
-            raise
-        else:
-            e = False
-    locate = staticmethod(line.current_word)
+            pass
+        return None
+    locate = staticmethod(lineparts.current_word)
     format = staticmethod(after_last_dot)
+
+class DictKeyCompletion(BaseCompletionType):
+    locate = staticmethod(lineparts.current_dict_key)
+    @classmethod
+    def matches(cls, cursor_offset, line, locals_, config):
+        r = cls.locate(cursor_offset, line)
+        if r is None:
+            return None
+        start, end, orig = r
+        _, _, dexpr = lineparts.current_dict(cursor_offset, line)
+        obj = eval(dexpr, locals_)
+        if obj and isinstance(obj, type({})) and obj.keys():
+            return ["{!r}]".format(k) for k in obj.keys() if repr(k).startswith(orig)]
+        else:
+            return []
+    @classmethod
+    def format(cls, match):
+        return match[:-1]

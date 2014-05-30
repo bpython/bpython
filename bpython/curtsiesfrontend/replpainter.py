@@ -39,7 +39,7 @@ def paint_current_line(rows, columns, current_display_line):
     lines = display_linize(current_display_line, columns, True)
     return fsarray(lines, width=columns)
 
-def matches_lines(rows, columns, matches, current, config):
+def matches_lines(rows, columns, matches, current, config, format):
     highlight_color = func_for_letter(config.color_scheme['operator'].lower())
 
     if not matches:
@@ -47,14 +47,9 @@ def matches_lines(rows, columns, matches, current, config):
     color = func_for_letter(config.color_scheme['main'])
     max_match_width = max(len(m) for m in matches)
     words_wide = max(1, (columns - 1) // (max_match_width + 1))
-    if os.path.sep in matches[0]: # filename completion
-        pass
-    elif '.' in matches[0]:
-        matches = [m.rstrip('.').rsplit('.')[-1] for m in matches]
-        if current:
-            current = current.rstrip('.').rsplit('.')[-1]
-    else:
-        pass
+    matches = [format(m) for m in matches]
+    if current:
+        current = format(current)
 
     matches_lines = [fmtstr(' ').join(color(m.ljust(max_match_width))
                                       if m != current
@@ -147,13 +142,13 @@ def formatted_docstring(docstring, columns, config):
     return sum(([color(x) for x in (display_linize(line, columns) if line else fmtstr(''))]
                 for line in docstring.split('\n')), [])
 
-def paint_infobox(rows, columns, matches, argspec, match, docstring, config):
+def paint_infobox(rows, columns, matches, argspec, match, docstring, config, format):
     """Returns painted completions, argspec, match, docstring etc."""
     if not (rows and columns):
         return fsarray(0, 0)
     width = columns - 4
     lines = ((formatted_argspec(argspec, width, config) if argspec else []) +
-             (matches_lines(rows, width, matches, match, config) if matches else []) +
+             (matches_lines(rows, width, matches, match, config, format) if matches else []) +
              (formatted_docstring(docstring, width, config) if docstring else []))
 
     output_lines = []
