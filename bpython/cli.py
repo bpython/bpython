@@ -356,6 +356,13 @@ class CLIRepl(repl.Repl):
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 0.8
 
+    def _get_cursor_offset(self):
+        return len(self.s) - self.cpos
+    def _set_cursor_offset(self, offset):
+        self.cpos = len(self.s) - offset
+    cursor_offset = property(_get_cursor_offset, _set_cursor_offset, None,
+                             "The cursor offset from the beginning of the line")
+
     def addstr(self, s):
         """Add a string to the current input line and figure out
         where it should go, depending on the cursor position."""
@@ -487,9 +494,12 @@ class CLIRepl(repl.Repl):
         self.scr.redrawwin()
         self.scr.refresh()
 
-    def current_line(self):
-        """Return the current line."""
+    def _get_current_line(self):
         return self.s
+    def _set_current_line(self, line):
+        self.s = line
+    current_line = property(_get_current_line, _set_current_line, None,
+                            "The characters of the current line")
 
     def cut_to_buffer(self):
         """Clear from cursor to end of line, placing into cut buffer"""

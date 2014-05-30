@@ -465,7 +465,7 @@ class Repl(object):
 
     def current_string(self, concatenate=False):
         """If the line ends in a string get it, otherwise return ''"""
-        tokens = self.tokenize(self.current_line())
+        tokens = self.tokenize(self.current_line)
         string_tokens = list(takewhile(token_is_any_of([Token.String,
                                                         Token.Text]),
                                        reversed(tokens)))
@@ -515,7 +515,7 @@ class Repl(object):
         stack = [['', 0, '']]
         try:
             for (token, value) in PythonLexer().get_tokens(
-                self.current_line()):
+                self.current_line):
                 if token is Token.Punctuation:
                     if value in '([{':
                         stack.append(['', 0, value])
@@ -576,7 +576,7 @@ class Repl(object):
         try:
             obj = self.current_func
             if obj is None:
-                line = self.current_line()
+                line = self.current_line
                 if inspection.is_eval_safe_name(line):
                     obj = self.get_object(line)
             source = inspect.getsource(obj)
@@ -603,7 +603,7 @@ class Repl(object):
     def magic_method_completions(self, cw):
         if (self.config.complete_magic_methods and self.buffer and
             self.buffer[0].startswith("class ") and
-            self.current_line().lstrip().startswith("def ")):
+            self.current_line.lstrip().startswith("def ")):
             return [name for name in self.config.magic_methods
                     if name.startswith(cw)]
         else:
@@ -618,27 +618,22 @@ class Repl(object):
         self.set_docstring()
 
         matches, completer = autocomplete.get_completer(
-                len(self.current_line()) - self.cpos,
-                self.current_line(),
+                self.cursor_offset,
+                self.current_line,
                 self.interp.locals,
                 self.argspec,
                 self.config,
                 self.magic_method_completions)
 
-        if matches is None: # no completion is relevant
+        if (matches is None            # no completion is relevant
+                or len(matches) == 0): # some completion works, but no matches
             self.matches_iter.clear()
             return bool(self.argspec)
 
-        elif len(matches) == 0: # some completion works, but no matches
-            self.matches_iter.update(len(self.current_line()) - self.cpos,
-                                     self.current_line(),
-                                     matches, completer)
-            return bool(self.argspec)
+        self.matches_iter.update(self.cursor_offset,
+                                 self.current_line, matches, completer)
 
-        elif len(matches) == 1:
-                self.matches_iter.update(len(self.current_line()) - self.cpos,
-                                         self.current_line(),
-                                         matches, completer)
+        if len(matches) == 1:
                 self.matches_iter.next()
                 if tab: # if this complete is being run for a tab key press, tab() to do the swap
                     self.tab()
@@ -650,8 +645,6 @@ class Repl(object):
                 return True
 
         else:
-            self.matches_iter.update(len(self.current_line()) - self.cpos,
-                                     self.current_line(), matches, completer)
             return True
 
     def format_docstring(self, docstring, width, height):
