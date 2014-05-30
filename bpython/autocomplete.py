@@ -58,33 +58,33 @@ def attr_complete(text, namespace=None, config=None):
     else:
         autocomplete_mode = SUBSTRING
 
-    dictpattern = re.compile('[^\[\]]+\[$')
-    def complete_dict(text):
-        lastbracket_index = text.rindex('[')
-        dexpr = text[:lastbracket_index].lstrip()
-        obj = eval(dexpr, namespace)
-        if obj and isinstance(obj, type({})) and obj.keys():
-            return [dexpr + "[{!r}]".format(k) for k in obj.keys()]
-        else:
-            # empty dictionary
-            return []
-
     if "." in text:
-        if dictpattern.match(text):
-            return complete_dict(text)
-        else:
-            # Examples: 'foo.b' or 'foo[bar.'
-            for i in range(1, len(text) + 1):
-                if text[-i] == '[':
-                    i -= 1
-                    break
-            methodtext = text[-i:]
-            return [''.join([text[:-i], m]) for m in
-                                attr_matches(methodtext, namespace, autocomplete_mode)]
-    elif dictpattern.match(text):
-        return complete_dict(text)
+        # Examples: 'foo.b' or 'foo[bar.'
+        for i in range(1, len(text) + 1):
+            if text[-i] == '[':
+                i -= 1
+                break
+        methodtext = text[-i:]
+        return [''.join([text[:-i], m]) for m in
+                            attr_matches(methodtext, namespace, autocomplete_mode)]
     else:
         return global_matches(text, namespace, autocomplete_mode)
+
+class SafeEvalFailed(Exception):
+    """If this object is returned, safe_eval failed"""
+    # Because every normal Python value is a possible return value of safe_eval
+
+def safe_eval(expr, namespace):
+    """Not all that safe, just catches some errors"""
+    if expr.isdigit():
+        # Special case: float literal, using attrs here will result in
+        # a SyntaxError
+        return SafeEvalFailed
+    try:
+        obj = eval(expr, namespace)
+        return obj
+    except (NameError,):
+        return SafeEvalFailed
 
 def attr_matches(text, namespace, autocomplete_mode):
     """Taken from rlcompleter.py and bent to my will.
@@ -98,11 +98,9 @@ def attr_matches(text, namespace, autocomplete_mode):
         return []
 
     expr, attr = m.group(1, 3)
-    if expr.isdigit():
-        # Special case: float literal, using attrs here will result in
-        # a SyntaxError
+    obj = safe_eval(expr, namespace)
+    if obj is SafeEvalFailed:
         return []
-    obj = eval(expr, namespace)
     with inspection.AttrCleaner(obj):
         matches = attr_lookup(obj, expr, attr, autocomplete_mode)
     return matches
@@ -211,7 +209,7 @@ def get_completer(cursor_offset, current_line, locals_, argspec, config, magic_m
         return sorted(set(matches)), FilenameCompletion
 
     matches = DictKeyCompletion.matches(cursor_offset, current_line, locals_=locals_, config=config)
-    if matches is not None:
+    if matches:
         return sorted(set(matches)), DictKeyCompletion
 
     matches = AttrCompletion.matches(cursor_offset, current_line, locals_=locals_, config=config)
@@ -289,15 +287,7 @@ class AttrCompletion(BaseCompletionType):
         if r is None:
             return None
         cw = r[2]
-        try:
-            return attr_complete(cw, namespace=locals_, config=config)
-        except Exception:
-            # This sucks, but it's either that or list all the exceptions that could
-            # possibly be raised here, so if anyone wants to do that, feel free to send me
-            # a patch. XXX: Make sure you raise here if you're debugging the completion
-            # stuff !
-            pass
-        return None
+        return attr_complete(cw, namespace=locals_, config=config)
     locate = staticmethod(lineparts.current_word)
     format = staticmethod(after_last_dot)
 
@@ -310,7 +300,9 @@ class DictKeyCompletion(BaseCompletionType):
             return None
         start, end, orig = r
         _, _, dexpr = lineparts.current_dict(cursor_offset, line)
-        obj = eval(dexpr, locals_)
+        obj = safe_eval(dexpr, locals_)
+        if obj is SafeEvalFailed:
+            return []
         if obj and isinstance(obj, type({})) and obj.keys():
             return ["{!r}]".format(k) for k in obj.keys() if repr(k).startswith(orig)]
         else:
