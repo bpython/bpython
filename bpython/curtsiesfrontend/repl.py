@@ -3,13 +3,12 @@ import contextlib
 import errno
 import greenlet
 import logging
-import os
 import re
 import sys
 import threading
 import unicodedata
 
-from bpython.autocomplete import Autocomplete, SIMPLE
+from bpython import autocomplete
 from bpython.repl import Repl as BpythonRepl
 from bpython.config import Struct, loadini, default_config_path
 from bpython.formatter import BPythonFormatter
@@ -33,7 +32,6 @@ import bpython.curtsiesfrontend.replpainter as paint
 import curtsies.events as events
 from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 
-#TODO figure out how config.list_win_visible behaves and implement it, or stop using it
 #TODO other autocomplete modes (also fix in other bpython implementations)
 
 from bpython.keys import cli_key_dispatch as key_dispatch
@@ -45,7 +43,7 @@ class FakeStdin(object):
         self.repl = repl
         self.has_focus = False # whether FakeStdin receives keypress events
         self.current_line = ''
-        self.cursor_offset_in_line = 0
+        self.cursor_offset = 0
         self.old_num_lines = 0
         self.readline_results = []
 
@@ -56,12 +54,12 @@ class FakeStdin(object):
                 if ee not in rl_char_sequences:
                     self.add_input_character(ee)
         elif e in rl_char_sequences:
-            self.cursor_offset_in_line, self.current_line = rl_char_sequences[e](self.cursor_offset_in_line, self.current_line)
+            self.cursor_offset, self.current_line = rl_char_sequences[e](self.cursor_offset, self.current_line)
         elif isinstance(e, events.SigIntEvent):
             self.coderunner.sigint_happened_in_main_greenlet = True
             self.has_focus = False
             self.current_line = ''
-            self.cursor_offset_in_line = 0
+            self.cursor_offset = 0
             self.repl.run_code_and_maybe_finish()
         elif e in ["\x1b"]: #ESC
             pass
@@ -70,7 +68,7 @@ class FakeStdin(object):
             self.repl.send_to_stdin(line + '\n')
             self.has_focus = False
             self.current_line = ''
-            self.cursor_offset_in_line = 0
+            self.cursor_offset = 0
             self.repl.run_code_and_maybe_finish(for_code=line)
         else: # add normal character
             self.add_input_character(e)
@@ -84,10 +82,10 @@ class FakeStdin(object):
         assert len(e) == 1, 'added multiple characters: %r' % e
         logging.debug('adding normal char %r to current line', e)
         c = e if py3 else e.encode('utf8')
-        self.current_line = (self.current_line[:self.cursor_offset_in_line] +
+        self.current_line = (self.current_line[:self.cursor_offset] +
                              c +
-                             self.current_line[self.cursor_offset_in_line:])
-        self.cursor_offset_in_line += 1
+                             self.current_line[self.cursor_offset:])
+        self.cursor_offset += 1
 
     def readline(self):
         self.has_focus = True
@@ -173,7 +171,7 @@ class Repl(BpythonRepl):
             interp = code.InteractiveInterpreter(locals=locals_)
         if banner is None:
             banner = _('welcome to bpython')
-        config.autocomplete_mode = SIMPLE # only one implemented currently
+        config.autocomplete_mode = autocomplete.SIMPLE # only one implemented currently
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 1
 
@@ -198,7 +196,7 @@ class Repl(BpythonRepl):
         self.interact = self.status_bar # overwriting what bpython.Repl put there
                                         # interact is called to interact with the status bar,
                                         # so we're just using the same object
-        self._current_line = '' # line currently being edited, without '>>> '
+        self.current_line = '' # line currently being edited, without '>>> '
         self.current_stdouterr_line = '' # current line of output - stdout and stdin go here
         self.display_lines = [] # lines separated whenever logical line
                                 # length goes over what the terminal width
@@ -211,7 +209,7 @@ class Repl(BpythonRepl):
                                  # bpython.Repl
         self.scroll_offset = 0 # how many times display has been scrolled down
                                # because there wasn't room to display everything
-        self.cursor_offset_in_line = 0 # from the left, 0 means first char
+        self.cursor_offset = 0 # from the left, 0 means first char
 
         self.coderunner = CodeRunner(self.interp, self.request_refresh)
         self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
@@ -222,6 +220,8 @@ class Repl(BpythonRepl):
         self.last_events = [None] * 50
         self.presentation_mode = False
         self.paste_mode = False
+        self.current_match = None
+        self.list_win_visible = False
 
         self.width = None  # will both be set by a window resize event
         self.height = None
@@ -243,7 +243,7 @@ class Repl(BpythonRepl):
     def clean_up_current_line_for_exit(self):
         """Called when trying to exit to prep for final paint"""
         logging.debug('unhighlighting paren for exit')
-        self.cursor_offset_in_line = -1
+        self.cursor_offset = -1
         self.unhighlight_paren()
 
     ## Event handling
@@ -295,19 +295,19 @@ class Repl(BpythonRepl):
             return
 
         elif e in self.rl_char_sequences:
-            self.cursor_offset_in_line, self._current_line = self.rl_char_sequences[e](self.cursor_offset_in_line, self._current_line)
+            self.cursor_offset, self.current_line = self.rl_char_sequences[e](self.cursor_offset, self.current_line)
             self.update_completion()
 
         # readline history commands
         elif e in ("KEY_UP",) + key_dispatch[self.config.up_one_line_key]:
-            self.rl_history.enter(self._current_line)
-            self._current_line = self.rl_history.back(False)
-            self.cursor_offset_in_line = len(self._current_line)
+            self.rl_history.enter(self.current_line)
+            self.current_line = self.rl_history.back(False)
+            self.cursor_offset = len(self.current_line)
             self.update_completion()
         elif e in ("KEY_DOWN",) + key_dispatch[self.config.down_one_line_key]:
-            self.rl_history.enter(self._current_line)
-            self._current_line = self.rl_history.forward(False)
-            self.cursor_offset_in_line = len(self._current_line)
+            self.rl_history.enter(self.current_line)
+            self.current_line = self.rl_history.forward(False)
+            self.cursor_offset = len(self.current_line)
             self.update_completion()
         elif e in key_dispatch[self.config.search_key]: #TODO Not Implemented
             pass
@@ -329,7 +329,7 @@ class Repl(BpythonRepl):
         elif e in key_dispatch[self.config.suspend_key]:
             raise SystemExit()
         elif e in ("",) + key_dispatch[self.config.exit_key]:
-            if self._current_line == '':
+            if self.current_line == '':
                 raise SystemExit()
         elif e in ("\n", "\r", "PAD_ENTER"):
             self.on_enter()
@@ -360,15 +360,15 @@ class Repl(BpythonRepl):
             self.update_completion()
 
     def on_enter(self, insert_into_history=True):
-        self.cursor_offset_in_line = -1 # so the cursor isn't touching a paren
+        self.cursor_offset = -1 # so the cursor isn't touching a paren
         self.unhighlight_paren()        # in unhighlight_paren
         self.highlighted_paren = None
 
-        self.rl_history.append(self._current_line)
+        self.rl_history.append(self.current_line)
         self.rl_history.last()
-        self.history.append(self._current_line)
-        line = self._current_line
-        #self._current_line = ''
+        self.history.append(self.current_line)
+        line = self.current_line
+        #self.current_line = ''
         self.push(line, insert_into_history=insert_into_history)
 
     def on_tab(self, back=False):
@@ -384,43 +384,31 @@ class Repl(BpythonRepl):
 
         def only_whitespace_left_of_cursor():
             """returns true if all characters on current line before cursor are whitespace"""
-            return self._current_line[:self.cursor_offset_in_line].strip()
+            return self.current_line[:self.cursor_offset].strip()
 
-        logging.debug('self.matches: %r', self.matches)
+        logging.debug('self.matches_iter.matches: %r', self.matches_iter.matches)
         if not only_whitespace_left_of_cursor():
-            front_white = (len(self._current_line[:self.cursor_offset_in_line]) -
-                len(self._current_line[:self.cursor_offset_in_line].lstrip()))
+            front_white = (len(self.current_line[:self.cursor_offset]) -
+                len(self.current_line[:self.cursor_offset].lstrip()))
             to_add = 4 - (front_white % self.config.tab_length)
             for _ in range(to_add):
                 self.add_normal_character(' ')
             return
 
-        # get the (manually typed or common-sequence completed from manually typed) current word
-        if self.matches_iter:
-            cw = self.matches_iter.current_word
-        else:
-            self.complete(tab=True)
-            if not self.config.auto_display_list and not self.list_win_visible:
-                return True #TODO why?
-            cw = self.current_string() or self.current_word
-            logging.debug('current string: %r', self.current_string())
-            logging.debug('current word: %r', self.current_word)
-            if not cw:
-                return
+        # run complete() if we aren't already iterating through matches
+        if not self.matches_iter:
+            self.list_win_visible = self.complete(tab=True)
 
-        # check to see if we can expand the current word
-        cseq = os.path.commonprefix(self.matches)
-        expanded_string = cseq[len(cw):]
-        if expanded_string:
-            self.current_word = cw + expanded_string #asdf
-            self.matches_iter.update(cseq, self.matches)
-            return
+        # 3. check to see if we can expand the current word
+        if self.matches_iter.is_cseq():
+            self.cursor_offset, self.current_line = self.matches_iter.substitute_cseq()
+            if not self.matches_iter:
+                self.list_win_visible = self.complete()
 
-        #TODO save how to do the replacement as a function on self.matches
-        # so it can be used here
-        if self.matches:
-            self.current_word = (self.matches_iter.previous()
-                                 if back else self.matches_iter.next())
+        elif self.matches_iter.matches:
+            self.current_match = back and self.matches_iter.previous() \
+                                  or self.matches_iter.next()
+            self.cursor_offset, self.current_line = self.matches_iter.cur_line()
 
     def process_simple_event(self, e):
         if e in ("\n", "\r", "PAD_ENTER"):
@@ -443,8 +431,8 @@ class Repl(BpythonRepl):
         with self.in_paste_mode():
             for e in events:
                 self.process_simple_event(e)
-        self._current_line = ''
-        self.cursor_offset_in_line = len(self._current_line)
+        self.current_line = ''
+        self.cursor_offset = len(self.current_line)
 
     def send_session_to_external_editor(self, filename=None):
         for_editor = '### current bpython session - file will be reevaluated, ### lines will not be run\n'.encode('utf8')
@@ -454,31 +442,24 @@ class Repl(BpythonRepl):
         lines = text.split('\n')
         self.history = [line for line in lines if line[:4] != '### ']
         self.reevaluate(insert_into_history=True)
-        self._current_line = lines[-1][4:]
-        self.cursor_offset_in_line = len(self._current_line)
+        self.current_line = lines[-1][4:]
+        self.cursor_offset = len(self.current_line)
 
     ## Handler Helpers
     def add_normal_character(self, char):
         if len(char) > 1 or is_nop(char):
             return
-        self._current_line = (self._current_line[:self.cursor_offset_in_line] +
+        self.current_line = (self.current_line[:self.cursor_offset] +
                              char +
-                             self._current_line[self.cursor_offset_in_line:])
-        self.cursor_offset_in_line += 1
-        if self.config.cli_trim_prompts and self._current_line.startswith(">>> "):
-            self._current_line = self._current_line[4:]
-            self.cursor_offset_in_line = max(0, self.cursor_offset_in_line - 4)
+                             self.current_line[self.cursor_offset:])
+        self.cursor_offset += 1
+        if self.config.cli_trim_prompts and self.current_line.startswith(">>> "):
+            self.current_line = self.current_line[4:]
+            self.cursor_offset = max(0, self.cursor_offset - 4)
 
     def update_completion(self, tab=False):
-        """Update autocomplete info; self.matches and self.argspec"""
-
-        if self.list_win_visible and not self.config.auto_display_list:
-            self.list_win_visible = False
-            self.matches_iter.update(self.current_word)
-            return
-
-        if self.config.auto_display_list or tab:
-            self.list_win_visible = BpythonRepl.complete(self, tab)
+        """Update autocomplete info; self.matches_iter and self.argspec"""
+        self.list_win_visible = BpythonRepl.complete(self, tab)
 
     def push(self, line, insert_into_history=True):
         """Push a line of code onto the buffer, start running the buffer
@@ -524,7 +505,7 @@ class Repl(BpythonRepl):
             self.display_lines.extend(self.display_buffer_lines)
             self.display_buffer = []
             self.buffer = []
-            self.cursor_offset_in_line = 0
+            self.cursor_offset = 0
 
         self.coderunner.load_code(code_to_run)
         self.run_code_and_maybe_finish()
@@ -547,12 +528,12 @@ class Repl(BpythonRepl):
                 self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width))
                 self.current_stdouterr_line = ''
 
-            self._current_line = ' '*indent
-            self.cursor_offset_in_line = len(self._current_line)
+            self.current_line = ' '*indent
+            self.cursor_offset = len(self.current_line)
 
     def keyboard_interrupt(self):
         #TODO factor out the common cleanup from running a line
-        self.cursor_offset_in_line = -1
+        self.cursor_offset = -1
         self.unhighlight_paren()
         self.display_lines.extend(self.display_buffer_lines)
         self.display_lines.extend(paint.display_linize(self.current_cursor_line, self.width))
@@ -580,13 +561,13 @@ class Repl(BpythonRepl):
         if remove_from_history:
             [self.history.pop() for _ in self.buffer]
         self.buffer = []
-        self.cursor_offset_in_line = 0
+        self.cursor_offset = 0
         self.saved_indent = 0
-        self._current_line = ''
-        self.cursor_offset_in_line = len(self._current_line)
+        self.current_line = ''
+        self.cursor_offset = len(self.current_line)
 
     def get_current_block(self):
-        return '\n'.join(self.buffer + [self._current_line])
+        return '\n'.join(self.buffer + [self.current_line])
 
     def send_to_stdout(self, output):
         lines = output.split('\n')
@@ -625,10 +606,10 @@ class Repl(BpythonRepl):
     def current_line_formatted(self):
         """The colored current line (no prompt, not wrapped)"""
         if self.config.syntax:
-            fs = bpythonparse(format(self.tokenize(self._current_line), self.formatter))
-            logging.debug('Display line %r -> %r', self._current_line, fs)
+            fs = bpythonparse(format(self.tokenize(self.current_line), self.formatter))
+            logging.debug('Display line %r -> %r', self.current_line, fs)
         else:
-            fs = fmtstr(self._current_line)
+            fs = fmtstr(self.current_line)
         if hasattr(self, 'old_fs') and str(fs) != str(self.old_fs):
             pass
             #logging.debug('calculating current formatted line: %r', repr(fs))
@@ -639,41 +620,6 @@ class Repl(BpythonRepl):
     def lines_for_display(self):
         """All display lines (wrapped, colored, with prompts)"""
         return self.display_lines + self.display_buffer_lines
-
-    @property
-    def current_word(self):
-        """Returns the "current word", based on what's directly left of the cursor.
-        examples inclue "socket.socket.metho" or "self.reco" or "yiel"
-
-        cw() is currently an alias, but cw() is used by bpyton.repl.Repl
-        so must match its definition of current word - changing how it behaves
-        has many repercussions.
-        """
-
-        start, end, word = self._get_current_word()
-        return word
-
-    def _get_current_word(self):
-        pos = self.cursor_offset_in_line
-
-        matches = list(re.finditer(r'''[\w_][\w0-9._\[\]']*[(]?''', self._current_line))
-        start = pos
-        end = pos
-        word = None
-        for m in matches:
-            if m.start() < pos and m.end() >= pos:
-                start = m.start()
-                end = m.end()
-                word = m.group()
-        return (start, end, word)
-
-    @current_word.setter
-    def current_word(self, value):
-        # current word means word cursor is at the end of
-        start, end, word = self._get_current_word()
-
-        self._current_line = self._current_line[:start] + value + self._current_line[end:]
-        self.cursor_offset_in_line = start + len(value)
 
     @property
     def display_buffer_lines(self):
@@ -776,14 +722,14 @@ class Repl(BpythonRepl):
         current_line_end_row = current_line_start_row + len(lines) - 1
 
         if self.stdin.has_focus:
-            cursor_row, cursor_column = divmod(len(self.current_stdouterr_line) + self.stdin.cursor_offset_in_line, width)
+            cursor_row, cursor_column = divmod(len(self.current_stdouterr_line) + self.stdin.cursor_offset, width)
             assert cursor_column >= 0, cursor_column
         elif self.coderunner.running: #TODO does this ever happen?
-            cursor_row, cursor_column = divmod(len(self.current_cursor_line) + self.cursor_offset_in_line, width)
-            assert cursor_column >= 0, (cursor_column, len(self.current_cursor_line), len(self._current_line), self.cursor_offset_in_line)
+            cursor_row, cursor_column = divmod(len(self.current_cursor_line) + self.cursor_offset, width)
+            assert cursor_column >= 0, (cursor_column, len(self.current_cursor_line), len(self.current_line), self.cursor_offset)
         else:
-            cursor_row, cursor_column = divmod(len(self.current_cursor_line) - len(self._current_line) + self.cursor_offset_in_line, width)
-            assert cursor_column >= 0, (cursor_column, len(self.current_cursor_line), len(self._current_line), self.cursor_offset_in_line)
+            cursor_row, cursor_column = divmod(len(self.current_cursor_line) - len(self.current_line) + self.cursor_offset, width)
+            assert cursor_column >= 0, (cursor_column, len(self.current_cursor_line), len(self.current_line), self.cursor_offset)
         cursor_row += current_line_start_row
 
         if self.list_win_visible:
@@ -792,7 +738,7 @@ class Repl(BpythonRepl):
             visible_space_below = min_height - current_line_end_row - 1
 
             info_max_rows = max(visible_space_above, visible_space_below)
-            infobox = paint.paint_infobox(info_max_rows, int(width * self.config.cli_suggestion_width), self.matches, self.argspec, self.current_word, self.docstring, self.config)
+            infobox = paint.paint_infobox(info_max_rows, int(width * self.config.cli_suggestion_width), self.matches_iter.matches, self.argspec, self.current_match, self.docstring, self.config)
 
             if visible_space_above >= infobox.height and self.config.curtsies_list_above:
                 arr[current_line_start_row - infobox.height:current_line_start_row, 0:infobox.width] = infobox
@@ -881,16 +827,19 @@ class Repl(BpythonRepl):
     def __repr__(self):
         s = ''
         s += '<Repl\n'
-        s += " cursor_offset_in_line:" + repr(self.cursor_offset_in_line) + '\n'
+        s += " cursor_offset:" + repr(self.cursor_offset) + '\n'
         s += " num display lines:" + repr(len(self.display_lines)) + '\n'
         s += " lines scrolled down:" + repr(self.scroll_offset) + '\n'
         s += '>'
         return s
 
     ## Provided for bpython.repl.Repl
-    def current_line(self):
-        """Returns the current line"""
+    def _get_current_line(self):
         return self._current_line
+    def _set_current_line(self, line):
+        self._current_line = line
+    current_line = property(_get_current_line, _set_current_line, None,
+                            "The current line")
     def echo(self, msg, redraw=True):
         """
         Notification that redrawing the current line is necessary (we don't
@@ -900,14 +849,10 @@ class Repl(BpythonRepl):
         It's not supposed to update the screen if it's reevaluating the code (as it
         does with undo)."""
         logging.debug("echo called with %r" % msg)
-    def cw(self):
-        """Returns the "current word", based on what's directly left of the cursor.
-        examples inclue "socket.socket.metho" or "self.reco" or "yiel" """
-        return self.current_word
     @property
     def cpos(self):
         "many WATs were had - it's the pos from the end of the line back"""
-        return len(self._current_line) - self.cursor_offset_in_line
+        return len(self.current_line) - self.cursor_offset
     def reprint_line(self, lineno, tokens):
         logging.debug("calling reprint line with %r %r", lineno, tokens)
         if self.config.syntax:
@@ -921,8 +866,6 @@ class Repl(BpythonRepl):
         if not self.weak_rewind:
             self.interp = code.InteractiveInterpreter()
             self.coderunner.interp = self.interp
-            self.completer = Autocomplete(self.interp.locals, self.config)
-            self.completer.autocomplete_mode = 'simple'
 
         self.buffer = []
         self.display_buffer = []
@@ -931,7 +874,7 @@ class Repl(BpythonRepl):
         self.reevaluating = True
         sys.stdin = ReevaluateFakeStdin(self.stdin, self)
         for line in old_logical_lines:
-            self._current_line = line
+            self.current_line = line
             self.on_enter(insert_into_history=insert_into_history)
             while self.fake_refresh_requested:
                 self.fake_refresh_requested = False
@@ -939,8 +882,8 @@ class Repl(BpythonRepl):
         sys.stdin = self.stdin
         self.reevaluating = False
 
-        self.cursor_offset_in_line = 0
-        self._current_line = ''
+        self.cursor_offset = 0
+        self.current_line = ''
 
     def getstdout(self):
         lines = self.lines_for_display + [self.current_line_formatted]

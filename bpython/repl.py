@@ -265,11 +265,11 @@ class History(object):
 class MatchesIterator(object):
     """Stores a list of matches and which one is currently selected if any.
 
-    Also Responsible for doing the actual replacement of the original line with
+    Also responsible for doing the actual replacement of the original line with
     the selected match.
 
     A MatchesIterator can be `clear`ed to reset match iteration, and
-    `set_matches` to set what matches will be interated over."""
+    `update`ed to set what matches will be iterated over."""
 
     def __init__(self, current_word='', matches=[]):
         self.current_word = current_word # word being replaced in the original line of text
@@ -601,6 +601,7 @@ class Repl(object):
                     self.docstring = None
 
     def magic_method_completions(self, cw):
+        #TODO move this to autocompletion and pass in the buffer
         if (self.config.complete_magic_methods and self.buffer and
             self.buffer[0].startswith("class ") and
             self.current_line.lstrip().startswith("def ")):
@@ -613,7 +614,14 @@ class Repl(object):
         """Construct a full list of possible completions and construct and
         display them in a window. Also check if there's an available argspec
         (via the inspect module) and bang that on top of the completions too.
-        The return value is whether the list_win is visible or not."""
+        The return value is whether the list_win is visible or not.
+
+        If no matches are found, just return whether there's an argspec to show
+        If any matches are found, save them and select the first one.
+
+        If tab is True exactly one match found, make the replacement and return
+          the result of running complete() again on the new line.
+        """
 
         self.set_docstring()
 
@@ -626,7 +634,8 @@ class Repl(object):
                 self.magic_method_completions)
 
         if (matches is None            # no completion is relevant
-                or len(matches) == 0): # some completion works, but no matches
+                or len(matches) == 0): # a target for completion was found
+                                       #   but no matches were found
             self.matches_iter.clear()
             return bool(self.argspec)
 
@@ -636,15 +645,16 @@ class Repl(object):
         if len(matches) == 1:
                 self.matches_iter.next()
                 if tab: # if this complete is being run for a tab key press, tab() to do the swap
-                    self.tab()
-                    self.matches_iter.clear()
-                    return False
+
+                    self.cursor_offset, self.current_line = self.matches_iter.substitute_cseq()
+                    return Repl.complete(self)
                 elif self.matches_iter.current_word == matches[0]:
                     self.matches_iter.clear()
                     return False
                 return True
 
         else:
+            assert len(matches) > 1
             return True
 
     def format_docstring(self, docstring, width, height):

@@ -465,21 +465,20 @@ class CLIRepl(repl.Repl):
             self.scr.touchwin() #TODO necessary?
             return
 
-        if self.config.auto_display_list or tab:
-            list_win_visible = repl.Repl.complete(self, tab)
-            if list_win_visible:
-                try:
-                    self.show_list(self.matches_iter.matches, topline=self.argspec, formatter=self.matches_iter.completer.format)
-                except curses.error:
-                    # XXX: This is a massive hack, it will go away when I get
-                    # cusswords into a good enough state that we can start
-                    # using it.
-                    self.list_win.border()
-                    self.list_win.refresh()
-                    list_win_visible = False
-            if not list_win_visible:
-                self.scr.redrawwin()
-                self.scr.refresh()
+        list_win_visible = repl.Repl.complete(self, tab)
+        if list_win_visible:
+            try:
+                self.show_list(self.matches_iter.matches, topline=self.argspec, formatter=self.matches_iter.completer.format)
+            except curses.error:
+                # XXX: This is a massive hack, it will go away when I get
+                # cusswords into a good enough state that we can start
+                # using it.
+                self.list_win.border()
+                self.list_win.refresh()
+                list_win_visible = False
+        if not list_win_visible:
+            self.scr.redrawwin()
+            self.scr.refresh()
 
     def clrtobol(self):
         """Clear from cursor to beginning of line; usual C-u behaviour"""
@@ -509,31 +508,6 @@ class CLIRepl(repl.Repl):
         self.print_line(self.s, clr=True)
         self.scr.redrawwin()
         self.scr.refresh()
-
-    def cw(self):
-        """Return the current word, i.e. the (incomplete) word directly to the
-        left of the cursor"""
-
-        # I don't know if autocomplete should be disabled if the cursor
-        # isn't at the end of the line, but that's what this does for now.
-        if self.cpos: return
-
-        # look from right to left for a bad method or dictionary character
-        l = len(self.s)
-        is_method_char = lambda c: c.isalnum() or c in ('.', '_')
-        dict_chars = ['[']
-
-        if not self.s or not (is_method_char(self.s[-1])
-                                or self.s[-1] in dict_chars):
-            return
-
-        for i in range(1, l+1):
-            c = self.s[-i]
-            if not (is_method_char(c) or c in dict_chars):
-                i -= 1
-                break
-
-        return self.s[-i:]
 
     def delete(self):
         """Process a del"""
@@ -1458,12 +1432,13 @@ class CLIRepl(repl.Repl):
         # 2. run complete() if we aren't already iterating through matches
         if not self.matches_iter:
             self.complete(tab=True)
+            self.print_line(self.s)
 
         # 3. check to see if we can expand the current word
         if self.matches_iter.is_cseq():
-            _, self.s = self.matches_iter.substitute_cseq()
+            self.cursor_offset, self.s = self.matches_iter.substitute_cseq()
             self.print_line(self.s)
-            if not self.matches_iter and self.config.auto_display_list:
+            if not self.matches_iter:
                 self.complete()
 
         # 4. swap current word for a match list item
