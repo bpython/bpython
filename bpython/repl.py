@@ -420,7 +420,6 @@ class Repl(object):
         self.argspec = None
         self.current_func = None
         self.highlighted_paren = None
-        self.list_win_visible = False
         self._C = {}
         self.prev_block_finished = 0
         self.interact = Interaction(self.config)
@@ -641,8 +640,7 @@ class Repl(object):
                                          self.current_line(),
                                          matches, completer)
                 self.matches_iter.next()
-                self.list_win_visible = True #TODO what else is list_win_visible used for?
-                if tab: # if this complete is being run for a tab key press, do the swap
+                if tab: # if this complete is being run for a tab key press, tab() to do the swap
                     self.tab()
                     self.matches_iter.clear()
                     return False

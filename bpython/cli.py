@@ -454,21 +454,13 @@ class CLIRepl(repl.Repl):
         Called whenever these should be updated, and called
         with tab
         """
-        if self.paste_mode and self.list_win_visible:
-            self.scr.touchwin()
-
         if self.paste_mode:
-            return
-
-        if self.list_win_visible and not self.config.auto_display_list:
-            self.scr.touchwin()
-            self.list_win_visible = False
-            self.matches_iter.clear()
+            self.scr.touchwin() #TODO necessary?
             return
 
         if self.config.auto_display_list or tab:
-            self.list_win_visible = repl.Repl.complete(self, tab)
-            if self.list_win_visible:
+            list_win_visible = repl.Repl.complete(self, tab)
+            if list_win_visible:
                 try:
                     self.show_list(self.matches_iter.matches, topline=self.argspec, formatter=self.matches_iter.completer.format)
                 except curses.error:
@@ -477,8 +469,8 @@ class CLIRepl(repl.Repl):
                     # using it.
                     self.list_win.border()
                     self.list_win.refresh()
-                    self.list_win_visible = False
-            if not self.list_win_visible:
+                    list_win_visible = False
+            if not list_win_visible:
                 self.scr.redrawwin()
                 self.scr.refresh()
 
@@ -1463,7 +1455,6 @@ class CLIRepl(repl.Repl):
             self.print_line(self.s)
             if not self.matches_iter and self.config.auto_display_list:
                 self.complete()
-                #self.scr.touchwin() #TODO necessary?
 
         # 4. swap current word for a match list item
         elif self.matches_iter.matches:
