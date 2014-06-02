@@ -687,11 +687,14 @@ class URWIDRepl(repl.Repl):
                 self.main_loop.draw_screen()
                 self._redraw_time = now
 
-    def current_line(self):
-        """Return the current line (the one the cursor is in)."""
+    def _get_current_line(self):
         if self.edit is None:
             return ''
         return self.edit.get_edit_text()
+    def _set_current_line(self, line):
+        self.edit.set_edit_text(line)
+    current_line = property(_get_current_line, _set_current_line, None,
+        "Return the current line (the one the cursor is in).")
 
     def cw(self):
         """Return the current word (incomplete word left of cursor)."""
@@ -722,8 +725,15 @@ class URWIDRepl(repl.Repl):
     @property
     def cpos(self):
         if self.edit is not None:
-            return len(self.current_line()) - self.edit.edit_pos
+            return len(self.current_line) - self.edit.edit_pos
         return 0
+
+    def _get_cursor_offset(self):
+        return self.edit.edit_pos
+    def _set_cursor_offset(self, offset):
+        self.edit.edit_pos = offset
+    cursor_offset = property(_get_cursor_offset, _set_cursor_offset, None,
+        "The cursor offset from the beginning of the line")
 
     def _populate_completion(self):
         widget_list = self.tooltip.body
@@ -803,12 +813,12 @@ class URWIDRepl(repl.Repl):
                     markup.append(('token', '**' + varkw))
                 markup.append(('punctuation', ')'))
                 widget_list.append(urwid.Text(markup))
-            if self.matches:
+            if self.matches_iter.matches:
                 attr_map = {}
                 focus_map = {'main': 'operator'}
                 texts = [urwid.AttrMap(urwid.Text(('main', match)),
                                        attr_map, focus_map)
-                         for match in self.matches]
+                         for match in self.matches_iter.matches]
                 width = max(text.original_widget.pack()[0] for text in texts)
                 gridflow = urwid.GridFlow(texts, width, 1, 0, 'left')
                 widget_list.append(gridflow)
@@ -1000,7 +1010,7 @@ class URWIDRepl(repl.Repl):
         """Gets called when the cursor position inside the edit changed.
         Rehighlight the current line because there might be a paren under
         the cursor now."""
-        tokens = self.tokenize(self.current_line(), False)
+        tokens = self.tokenize(self.current_line, False)
         edit.set_edit_markup(list(format_tokens(tokens)))
 
     def handle_input(self, event):
@@ -1077,29 +1087,21 @@ class URWIDRepl(repl.Repl):
             else:
                 cw = self.matches_iter.current_word
 
-            b = os.path.commonprefix(self.matches)
-            if b:
-                insert = b[len(cw):]
-                self.edit.insert_text(insert)
-                expanded = bool(insert)
-                if expanded:
-                    self.matches_iter.update(b, self.matches)
-            else:
-                expanded = False
-
-            if not expanded and self.matches:
-                if self.matches_iter:
-                    self.edit.set_edit_text(
-                        text[:-len(self.matches_iter.current())] + cw)
+            if self.matches_iter.is_cseq():
+                cursor, text = self.matches_iter.substitute_cseq()
+                self.edit.set_edit_text(text)
+                self.edit.edit_pos = cursor
+            elif self.matches_iter.matches:
                 if back:
-                    current_match = self.matches_iter.previous()
+                    self.matches_iter.previous()
                 else:
-                    current_match = self.matches_iter.next()
-                if current_match:
-                    self.overlay.tooltip_focus = True
-                    if self.tooltip.grid:
-                        self.tooltip.grid.set_focus(self.matches_iter.index)
-                    self.edit.insert_text(current_match[len(cw):])
+                    self.matches_iter.next()
+                cursor, text = self.matches_iter.cur_line()
+                self.edit.set_edit_text(text)
+                self.edit.edit_pos = cursor
+                self.overlay.tooltip_focus = True
+                if self.tooltip.grid:
+                    self.tooltip.grid.set_focus(self.matches_iter.index)
             return True
         finally:
             self._completion_update_suppressed = False
