@@ -1,15 +1,16 @@
 from bpython import autocomplete
 from functools import partial
+import inspect
 
 import unittest
 
 class TestSimpleComplete(unittest.TestCase):
 
-    simple_config = type('', (), {})()
-    simple_config.autocomplete_mode = autocomplete.SIMPLE
     complete = partial(autocomplete.complete,
                        namespace={'zabcdef':1, 'zabcqwe':2, 'ze':3},
                        config=simple_config)
+    kwargs = {locals_={'zabcdef':1, 'zabcqwe':2, 'ze':3},
+              argspec=inspect.getargspec(lambda x: x),
 
     def test_simple_completion(self):
         self.assertEqual(self.complete('zab'), ['zabcdef', 'zabcqwe'])

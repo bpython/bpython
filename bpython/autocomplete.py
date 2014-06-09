@@ -60,7 +60,10 @@ MAGIC_METHODS = ["__%s__" % s for s in [
 def get_completer(cursor_offset, current_line, locals_, argspec, full_code, mode, complete_magic_methods):
     """Returns a list of matches and a class for what kind of completion is happening
 
-    If no completion type is relevant, returns None, None"""
+    If no completion type is relevant, returns None, None
+
+    argspec is an output of inspect.getargspec
+    """
 
     kwargs = {'locals_':locals_, 'argspec':argspec, 'full_code':full_code,
               'mode':mode, 'complete_magic_methods':complete_magic_methods}
