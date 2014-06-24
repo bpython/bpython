@@ -133,6 +133,7 @@ class TestCurrentDictKey(LineTestCase):
         self.assertAccess('asdf[<(1, >|]')
         self.assertAccess('asdf[<(1, 2)>|]')
         #TODO self.assertAccess('d[d[<12|>')
+        self.assertAccess("d[<'a>|")
 
 class TestCurrentDict(LineTestCase):
     def setUp(self):

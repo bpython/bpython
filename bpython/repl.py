@@ -336,7 +336,7 @@ class MatchesIterator(object):
         assert matches is not None
         self.matches = matches
         self.completer = completer
-        assert self.completer.locate(self.orig_cursor_offset, self.orig_line) is not None, (self.completer.locate, self.orig_cursor_offset, self.orig_line)
+        #assert self.completer.locate(self.orig_cursor_offset, self.orig_line) is not None, (self.completer.locate, self.orig_cursor_offset, self.orig_line)
         self.index = -1
         self.start, self.end, self.current_word = self.completer.locate(self.orig_cursor_offset, self.orig_line)
 

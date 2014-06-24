@@ -23,7 +23,7 @@ def current_word(cursor_offset, line):
 
 def current_dict_key(cursor_offset, line):
     """If in dictionary completion, return the current key"""
-    matches = list(re.finditer(r'[\w_][\w0-9._]*\[([\w0-9._(), ]*)', line))
+    matches = list(re.finditer(r'''[\w_][\w0-9._]*\[([\w0-9._(), '"]*)''', line))
     for m in matches:
         if m.start(1) <= cursor_offset and m.end(1) >= cursor_offset:
             return (m.start(1), m.end(1), m.group(1))
@@ -31,7 +31,7 @@ def current_dict_key(cursor_offset, line):
 
 def current_dict(cursor_offset, line):
     """If in dictionary completion, return the dict that should be used"""
-    matches = list(re.finditer(r'([\w_][\w0-9._]*)\[([\w0-9._(), ]*)', line))
+    matches = list(re.finditer(r'''([\w_][\w0-9._]*)\[([\w0-9._(), '"]*)''', line))
     for m in matches:
         if m.start(2) <= cursor_offset and m.end(2) >= cursor_offset:
             return (m.start(1), m.end(1), m.group(1))
