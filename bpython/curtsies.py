@@ -71,6 +71,8 @@ def mainloop(config, locals_, banner, interp=None, paste=None):
             with Repl(config=config,
                       locals_=locals_,
                       request_refresh=request_refresh,
+                      get_term_wh=window.get_term_wh,
+                      get_cursor_vertical_diff=window.get_cursor_vertical_diff,
                       banner=banner,
                       interp=interp) as repl:
                 repl.height, repl.width = window.t.height, window.t.width

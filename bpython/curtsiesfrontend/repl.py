@@ -4,6 +4,7 @@ import errno
 import greenlet
 import logging
 import re
+import signal
 import sys
 import threading
 import unicodedata
@@ -148,12 +149,18 @@ class Repl(BpythonRepl):
     """
 
     ## initialization, cleanup
-    def __init__(self, locals_=None, config=None, request_refresh=lambda: None, banner=None, interp=None):
+    def __init__(self, locals_=None, config=None,
+            request_refresh=lambda: None, get_term_wh=lambda:(50, 10),
+            get_cursor_vertical_diff=lambda: 0, banner=None, interp=None):
         """
         locals_ is a mapping of locals to pass into the interpreter
         config is a bpython config.Struct with config attributes
         request_refresh is a function that will be called when the Repl
             wants to refresh the display, but wants control returned to it afterwards
+        get_term_wh is a function that returns the current width and height
+            of the terminal
+        get_cursor_vertical_diff is a function that returns how the cursor moved
+            due to a window size change
         banner is a string to display briefly in the status bar
         interp is an interpreter to use
         """
@@ -183,6 +190,8 @@ class Repl(BpythonRepl):
             else:
                 request_refresh()
         self.request_refresh = smarter_request_refresh
+        self.get_term_wh = get_term_wh
+        self.get_cursor_vertical_diff = get_cursor_vertical_diff
 
         self.status_bar = StatusBar(banner if config.curtsies_fill_terminal else '', _(
             " <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor"
@@ -233,12 +242,24 @@ class Repl(BpythonRepl):
         sys.stdout = self.stdout
         sys.stderr = self.stderr
         sys.stdin = self.stdin
+        self.orig_sigwinch_handler = signal.getsignal(signal.SIGWINCH)
+        signal.signal(signal.SIGWINCH, self.sigwinch_handler)
         return self
 
     def __exit__(self, *args):
         sys.stdin = self.orig_stdin
         sys.stdout = self.orig_stdout
         sys.stderr = self.orig_stderr
+        signal.signal(signal.SIGWINCH, self.orig_sigwinch_handler)
+
+    def sigwinch_handler(self, signum, frame):
+        old_rows, old_columns = self.height, self.width
+        self.width, self.height = self.get_term_wh()
+        cursor_dy = self.get_cursor_vertical_diff()
+        logging.debug('sigwinch! Changed from %r to %r', (old_rows, old_columns), (self.height, self.width))
+        logging.debug('cursor moved %d lines down', cursor_dy)
+        self.scroll_offset -= cursor_dy
+        logging.debug('scroll offset is now %d', self.scroll_offset)
 
     def clean_up_current_line_for_exit(self):
         """Called when trying to exit to prep for final paint"""
@@ -264,11 +285,6 @@ class Repl(BpythonRepl):
             else:
                 assert self.coderunner.code_is_waiting
                 self.run_code_and_maybe_finish()
-        elif isinstance(e, events.WindowChangeEvent):
-            logging.debug('window change to %d %d', e.width, e.height)
-            self.scroll_offset -= e.cursor_dy
-            self.width, self.height = e.width, e.height
-
         elif self.status_bar.has_focus:
             return self.status_bar.process_event(e)
 
