@@ -6,10 +6,9 @@ from optparse import Option
 
 import curtsies
 import curtsies.window
+import curtsies.input
 import curtsies.terminal
 import curtsies.events
-Window = curtsies.window.Window
-Terminal = curtsies.terminal.Terminal
 
 from bpython.curtsiesfrontend.repl import Repl
 from bpython.curtsiesfrontend.coderunner import SystemExitFromCodeGreenlet
@@ -52,36 +51,50 @@ def main(args=None, locals_=None, banner=None):
     mainloop(config, locals_, banner, interp, paste)
 
 def mainloop(config, locals_, banner, interp=None, paste=None):
-    with Terminal(paste_mode=True) as tc:
-        with Window(tc, keep_last_line=True, hide_cursor=False) as term:
+    with curtsies.input.Input(keynames='curses') as input_generator:
+        with curtsies.window.CursorAwareWindow(
+                sys.stdout,
+                sys.stdin,
+                keep_last_line=True,
+                hide_cursor=False) as window:
+
+            refresh_requests = []
+            def request_refresh():
+                refresh_requests.append(None)
+            def event_or_refresh():
+                while True:
+                    if refresh_requests:
+                        refresh_requests.pop()
+                        yield curtsies.events.RefreshRequestEvent()
+                    else:
+                        yield input_generator.next()
+
             with Repl(config=config,
                       locals_=locals_,
-                      request_refresh=tc.stuff_a_refresh_request,
+                      request_refresh=request_refresh,
                       banner=banner,
                       interp=interp) as repl:
-                rows, columns = tc.get_screen_size()
-                repl.width = columns
-                repl.height = rows
+                repl.height, repl.width = window.t.height, window.t.width
 
                 def process_event(e):
                     try:
                         repl.process_event(e)
                     except (SystemExitFromCodeGreenlet, SystemExit) as err:
                         array, cursor_pos = repl.paint(about_to_exit=True, user_quit=isinstance(err, SystemExitFromCodeGreenlet))
-                        scrolled = term.render_to_terminal(array, cursor_pos)
+                        scrolled = window.render_to_terminal(array, cursor_pos)
                         repl.scroll_offset += scrolled
                         raise
                     else:
                         array, cursor_pos = repl.paint()
-                        scrolled = term.render_to_terminal(array, cursor_pos)
+                        scrolled = window.render_to_terminal(array, cursor_pos)
                         repl.scroll_offset += scrolled
 
                 if paste:
-                    repl.process_event(term.get_annotated_event()) #first event will always be a window size set
                     process_event(paste)
 
-                while True:
-                    process_event(term.get_annotated_event(idle=find_iterator))
+                [None for _ in find_iterator] #TODO get idle events working (instead of this)
+                for e in event_or_refresh():
+                    process_event(e)
 
 if __name__ == '__main__':
     sys.exit(main())

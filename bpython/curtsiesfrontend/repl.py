@@ -19,17 +19,17 @@ translations.init()
 from bpython.translations import _
 from bpython._py3compat import py3
 
-from curtsies.fsarray import FSArray
-from curtsies.fmtstr import fmtstr, FmtStr
+from curtsies import FSArray, fmtstr, FmtStr
 from curtsies.bpythonparse import parse as bpythonparse
 from curtsies.bpythonparse import func_for_letter, color_for_letter
+from curtsies import fmtfuncs
+from curtsies import events
 
 from bpython.curtsiesfrontend.manual_readline import char_sequences as rl_char_sequences
 from bpython.curtsiesfrontend.manual_readline import get_updated_char_sequences
 from bpython.curtsiesfrontend.interaction import StatusBar
 from bpython.curtsiesfrontend import sitefix; sitefix.monkeypatch_quit()
 import bpython.curtsiesfrontend.replpainter as paint
-import curtsies.events as events
 from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 
 #TODO other autocomplete modes (also fix in other bpython implementations)
