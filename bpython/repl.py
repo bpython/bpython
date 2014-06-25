@@ -26,6 +26,7 @@ import code
 import codecs
 import errno
 import inspect
+import logging
 import os
 import pydoc
 import shlex
@@ -625,6 +626,7 @@ class Repl(object):
                 self.config.autocomplete_mode if hasattr(self.config, 'autocomplete_mode') else autocomplete.SIMPLE,
                 self.config.complete_magic_methods)
         #TODO implement completer.shown_before_tab == False (filenames shouldn't fill screen)
+        logging.debug('complete called on %r: using completer %r on matches %r', self.current_line, completer, matches)
 
         if (matches is None            # no completion is relevant
                 or len(matches) == 0): # a target for completion was found

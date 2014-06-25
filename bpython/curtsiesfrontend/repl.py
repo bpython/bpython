@@ -368,7 +368,7 @@ class Repl(BpythonRepl):
         self.rl_history.last()
         self.history.append(self.current_line)
         line = self.current_line
-        #self.current_line = ''
+        self.current_line = ''
         self.push(line, insert_into_history=insert_into_history)
 
     def on_tab(self, back=False):
