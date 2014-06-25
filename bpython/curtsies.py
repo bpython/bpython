@@ -60,12 +60,11 @@ def mainloop(config, locals_, banner, interp=None, paste=None):
 
             refresh_requests = []
             def request_refresh():
-                refresh_requests.append(None)
+                refresh_requests.append(curtsies.events.RefreshRequestEvent())
             def event_or_refresh():
                 while True:
                     if refresh_requests:
-                        refresh_requests.pop()
-                        yield curtsies.events.RefreshRequestEvent()
+                        yield refresh_requests.pop()
                     else:
                         yield input_generator.next()
 
@@ -78,7 +77,8 @@ def mainloop(config, locals_, banner, interp=None, paste=None):
 
                 def process_event(e):
                     try:
-                        repl.process_event(e)
+                        if e is not None:
+                            repl.process_event(e)
                     except (SystemExitFromCodeGreenlet, SystemExit) as err:
                         array, cursor_pos = repl.paint(about_to_exit=True, user_quit=isinstance(err, SystemExitFromCodeGreenlet))
                         scrolled = window.render_to_terminal(array, cursor_pos)
@@ -93,6 +93,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None):
                     process_event(paste)
 
                 [None for _ in find_iterator] #TODO get idle events working (instead of this)
+                refresh_requests.append(None) #priming the pump (do a display before waiting for first event) 
                 for e in event_or_refresh():
                     process_event(e)
 
