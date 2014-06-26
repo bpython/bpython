@@ -336,6 +336,12 @@ class Repl(BpythonRepl):
             self.update_completion()
             return
 
+        elif e in ("KEY_RIGHT") and self.cursor_offset == len(self.current_line):
+
+            self.current_line += self.current_suggestion
+            self.cursor_offset = len(self.current_line)
+            self.update_completion()
+
         elif e in self.rl_char_sequences:
             self.cursor_offset, self.current_line = self.rl_char_sequences[e](self.cursor_offset, self.current_line)
             self.update_completion()
@@ -705,8 +711,8 @@ class Repl(BpythonRepl):
 
     @property
     def current_suggestion(self):
-        matches = [e for e in self.rl_history.entries if e.startswith(self.current_line)]
-        return matches[0][len(self.current_line):] if matches else ''
+        matches = [e for e in self.rl_history.entries if e.startswith(self.current_line) and self.current_line]
+        return matches[-1][len(self.current_line):] if matches else ''
 
     @property
     def current_output_line(self):
