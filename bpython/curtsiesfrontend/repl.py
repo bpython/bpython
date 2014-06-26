@@ -496,6 +496,7 @@ class Repl(BpythonRepl):
     def update_completion(self, tab=False):
         """Update autocomplete info; self.matches_iter and self.argspec"""
         self.list_win_visible = BpythonRepl.complete(self, tab)
+        #look for history stuff
 
     def push(self, line, insert_into_history=True):
         """Push a line of code onto the buffer, start running the buffer
@@ -677,12 +678,21 @@ class Repl(BpythonRepl):
                 func_for_letter(self.config.color_scheme['prompt_more'])(self.ps2)) + self.current_line_formatted
 
     @property
-    def current_cursor_line(self):
+    def current_cursor_line_without_suggestion(self):
         """Current line, either output/input or Python prompt + code"""
         value = (self.current_output_line +
                 ('' if self.coderunner.running else self.display_line_with_prompt))
         logging.debug('current cursor line: %r', value)
         return value
+
+    @property
+    def current_cursor_line(self):
+        return self.current_cursor_line_without_suggestion + fmtfuncs.bold(fmtfuncs.dark((self.current_suggestion)))
+
+    @property
+    def current_suggestion(self):
+        matches = [e for e in self.rl_history.entries if e.startswith(self.current_line)]
+        return matches[0][len(self.current_line):] if matches else ''
 
     @property
     def current_output_line(self):
@@ -759,13 +769,13 @@ class Repl(BpythonRepl):
         current_line_end_row = current_line_start_row + len(lines) - 1
 
         if self.stdin.has_focus:
-            cursor_row, cursor_column = divmod(len(self.current_stdouterr_line) + self.stdin.cursor_offset, width)
+            cursor_row, cursor_column = divmod(len(self.current_stdouterr_line_without_suggestion) + self.stdin.cursor_offset, width)
             assert cursor_column >= 0, cursor_column
         elif self.coderunner.running: #TODO does this ever happen?
-            cursor_row, cursor_column = divmod(len(self.current_cursor_line) + self.cursor_offset, width)
+            cursor_row, cursor_column = divmod(len(self.current_cursor_line_without_suggestion) + self.cursor_offset, width)
             assert cursor_column >= 0, (cursor_column, len(self.current_cursor_line), len(self.current_line), self.cursor_offset)
         else:
-            cursor_row, cursor_column = divmod(len(self.current_cursor_line) - len(self.current_line) + self.cursor_offset, width)
+            cursor_row, cursor_column = divmod(len(self.current_cursor_line_without_suggestion) - len(self.current_line) + self.cursor_offset, width)
             assert cursor_column >= 0, (cursor_column, len(self.current_cursor_line), len(self.current_line), self.cursor_offset)
         cursor_row += current_line_start_row
 

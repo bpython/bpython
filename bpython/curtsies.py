@@ -77,6 +77,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                       interp=interp,
                       interactive=interactive) as repl:
                 repl.height, repl.width = window.t.height, window.t.width
+                sys.repl = repl
 
                 def process_event(e):
                     try:
