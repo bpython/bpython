@@ -403,9 +403,7 @@ class Repl(BpythonRepl):
         self.rl_history.append(self.current_line)
         self.rl_history.last()
         self.history.append(self.current_line)
-        line = self.current_line
-        self.current_line = ''
-        self.push(line, insert_into_history=insert_into_history)
+        self.push(self.current_line, insert_into_history=insert_into_history)
 
     def on_tab(self, back=False):
         """Do something on tab key
@@ -567,6 +565,7 @@ class Repl(BpythonRepl):
 
             self.current_line = ' '*indent
             self.cursor_offset = len(self.current_line)
+            self.update_completion()
 
     def keyboard_interrupt(self):
         #TODO factor out the common cleanup from running a line
