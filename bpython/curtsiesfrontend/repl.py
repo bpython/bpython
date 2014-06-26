@@ -3,6 +3,7 @@ import contextlib
 import errno
 import greenlet
 import logging
+import os
 import re
 import signal
 import sys
@@ -150,14 +151,14 @@ class Repl(BpythonRepl):
 
     ## initialization, cleanup
     def __init__(self, locals_=None, config=None,
-            request_refresh=lambda: None, get_term_wh=lambda:(50, 10),
-            get_cursor_vertical_diff=lambda: 0, banner=None, interp=None):
+            request_refresh=lambda: None, get_term_hw=lambda:(50, 10),
+            get_cursor_vertical_diff=lambda: 0, banner=None, interp=None, interactive=True):
         """
         locals_ is a mapping of locals to pass into the interpreter
         config is a bpython config.Struct with config attributes
         request_refresh is a function that will be called when the Repl
             wants to refresh the display, but wants control returned to it afterwards
-        get_term_wh is a function that returns the current width and height
+        get_term_hw is a function that returns the current width and height
             of the terminal
         get_cursor_vertical_diff is a function that returns how the cursor moved
             due to a window size change
@@ -190,7 +191,7 @@ class Repl(BpythonRepl):
             else:
                 request_refresh()
         self.request_refresh = smarter_request_refresh
-        self.get_term_wh = get_term_wh
+        self.get_term_hw = get_term_hw
         self.get_cursor_vertical_diff = get_cursor_vertical_diff
 
         self.status_bar = StatusBar(banner if config.curtsies_fill_terminal else '', _(
@@ -201,6 +202,9 @@ class Repl(BpythonRepl):
         self.rl_char_sequences = get_updated_char_sequences(key_dispatch, config)
         logging.debug("starting parent init")
         super(Repl, self).__init__(interp, config)
+        #TODO bring together all interactive stuff - including current directory in path?
+        if interactive:
+            self.startup()
         self.formatter = BPythonFormatter(config.color_scheme)
         self.interact = self.status_bar # overwriting what bpython.Repl put there
                                         # interact is called to interact with the status bar,
@@ -254,12 +258,28 @@ class Repl(BpythonRepl):
 
     def sigwinch_handler(self, signum, frame):
         old_rows, old_columns = self.height, self.width
-        self.width, self.height = self.get_term_wh()
+        self.height, self.width = self.get_term_hw()
         cursor_dy = self.get_cursor_vertical_diff()
-        logging.debug('sigwinch! Changed from %r to %r', (old_rows, old_columns), (self.height, self.width))
-        logging.debug('cursor moved %d lines down', cursor_dy)
         self.scroll_offset -= cursor_dy
-        logging.debug('scroll offset is now %d', self.scroll_offset)
+        logging.info('sigwinch! Changed from %r to %r', (old_rows, old_columns), (self.height, self.width))
+        logging.info('decreasing scroll offset by %d to %d', cursor_dy, self.scroll_offset)
+
+    def startup(self):
+        """
+        Execute PYTHONSTARTUP file if it exits. Call this after front
+        end-specific initialisation.
+        """
+        filename = os.environ.get('PYTHONSTARTUP')
+        if filename:
+            if os.path.isfile(filename):
+                with open(filename, 'r') as f:
+                    if py3:
+                        #TODO runsource has a new signature in PY3
+                        self.interp.runsource(f.read(), filename, 'exec')
+                    else:
+                        self.interp.runsource(f.read(), filename, 'exec')
+            else:
+                raise IOError("Python startup file (PYTHONSTARTUP) not found at %s" % filename)
 
     def clean_up_current_line_for_exit(self):
         """Called when trying to exit to prep for final paint"""
@@ -693,6 +713,7 @@ class Repl(BpythonRepl):
             min_height -= 1
 
         current_line_start_row = len(self.lines_for_display) - max(0, self.scroll_offset)
+        #current_line_start_row = len(self.lines_for_display) - self.scroll_offset
         if self.request_paint_to_clear_screen: # or show_status_bar and about_to_exit ?
             self.request_paint_to_clear_screen = False
             if self.config.curtsies_fill_terminal: #TODO clean up this logic - really necessary check?

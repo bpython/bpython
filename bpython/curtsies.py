@@ -7,7 +7,6 @@ from optparse import Option
 import curtsies
 import curtsies.window
 import curtsies.input
-import curtsies.terminal
 import curtsies.events
 
 from bpython.curtsiesfrontend.repl import Repl
@@ -26,7 +25,7 @@ def main(args=None, locals_=None, banner=None):
             ]))
     if options.log:
         import logging
-        logging.basicConfig(filename='scroll.log', level=logging.DEBUG)
+        logging.basicConfig(filename='scroll.log', level=logging.INFO)
 
     interp = None
     paste = None
@@ -48,9 +47,10 @@ def main(args=None, locals_=None, banner=None):
     else:
         sys.path.insert(0, '') # expected for interactive sessions (vanilla python does it)
 
-    mainloop(config, locals_, banner, interp, paste)
 
-def mainloop(config, locals_, banner, interp=None, paste=None):
+    mainloop(config, locals_, banner, interp, paste, interactive=(not exec_args))
+
+def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True):
     with curtsies.input.Input(keynames='curses') as input_generator:
         with curtsies.window.CursorAwareWindow(
                 sys.stdout,
@@ -71,10 +71,11 @@ def mainloop(config, locals_, banner, interp=None, paste=None):
             with Repl(config=config,
                       locals_=locals_,
                       request_refresh=request_refresh,
-                      get_term_wh=window.get_term_wh,
+                      get_term_hw=window.get_term_hw,
                       get_cursor_vertical_diff=window.get_cursor_vertical_diff,
                       banner=banner,
-                      interp=interp) as repl:
+                      interp=interp,
+                      interactive=interactive) as repl:
                 repl.height, repl.width = window.t.height, window.t.width
 
                 def process_event(e):
