@@ -51,7 +51,7 @@ def main(args=None, locals_=None, banner=None):
     mainloop(config, locals_, banner, interp, paste, interactive=(not exec_args))
 
 def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True):
-    with curtsies.input.Input(keynames='curses') as input_generator:
+    with curtsies.input.Input(keynames='curses', sigint_event=True) as input_generator:
         with curtsies.window.CursorAwareWindow(
                 sys.stdout,
                 sys.stdin,
