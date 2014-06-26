@@ -337,7 +337,6 @@ class Repl(BpythonRepl):
             return
 
         elif e in ("KEY_RIGHT") and self.cursor_offset == len(self.current_line):
-
             self.current_line += self.current_suggestion
             self.cursor_offset = len(self.current_line)
             self.update_completion()
@@ -349,12 +348,13 @@ class Repl(BpythonRepl):
         # readline history commands
         elif e in ("KEY_UP",) + key_dispatch[self.config.up_one_line_key]:
             self.rl_history.enter(self.current_line)
-            self.current_line = self.rl_history.back(False)
+            self.current_line = self.rl_history.back(False, search=True)
             self.cursor_offset = len(self.current_line)
             self.update_completion()
+
         elif e in ("KEY_DOWN",) + key_dispatch[self.config.down_one_line_key]:
             self.rl_history.enter(self.current_line)
-            self.current_line = self.rl_history.forward(False)
+            self.current_line = self.rl_history.forward(False, search=True)
             self.cursor_offset = len(self.current_line)
             self.update_completion()
         elif e in key_dispatch[self.config.search_key]: #TODO Not Implemented
