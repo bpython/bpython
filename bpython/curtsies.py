@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import sys
 import code
 from optparse import Option
+from itertools import izip
 
 import curtsies
 import curtsies.window
@@ -61,12 +62,12 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
             refresh_requests = []
             def request_refresh():
                 refresh_requests.append(curtsies.events.RefreshRequestEvent())
-            def event_or_refresh():
+            def event_or_refresh(timeout=None):
                 while True:
                     if refresh_requests:
                         yield refresh_requests.pop()
                     else:
-                        yield input_generator.next()
+                        yield input_generator.send(timeout)
 
             with Repl(config=config,
                       locals_=locals_,
@@ -80,6 +81,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                 sys.repl = repl
 
                 def process_event(e):
+                    """If None is passed in, just paint the screen"""
                     try:
                         if e is not None:
                             repl.process_event(e)
@@ -96,8 +98,10 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                 if paste:
                     process_event(paste)
 
-                [None for _ in find_iterator] #TODO get idle events working (instead of this)
-                refresh_requests.append(None) #priming the pump (do a display before waiting for first event) 
+                process_event(None) #priming the pump (do a display before waiting for first event) 
+                for _, e in izip(find_iterator, event_or_refresh(0)):
+                    if e is not None:
+                        process_event(e)
                 for e in event_or_refresh():
                     process_event(e)
 
