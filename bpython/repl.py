@@ -646,11 +646,11 @@ class Repl(object):
                 elif self.matches_iter.current_word == matches[0]:
                     self.matches_iter.clear()
                     return False
-                return True
+                return completer.shown_before_tab
 
         else:
             assert len(matches) > 1
-            return True
+            return tab or completer.shown_before_tab
 
     def format_docstring(self, docstring, width, height):
         """Take a string and try to format it into a sane list of strings to be

@@ -44,7 +44,7 @@ def current_string(cursor_offset, line):
     based on previous lines in the buffer"""
     for m in re.finditer('''(?P<open>(?:""")|"|(?:''\')|')(?:((?P<closed>.*?)(?P=open))|(?P<unclosed>.*))''', line):
         i = 3 if m.group(3) else 4
-        if m.start(i) <= cursor_offset and m.end(i) >= cursor_offset:
+        if m.start(i) < cursor_offset and m.end(i) >= cursor_offset:
             return m.start(i), m.end(i), m.group(i)
     return None
 
