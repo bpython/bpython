@@ -16,6 +16,9 @@ from bpython import args as bpargs
 from bpython.translations import _
 from bpython.importcompletion import find_iterator
 
+repl = None # global for `from bpython.curtsies import repl`
+#WARNING Will be a problem if more than one repl is ever instantiated this way
+
 def main(args=None, locals_=None, banner=None):
     config, options, exec_args = bpargs.parse(args, (
         'scroll options', None, [
@@ -69,6 +72,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                     else:
                         yield input_generator.send(timeout)
 
+            global repl # global for easy introspection `from bpython.curtsies import repl`
             with Repl(config=config,
                       locals_=locals_,
                       request_refresh=request_refresh,
@@ -79,7 +83,6 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                       interactive=interactive,
                       orig_tcattrs=input_generator.original_stty) as repl:
                 repl.height, repl.width = window.t.height, window.t.width
-                sys.repl = repl
 
                 def process_event(e):
                     """If None is passed in, just paint the screen"""
