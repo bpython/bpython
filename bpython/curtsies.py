@@ -30,8 +30,12 @@ def main(args=None, locals_=None, banner=None):
         handler = logging.FileHandler(filename='bpython.log')
         logging.getLogger('curtsies').setLevel(logging.DEBUG)
         logging.getLogger('curtsies').addHandler(handler)
+        logging.getLogger('curtsies').propagate = False
         logging.getLogger('bpython').setLevel(logging.DEBUG)
         logging.getLogger('bpython').addHandler(handler)
+        logging.getLogger('bpython').propagate = False
+    else:
+        logging.getLogger('bpython').setLevel(logging.WARNING)
 
     interp = None
     paste = None
