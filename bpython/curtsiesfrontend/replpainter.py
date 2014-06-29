@@ -11,6 +11,8 @@ from bpython._py3compat import py3
 if not py3:
     import inspect
 
+logger = logging.getLogger(__name__)
+
 # All paint functions should
 # * return an array of the width they were asked for
 # * return an array not taller than the height they were asked for
@@ -62,8 +64,8 @@ def matches_lines(rows, columns, matches, current, config):
                                       for m in matches[i:i+words_wide])
                      for i in range(0, len(matches), words_wide)]
 
-    logging.debug('match: %r' % current)
-    logging.debug('matches_lines: %r' % matches_lines)
+    logger.debug('match: %r' % current)
+    logger.debug('matches_lines: %r' % matches_lines)
     return matches_lines
 
 def formatted_argspec(argspec, columns, config):

@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import sys
 import code
+import logging
 from optparse import Option
 
 import curtsies
@@ -21,13 +22,16 @@ def main(args=None, locals_=None, banner=None):
     config, options, exec_args = bpargs.parse(args, (
         'scroll options', None, [
             Option('--log', '-L', action='store_true',
-                help=_("log debug messages to bpython-curtsies.log")),
+                help=_("log debug messages to bpython.log")),
             Option('--type', '-t', action='store_true',
                 help=_("enter lines of file as though interactively typed")),
             ]))
     if options.log:
-        import logging
-        logging.basicConfig(filename='scroll.log', level=logging.DEBUG)
+        handler = logging.FileHandler(filename='bpython.log')
+        logging.getLogger('curtsies').setLevel(logging.DEBUG)
+        logging.getLogger('curtsies').addHandler(handler)
+        logging.getLogger('bpython').setLevel(logging.DEBUG)
+        logging.getLogger('bpython').addHandler(handler)
 
     interp = None
     paste = None
