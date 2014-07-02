@@ -76,7 +76,8 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                       get_cursor_vertical_diff=window.get_cursor_vertical_diff,
                       banner=banner,
                       interp=interp,
-                      interactive=interactive) as repl:
+                      interactive=interactive,
+                      orig_tcattrs=input_generator.original_stty) as repl:
                 repl.height, repl.width = window.t.height, window.t.width
                 sys.repl = repl
 

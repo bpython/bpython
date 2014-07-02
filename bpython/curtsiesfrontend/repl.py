@@ -6,7 +6,9 @@ import logging
 import os
 import re
 import signal
+import subprocess
 import sys
+import tempfile
 import threading
 import unicodedata
 
@@ -15,13 +17,15 @@ from bpython.repl import Repl as BpythonRepl
 from bpython.config import Struct, loadini, default_config_path
 from bpython.formatter import BPythonFormatter
 from pygments import format
+from pygments.lexers import PythonLexer
+from pygments.formatters import TerminalFormatter
 from bpython import importcompletion
 from bpython import translations
 translations.init()
 from bpython.translations import _
 from bpython._py3compat import py3
 
-from curtsies import FSArray, fmtstr, FmtStr
+from curtsies import FSArray, fmtstr, FmtStr, Termmode
 from curtsies.bpythonparse import parse as bpythonparse
 from curtsies.bpythonparse import func_for_letter, color_for_letter
 from curtsies import fmtfuncs
@@ -152,7 +156,8 @@ class Repl(BpythonRepl):
     ## initialization, cleanup
     def __init__(self, locals_=None, config=None,
             request_refresh=lambda: None, get_term_hw=lambda:(50, 10),
-            get_cursor_vertical_diff=lambda: 0, banner=None, interp=None, interactive=True):
+            get_cursor_vertical_diff=lambda: 0, banner=None, interp=None, interactive=True,
+            orig_tcattrs=None):
         """
         locals_ is a mapping of locals to pass into the interpreter
         config is a bpython config.Struct with config attributes
@@ -223,6 +228,7 @@ class Repl(BpythonRepl):
         self.scroll_offset = 0 # how many times display has been scrolled down
                                # because there wasn't room to display everything
         self.cursor_offset = 0 # from the left, 0 means first char
+        self.orig_tcattrs = orig_tcattrs # useful for shelling out with normal terminal
 
         self.coderunner = CodeRunner(self.interp, self.request_refresh)
         self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
@@ -360,8 +366,17 @@ class Repl(BpythonRepl):
             self.request_paint_to_clear_screen = True
         elif e in key_dispatch[self.config.last_output_key]: #TODO Not Implemented
             pass
-        elif e in key_dispatch[self.config.show_source_key]: #TODO Not Implemented
-            pass
+        elif e in ('\x1f',) + key_dispatch[self.config.show_source_key]: #TODO Not Implemented
+            source = self.get_source_of_current_name()
+            if source is None:
+                self.status_bar.message('whoops!')
+            else:
+                if self.config.highlight_show_source:
+                    source = format(PythonLexer().get_tokens(source), TerminalFormatter())
+                with tempfile.NamedTemporaryFile() as tmp:
+                    tmp.write(source)
+                    tmp.flush()
+                    self.focus_on_subprocess(['less', '-R', tmp.name])
         elif e in key_dispatch[self.config.suspend_key]:
             raise SystemExit()
         elif e in ("",) + key_dispatch[self.config.exit_key]:
@@ -936,6 +951,27 @@ class Repl(BpythonRepl):
         s = '\n'.join([x.s if isinstance(x, FmtStr) else x for x in lines]
                      ) if lines else ''
         return s
+
+    def focus_on_subprocess(self, args):
+        import blessings
+        prev_sigwinch_handler = signal.getsignal(signal.SIGWINCH)
+        try:
+            signal.signal(signal.SIGWINCH, self.orig_sigwinch_handler)
+            with Termmode(self.orig_stdin, self.orig_tcattrs):
+                terminal = blessings.Terminal(stream=sys.__stdout__)
+                with terminal.fullscreen():
+                    sys.__stdout__.write(terminal.save)
+                    sys.__stdout__.write(terminal.move(0, 0))
+                    sys.__stdout__.flush()
+                    p = subprocess.Popen(args,
+                                         stdin=self.orig_stdin,
+                                         stderr=sys.__stderr__,
+                                         stdout=sys.__stdout__)
+                    p.wait()
+                    sys.__stdout__.write(terminal.restore)
+                    sys.__stdout__.flush()
+        finally:
+            signal.signal(signal.SIGWINCH, prev_sigwinch_handler)
 
 def is_nop(char):
     return unicodedata.category(unicode(char)) == 'Cc'

@@ -9,8 +9,8 @@ class TestSimpleComplete(unittest.TestCase):
     complete = partial(autocomplete.complete,
                        namespace={'zabcdef':1, 'zabcqwe':2, 'ze':3},
                        config=simple_config)
-    kwargs = {locals_={'zabcdef':1, 'zabcqwe':2, 'ze':3},
-              argspec=inspect.getargspec(lambda x: x),
+    kwargs = {locals_:{'zabcdef':1, 'zabcqwe':2, 'ze':3},
+              argspec:inspect.getargspec(lambda x: x),
 
     def test_simple_completion(self):
         self.assertEqual(self.complete('zab'), ['zabcdef', 'zabcqwe'])
