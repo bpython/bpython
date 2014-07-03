@@ -577,10 +577,13 @@ class Repl(object):
         source cannot be found."""
         try:
             obj = self.current_func
+            logging.debug('current func is %r', obj)
             if obj is None:
                 line = self.current_line
                 if inspection.is_eval_safe_name(line):
                     obj = self.get_object(line)
+                if obj is None:
+                    return None
             source = inspect.getsource(obj)
         except (AttributeError, IOError, NameError, TypeError):
             return None
