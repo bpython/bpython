@@ -1,7 +1,7 @@
 import os
 import unittest
 from itertools import islice
-from mock import Mock
+from mock import Mock, MagicMock
 try:
     from unittest import skip
 except ImportError:
@@ -111,8 +111,11 @@ class TestMatchesIterator(unittest.TestCase):
 
     def setUp(self):
         self.matches = ['bobby', 'bobbies', 'bobberina']
-        self.matches_iterator = repl.MatchesIterator(current_word='bob',
-                                                     matches=self.matches)
+        self.matches_iterator = repl.MatchesIterator()
+        self.matches_iterator.current_word = 'bob'
+        self.matches_iterator.orig_line = 'bob'
+        self.matches_iterator.orig_cursor_offset = len('bob')
+        self.matches_iterator.matches = self.matches
 
     def test_next(self):
         self.assertEqual(self.matches_iterator.next(), self.matches[0])
@@ -156,11 +159,31 @@ class TestMatchesIterator(unittest.TestCase):
         self.assertEqual(list(slice), self.matches)
 
         newmatches = ['string', 'str', 'set']
-        self.matches_iterator.update('s', newmatches)
+        completer = Mock()
+        completer.locate.return_value = (0, 1, 's')
+        self.matches_iterator.update(1, 's', newmatches, completer)
 
         newslice = islice(newmatches, 0, 3)
         self.assertNotEqual(list(slice), self.matches)
         self.assertEqual(list(newslice), newmatches)
+
+    def test_cur_line(self):
+        completer = Mock()
+        completer.locate.return_value = (0,
+                self.matches_iterator.orig_cursor_offset,
+                self.matches_iterator.orig_line)
+        self.matches_iterator.completer = completer
+
+        with self.assertRaises(ValueError):
+            self.matches_iterator.cur_line()
+
+        self.assertEqual(self.matches_iterator.next(), self.matches[0])
+        self.assertEqual(self.matches_iterator.cur_line(),
+                         (len(self.matches[0]), self.matches[0]))
+
+    def test_is_cseq(self):
+        self.assertTrue(self.matches_iterator.is_cseq())
+
 
 class TestArgspec(unittest.TestCase):
     def setUp(self):
@@ -227,43 +250,45 @@ class TestArgspec(unittest.TestCase):
         self.setInputLine("spamspamspam(")
         self.assertFalse(self.repl.get_args())
 
+
 class TestRepl(unittest.TestCase):
+
+    def setInputLine(self, line):
+        """Set current input line of the test REPL."""
+        self.repl.current_line = line
+        self.repl.cursor_offset = len(line)
 
     def setUp(self):
         self.repl = FakeRepl()
 
     def test_current_string(self):
-        self.repl.input_line = 'a = "2"'
+        self.setInputLine('a = "2"')
         self.repl.cpos = 0 #TODO factor cpos out of repl.Repl
         self.assertEqual(self.repl.current_string(), '"2"')
 
-        self.repl.input_line = 'a = "2" + 2'
+        self.setInputLine('a = "2" + 2')
         self.assertEqual(self.repl.current_string(), '')
 
-    # TODO: figure out how to capture whether foobar is in globals
-    @skip('not working yet')
     def test_push(self):
         self.repl = FakeRepl()
         self.repl.push("foobar = 2")
-        self.repl.push("\"foobar\" in globals().keys()")
+        self.assertEqual(self.repl.interp.locals['foobar'], 2)
 
     # COMPLETE TESTS
     # 1. Global tests
     def test_simple_global_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
-        self.repl.input_line = "d"
-        self.repl.current_word = "d"
+        self.setInputLine("d")
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.matches_iter,'matches'))
-        self.assertEqual(self.repl.completer.matches,
+        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
+        self.assertEqual(self.repl.matches_iter.matches,
             ['def', 'del', 'delattr(', 'dict(', 'dir(', 'divmod('])
 
     @skip("disabled while non-simple completion is disabled")
     def test_substring_global_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
-        self.repl.input_line = "time"
-        self.repl.current_word = "time"
+        self.setInputLine("time")
 
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.completer,'matches'))
@@ -273,8 +298,7 @@ class TestRepl(unittest.TestCase):
     @skip("disabled while non-simple completion is disabled")
     def test_fuzzy_global_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
-        self.repl.input_line = "doc"
-        self.repl.current_word = "doc"
+        self.setInputLine("doc")
 
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.completer,'matches'))
@@ -284,8 +308,7 @@ class TestRepl(unittest.TestCase):
     # 2. Attribute tests
     def test_simple_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
-        self.repl.input_line = "Foo.b"
-        self.repl.current_word = "Foo.b"
+        self.setInputLine("Foo.b")
 
         code = "class Foo():\n\tdef bar(self):\n\t\tpass\n"
         for line in code.split("\n"):
@@ -299,8 +322,7 @@ class TestRepl(unittest.TestCase):
     @skip("disabled while non-simple completion is disabled")
     def test_substring_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
-        self.repl.input_line = "Foo.az"
-        self.repl.current_word = "Foo.az"
+        self.setInputLine("Foo.az")
 
         code = "class Foo():\n\tdef baz(self):\n\t\tpass\n"
         for line in code.split("\n"):
@@ -314,8 +336,7 @@ class TestRepl(unittest.TestCase):
     @skip("disabled while non-simple completion is disabled")
     def test_fuzzy_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
-        self.repl.input_line = "Foo.br"
-        self.repl.current_word = "Foo.br"
+        self.setInputLine("Foo.br")
 
         code = "class Foo():\n\tdef bar(self):\n\t\tpass\n"
         for line in code.split("\n"):
@@ -329,8 +350,7 @@ class TestRepl(unittest.TestCase):
     # 3. Edge Cases
     def test_updating_namespace_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
-        self.repl.input_line = "foo"
-        self.repl.current_word = "foo"
+        self.setInputLine("foo")
         self.repl.push("foobar = 2")
 
         self.assertTrue(self.repl.complete())
@@ -340,8 +360,7 @@ class TestRepl(unittest.TestCase):
 
     def test_file_should_not_appear_in_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
-        self.repl.input_line = "_"
-        self.repl.current_word = "_"
+        self.setInputLine("_")
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.matches_iter,'matches'))
         self.assertTrue('__file__' not in self.repl.matches_iter.matches)
@@ -375,42 +394,23 @@ class TestCliRepl(unittest.TestCase):
 class TestCliReplTab(unittest.TestCase):
 
     def setUp(self):
-
-        def setup_matches(tab=False):
-
-            if self.repl.cw() and len(self.repl.cw().split('.')) == 1:
-                self.repl.matches = ["foobar", "foofoobar"]
-            else:
-                self.repl.matches = ["Foo.foobar", "Foo.foofoobar"]
-
-            self.repl.matches_iter = repl.MatchesIterator()
-            self.repl.matches_iter.update(self.repl.cw(), self.repl.matches)
-
         self.repl = FakeCliRepl()
-
-        # Stub out CLIRepl attributes
-        self.repl.buffer = []
-        self.repl.argspec = Mock()
-        self.repl.print_line = Mock()
-        self.repl.show_list = Mock()
-
-        # Stub out complete
-        self.repl.complete = Mock()
-        self.repl.complete.return_value = True
-        self.repl.complete.side_effect = setup_matches
-        self.repl.matches_iter = None
-
-        # Stub out the config logic
-        self.repl.config = Mock()
-        self.repl.config.tab_length = 4
-        self.repl.config.auto_display_list = True
-        self.repl.config.list_win_visible = True
-        self.repl.config.autocomplete_mode = autocomplete.SIMPLE
 
     # 3 Types of tab complete
     def test_simple_tab_complete(self):
+        self.repl.matches_iter = MagicMock()
+        self.repl.matches_iter.__nonzero__.return_value = False
+        self.repl.complete = Mock()
+        self.repl.print_line = Mock()
+        self.repl.matches_iter.is_cseq.return_value = False
+        self.repl.show_list = Mock()
+        self.repl.argspec = Mock()
+        self.repl.matches_iter.cur_line.return_value = (None, "foobar")
+
         self.repl.s = "foo"
         self.repl.tab()
+        self.assertTrue(self.repl.complete.called)
+        self.repl.complete.assert_called_with(tab=True)
         self.assertEqual(self.repl.s, "foobar")
 
     @skip("disabled while non-simple completion is disabled")
@@ -434,33 +434,27 @@ class TestCliReplTab(unittest.TestCase):
         """make sure pressing the tab key will
            still in some cases add a tab"""
         self.repl.s = ""
+        self.repl.config = Mock()
+        self.repl.config.tab_length = 4
+        self.repl.complete = Mock()
+        self.repl.print_line = Mock()
         self.repl.tab()
         self.assertEqual(self.repl.s, "    ")
 
     def test_back_parameter(self):
+        self.repl.matches_iter = Mock()
+        self.repl.matches_iter.matches = True
+        self.repl.matches_iter.previous.return_value = "previtem"
+        self.repl.matches_iter.is_cseq.return_value = False
+        self.repl.show_list = Mock()
+        self.repl.argspec = Mock()
+        self.repl.matches_iter.cur_line.return_value = (None, "previtem")
+        self.repl.print_line = Mock()
         self.repl.s = "foo"
+        self.repl.cpos = 0
         self.repl.tab(back=True)
-        self.assertEqual(self.repl.s, "foofoobar")
-
-    def test_nth_forward(self):
-        """make sure that pressing tab twice will fist expand 
-        and then cycle to the first match"""
-        self.repl.s = "f"
-        self.repl.tab()
-        self.repl.tab()
-        self.assertEqual(self.repl.s, "foobar")
-
-    def test_current_word(self):
-        """Complete should not be affected by words that precede it."""
-        self.repl.s = "import f"
-        self.repl.tab()
-        self.assertEqual(self.repl.s, "import foo")
-
-        self.repl.tab()
-        self.assertEqual(self.repl.s, "import foobar")
-
-        self.repl.tab()
-        self.assertEqual(self.repl.s, "import foofoobar")
+        self.assertTrue(self.repl.matches_iter.previous.called)
+        self.assertTrue(self.repl.s, "previtem")
 
     # Attribute Tests
     @skip("disabled while non-simple completion is disabled")
@@ -484,6 +478,11 @@ class TestCliReplTab(unittest.TestCase):
     # Expand Tests
     def test_simple_expand(self):
         self.repl.s = "f"
+        self.cpos = 0
+        self.repl.matches_iter = Mock()
+        self.repl.matches_iter.is_cseq.return_value = True
+        self.repl.matches_iter.substitute_cseq.return_value = (3, "foo")
+        self.repl.print_line = Mock()
         self.repl.tab()
         self.assertEqual(self.repl.s, "foo")
 
@@ -497,7 +496,6 @@ class TestCliReplTab(unittest.TestCase):
     @skip("disabled while non-simple completion is disabled")
     def test_fuzzy_expand(self):
         pass
-
 
 
 if __name__ == '__main__':

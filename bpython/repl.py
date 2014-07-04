@@ -272,9 +272,9 @@ class MatchesIterator(object):
     A MatchesIterator can be `clear`ed to reset match iteration, and
     `update`ed to set what matches will be iterated over."""
 
-    def __init__(self, current_word='', matches=[]):
-        self.current_word = current_word # word being replaced in the original line of text
-        self.matches = list(matches)     # possible replacements for current_word
+    def __init__(self):
+        self.current_word = ''           # word being replaced in the original line of text
+        self.matches = None              # possible replacements for current_word
         self.index = -1                  # which word is currently replacing the current word
         self.orig_cursor_offset = None   # cursor position in the original line
         self.orig_line = None            # original line (before match replacements)

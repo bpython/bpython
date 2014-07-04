@@ -1437,7 +1437,7 @@ class CLIRepl(repl.Repl):
         # 3. check to see if we can expand the current word
         if self.matches_iter.is_cseq():
             #TODO resolve this error-prone situation:
-            # can't assign at same time to self.s and self.cursor_offest
+            # can't assign at same time to self.s and self.cursor_offset
             # because for cursor_offset
             # property to work correctly, self.s must already be set
             temp_cursor_offset, self.s = self.matches_iter.substitute_cseq()
