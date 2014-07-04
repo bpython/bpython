@@ -116,6 +116,10 @@ class FakeStdin(object):
         # others, so here's a hack to keep them happy
         raise IOError(errno.EBADF, "sys.stdin is read-only")
 
+    @property
+    def encoding(self):
+        return 'UTF8'
+
     #TODO write a read() method
 
 class ReevaluateFakeStdin(object):
