@@ -8,6 +8,8 @@ except ImportError:
     def skip(f):
         return lambda self: None
 
+py3 = (sys.version_info[0] == 3)
+
 from bpython import config, repl, cli, autocomplete
 
 def setup_config(conf):
@@ -399,7 +401,10 @@ class TestCliReplTab(unittest.TestCase):
     # 3 Types of tab complete
     def test_simple_tab_complete(self):
         self.repl.matches_iter = MagicMock()
-        self.repl.matches_iter.__nonzero__.return_value = False
+        if py3:
+            self.repl.matches_iter.__bool__.return_value = False
+        else:
+            self.repl.matches_iter.__nonzero__.return_value = False
         self.repl.complete = Mock()
         self.repl.print_line = Mock()
         self.repl.matches_iter.is_cseq.return_value = False
