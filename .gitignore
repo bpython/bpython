@@ -1,9 +1,9 @@
 dist/*
 bpython.egg-info/*
-.pyc
+*.pyc
 tags
 _trial_temp
-.mo
+*.mo
 build/*
 env
 .DS_Store
