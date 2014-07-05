@@ -366,7 +366,7 @@ class Repl(BpythonRepl):
             self.request_paint_to_clear_screen = True
         elif e in key_dispatch[self.config.last_output_key]: #TODO Not Implemented
             pass
-        elif e in ('\x1f',) + key_dispatch[self.config.show_source_key]:
+        elif e in key_dispatch[self.config.show_source_key]:
             source = self.get_source_of_current_name()
             if source is None:
                 self.status_bar.message(_('Cannot show source.'))
