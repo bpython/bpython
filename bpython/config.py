@@ -90,6 +90,7 @@ def loadini(struct, configfile):
         'curtsies': {
             'list_above' : False,
             'fill_terminal' : False,
+            'right_arrow_completion' : True,
         }})
     if not config.read(config_path):
         # No config file. If the user has it in the old place then complain
@@ -150,6 +151,7 @@ def loadini(struct, configfile):
 
     struct.curtsies_list_above = config.getboolean('curtsies', 'list_above')
     struct.curtsies_fill_terminal = config.getboolean('curtsies', 'fill_terminal')
+    struct.curtsies_right_arrow_completion = config.getboolean('curtsies', 'right_arrow_completion')
 
     color_scheme_name = config.get('general', 'color_scheme')
 

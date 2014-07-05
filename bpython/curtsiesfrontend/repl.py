@@ -336,7 +336,8 @@ class Repl(BpythonRepl):
             self.update_completion()
             return
 
-        elif e in ("KEY_RIGHT") and self.cursor_offset == len(self.current_line):
+        elif (e in ("KEY_RIGHT", '\x06') and self.config.curtsies_right_arrow_completion
+                and self.cursor_offset == len(self.current_line)):
             self.current_line += self.current_suggestion
             self.cursor_offset = len(self.current_line)
             self.update_completion()
@@ -348,13 +349,15 @@ class Repl(BpythonRepl):
         # readline history commands
         elif e in ("KEY_UP",) + key_dispatch[self.config.up_one_line_key]:
             self.rl_history.enter(self.current_line)
-            self.current_line = self.rl_history.back(False, search=True)
+            self.current_line = self.rl_history.back(False,
+                    search=self.config.curtsies_right_arrow_completion)
             self.cursor_offset = len(self.current_line)
             self.update_completion()
 
         elif e in ("KEY_DOWN",) + key_dispatch[self.config.down_one_line_key]:
             self.rl_history.enter(self.current_line)
-            self.current_line = self.rl_history.forward(False, search=True)
+            self.current_line = self.rl_history.forward(False,
+                    search=self.config.curtsies_right_arrow_completion)
             self.cursor_offset = len(self.current_line)
             self.update_completion()
         elif e in key_dispatch[self.config.search_key]: #TODO Not Implemented
@@ -664,6 +667,9 @@ class Repl(BpythonRepl):
         """The colored current line (no prompt, not wrapped)"""
         if self.config.syntax:
             fs = bpythonparse(format(self.tokenize(self.current_line), self.formatter))
+            if self.rl_history.saved_line in self.current_line:
+                if self.config.curtsies_right_arrow_completion:
+                    fs = fmtfuncs.on_magenta(self.rl_history.saved_line).join(fs.split(self.rl_history.saved_line))
             logging.debug('Display line %r -> %r', self.current_line, fs)
         else:
             fs = fmtstr(self.current_line)
@@ -707,7 +713,10 @@ class Repl(BpythonRepl):
 
     @property
     def current_cursor_line(self):
-        return self.current_cursor_line_without_suggestion + fmtfuncs.bold(fmtfuncs.dark((self.current_suggestion)))
+        if self.config.curtsies_right_arrow_completion:
+            return self.current_cursor_line_without_suggestion + fmtfuncs.bold(fmtfuncs.dark((self.current_suggestion)))
+        else:
+            return self.current_cursor_line_without_suggestion
 
     @property
     def current_suggestion(self):

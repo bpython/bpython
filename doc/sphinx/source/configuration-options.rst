@@ -295,3 +295,15 @@ Default: False
 
 When there is space above the current line, whether the suggestions list will be
 displayed there instead of below the current line.
+
+right_arrow_completion
+^^^^^^^^^^^^^^^^^^^^^^
+Default: True
+
+Full line suggestion and completion (like fish shell and many web browsers).
+
+Full line completions are displayed under the cursor in gray.
+When the cursor is at the end of a line, pressing right arrow or ctrl-f will
+complete the full line.
+This option also turns on substring history search, highlighting the matching
+section in previous result.
