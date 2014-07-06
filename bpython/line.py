@@ -125,3 +125,28 @@ def current_import(cursor_offset, line):
         end = baseline.end() + m.end(1)
         if start < cursor_offset and end >= cursor_offset:
             return start, end, m.group(1)
+
+def current_method_definition_name(cursor_offset, line):
+    """The name of a method being defined"""
+    matches = re.finditer("def\s+([a-zA-Z_][\w]*)", line)
+    for m in matches:
+        if (m.start(1) <= cursor_offset and m.end(1) >= cursor_offset):
+            return m.start(1), m.end(1), m.group(1)
+    return None
+
+def current_single_word(cursor_offset, line):
+    """the un-dotted word just before or under the cursor"""
+    matches = re.finditer(r"(?<![.])\b([a-zA-Z_][\w]*)", line)
+    for m in matches:
+        if (m.start(1) <= cursor_offset and m.end(1) >= cursor_offset):
+            return m.start(1), m.end(1), m.group(1)
+    return None
+
+def current_dotted_attribute(cursor_offset, line):
+    """The dotted attribute-object pair before the cursor"""
+    match = current_word(cursor_offset, line)
+    if match is None: return None
+    start, end, word = match
+    if '.' in word[1:]:
+        return start, end, word
+    return None

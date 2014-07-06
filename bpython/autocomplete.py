@@ -48,27 +48,36 @@ SIMPLE = 'simple'
 SUBSTRING = 'substring'
 FUZZY = 'fuzzy'
 
-def attr_complete(text, namespace=None, config=None):
+MAGIC_METHODS = ["__%s__" % s for s in [
+    "init", "repr", "str", "lt", "le", "eq", "ne", "gt", "ge", "cmp", "hash",
+    "nonzero", "unicode", "getattr", "setattr", "get", "set","call", "len",
+    "getitem", "setitem", "iter", "reversed", "contains", "add", "sub", "mul",
+    "floordiv", "mod", "divmod", "pow", "lshift", "rshift", "and", "xor", "or",
+    "div", "truediv", "neg", "pos", "abs", "invert", "complex", "int", "float",
+    "oct", "hex", "index", "coerce", "enter", "exit"]]
+
+
+def attr_complete(text, namespace=None, mode=SIMPLE):
     """Return list of matches """
     if namespace is None:
-        namespace = __main__.__dict__ #TODO figure out if this __main__ still makes sense
+        namespace = __main__.__dict__
 
-    if hasattr(config, 'autocomplete_mode'):
-        autocomplete_mode = config.autocomplete_mode
-    else:
-        autocomplete_mode = SUBSTRING
+    assert '.' in text
 
-    if "." in text:
-        # Examples: 'foo.b' or 'foo[bar.'
-        for i in range(1, len(text) + 1):
-            if text[-i] == '[':
-                i -= 1
-                break
-        methodtext = text[-i:]
-        return [''.join([text[:-i], m]) for m in
-                            attr_matches(methodtext, namespace, autocomplete_mode)]
-    else:
-        return global_matches(text, namespace, autocomplete_mode)
+    for i in range(1, len(text) + 1):
+        if text[-i] == '[':
+            i -= 1
+            break
+    methodtext = text[-i:]
+    matches = [''.join([text[:-i], m]) for m in
+                        attr_matches(methodtext, namespace, mode)]
+
+    # unless the first character is a _ filter out all attributes starting with a _
+    if not text.split('.')[-1].startswith('_'):
+        matches = [match for match in matches
+                   if not match.split('.')[-1].startswith('_')]
+    return matches
+
 
 class SafeEvalFailed(Exception):
     """If this object is returned, safe_eval failed"""
@@ -155,6 +164,8 @@ def global_matches(text, namespace, autocomplete_mode):
     matches.sort()
     return matches
 
+#TODO use method_match everywhere instead of startswith to implement other completion modes
+#     will also need to rewrite checking mode so cseq replace doesn't happen in frontends
 def method_match(word, size, text, autocomplete_mode):
     if autocomplete_mode == SIMPLE:
         return word[:size] == text
@@ -187,57 +198,45 @@ def last_part_of_filename(filename):
 def after_last_dot(name):
     return name.rstrip('.').rsplit('.')[-1]
 
-def dict_key_format(filename):
-    # dictionary key suggestions
-    #items = [x.rstrip(']') for x in items]
-    #if current_item:
-    #    current_item = current_item.rstrip(']')
-    pass
-
-def get_completer(cursor_offset, current_line, locals_, argspec, config, magic_methods):
+def get_completer(cursor_offset, current_line, locals_, argspec, full_code, mode, complete_magic_methods):
     """Returns a list of matches and a class for what kind of completion is happening
 
     If no completion type is relevant, returns None, None"""
 
-    #TODO use the smarter current_string() in Repl that knows about the buffer
-    #TODO don't pass in config, pass in the settings themselves
+    kwargs = {'locals_':locals_, 'argspec':argspec, 'full_code':full_code,
+              'mode':mode, 'complete_magic_methods':complete_magic_methods}
 
-    matches = ImportCompletion.matches(cursor_offset, current_line)
-    if matches is not None:
-        return sorted(set(matches)), ImportCompletion
+    # mutually exclusive matchers: if one returns [], don't go on
+    for completer in [ImportCompletion, FilenameCompletion,
+                      MagicMethodCompletion, GlobalCompletion]:
+        matches = completer.matches(cursor_offset, current_line, **kwargs)
+        if matches is not None:
+            return sorted(set(matches)), completer
 
-    matches = FilenameCompletion.matches(cursor_offset, current_line)
-    if matches is not None:
-        return sorted(set(matches)), FilenameCompletion
+    # mutually exclusive if matches: If one of these returns [], try the next one
+    for completer in [DictKeyCompletion]:
+        matches = completer.matches(cursor_offset, current_line, **kwargs)
+        if matches:
+            return sorted(set(matches)), completer
 
-    matches = DictKeyCompletion.matches(cursor_offset, current_line, locals_=locals_, config=config)
-    if matches:
-        return sorted(set(matches)), DictKeyCompletion
+    matches = AttrCompletion.matches(cursor_offset, current_line, **kwargs)
 
-    matches = AttrCompletion.matches(cursor_offset, current_line, locals_=locals_, config=config)
-    if matches is not None:
-        cw = AttrCompletion.locate(cursor_offset, current_line)[2]
-        matches.extend(magic_methods(cw))
-        if argspec:
-            matches.extend(name + '=' for name in argspec[1][0]
-                           if isinstance(name, basestring) and name.startswith(cw))
-            if py3:
-                matches.extend(name + '=' for name in argspec[1][4]
-                               if name.startswith(cw))
+    # cumulative completions - try them all
+    # They all use current_word replacement and formatting
+    current_word_matches = []
+    for completer in [AttrCompletion, ParameterNameCompletion]:
+        matches = completer.matches(cursor_offset, current_line, **kwargs)
+        if matches is not None:
+            current_word_matches.extend(matches)
 
-        # unless the first character is a _ filter out all attributes starting with a _
-        if not cw.split('.')[-1].startswith('_'):
-            matches = [match for match in matches
-                       if not match.split('.')[-1].startswith('_')]
-
-        return sorted(set(matches)), AttrCompletion
-
-    return None, None
+    if len(current_word_matches) == 0:
+        return None, None
+    return sorted(set(current_word_matches)), AttrCompletion
 
 
 class BaseCompletionType(object):
     """Describes different completion types"""
-    def matches(cls, cursor_offset, line):
+    def matches(cls, cursor_offset, line, **kwargs):
         """Returns a list of possible matches given a line and cursor, or None
         if this completion type isn't applicable.
 
@@ -268,14 +267,16 @@ class BaseCompletionType(object):
         return result
 
 class ImportCompletion(BaseCompletionType):
-    matches = staticmethod(importcompletion.complete)
+    @classmethod
+    def matches(cls, cursor_offset, current_line, **kwargs):
+        return importcompletion.complete(cursor_offset, current_line)
     locate = staticmethod(lineparts.current_word)
     format = staticmethod(after_last_dot)
 
 class FilenameCompletion(BaseCompletionType):
     shown_before_tab = False
     @classmethod
-    def matches(cls, cursor_offset, current_line):
+    def matches(cls, cursor_offset, current_line, **kwargs):
         cs = lineparts.current_string(cursor_offset, current_line)
         if cs is None:
             return None
@@ -285,19 +286,19 @@ class FilenameCompletion(BaseCompletionType):
 
 class AttrCompletion(BaseCompletionType):
     @classmethod
-    def matches(cls, cursor_offset, line, locals_, config):
+    def matches(cls, cursor_offset, line, locals_, mode, **kwargs):
         r = cls.locate(cursor_offset, line)
         if r is None:
             return None
         cw = r[2]
-        return attr_complete(cw, namespace=locals_, config=config)
-    locate = staticmethod(lineparts.current_word)
+        return attr_complete(cw, namespace=locals_, mode=mode)
+    locate = staticmethod(lineparts.current_dotted_attribute)
     format = staticmethod(after_last_dot)
 
 class DictKeyCompletion(BaseCompletionType):
     locate = staticmethod(lineparts.current_dict_key)
     @classmethod
-    def matches(cls, cursor_offset, line, locals_, config):
+    def matches(cls, cursor_offset, line, locals_, **kwargs):
         r = cls.locate(cursor_offset, line)
         if r is None:
             return None
@@ -313,3 +314,43 @@ class DictKeyCompletion(BaseCompletionType):
     @classmethod
     def format(cls, match):
         return match[:-1]
+
+class MagicMethodCompletion(BaseCompletionType):
+    locate = staticmethod(lineparts.current_method_definition_name)
+    @classmethod
+    def matches(cls, cursor_offset, line, full_code, **kwargs):
+        r = cls.locate(cursor_offset, line)
+        if r is None:
+            return None
+        if 'class' not in full_code:
+            return None
+        start, end, word = r
+        return [name for name in MAGIC_METHODS if name.startswith(word)]
+
+class GlobalCompletion(BaseCompletionType):
+    @classmethod
+    def matches(cls, cursor_offset, line, locals_, mode, **kwargs):
+        r = cls.locate(cursor_offset, line)
+        if r is None:
+            return None
+        start, end, word = r
+        return global_matches(word, locals_, mode)
+    locate = staticmethod(lineparts.current_single_word)
+
+class ParameterNameCompletion(BaseCompletionType):
+    @classmethod
+    def matches(cls, cursor_offset, line, argspec, **kwargs):
+        if not argspec:
+            return None
+        r = cls.locate(cursor_offset, line)
+        if r is None:
+            return None
+        start, end, word = r
+        if argspec:
+            matches = [name + '=' for name in argspec[1][0]
+                       if isinstance(name, basestring) and name.startswith(word)]
+            if py3:
+                matches.extend(name + '=' for name in argspec[1][4]
+                               if name.startswith(word))
+        return matches
+    locate = staticmethod(lineparts.current_word)

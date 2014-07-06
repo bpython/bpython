@@ -601,16 +601,6 @@ class Repl(object):
                 if not self.docstring:
                     self.docstring = None
 
-    def magic_method_completions(self, cw):
-        #TODO move this to autocompletion and pass in the buffer
-        if (self.config.complete_magic_methods and self.buffer and
-            self.buffer[0].startswith("class ") and
-            self.current_line.lstrip().startswith("def ")):
-            return [name for name in self.config.magic_methods
-                    if name.startswith(cw)]
-        else:
-            return []
-
     def complete(self, tab=False):
         """Construct a full list of possible completions and construct and
         display them in a window. Also check if there's an available argspec
@@ -631,8 +621,10 @@ class Repl(object):
                 self.current_line,
                 self.interp.locals,
                 self.argspec,
-                self.config,
-                self.magic_method_completions)
+                '\n'.join(self.buffer + [self.current_line]),
+                self.config.autocomplete_mode if hasattr(self.config, 'autocomplete_mode') else autocomplete.SIMPLE,
+                self.config.complete_magic_methods)
+        #TODO implement completer.shown_before_tab == False (filenames shouldn't fill screen)
 
         if (matches is None            # no completion is relevant
                 or len(matches) == 0): # a target for completion was found

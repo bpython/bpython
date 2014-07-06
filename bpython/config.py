@@ -6,15 +6,6 @@ from itertools import chain
 from bpython.keys import cli_key_dispatch as key_dispatch
 from bpython.autocomplete import SIMPLE as default_completion
 
-MAGIC_METHODS = ", ".join("__%s__" % s for s in [
-    "init", "repr", "str", "lt", "le", "eq", "ne", "gt", "ge", "cmp", "hash",
-    "nonzero", "unicode", "getattr", "setattr", "get", "set","call", "len",
-    "getitem", "setitem", "iter", "reversed", "contains", "add", "sub", "mul",
-    "floordiv", "mod", "divmod", "pow", "lshift", "rshift", "and", "xor", "or",
-    "div", "truediv", "neg", "pos", "abs", "invert", "complex", "int", "float",
-    "oct", "hex", "index", "coerce", "enter", "exit"]
-)
-
 class Struct(object):
     """Simple class for instantiating objects we can add arbitrary attributes
     to and use for various arbitrary things."""
@@ -55,7 +46,6 @@ def loadini(struct, configfile):
             'auto_display_list': True,
             'color_scheme': 'default',
             'complete_magic_methods' : True,
-            'magic_methods' : MAGIC_METHODS,
             'autocomplete_mode': default_completion,
             'dedent_after': 1,
             'flush_output': True,
@@ -155,8 +145,6 @@ def loadini(struct, configfile):
 
     struct.complete_magic_methods = config.getboolean('general',
                                                       'complete_magic_methods')
-    methods = config.get('general', 'magic_methods')
-    struct.magic_methods = [meth.strip() for meth in methods.split(",")]
     struct.autocomplete_mode = config.get('general', 'autocomplete_mode')
     struct.save_append_py = config.getboolean('general', 'save_append_py')
 
