@@ -69,8 +69,8 @@ def get_completer(cursor_offset, current_line, locals_, argspec, full_code, mode
               'mode':mode, 'complete_magic_methods':complete_magic_methods}
 
     # mutually exclusive matchers: if one returns [], don't go on
-    for completer in [ImportCompletion, FilenameCompletion,
-                      MagicMethodCompletion, GlobalCompletion]:
+    for completer in [StringLiteralAttrCompletion, ImportCompletion,
+            FilenameCompletion, MagicMethodCompletion, GlobalCompletion]:
         matches = completer.matches(cursor_offset, current_line, **kwargs)
         if matches is not None:
             return sorted(set(matches)), completer
@@ -314,6 +314,20 @@ class ParameterNameCompletion(BaseCompletionType):
                                if name.startswith(word))
         return matches
     locate = staticmethod(lineparts.current_word)
+
+class StringLiteralAttrCompletion(BaseCompletionType):
+    locate = staticmethod(lineparts.current_string_literal_attr)
+    @classmethod
+    def matches(cls, cursor_offset, line, **kwargs):
+        r = cls.locate(cursor_offset, line)
+        if r is None:
+            return None
+        start, end, word = r
+        attrs = dir('')
+        matches = [att for att in attrs if att.startswith(word)]
+        if not word.startswith('_'):
+            return [match for match in matches if not match.startswith('_')]
+        return matches
 
 class SafeEvalFailed(Exception):
     """If this object is returned, safe_eval failed"""

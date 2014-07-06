@@ -149,4 +149,11 @@ def current_dotted_attribute(cursor_offset, line):
     start, end, word = match
     if '.' in word[1:]:
         return start, end, word
+
+def current_string_literal_attr(cursor_offset, line):
+    """The attribute following a string literal"""
+    matches = re.finditer("('''" + r'''|"""|'|")((?:(?=([^"'\\]+|\\.|(?!\1)["']))\3)*)\1[.]([a-zA-Z_]?[\w]*)''', line)
+    for m in matches:
+        if (m.start(4) <= cursor_offset and m.end(4) >= cursor_offset):
+            return m.start(4), m.end(4), m.group(4)
     return None
