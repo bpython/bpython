@@ -28,15 +28,8 @@ class FakeHistory(repl.History):
 class FakeRepl(repl.Repl):
     def __init__(self, conf={}):
         repl.Repl.__init__(self, repl.Interpreter(), setup_config(conf))
-        self.input_line = ""
-        self.current_word = ""
-        self.cpos = 0
-
-    def current_line(self):
-        return self.input_line
-
-    def cw(self):
-        return self.current_word
+        self.current_line = ""
+        self.cursor_offset = 0
 
 class FakeCliRepl(cli.CLIRepl, FakeRepl):
     def __init__(self):
@@ -178,7 +171,8 @@ class TestArgspec(unittest.TestCase):
 
     def setInputLine(self, line):
         """Set current input line of the test REPL."""
-        self.repl.input_line = line
+        self.repl.current_line = line
+        self.repl.cursor_offset = len(line)
 
     def test_func_name(self):
         for (line, expected_name) in [("spam(", "spam"),
@@ -260,10 +254,11 @@ class TestRepl(unittest.TestCase):
         self.repl.current_word = "d"
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.completer,'matches'))
+        self.assertTrue(hasattr(self.repl.matches_iter,'matches'))
         self.assertEqual(self.repl.completer.matches,
             ['def', 'del', 'delattr(', 'dict(', 'dir(', 'divmod('])
 
+    @skip("disabled while non-simple completion is disabled")
     def test_substring_global_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
         self.repl.input_line = "time"
@@ -274,6 +269,7 @@ class TestRepl(unittest.TestCase):
         self.assertEqual(self.repl.completer.matches,
             ['RuntimeError(', 'RuntimeWarning('])
 
+    @skip("disabled while non-simple completion is disabled")
     def test_fuzzy_global_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
         self.repl.input_line = "doc"
@@ -295,10 +291,11 @@ class TestRepl(unittest.TestCase):
             self.repl.push(line)
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.completer,'matches'))
-        self.assertEqual(self.repl.completer.matches,
+        self.assertTrue(hasattr(self.repl.matches_iter,'matches'))
+        self.assertEqual(self.repl.matches_iter.matches,
             ['Foo.bar'])
 
+    @skip("disabled while non-simple completion is disabled")
     def test_substring_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
         self.repl.input_line = "Foo.az"
@@ -313,6 +310,7 @@ class TestRepl(unittest.TestCase):
         self.assertEqual(self.repl.completer.matches,
             ['Foo.baz'])
 
+    @skip("disabled while non-simple completion is disabled")
     def test_fuzzy_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
         self.repl.input_line = "Foo.br"
@@ -335,8 +333,8 @@ class TestRepl(unittest.TestCase):
         self.repl.push("foobar = 2")
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.completer,'matches'))
-        self.assertEqual(self.repl.completer.matches,
+        self.assertTrue(hasattr(self.repl.matches_iter,'matches'))
+        self.assertEqual(self.repl.matches_iter.matches,
             ['foobar'])
 
     def test_file_should_not_appear_in_complete(self):
@@ -344,8 +342,8 @@ class TestRepl(unittest.TestCase):
         self.repl.input_line = "_"
         self.repl.current_word = "_"
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.completer,'matches'))
-        self.assertTrue('__file__' not in self.repl.completer.matches)
+        self.assertTrue(hasattr(self.repl.matches_iter,'matches'))
+        self.assertTrue('__file__' not in self.repl.matches_iter.matches)
 
 
 class TestCliRepl(unittest.TestCase):
@@ -372,29 +370,6 @@ class TestCliRepl(unittest.TestCase):
         self.repl.cpos = 3
         self.repl.addstr('buzz')
         self.assertEqual(self.repl.s, "foobuzzbar")
-
-    def test_cw(self):
-
-        self.repl.cpos = 2
-        self.assertEqual(self.repl.cw(), None)
-        self.repl.cpos = 0
-
-        self.repl.s = ''
-        self.assertEqual(self.repl.cw(), None)
-
-        self.repl.s = "this.is.a.test\t"
-        self.assertEqual(self.repl.cw(), None)
-
-        s = "this.is.a.test"
-        self.repl.s = s
-        self.assertEqual(self.repl.cw(), s)
-
-        s = "\t\tthis.is.a.test"
-        self.repl.s = s
-        self.assertEqual(self.repl.cw(), s.lstrip())
-
-        self.repl.s = "import datetime"
-        self.assertEqual(self.repl.cw(), 'datetime')
 
 class TestCliReplTab(unittest.TestCase):
 
@@ -437,6 +412,7 @@ class TestCliReplTab(unittest.TestCase):
         self.repl.tab()
         self.assertEqual(self.repl.s, "foobar")
 
+    @skip("disabled while non-simple completion is disabled")
     def test_substring_tab_complete(self):
         self.repl.s = "bar"
         self.repl.config.autocomplete_mode = autocomplete.FUZZY
@@ -445,6 +421,7 @@ class TestCliReplTab(unittest.TestCase):
         self.repl.tab()
         self.assertEqual(self.repl.s, "foofoobar")
 
+    @skip("disabled while non-simple completion is disabled")
     def test_fuzzy_tab_complete(self):
         self.repl.s = "br"
         self.repl.config.autocomplete_mode = autocomplete.FUZZY
@@ -485,6 +462,7 @@ class TestCliReplTab(unittest.TestCase):
         self.assertEqual(self.repl.s, "import foofoobar")
 
     # Attribute Tests
+    @skip("disabled while non-simple completion is disabled")
     def test_fuzzy_attribute_tab_complete(self):
         """Test fuzzy attribute with no text"""
         self.repl.s = "Foo."
@@ -493,6 +471,7 @@ class TestCliReplTab(unittest.TestCase):
         self.repl.tab()
         self.assertEqual(self.repl.s, "Foo.foobar")
 
+    @skip("disabled while non-simple completion is disabled")
     def test_fuzzy_attribute_tab_complete2(self):
         """Test fuzzy attribute with some text"""
         self.repl.s = "Foo.br"
@@ -507,12 +486,14 @@ class TestCliReplTab(unittest.TestCase):
         self.repl.tab()
         self.assertEqual(self.repl.s, "foo")
 
+    @skip("disabled while non-simple completion is disabled")
     def test_substring_expand_forward(self):
         self.repl.config.autocomplete_mode = autocomplete.SUBSTRING
         self.repl.s = "ba"
         self.repl.tab()
         self.assertEqual(self.repl.s, "bar")
 
+    @skip("disabled while non-simple completion is disabled")
     def test_fuzzy_expand(self):
         pass
 
