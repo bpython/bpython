@@ -256,6 +256,7 @@ class BaseCompletionType(object):
         """Returns a start, stop, and word given a line and cursor, or None
         if no target for this type of completion is found under the cursor"""
         raise NotImplementedError
+    @classmethod
     def format(cls, word):
         return word
     shown_before_tab = True # whether suggestions should be shown before the
