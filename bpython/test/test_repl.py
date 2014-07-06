@@ -234,6 +234,7 @@ class TestRepl(unittest.TestCase):
 
     def test_current_string(self):
         self.repl.input_line = 'a = "2"'
+        self.repl.cpos = 0 #TODO factor cpos out of repl.Repl
         self.assertEqual(self.repl.current_string(), '"2"')
 
         self.repl.input_line = 'a = "2" + 2'
