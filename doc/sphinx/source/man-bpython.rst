@@ -88,7 +88,7 @@ Debian) for various options you can use, or read :manpage:`bpython-config(5)`.
 Known bugs
 ----------
 
-See http://bitbucket.org/bobf/bpython/issues/ for a list of known issues.
+See http://github.com/bpython/bpython/issues/ for a list of known issues.
 
 See also
 --------

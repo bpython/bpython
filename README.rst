@@ -47,8 +47,8 @@ creating a temporary file, etc..
 I hope you find it useful and please feel free to submit any bugs/patches (yeah
 right)/suggestions to:
 robertanthonyfarrell@gmail.com
-or place them at the bitbucket issue page for this project at:
-http://bitbucket.org/bobf/bpython/issues/
+or place them at the github issue page for this project at:
+http://github.com/bpython/bpython/issues/
 
 For any other ways of communicating with bpython users and devs you can find us
 at the communication page on the projects homepage:
@@ -111,9 +111,9 @@ $XDG_CONFIG_HOME/bpython/config) or specify at the command line::
 
 Known Bugs
 ==========
-For known bugs please see bpython's issue tracker at bitbucket:
+For known bugs please see bpython's issue tracker at github:
 
-http://bitbucket.org/bobf/bpython/issues/
+http://github.com/bpython/bpython/issues/
 
 CLI Windows Support
 ===================
