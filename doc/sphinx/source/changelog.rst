@@ -312,7 +312,7 @@ v0.9.2
 * Fix to reset string highlighting after a SyntaxError.
 * bpython now uses optparse for option parsing and it supports --version now.
 * Configuration files are no longer passed by the first command line argument but by the -c command line switch.
-* Fix for problem related to editing lines in the history: http://bitbucket.org/bobf/bpython/issue/10/odd-behaviour-when-editing-commands-in-the-history
+* Fix for problem related to editing lines in the history (#10)
 
 v0.9.1
 ------
