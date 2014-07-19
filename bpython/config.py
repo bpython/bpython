@@ -6,15 +6,6 @@ from itertools import chain
 from bpython.keys import cli_key_dispatch as key_dispatch
 from bpython.autocomplete import SIMPLE as default_completion
 
-MAGIC_METHODS = ", ".join("__%s__" % s for s in [
-    "init", "repr", "str", "lt", "le", "eq", "ne", "gt", "ge", "cmp", "hash",
-    "nonzero", "unicode", "getattr", "setattr", "get", "set","call", "len",
-    "getitem", "setitem", "iter", "reversed", "contains", "add", "sub", "mul",
-    "floordiv", "mod", "divmod", "pow", "lshift", "rshift", "and", "xor", "or",
-    "div", "truediv", "neg", "pos", "abs", "invert", "complex", "int", "float",
-    "oct", "hex", "index", "coerce", "enter", "exit"]
-)
-
 class Struct(object):
     """Simple class for instantiating objects we can add arbitrary attributes
     to and use for various arbitrary things."""
@@ -55,7 +46,6 @@ def loadini(struct, configfile):
             'auto_display_list': True,
             'color_scheme': 'default',
             'complete_magic_methods' : True,
-            'magic_methods' : MAGIC_METHODS,
             'autocomplete_mode': default_completion,
             'dedent_after': 1,
             'flush_output': True,
@@ -100,6 +90,7 @@ def loadini(struct, configfile):
         'curtsies': {
             'list_above' : False,
             'fill_terminal' : False,
+            'right_arrow_completion' : True,
         }})
     if not config.read(config_path):
         # No config file. If the user has it in the old place then complain
@@ -155,13 +146,12 @@ def loadini(struct, configfile):
 
     struct.complete_magic_methods = config.getboolean('general',
                                                       'complete_magic_methods')
-    methods = config.get('general', 'magic_methods')
-    struct.magic_methods = [meth.strip() for meth in methods.split(",")]
     struct.autocomplete_mode = config.get('general', 'autocomplete_mode')
     struct.save_append_py = config.getboolean('general', 'save_append_py')
 
     struct.curtsies_list_above = config.getboolean('curtsies', 'list_above')
     struct.curtsies_fill_terminal = config.getboolean('curtsies', 'fill_terminal')
+    struct.curtsies_right_arrow_completion = config.getboolean('curtsies', 'right_arrow_completion')
 
     color_scheme_name = config.get('general', 'color_scheme')
 

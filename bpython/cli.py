@@ -353,6 +353,13 @@ class CLIRepl(repl.Repl):
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 0.8
 
+    def _get_cursor_offset(self):
+        return len(self.s) - self.cpos
+    def _set_cursor_offset(self, offset):
+        self.cpos = len(self.s) - offset
+    cursor_offset = property(_get_cursor_offset, _set_cursor_offset, None,
+                             "The cursor offset from the beginning of the line")
+
     def addstr(self, s):
         """Add a string to the current input line and figure out
         where it should go, depending on the cursor position."""
@@ -446,34 +453,29 @@ class CLIRepl(repl.Repl):
             self.scr.clrtoeol()
 
     def complete(self, tab=False):
-        """Get Autcomplete list and window."""
-        if self.paste_mode and self.list_win_visible:
-            self.scr.touchwin()
+        """Get Autcomplete list and window.
 
+        Called whenever these should be updated, and called
+        with tab
+        """
         if self.paste_mode:
+            self.scr.touchwin() #TODO necessary?
             return
 
-        if self.list_win_visible and not self.config.auto_display_list:
-            self.scr.touchwin()
-            self.list_win_visible = False
-            self.matches_iter.update()
-            return
-
-        if self.config.auto_display_list or tab:
-            self.list_win_visible = repl.Repl.complete(self, tab)
-            if self.list_win_visible:
-                try:
-                    self.show_list(self.matches, self.argspec)
-                except curses.error:
-                    # XXX: This is a massive hack, it will go away when I get
-                    # cusswords into a good enough state that we can start
-                    # using it.
-                    self.list_win.border()
-                    self.list_win.refresh()
-                    self.list_win_visible = False
-            if not self.list_win_visible:
-                self.scr.redrawwin()
-                self.scr.refresh()
+        list_win_visible = repl.Repl.complete(self, tab)
+        if list_win_visible:
+            try:
+                self.show_list(self.matches_iter.matches, topline=self.argspec, formatter=self.matches_iter.completer.format)
+            except curses.error:
+                # XXX: This is a massive hack, it will go away when I get
+                # cusswords into a good enough state that we can start
+                # using it.
+                self.list_win.border()
+                self.list_win.refresh()
+                list_win_visible = False
+        if not list_win_visible:
+            self.scr.redrawwin()
+            self.scr.refresh()
 
     def clrtobol(self):
         """Clear from cursor to beginning of line; usual C-u behaviour"""
@@ -488,9 +490,12 @@ class CLIRepl(repl.Repl):
         self.scr.redrawwin()
         self.scr.refresh()
 
-    def current_line(self):
-        """Return the current line."""
+    def _get_current_line(self):
         return self.s
+    def _set_current_line(self, line):
+        self.s = line
+    current_line = property(_get_current_line, _set_current_line, None,
+                            "The characters of the current line")
 
     def cut_to_buffer(self):
         """Clear from cursor to end of line, placing into cut buffer"""
@@ -500,31 +505,6 @@ class CLIRepl(repl.Repl):
         self.print_line(self.s, clr=True)
         self.scr.redrawwin()
         self.scr.refresh()
-
-    def cw(self):
-        """Return the current word, i.e. the (incomplete) word directly to the
-        left of the cursor"""
-
-        # I don't know if autocomplete should be disabled if the cursor
-        # isn't at the end of the line, but that's what this does for now.
-        if self.cpos: return
-
-        # look from right to left for a bad method or dictionary character
-        l = len(self.s)
-        is_method_char = lambda c: c.isalnum() or c in ('.', '_')
-        dict_chars = ['[']
-
-        if not self.s or not (is_method_char(self.s[-1])
-                                or self.s[-1] in dict_chars):
-            return
-
-        for i in range(1, l+1):
-            c = self.s[-i]
-            if not (is_method_char(c) or c in dict_chars):
-                i -= 1
-                break
-
-        return self.s[-i:]
 
     def delete(self):
         """Process a del"""
@@ -1267,7 +1247,8 @@ class CLIRepl(repl.Repl):
         self.s_hist.append(s.rstrip())
 
 
-    def show_list(self, items, topline=None, current_item=None):
+    def show_list(self, items, topline=None, formatter=None, current_item=None):
+
         shared = Struct()
         shared.cols = 0
         shared.rows = 0
@@ -1283,20 +1264,9 @@ class CLIRepl(repl.Repl):
         self.list_win.erase()
 
         if items:
-            sep = '.'
-            separators = ['.', os.path.sep, '[']
-            lastindex = max([items[0].rfind(c) for c in separators])
-            if lastindex > -1:
-                sep = items[0][lastindex]
-            items = [x.rstrip(sep).rsplit(sep)[-1] for x in items]
+            items = [formatter(x) for x in items]
             if current_item:
-                current_item = current_item.rstrip(sep).rsplit(sep)[-1]
-
-            if items[0].endswith(']'):
-                # dictionary key suggestions
-                items = [x.rstrip(']') for x in items]
-                if current_item:
-                    current_item = current_item.rstrip(']')
+                current_item = formatter(current_item)
 
         if topline:
             height_offset = self.mkargspec(topline, down) + 1
@@ -1445,8 +1415,6 @@ class CLIRepl(repl.Repl):
         and don't indent if there are only whitespace in the line.
         """
 
-        mode = self.config.autocomplete_mode
-
         # 1. check if we should add a tab character
         if self.atbol() and not back:
             x_pos = len(self.s) - self.cpos
@@ -1458,66 +1426,39 @@ class CLIRepl(repl.Repl):
             self.print_line(self.s)
             return True
 
-        # 2. get the current word
+        # 2. run complete() if we aren't already iterating through matches
         if not self.matches_iter:
             self.complete(tab=True)
-            if not self.config.auto_display_list and not self.list_win_visible:
-                return True
-
-            cw = self.current_string() or self.cw()
-            if not cw:
-                return True
-        else:
-            cw = self.matches_iter.current_word
+            self.print_line(self.s)
 
         # 3. check to see if we can expand the current word
-        cseq = None
-        if mode == autocomplete.SUBSTRING:
-            if all([len(match.split(cw)) == 2 for match in self.matches]):
-                seq = [cw + match.split(cw)[1] for match in self.matches]
-                cseq = os.path.commonprefix(seq)
-        else:
-            seq = self.matches
-            cseq = os.path.commonprefix(seq)
-
-        if cseq and mode != autocomplete.FUZZY:
-            expanded_string = cseq[len(cw):]
-            self.s += expanded_string
-            expanded = bool(expanded_string)
+        if self.matches_iter.is_cseq():
+            #TODO resolve this error-prone situation:
+            # can't assign at same time to self.s and self.cursor_offset
+            # because for cursor_offset
+            # property to work correctly, self.s must already be set
+            temp_cursor_offset, self.s = self.matches_iter.substitute_cseq()
+            self.cursor_offset = temp_cursor_offset
             self.print_line(self.s)
-            if len(self.matches) == 1 and self.config.auto_display_list:
-                self.scr.touchwin()
-            if expanded:
-                self.matches_iter.update(cseq, self.matches)
-        else:
-            expanded = False
+            if not self.matches_iter:
+                self.complete()
 
         # 4. swap current word for a match list item
-        if not expanded and self.matches:
-            # reset s if this is the nth result
-            if self.matches_iter:
-                self.s = self.s[:-len(self.matches_iter.current())] + cw
-
+        elif self.matches_iter.matches:
             current_match = back and self.matches_iter.previous() \
                                   or self.matches_iter.next()
-
-            # update s with the new match
-            if current_match:
-                try:
-                    self.show_list(self.matches, self.argspec, current_match)
-                except curses.error:
-                    # XXX: This is a massive hack, it will go away when I get
-                    # cusswords into a good enough state that we can start
-                    # using it.
-                    self.list_win.border()
-                    self.list_win.refresh()
-
-                if self.config.autocomplete_mode == autocomplete.SIMPLE:
-                    self.s += current_match[len(cw):]
-                else:
-                    self.s = self.s[:-len(cw)] + current_match
-
-                self.print_line(self.s, True)
+            try:
+                self.show_list(self.matches_iter.matches, topline=self.argspec,
+                               formatter=self.matches_iter.completer.format,
+                               current_item=current_match)
+            except curses.error:
+                # XXX: This is a massive hack, it will go away when I get
+                # cusswords into a good enough state that we can start
+                # using it.
+                self.list_win.border()
+                self.list_win.refresh()
+            _, self.s = self.matches_iter.cur_line()
+            self.print_line(self.s, True)
         return True
 
     def undo(self, n=1):

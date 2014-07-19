@@ -26,6 +26,7 @@ import code
 import codecs
 import errno
 import inspect
+import logging
 import os
 import pydoc
 import shlex
@@ -35,7 +36,6 @@ import tempfile
 import textwrap
 import traceback
 import unicodedata
-from glob import glob
 from itertools import takewhile
 from locale import getpreferredencoding
 from socket import error as SocketError
@@ -46,22 +46,11 @@ from xmlrpclib import ServerProxy, Error as XMLRPCError
 
 from pygments.token import Token
 
-from bpython import importcompletion, inspection
+from bpython import inspection
 from bpython._py3compat import PythonLexer, py3
 from bpython.formatter import Parenthesis
 from bpython.translations import _
-from bpython.autocomplete import Autocomplete
-
-
-# Needed for special handling of __abstractmethods__
-# abc only exists since 2.6, so check both that it exists and that it's
-# the one we're expecting
-try:
-    import abc
-    abc.ABCMeta
-    has_abc = True
-except (ImportError, AttributeError):
-    has_abc = False
+import bpython.autocomplete as autocomplete
 
 
 class Interpreter(code.InteractiveInterpreter):
@@ -275,13 +264,24 @@ class History(object):
 
 
 class MatchesIterator(object):
+    """Stores a list of matches and which one is currently selected if any.
 
-    def __init__(self, current_word='', matches=[]):
-        self.current_word = current_word
-        self.matches = list(matches)
-        self.index = -1
+    Also responsible for doing the actual replacement of the original line with
+    the selected match.
+
+    A MatchesIterator can be `clear`ed to reset match iteration, and
+    `update`ed to set what matches will be iterated over."""
+
+    def __init__(self):
+        self.current_word = ''           # word being replaced in the original line of text
+        self.matches = None              # possible replacements for current_word
+        self.index = -1                  # which word is currently replacing the current word
+        self.orig_cursor_offset = None   # cursor position in the original line
+        self.orig_line = None            # original line (before match replacements)
+        self.completer = None            # class describing the current type of completion
 
     def __nonzero__(self):
+        """MatchesIterator is False when word hasn't been replaced yet"""
         return self.index != -1
 
     def __iter__(self):
@@ -303,12 +303,52 @@ class MatchesIterator(object):
 
         return self.matches[self.index]
 
-    def update(self, current_word='', matches=[]):
-        if current_word != self.current_word:
-            self.current_word = current_word
-            self.matches = list(matches)
-            self.index = -1
+    def cur_line(self):
+        """Returns a cursor offset and line with the current substitution made"""
+        return self.substitute(self.current())
 
+    def substitute(self, match):
+        """Returns a cursor offset and line with match substituted in"""
+        start, end, word = self.completer.locate(self.orig_cursor_offset, self.orig_line)
+        result = start + len(match), self.orig_line[:start] + match + self.orig_line[end:]
+        return result
+
+    def is_cseq(self):
+        return bool(os.path.commonprefix(self.matches)[len(self.current_word):])
+
+    def substitute_cseq(self):
+        """Returns a new line by substituting a common sequence in, and update matches"""
+        cseq = os.path.commonprefix(self.matches)
+        new_cursor_offset, new_line = self.substitute(cseq)
+        if len(self.matches) == 1:
+            self.clear()
+        else:
+            self.update(new_cursor_offset, new_line, self.matches, self.completer)
+            if len(self.matches) == 1:
+                self.clear()
+        return new_cursor_offset, new_line
+
+    def update(self, cursor_offset, current_line, matches, completer):
+        """Called to reset the match index and update the word being replaced
+
+        Should only be called if there's a target to update - otherwise, call clear"""
+        self.orig_cursor_offset = cursor_offset
+        self.orig_line = current_line
+        assert matches is not None
+        self.matches = matches
+        self.completer = completer
+        #assert self.completer.locate(self.orig_cursor_offset, self.orig_line) is not None, (self.completer.locate, self.orig_cursor_offset, self.orig_line)
+        self.index = -1
+        self.start, self.end, self.current_word = self.completer.locate(self.orig_cursor_offset, self.orig_line)
+
+    def clear(self):
+        self.matches = []
+        self.cursor_offset = -1
+        self.current_line = ''
+        self.current_word = ''
+        self.start = None
+        self.end = None
+        self.index = -1
 
 class Interaction(object):
     def __init__(self, config, statusbar=None):
@@ -378,13 +418,10 @@ class Repl(object):
         self.s_hist = []
         self.history = []
         self.evaluating = False
-        self.completer = Autocomplete(self.interp.locals, config)
-        self.matches = []
         self.matches_iter = MatchesIterator()
         self.argspec = None
         self.current_func = None
         self.highlighted_paren = None
-        self.list_win_visible = False
         self._C = {}
         self.prev_block_finished = 0
         self.interact = Interaction(self.config)
@@ -430,7 +467,7 @@ class Repl(object):
 
     def current_string(self, concatenate=False):
         """If the line ends in a string get it, otherwise return ''"""
-        tokens = self.tokenize(self.current_line())
+        tokens = self.tokenize(self.current_line)
         string_tokens = list(takewhile(token_is_any_of([Token.String,
                                                         Token.Text]),
                                        reversed(tokens)))
@@ -480,7 +517,7 @@ class Repl(object):
         stack = [['', 0, '']]
         try:
             for (token, value) in PythonLexer().get_tokens(
-                self.current_line()):
+                self.current_line):
                 if token is Token.Punctuation:
                     if value in '([{':
                         stack.append(['', 0, value])
@@ -545,21 +582,18 @@ class Repl(object):
         try:
             obj = self.current_func
             if obj is None:
-                line = self.current_line()
+                line = self.current_line
                 if inspection.is_eval_safe_name(line):
                     obj = self.get_object(line)
+                if obj is None:
+                    return None
             source = inspect.getsource(obj)
         except (AttributeError, IOError, NameError, TypeError):
             return None
         else:
             return source
 
-    def complete(self, tab=False):
-        """Construct a full list of possible completions and construct and
-        display them in a window. Also check if there's an available argspec
-        (via the inspect module) and bang that on top of the completions too.
-        The return value is whether the list_win is visible or not."""
-
+    def set_docstring(self):
         self.docstring = None
         if not self.get_args():
             self.argspec = None
@@ -574,88 +608,54 @@ class Repl(object):
                 if not self.docstring:
                     self.docstring = None
 
-        cw = self.cw()
-        cs = self.current_string()
-        if not cw:
-            self.matches = []
-            self.matches_iter.update()
-        if not (cw or cs):
+    def complete(self, tab=False):
+        """Construct a full list of possible completions and construct and
+        display them in a window. Also check if there's an available argspec
+        (via the inspect module) and bang that on top of the completions too.
+        The return value is whether the list_win is visible or not.
+
+        If no matches are found, just return whether there's an argspec to show
+        If any matches are found, save them and select the first one.
+
+        If tab is True exactly one match found, make the replacement and return
+          the result of running complete() again on the new line.
+        """
+
+        self.set_docstring()
+
+        matches, completer = autocomplete.get_completer(
+                self.cursor_offset,
+                self.current_line,
+                self.interp.locals,
+                self.argspec,
+                '\n'.join(self.buffer + [self.current_line]),
+                self.config.autocomplete_mode if hasattr(self.config, 'autocomplete_mode') else autocomplete.SIMPLE,
+                self.config.complete_magic_methods)
+        #TODO implement completer.shown_before_tab == False (filenames shouldn't fill screen)
+
+        if (matches is None            # no completion is relevant
+                or len(matches) == 0): # a target for completion was found
+                                       #   but no matches were found
+            self.matches_iter.clear()
             return bool(self.argspec)
 
-        if cs and tab:
-            # Filename completion
-            self.matches = list()
-            username = cs.split(os.path.sep, 1)[0]
-            user_dir = os.path.expanduser(username)
-            for filename in glob(os.path.expanduser(cs + '*')):
-                if os.path.isdir(filename):
-                    filename += os.path.sep
-                if cs.startswith('~'):
-                    filename = username + filename[len(user_dir):]
-                self.matches.append(filename)
-            self.matches_iter.update(cs, self.matches)
-            return bool(self.matches)
-        elif cs:
-            # Do not provide suggestions inside strings, as one cannot tab
-            # them so they would be really confusing.
-            self.matches_iter.update()
-            return False
+        self.matches_iter.update(self.cursor_offset,
+                                 self.current_line, matches, completer)
 
-        # Check for import completion
-        e = False
-        matches = importcompletion.complete(self.current_line(), cw)
-        if matches is not None and not matches:
-            self.matches = []
-            self.matches_iter.update()
-            return False
+        if len(matches) == 1:
+                self.matches_iter.next()
+                if tab: # if this complete is being run for a tab key press, tab() to do the swap
 
-        if matches is None:
-            # Nope, no import, continue with normal completion
-            try:
-                self.completer.complete(cw, 0)
-            except Exception:
-                # This sucks, but it's either that or list all the exceptions that could
-                # possibly be raised here, so if anyone wants to do that, feel free to send me
-                # a patch. XXX: Make sure you raise here if you're debugging the completion
-                # stuff !
-                e = True
-            else:
-                matches = self.completer.matches
-                if (self.config.complete_magic_methods and self.buffer and
-                    self.buffer[0].startswith("class ") and
-                    self.current_line().lstrip().startswith("def ")):
-                    matches.extend(name for name in self.config.magic_methods
-                                   if name.startswith(cw))
+                    self.cursor_offset, self.current_line = self.matches_iter.substitute_cseq()
+                    return Repl.complete(self)
+                elif self.matches_iter.current_word == matches[0]:
+                    self.matches_iter.clear()
+                    return False
+                return completer.shown_before_tab
 
-        if not e and self.argspec:
-            matches.extend(name + '=' for name in self.argspec[1][0]
-                           if isinstance(name, basestring) and name.startswith(cw))
-            if py3:
-                matches.extend(name + '=' for name in self.argspec[1][4]
-                               if name.startswith(cw))
-
-        # unless the first character is a _ filter out all attributes starting with a _
-        if not e and not cw.split('.')[-1].startswith('_'):
-            matches = [match for match in matches
-                       if not match.split('.')[-1].startswith('_')]
-
-        if e or not matches:
-            self.matches = []
-            self.matches_iter.update()
-            if not self.argspec:
-                return False
         else:
-            # remove duplicates
-            self.matches = sorted(set(matches))
-
-
-        if len(self.matches) == 1 and not self.config.auto_display_list:
-            self.list_win_visible = True
-            self.tab()
-            return False
-
-        self.matches_iter.update(cw, self.matches)
-        return True
+            assert len(matches) > 1
+            return tab or completer.shown_before_tab
 
     def format_docstring(self, docstring, width, height):
         """Take a string and try to format it into a sane list of strings to be
@@ -1094,4 +1094,3 @@ def extract_exit_value(args):
         return args[0]
     else:
         return args
-
