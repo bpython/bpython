@@ -38,6 +38,8 @@ from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 
 from bpython.keys import cli_key_dispatch as key_dispatch
 
+logger = logging.getLogger(__name__)
+
 class FakeStdin(object):
     """Stdin object user code references so sys.stdin.read() asked user for interactive input"""
     def __init__(self, coderunner, repl):
@@ -82,7 +84,7 @@ class FakeStdin(object):
 
     def add_input_character(self, e):
         assert len(e) == 1, 'added multiple characters: %r' % e
-        logging.debug('adding normal char %r to current line', e)
+        logger.debug('adding normal char %r to current line', e)
         c = e if py3 else e.encode('utf8')
         self.current_line = (self.current_line[:self.cursor_offset_in_line] +
                              c +
@@ -113,6 +115,10 @@ class FakeStdin(object):
         # XXX IPython expects sys.stdin.write to exist, there will no doubt be
         # others, so here's a hack to keep them happy
         raise IOError(errno.EBADF, "sys.stdin is read-only")
+
+    @property
+    def encoding(self):
+        return 'UTF8'
 
     #TODO write a read() method
 
@@ -160,7 +166,7 @@ class Repl(BpythonRepl):
         interp is an interpreter to use
         """
 
-        logging.debug("starting init")
+        logger.debug("starting init")
 
         if config is None:
             config = Struct()
@@ -192,7 +198,7 @@ class Repl(BpythonRepl):
             refresh_request=self.request_refresh
             )
         self.rl_char_sequences = get_updated_char_sequences(key_dispatch, config)
-        logging.debug("starting parent init")
+        logger.debug("starting parent init")
         super(Repl, self).__init__(interp, config)
         self.formatter = BPythonFormatter(config.color_scheme)
         self.interact = self.status_bar # overwriting what bpython.Repl put there
@@ -242,7 +248,7 @@ class Repl(BpythonRepl):
 
     def clean_up_current_line_for_exit(self):
         """Called when trying to exit to prep for final paint"""
-        logging.debug('unhighlighting paren for exit')
+        logger.debug('unhighlighting paren for exit')
         self.cursor_offset_in_line = -1
         self.unhighlight_paren()
 
@@ -257,7 +263,7 @@ class Repl(BpythonRepl):
             self.last_events.append(e)
             self.last_events.pop(0)
 
-        logging.debug("processing event %r", e)
+        logger.debug("processing event %r", e)
         if isinstance(e, events.RefreshRequestEvent):
             if self.status_bar.has_focus:
                 self.status_bar.process_event(e)
@@ -265,7 +271,7 @@ class Repl(BpythonRepl):
                 assert self.coderunner.code_is_waiting
                 self.run_code_and_maybe_finish()
         elif isinstance(e, events.WindowChangeEvent):
-            logging.debug('window change to %d %d', e.width, e.height)
+            logger.debug('window change to %d %d', e.width, e.height)
             self.scroll_offset -= e.cursor_dy
             self.width, self.height = e.width, e.height
 
@@ -289,7 +295,7 @@ class Repl(BpythonRepl):
             return self.stdin.process_event(e)
 
         elif isinstance(e, events.SigIntEvent):
-            logging.debug('received sigint event')
+            logger.debug('received sigint event')
             self.keyboard_interrupt()
             self.update_completion()
             return
@@ -386,7 +392,7 @@ class Repl(BpythonRepl):
             """returns true if all characters on current line before cursor are whitespace"""
             return self._current_line[:self.cursor_offset_in_line].strip()
 
-        logging.debug('self.matches: %r', self.matches)
+        logger.debug('self.matches: %r', self.matches)
         if not only_whitespace_left_of_cursor():
             front_white = (len(self._current_line[:self.cursor_offset_in_line]) -
                 len(self._current_line[:self.cursor_offset_in_line].lstrip()))
@@ -404,8 +410,8 @@ class Repl(BpythonRepl):
             if not self.config.auto_display_list and not self.list_win_visible:
                 return True #TODO why?
             cw = self.current_string() or self.current_word
-            logging.debug('current string: %r', self.current_string())
-            logging.debug('current word: %r', self.current_word)
+            logger.debug('current string: %r', self.current_string())
+            logger.debug('current word: %r', self.current_word)
             if not cw:
                 return
 
@@ -501,7 +507,7 @@ class Repl(BpythonRepl):
             display_line = bpythonparse(format(self.tokenize(line), self.formatter))
             # careful: self.tokenize requires that the line not be in self.buffer yet!
 
-            logging.debug('display line being pushed to buffer: %r -> %r', line, display_line)
+            logger.debug('display line being pushed to buffer: %r -> %r', line, display_line)
             self.display_buffer.append(display_line)
         else:
             self.display_buffer.append(fmtstr(line))
@@ -512,14 +518,14 @@ class Repl(BpythonRepl):
 
         code_to_run = '\n'.join(self.buffer)
 
-        logging.debug('running %r in interpreter', self.buffer)
+        logger.debug('running %r in interpreter', self.buffer)
         try:
             c = bool(code.compile_command('\n'.join(self.buffer)))
             self.saved_predicted_parse_error = False
         except (ValueError, SyntaxError, OverflowError):
             c = self.saved_predicted_parse_error = True
         if c:
-            logging.debug('finished - buffer cleared')
+            logger.debug('finished - buffer cleared')
             self.display_lines.extend(self.display_buffer_lines)
             self.display_buffer = []
             self.buffer = []
@@ -531,8 +537,8 @@ class Repl(BpythonRepl):
     def run_code_and_maybe_finish(self, for_code=None):
         r = self.coderunner.run_code(for_code=for_code)
         if r:
-            logging.debug("----- Running finish command stuff -----")
-            logging.debug("saved_indent: %r", self.saved_indent)
+            logger.debug("----- Running finish command stuff -----")
+            logger.debug("saved_indent: %r", self.saved_indent)
             err = self.saved_predicted_parse_error
             self.saved_predicted_parse_error = False
 
@@ -569,8 +575,8 @@ class Repl(BpythonRepl):
                 # then this is the current line, so don't worry about it
                 return
             self.highlighted_paren = None
-            logging.debug('trying to unhighlight a paren on line %r', lineno)
-            logging.debug('with these tokens: %r', saved_tokens)
+            logger.debug('trying to unhighlight a paren on line %r', lineno)
+            logger.debug('with these tokens: %r', saved_tokens)
             new = bpythonparse(format(saved_tokens, self.formatter))
             self.display_buffer[lineno] = self.display_buffer[lineno].setslice_with_length(0, len(new), new, len(self.display_buffer[lineno]))
 
@@ -589,13 +595,13 @@ class Repl(BpythonRepl):
 
     def send_to_stdout(self, output):
         lines = output.split('\n')
-        logging.debug('display_lines: %r', self.display_lines)
+        logger.debug('display_lines: %r', self.display_lines)
         self.current_stdouterr_line += lines[0]
         if len(lines) > 1:
             self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width, blank_line=True))
             self.display_lines.extend(sum([paint.display_linize(line, self.width, blank_line=True) for line in lines[1:-1]], []))
             self.current_stdouterr_line = lines[-1]
-        logging.debug('display_lines: %r', self.display_lines)
+        logger.debug('display_lines: %r', self.display_lines)
 
     def send_to_stderr(self, error):
         #self.send_to_stdout(error)
@@ -625,12 +631,11 @@ class Repl(BpythonRepl):
         """The colored current line (no prompt, not wrapped)"""
         if self.config.syntax:
             fs = bpythonparse(format(self.tokenize(self._current_line), self.formatter))
-            logging.debug('Display line %r -> %r', self._current_line, fs)
+            logger.debug('Display line %r -> %r', self._current_line, fs)
         else:
             fs = fmtstr(self._current_line)
         if hasattr(self, 'old_fs') and str(fs) != str(self.old_fs):
             pass
-            #logging.debug('calculating current formatted line: %r', repr(fs))
         self.old_fs = fs
         return fs
 
@@ -655,7 +660,7 @@ class Repl(BpythonRepl):
     def _get_current_word(self):
         pos = self.cursor_offset_in_line
 
-        matches = list(re.finditer(r'''[\w_][\w0-9._\[\]']*[(]?''', self._current_line))
+        matches = list(re.finditer(r'[\w_][\w0-9._]*[(]?', self._current_line))
         start = pos
         end = pos
         word = None
@@ -698,7 +703,7 @@ class Repl(BpythonRepl):
         """Current line, either output/input or Python prompt + code"""
         value = (self.current_output_line +
                 ('' if self.coderunner.running else self.display_line_with_prompt))
-        logging.debug('current cursor line: %r', value)
+        logger.debug('current cursor line: %r', value)
         return value
 
     @property
@@ -741,7 +746,7 @@ class Repl(BpythonRepl):
         #TODO test case of current line filling up the whole screen (there aren't enough rows to show it)
 
         if current_line_start_row < 0: #if current line trying to be drawn off the top of the screen
-            logging.debug('#<---History contiguity broken by rewind--->')
+            logger.debug('#<---History contiguity broken by rewind--->')
             msg = "#<---History contiguity broken by rewind--->"
             arr[0, 0:min(len(msg), width)] = [msg[:width]]
 
@@ -762,8 +767,8 @@ class Repl(BpythonRepl):
         current_line = paint.paint_current_line(min_height, width, self.current_cursor_line)
         if user_quit: # quit() or exit() in interp
             current_line_start_row = current_line_start_row - current_line.height
-        logging.debug("---current line row slice %r, %r", current_line_start_row, current_line_start_row + current_line.height)
-        logging.debug("---current line col slice %r, %r", 0, current_line.width)
+        logger.debug("---current line row slice %r, %r", current_line_start_row, current_line_start_row + current_line.height)
+        logger.debug("---current line col slice %r, %r", 0, current_line.width)
         arr[current_line_start_row:current_line_start_row + current_line.height,
             0:current_line.width] = current_line
 
@@ -786,7 +791,7 @@ class Repl(BpythonRepl):
         cursor_row += current_line_start_row
 
         if self.list_win_visible:
-            logging.debug('infobox display code running')
+            logger.debug('infobox display code running')
             visible_space_above = history.height
             visible_space_below = min_height - current_line_end_row - 1
 
@@ -797,9 +802,9 @@ class Repl(BpythonRepl):
                 arr[current_line_start_row - infobox.height:current_line_start_row, 0:infobox.width] = infobox
             else:
                 arr[current_line_end_row + 1:current_line_end_row + 1 + infobox.height, 0:infobox.width] = infobox
-                logging.debug('slamming infobox of shape %r into arr of shape %r', infobox.shape, arr.shape)
+                logger.debug('slamming infobox of shape %r into arr of shape %r', infobox.shape, arr.shape)
 
-        logging.debug('about to exit: %r', about_to_exit)
+        logger.debug('about to exit: %r', about_to_exit)
         if show_status_bar:
             if self.config.curtsies_fill_terminal:
                 if about_to_exit:
@@ -822,8 +827,8 @@ class Repl(BpythonRepl):
         if self.config.color_scheme['background'] not in ('d', 'D'):
             for r in range(arr.height):
                 arr[r] = fmtstr(arr[r], bg=color_for_letter(self.config.color_scheme['background']))
-        logging.debug('returning arr of size %r', arr.shape)
-        logging.debug('cursor pos: %r', (cursor_row, cursor_column))
+        logger.debug('returning arr of size %r', arr.shape)
+        logger.debug('cursor pos: %r', (cursor_row, cursor_column))
         return arr, (cursor_row, cursor_column)
 
     @contextlib.contextmanager
@@ -849,8 +854,8 @@ class Repl(BpythonRepl):
         my_print('X``'+('`'*(self.width+2))+'``X')
         for line in arr:
             my_print('X```'+line.ljust(self.width)+'```X')
-        logging.debug('line:')
-        logging.debug(repr(line))
+        logger.debug('line:')
+        logger.debug(repr(line))
         my_print('X``'+('`'*(self.width+2))+'``X')
         my_print('X'*(self.width+8))
         return max(len(arr) - self.height, 0)
@@ -897,7 +902,7 @@ class Repl(BpythonRepl):
         Supposed to parse and echo a formatted string with appropriate attributes.
         It's not supposed to update the screen if it's reevaluating the code (as it
         does with undo)."""
-        logging.debug("echo called with %r" % msg)
+        logger.debug("echo called with %r" % msg)
     def cw(self):
         """Returns the "current word", based on what's directly left of the cursor.
         examples inclue "socket.socket.metho" or "self.reco" or "yiel" """
@@ -907,7 +912,7 @@ class Repl(BpythonRepl):
         "many WATs were had - it's the pos from the end of the line back"""
         return len(self._current_line) - self.cursor_offset_in_line
     def reprint_line(self, lineno, tokens):
-        logging.debug("calling reprint line with %r %r", lineno, tokens)
+        logger.debug("calling reprint line with %r %r", lineno, tokens)
         if self.config.syntax:
             self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
     def reevaluate(self, insert_into_history=False):

@@ -15,6 +15,8 @@ import sys
 import greenlet
 import logging
 
+logger = logging.getLogger(__name__)
+
 class SigintHappened(object):
     """If this class is returned, a SIGINT happened while the main greenlet"""
 
@@ -142,10 +144,10 @@ class CodeRunner(object):
     def sigint_handler(self, *args):
         """SIGINT handler to use while code is running or request being fufilled"""
         if greenlet.getcurrent() is self.code_greenlet:
-            logging.debug('sigint while running user code!')
+            logger.debug('sigint while running user code!')
             raise KeyboardInterrupt()
         else:
-            logging.debug('sigint while fufilling code request sigint handler running!')
+            logger.debug('sigint while fufilling code request sigint handler running!')
             self.sigint_happened_in_main_greenlet = True
 
     def _blocking_run_code(self):

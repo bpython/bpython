@@ -26,6 +26,13 @@ import imp
 import os
 import sys
 import warnings
+
+if sys.version_info[0] == 3 and sys.version_info[1] >= 3:
+    import importlib.machinery
+    SUFFIXES = importlib.machinery.all_suffixes()
+else:
+    SUFFIXES = [suffix for suffix, mode, type in imp.get_suffixes()]
+
 try:
     from warnings import catch_warnings
 except ImportError:
@@ -119,7 +126,7 @@ def find_modules(path):
     except EnvironmentError:
         filenames = []
     for name in filenames:
-        if not any(name.endswith(suffix[0]) for suffix in imp.get_suffixes()):
+        if not any(name.endswith(suffix) for suffix in SUFFIXES):
             # Possibly a package
             if '.' in name:
                 continue
@@ -127,9 +134,9 @@ def find_modules(path):
             # Unfortunately, CPython just crashes if there is a directory
             # which ends with a python extension, so work around.
             continue
-        for suffix in imp.get_suffixes():
-            if name.endswith(suffix[0]):
-                name = name[:-len(suffix[0])]
+        for suffix in SUFFIXES:
+            if name.endswith(suffix):
+                name = name[:-len(suffix)]
                 break
         if py3 and name == "badsyntax_pep3120":
             # Workaround for issue #166

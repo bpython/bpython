@@ -517,7 +517,11 @@ class Repl(object):
 
         try:
             f = self.get_object(func)
-        except (AttributeError, NameError, SyntaxError):
+        except Exception:
+            # another case of needing to catch every kind of error
+            # since user code is run in the case of descriptors
+            # XXX: Make sure you raise here if you're debugging the completion
+            # stuff !
             return False
 
         if inspect.isclass(f):
