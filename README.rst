@@ -13,7 +13,7 @@ bpython-curtsies
 ----------------
 ``bpython-curtsies`` requires the following additional packages:
 
-* curtsies >= 0.0.32
+* curtsies >= 0.1.0
 * greenlet
 
 bpython-urwid
