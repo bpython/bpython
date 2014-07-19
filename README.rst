@@ -11,14 +11,14 @@ Dependencies
 
 bpython-curtsies
 ----------------
-``bpython-curtsies`` requires the following additional packages:
+``bpython-curtsies`` requires the following additional packages: (`pip install bpython[curtsies]`)
 
-* curtsies >= 0.1.0
+* curtsies (bpython 0.13 requires curtsies <0.1.0, master requires >=0.1.0)
 * greenlet
 
 bpython-urwid
 -------------
-``bpython-urwid`` requires the following additional packages:
+``bpython-urwid`` requires the following additional packages: (`pip install bpython[urwid]`)
 
 * urwid
 
