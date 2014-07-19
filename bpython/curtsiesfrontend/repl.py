@@ -248,6 +248,8 @@ class Repl(BpythonRepl):
         self.current_match = None
         self.list_win_visible = False
 
+        self.original_modules = sys.modules.keys()
+
         self.width = None  # will both be set by a window resize event
         self.height = None
 
@@ -404,6 +406,9 @@ class Repl(BpythonRepl):
             self.on_tab()
         elif e in ("KEY_BTAB",): # shift-tab
             self.on_tab(back=True)
+        elif e in ("KEY_F(6)",):
+            self.clear_modules_and_reevaluate()
+            self.update_completion()
         elif e in key_dispatch[self.config.undo_key]: #ctrl-r for undo
             self.undo()
             self.update_completion()
@@ -508,6 +513,14 @@ class Repl(BpythonRepl):
         self.reevaluate(insert_into_history=True)
         self.current_line = lines[-1][4:]
         self.cursor_offset = len(self.current_line)
+
+    def clear_modules_and_reevaluate(self):
+        cursor, line = self.cursor_offset, self.current_line
+        for modname in sys.modules.keys():
+            if modname not in self.original_modules:
+                del sys.modules[modname]
+        self.reevaluate(insert_into_history=True)
+        self.cursor_offset, self.current_line = cursor, line
 
     ## Handler Helpers
     def add_normal_character(self, char):
