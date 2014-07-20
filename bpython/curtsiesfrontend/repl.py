@@ -406,7 +406,7 @@ class Repl(BpythonRepl):
             self.on_tab()
         elif e in ("KEY_BTAB",): # shift-tab
             self.on_tab(back=True)
-        elif e in ("KEY_F(6)",):
+        elif e in key_dispatch[self.config.reimport_key]:
             self.clear_modules_and_reevaluate()
             self.update_completion()
         elif e in key_dispatch[self.config.undo_key]: #ctrl-r for undo

@@ -167,6 +167,14 @@ Default: F9
 
 Shows the last output in the systems $PAGER.
 
+reimport
+^^^^^^^^
+Default: F6
+
+Reruns entire session, reloading all modules by clearing the sys.modules cache.
+
+.. versionadded:: 0.14
+
 save
 ^^^^
 Default: C-s
