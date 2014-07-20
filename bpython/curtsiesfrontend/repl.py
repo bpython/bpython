@@ -351,6 +351,7 @@ class Repl(BpythonRepl):
         elif e in self.rl_char_sequences:
             self.cursor_offset, self.current_line = self.rl_char_sequences[e](self.cursor_offset, self.current_line)
             self.update_completion()
+            self.rl_history.reset()
 
         # readline history commands
         elif e in ("KEY_UP",) + key_dispatch[self.config.up_one_line_key]:
@@ -358,14 +359,13 @@ class Repl(BpythonRepl):
             self.current_line = self.rl_history.back(False,
                     search=self.config.curtsies_right_arrow_completion)
             self.cursor_offset = len(self.current_line)
-            self.update_completion()
 
         elif e in ("KEY_DOWN",) + key_dispatch[self.config.down_one_line_key]:
             self.rl_history.enter(self.current_line)
             self.current_line = self.rl_history.forward(False,
                     search=self.config.curtsies_right_arrow_completion)
             self.cursor_offset = len(self.current_line)
-            self.update_completion()
+
         elif e in key_dispatch[self.config.search_key]: #TODO Not Implemented
             pass
         #TODO add rest of history commands
@@ -402,8 +402,10 @@ class Repl(BpythonRepl):
             self.update_completion()
         elif e == '\t': # tab
             self.on_tab()
+            self.rl_history.reset()
         elif e in ("KEY_BTAB",): # shift-tab
             self.on_tab(back=True)
+            self.rl_history.reset()
         elif e in key_dispatch[self.config.undo_key]: #ctrl-r for undo
             self.undo()
             self.update_completion()
@@ -416,6 +418,7 @@ class Repl(BpythonRepl):
             g.switch()
         elif e in key_dispatch[self.config.external_editor_key]:
             self.send_session_to_external_editor()
+            self.rl_history.reset()
         #TODO add PAD keys hack as in bpython.cli
         elif e in ["\x18"]:
             self.send_current_block_to_external_editor()
@@ -423,6 +426,7 @@ class Repl(BpythonRepl):
             pass
         else:
             self.add_normal_character(e)
+            self.rl_history.reset()
             self.update_completion()
 
     def on_enter(self, insert_into_history=True):
