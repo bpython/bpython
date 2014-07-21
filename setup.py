@@ -151,7 +151,7 @@ scripts = [] if using_setuptools else ['data/bpython',
 
 if sys.version_info[:2] >= (2, 6):
     # curtsies only supports 2.6 and onwards
-    extras_require['curtsies'] = ['curtsies >=0.1.0, <0.2.0', 'greenlet']
+    extras_require['curtsies'] = ['curtsies >=0.1.2, <0.2.0', 'greenlet']
     packages.append("bpython.curtsiesfrontend")
     entry_points['console_scripts'].append(
         'bpython-curtsies = bpython.curtsies:main [curtsies]')

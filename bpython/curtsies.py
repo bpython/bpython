@@ -68,7 +68,8 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                 sys.stdout,
                 sys.stdin,
                 keep_last_line=True,
-                hide_cursor=False) as window:
+                hide_cursor=False,
+                extra_bytes_callback=input_generator.unget_bytes) as window:
 
             refresh_requests = []
             def request_refresh():
