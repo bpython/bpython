@@ -40,7 +40,7 @@ from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 
 #TODO other autocomplete modes (also fix in other bpython implementations)
 
-from bpython.keys import cli_key_dispatch as key_dispatch
+from curtsies.configfile_keynames import keymap as key_dispatch
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class FakeStdin(object):
             self.current_line = ''
             self.cursor_offset = 0
             self.repl.run_code_and_maybe_finish()
-        elif e in ["\x1b"]: #ESC
+        elif e in ["<ESC>"]:
             pass
         elif e in ["\n", "\r"]:
             line = self.current_line
@@ -342,7 +342,7 @@ class Repl(BpythonRepl):
             self.update_completion()
             return
 
-        elif (e in ("KEY_RIGHT", '\x06') and self.config.curtsies_right_arrow_completion
+        elif (e in ("<RIGHT>", '<Ctrl-f>') and self.config.curtsies_right_arrow_completion
                 and self.cursor_offset == len(self.current_line)):
             self.current_line += self.current_suggestion
             self.cursor_offset = len(self.current_line)
@@ -353,14 +353,14 @@ class Repl(BpythonRepl):
             self.update_completion()
 
         # readline history commands
-        elif e in ("KEY_UP",) + key_dispatch[self.config.up_one_line_key]:
+        elif e in ("<UP>",) + key_dispatch[self.config.up_one_line_key]:
             self.rl_history.enter(self.current_line)
             self.current_line = self.rl_history.back(False,
                     search=self.config.curtsies_right_arrow_completion)
             self.cursor_offset = len(self.current_line)
             self.update_completion()
 
-        elif e in ("KEY_DOWN",) + key_dispatch[self.config.down_one_line_key]:
+        elif e in ("<DOWN>",) + key_dispatch[self.config.down_one_line_key]:
             self.rl_history.enter(self.current_line)
             self.current_line = self.rl_history.forward(False,
                     search=self.config.curtsies_right_arrow_completion)
@@ -394,15 +394,15 @@ class Repl(BpythonRepl):
                     self.focus_on_subprocess(['less', '-R', tmp.name])
         elif e in key_dispatch[self.config.suspend_key]:
             raise SystemExit()
-        elif e in ("",) + key_dispatch[self.config.exit_key]:
+        elif e in ("<Ctrl-d>",) + key_dispatch[self.config.exit_key]:
             if self.current_line == '':
                 raise SystemExit()
-        elif e in ("\n", "\r", "PAD_ENTER"):
+        elif e in ("\n", "\r", "<PADENTER>", "<Ctrl-j>", "<Ctrl-m>"):
             self.on_enter()
             self.update_completion()
-        elif e == '\t': # tab
+        elif e == '<TAB>': # tab
             self.on_tab()
-        elif e in ("KEY_BTAB",): # shift-tab
+        elif e in ("<Shift-TAB>",):
             self.on_tab(back=True)
         elif e in key_dispatch[self.config.undo_key]: #ctrl-r for undo
             self.undo()
@@ -410,17 +410,18 @@ class Repl(BpythonRepl):
         elif e in key_dispatch[self.config.save_key]: # ctrl-s for save
             g = greenlet.greenlet(self.write2file)
             g.switch()
-        # F8 for pastebin
-        elif e in key_dispatch[self.config.pastebin_key]:
+        elif e in key_dispatch[self.config.pastebin_key]: # F8 for pastebin
             g = greenlet.greenlet(self.pastebin)
             g.switch()
         elif e in key_dispatch[self.config.external_editor_key]:
             self.send_session_to_external_editor()
-        #TODO add PAD keys hack as in bpython.cli
-        elif e in ["\x18"]:
+        elif e in ["<Ctrl-x>"]:
             self.send_current_block_to_external_editor()
-        elif e in ["\x1b"]: #ESC
+        elif e in ["<ESC>"]: #ESC
             pass
+        elif e in ["<SPACE>"]:
+            self.add_normal_character(' ')
+            self.update_completion()
         else:
             self.add_normal_character(e)
             self.update_completion()
@@ -1006,11 +1007,7 @@ def compress_paste_event(paste_event):
     if not all(paste_event.events[0] == e for e in paste_event.events):
         return None
     event = paste_event.events[0]
-    if len(event) > 1:# basically "is there a special curses names for this key?"
-        return event
-    elif ord(event) < 0x20:
-        return event
-    elif event == '\x7f':
+    if len(event) > 1:# basically "is there a special curtsies names for this key?"
         return event
     else:
         return None

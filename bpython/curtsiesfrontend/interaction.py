@@ -57,9 +57,9 @@ class StatusBar(BpythonInteraction):
                 self.add_normal_character(ee if len(ee) == 1 else ee[-1]) #strip control seq
         elif e in rl_char_sequences:
             self.cursor_offset_in_line, self._current_line = rl_char_sequences[e](self.cursor_offset_in_line, self._current_line)
-        elif e == "":
+        elif e == "<Ctrl-c>":
             raise KeyboardInterrupt()
-        elif e == "":
+        elif e == "<Ctrl-d>":
             raise SystemExit()
         elif self.in_prompt and e in ("\n", "\r"):
             line = self._current_line
@@ -71,7 +71,7 @@ class StatusBar(BpythonInteraction):
             else:
                 self.request_greenlet.switch(False)
             self.escape()
-        elif e in ['\x1b']:
+        elif e in ['<ESC>']:
             self.request_greenlet.switch(False)
             self.escape()
         else: # add normal character
