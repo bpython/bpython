@@ -80,6 +80,7 @@ def loadini(struct, configfile):
             'show_source': 'F2',
             'suspend': 'C-z',
             'undo': 'C-r',
+            'reimport': 'F6',
             'search': 'C-o',
             'up_one_line': 'C-p',
             'yank_from_buffer': 'C-y'},
@@ -120,6 +121,7 @@ def loadini(struct, configfile):
     struct.show_source_key = config.get('keyboard', 'show_source')
     struct.suspend_key = config.get('keyboard', 'suspend')
     struct.undo_key = config.get('keyboard', 'undo')
+    struct.reimport_key = config.get('keyboard', 'reimport')
     struct.up_one_line_key = config.get('keyboard', 'up_one_line')
     struct.down_one_line_key = config.get('keyboard', 'down_one_line')
     struct.cut_to_buffer_key = config.get('keyboard', 'cut_to_buffer')
