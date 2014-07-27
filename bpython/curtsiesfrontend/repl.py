@@ -823,7 +823,7 @@ class Repl(BpythonRepl):
         current_line_end_row = current_line_start_row + len(lines) - 1
 
         if self.stdin.has_focus:
-            cursor_row, cursor_column = divmod(len(self.current_stdouterr_line_without_suggestion) + self.stdin.cursor_offset, width)
+            cursor_row, cursor_column = divmod(len(self.current_stdouterr_line) + self.stdin.cursor_offset, width)
             assert cursor_column >= 0, cursor_column
         elif self.coderunner.running: #TODO does this ever happen?
             cursor_row, cursor_column = divmod(len(self.current_cursor_line_without_suggestion) + self.cursor_offset, width)
