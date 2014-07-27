@@ -40,7 +40,7 @@ from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 
 #TODO other autocomplete modes (also fix in other bpython implementations)
 
-from bpython.keys import cli_key_dispatch as key_dispatch
+from curtsies.configfile_keynames import keymap as key_dispatch
 
 logger = logging.getLogger(__name__)
 

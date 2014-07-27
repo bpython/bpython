@@ -40,7 +40,6 @@ def end_of_line(cursor_offset, line):
     return len(line), line
 
 @on('\x1bf')
-@on('\x1bl')
 @on('\x1bOC')
 @on('\x1b[5C')
 @on('\x1b[1;5C')
