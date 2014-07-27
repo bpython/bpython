@@ -68,17 +68,17 @@ def get_completer(cursor_offset, current_line, locals_, argspec, full_code, mode
     kwargs = {'locals_':locals_, 'argspec':argspec, 'full_code':full_code,
               'mode':mode, 'complete_magic_methods':complete_magic_methods}
 
+    # mutually exclusive if matches: If one of these returns [], try the next one
+    for completer in [DictKeyCompletion]:
+        matches = completer.matches(cursor_offset, current_line, **kwargs)
+        if matches:
+            return sorted(set(matches)), completer
+
     # mutually exclusive matchers: if one returns [], don't go on
     for completer in [StringLiteralAttrCompletion, ImportCompletion,
             FilenameCompletion, MagicMethodCompletion, GlobalCompletion]:
         matches = completer.matches(cursor_offset, current_line, **kwargs)
         if matches is not None:
-            return sorted(set(matches)), completer
-
-    # mutually exclusive if matches: If one of these returns [], try the next one
-    for completer in [DictKeyCompletion]:
-        matches = completer.matches(cursor_offset, current_line, **kwargs)
-        if matches:
             return sorted(set(matches)), completer
 
     matches = AttrCompletion.matches(cursor_offset, current_line, **kwargs)
