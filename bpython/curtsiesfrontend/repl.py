@@ -993,10 +993,11 @@ class Repl(BpythonRepl):
             signal.signal(signal.SIGWINCH, prev_sigwinch_handler)
 
     def pager(self, text):
+        command = os.environ.get('PAGER', 'less -r').split()
         with tempfile.NamedTemporaryFile() as tmp:
             tmp.write(text)
             tmp.flush()
-            self.focus_on_subprocess(['less', '-R', tmp.name])
+            self.focus_on_subprocess(command + [tmp.name])
 
     def help_text(self):
         NOT_IMPLEMENTED = ['suspend', 'cut to buffer', 'search', 'last output', 'yank from buffer', 'cut to buffer']
