@@ -71,7 +71,7 @@ class FakeStdin(object):
             self.repl.run_code_and_maybe_finish()
         elif e in ["<ESC>"]:
             pass
-        elif e in ["\n", "\r"]:
+        elif e in ["\n", "\r", "<Ctrl-j>", "<Ctrl-m>"]:
             line = self.current_line
             self.repl.send_to_stdin(line + '\n')
             self.has_focus = False
@@ -87,8 +87,11 @@ class FakeStdin(object):
             self.repl.send_to_stdin(self.current_line)
 
     def add_input_character(self, e):
+        if e == '<SPACE>': e = ' '
+        if e.startswith('<') and e.endswith('>'): return
         assert len(e) == 1, 'added multiple characters: %r' % e
         logger.debug('adding normal char %r to current line', e)
+
         c = e if py3 else e.encode('utf8')
         self.current_line = (self.current_line[:self.cursor_offset] +
                              c +
