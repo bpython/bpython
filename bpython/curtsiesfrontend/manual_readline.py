@@ -17,43 +17,36 @@ def on(seq):
         return func
     return add_to_char_sequences
 
-@on('\x1b[D')
-@on('\x02')
-@on('KEY_LEFT')
+@on('<Ctrl-b>')
+@on('<LEFT>')
 def left_arrow(cursor_offset, line):
     return max(0, cursor_offset - 1), line
 
-@on('\x1b[C')
-@on('\x06')
-@on('KEY_RIGHT')
+@on('<Ctrl-f>')
+@on('<RIGHT>')
 def right_arrow(cursor_offset, line):
     return min(len(line), cursor_offset + 1), line
 
-@on('\x01')
-@on('KEY_HOME')
+@on('<Ctrl-a>')
+@on('<HOME>')
 def beginning_of_line(cursor_offset, line):
     return 0, line
 
-@on('\x05')
-@on('KEY_END')
+@on('<Ctrl-e>')
+@on('<END>')
 def end_of_line(cursor_offset, line):
     return len(line), line
 
-@on('\x1bf')
-@on('\x1bOC')
-@on('\x1b[5C')
-@on('\x1b[1;5C')
+@on('<Esc-f>')
+@on('<Ctrl-RIGHT')
 def forward_word(cursor_offset, line):
     patt = r"\S\s"
     match = re.search(patt, line[cursor_offset:]+' ')
     delta = match.end() - 1 if match else 0
     return (cursor_offset + delta, line)
 
-@on('\x1bb')
-@on('\x1bOD')
-@on('\x1bB')
-@on('\x1b[5D')
-@on('\x1b[1;5D')
+@on('<Esc-b>')
+@on('<Ctrl-LEFT>')
 def back_word(cursor_offset, line):
     return (last_word_pos(line[:cursor_offset]), line)
 
@@ -64,15 +57,13 @@ def last_word_pos(string):
     index = match and len(string) - match.end() + 1
     return index or 0
 
-@on('\x1b[3~')
-@on('KEY_DC')
+@on('<PADDELETE>')
 def delete(cursor_offset, line):
     return (cursor_offset,
             line[:cursor_offset] + line[cursor_offset+1:])
 
-@on('\x08')
-@on('\x7f')
-@on('KEY_BACKSPACE')
+@on('<Ctrl-h>')
+@on('<BACKSPACE>')
 def backspace(cursor_offset, line):
     if cursor_offset == 0:
         return cursor_offset, line
@@ -83,32 +74,32 @@ def backspace(cursor_offset, line):
     return (cursor_offset - 1,
             line[:cursor_offset - 1] + line[cursor_offset:])
 
-@on('\x15')
+@on('<Ctrl-o>')
 def delete_from_cursor_back(cursor_offset, line):
     return 0, line[cursor_offset:]
 
-@on('\x0b')
+@on('<Ctrl-k>')
 def delete_from_cursor_forward(cursor_offset, line):
     return cursor_offset, line[:cursor_offset]
 
-@on('\x1bd') # option-d
+@on('<Esc+d>') # option-d
 def delete_rest_of_word(cursor_offset, line):
     m = re.search(r'\w\b', line[cursor_offset:])
     if not m:
         return cursor_offset, line
     return cursor_offset, line[:cursor_offset] + line[m.start()+cursor_offset+1:]
 
-@on('\x17')
+@on('<Ctrl-w>')
 def delete_word_to_cursor(cursor_offset, line):
     matches = list(re.finditer(r'\s\S', line[:cursor_offset]))
     start = matches[-1].start()+1 if matches else 0
     return start, line[:start] + line[cursor_offset:]
 
-@on('\x1by')
+@on('<Esc+y>')
 def yank_prev_prev_killed_text(cursor_offset, line):
     return cursor_offset, line #TODO Not implemented
 
-@on('\x14')
+@on('<Ctrl-t>')
 def transpose_character_before_cursor(cursor_offset, line):
     return (min(len(line), cursor_offset + 1),
             line[:cursor_offset-1] +
@@ -116,26 +107,26 @@ def transpose_character_before_cursor(cursor_offset, line):
             line[cursor_offset - 1] +
             line[cursor_offset+1:])
 
-@on('\x1bt')
+@on('<Esc+t>')
 def transpose_word_before_cursor(cursor_offset, line):
     return cursor_offset, line #TODO Not implemented
 
 # bonus functions (not part of readline)
 
-@on('\x1br')
+@on('<Esc+r>')
 def delete_line(cursor_offset, line):
     return 0, ""
 
-@on('\x1bu')
+@on('<Esc-u>')
 def uppercase_next_word(cursor_offset, line):
     return cursor_offset, line #TODO Not implemented
 
-@on('\x1bc')
+@on('<Esc-c>')
 def titlecase_next_word(cursor_offset, line):
     return cursor_offset, line #TODO Not implemented
 
-@on('\x1b\x7f')
-@on('\xff')
+@on('<Esc+BACKSPACE>')
+@on('<Meta-BACKSPACE>')
 def delete_word_from_cursor_back(cursor_offset, line):
     """Whatever my option-delete does in bash on my mac"""
     if not line:
