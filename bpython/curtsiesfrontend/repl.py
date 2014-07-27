@@ -394,8 +394,10 @@ class Repl(BpythonRepl):
                     self.focus_on_subprocess(['less', '-R', tmp.name])
         elif e in key_dispatch[self.config.suspend_key]:
             raise SystemExit()
-        elif e in ("<Ctrl-d>",) + key_dispatch[self.config.exit_key]:
+        elif e in ("<Ctrl-d>",):
             if self.current_line == '':
+                raise SystemExit()
+        elif e in key_dispatch[self.config.exit_key]:
                 raise SystemExit()
         elif e in ("\n", "\r", "<PADENTER>", "<Ctrl-j>", "<Ctrl-m>"):
             self.on_enter()
