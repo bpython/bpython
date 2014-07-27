@@ -74,7 +74,7 @@ def backspace(cursor_offset, line):
     return (cursor_offset - 1,
             line[:cursor_offset - 1] + line[cursor_offset:])
 
-@on('<Ctrl-o>')
+@on('<Ctrl-u>')
 def delete_from_cursor_back(cursor_offset, line):
     return 0, line[cursor_offset:]
 
