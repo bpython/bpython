@@ -8,19 +8,8 @@ Dependencies
 * Sphinx != 1.1.2 (for the documentation only) (apt-get install python-sphinx)
 * mock (for the testsuite only)
 * babel (optional, for internationalization)
-
-bpython-curtsies
-----------------
-``bpython-curtsies`` requires the following additional packages:
-
-* curtsies >= 0.1.0
+* curtsies
 * greenlet
-
-bpython-urwid
--------------
-``bpython-urwid`` requires the following additional packages:
-
-* urwid
 
 Introduction
 ============

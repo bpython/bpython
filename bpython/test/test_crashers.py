@@ -104,8 +104,5 @@ if reactor is not None:
     class CursesCrashersTest(TrialTestCase, CrashersTest):
         backend = "cli"
 
-    class UrwidCrashersTest(TrialTestCase, CrashersTest):
-        backend = "urwid"
-
 if __name__ == "__main__":
     unittest.main()
