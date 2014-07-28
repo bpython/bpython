@@ -133,30 +133,15 @@ data_files = [
 ]
 data_files.extend(man_pages)
 
-extras_require = {
-    'urwid' : ['urwid']
-}
-
 packages = ['bpython', 'bpython.test', 'bpython.translations', 'bpdb']
 
 entry_points = {
     'console_scripts': [
-        'bpython = bpython.cli:main',
-        'bpython-urwid = bpython.urwid:main [urwid]'
+        'bpython = bpython.curtsies:main'
     ]
 }
 
-scripts = [] if using_setuptools else ['data/bpython',
-                                       'data/bpython-urwid']
-
-if sys.version_info[:2] >= (2, 6):
-    # curtsies only supports 2.6 and onwards
-    extras_require['curtsies'] = ['curtsies >=0.1.6, <0.2.0', 'greenlet']
-    packages.append("bpython.curtsiesfrontend")
-    entry_points['console_scripts'].append(
-        'bpython-curtsies = bpython.curtsies:main [curtsies]')
-    if not using_setuptools:
-        scripts.append('data/bpython-curtsies')
+scripts = [] if using_setuptools else ['data/bpython']
 
 # translations
 mo_files = list()
@@ -176,9 +161,10 @@ setup(
     long_description = """bpython is a fancy interface to the Python
     interpreter for Unix-like operating systems.""",
     install_requires = [
-        'pygments'
+        'pygments',
+        'curtsies',
+        'greenlet'
     ],
-    extras_require = extras_require,
     tests_require = ['mock'],
     packages = packages,
     data_files = data_files,
