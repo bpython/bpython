@@ -31,12 +31,12 @@ from curtsies.bpythonparse import func_for_letter, color_for_letter
 from curtsies import fmtfuncs
 from curtsies import events
 
-from bpython.curtsiesfrontend.manual_readline import char_sequences as rl_char_sequences
-from bpython.curtsiesfrontend.manual_readline import get_updated_char_sequences
-from bpython.curtsiesfrontend.interaction import StatusBar
-from bpython.curtsiesfrontend import sitefix; sitefix.monkeypatch_quit()
-import bpython.curtsiesfrontend.replpainter as paint
-from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
+from bpython.frontends.curtsies.manual_readline import char_sequences as rl_char_sequences
+from bpython.frontends.curtsies.manual_readline import get_updated_char_sequences
+from bpython.frontends.curtsies.interaction import StatusBar
+from bpython.frontends.curtsies import sitefix; sitefix.monkeypatch_quit()
+import bpython.frontends.curtsies .replpainter as paint
+from bpython.frontends.curtsies.coderunner import CodeRunner, FakeOutput
 
 #TODO other autocomplete modes (also fix in other bpython implementations)
 

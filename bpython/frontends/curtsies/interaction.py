@@ -4,7 +4,7 @@ import curtsies.events as events
 
 from bpython.repl import Interaction as BpythonInteraction
 
-from bpython.curtsiesfrontend.manual_readline import char_sequences as rl_char_sequences
+from bpython.frontends.curtsies.manual_readline import char_sequences as rl_char_sequences
 
 class StatusBar(BpythonInteraction):
     """StatusBar and Interaction for Repl

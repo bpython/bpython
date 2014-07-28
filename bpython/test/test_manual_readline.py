@@ -1,4 +1,4 @@
-from bpython.curtsiesfrontend.manual_readline import *
+from bpython.frontends.curtsies.manual_readline import *
 import unittest
 
 class TestManualReadline(unittest.TestCase):

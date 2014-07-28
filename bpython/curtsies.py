@@ -11,8 +11,8 @@ import curtsies.window
 import curtsies.input
 import curtsies.events
 
-from bpython.curtsiesfrontend.repl import Repl
-from bpython.curtsiesfrontend.coderunner import SystemExitFromCodeGreenlet
+from bpython.frontends.curtsies.repl import Repl
+from bpython.frontends.curtsies.coderunner import SystemExitFromCodeGreenlet
 from bpython import args as bpargs
 from bpython.translations import _
 from bpython.importcompletion import find_iterator
