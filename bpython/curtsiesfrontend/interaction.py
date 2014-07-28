@@ -61,7 +61,7 @@ class StatusBar(BpythonInteraction):
             raise KeyboardInterrupt()
         elif e == "<Ctrl-d>":
             raise SystemExit()
-        elif self.in_prompt and e in ("\n", "\r"):
+        elif self.in_prompt and e in ("\n", "\r", "<Ctrl-j>", "Ctrl-m>"):
             line = self._current_line
             self.escape()
             self.request_greenlet.switch(line)
@@ -78,6 +78,8 @@ class StatusBar(BpythonInteraction):
             self.add_normal_character(e)
 
     def add_normal_character(self, e):
+        if e == '<SPACE>': e = ' '
+        if len(e) > 1: return
         self._current_line = (self._current_line[:self.cursor_offset_in_line] +
                              e +
                              self._current_line[self.cursor_offset_in_line:])
