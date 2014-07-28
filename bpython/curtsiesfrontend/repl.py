@@ -57,6 +57,7 @@ class FakeStdin(object):
 
     def process_event(self, e):
         assert self.has_focus
+        logger.debug('fake input processing event %r', e)
         if isinstance(e, events.PasteEvent):
             for ee in e.events:
                 if ee not in rl_char_sequences:
@@ -71,13 +72,22 @@ class FakeStdin(object):
             self.repl.run_code_and_maybe_finish()
         elif e in ["<ESC>"]:
             pass
+        elif e in ['<Ctrl-d>']:
+            if self.current_line == '':
+                self.repl.send_to_stdin('\n')
+                self.has_focus = False
+                self.current_line = ''
+                self.cursor_offset = 0
+                self.repl.run_code_and_maybe_finish(for_code='')
+            else:
+                pass
         elif e in ["\n", "\r", "<Ctrl-j>", "<Ctrl-m>"]:
             line = self.current_line
             self.repl.send_to_stdin(line + '\n')
             self.has_focus = False
             self.current_line = ''
             self.cursor_offset = 0
-            self.repl.run_code_and_maybe_finish(for_code=line)
+            self.repl.run_code_and_maybe_finish(for_code=line+'\n')
         else: # add normal character
             self.add_input_character(e)
 
@@ -406,7 +416,6 @@ class Repl(BpythonRepl):
                 raise SystemExit()
         elif e in ("\n", "\r", "<PADENTER>", "<Ctrl-j>", "<Ctrl-m>"):
             self.on_enter()
-            self.update_completion()
         elif e == '<TAB>': # tab
             self.on_tab()
             self.rl_history.reset()
