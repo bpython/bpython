@@ -46,20 +46,20 @@ class KeyMap:
     def __setitem__(self, key, value):
         self.map[key] = value
 
-cli_key_dispatch = KeyMap(tuple())
+key_dispatch = KeyMap(tuple())
 
 # fill dispatch with letters
 for c in string.ascii_lowercase:
-    cli_key_dispatch['C-%s' % c] = (chr(string.ascii_lowercase.index(c) + 1),
+    key_dispatch['C-%s' % c] = (chr(string.ascii_lowercase.index(c) + 1),
                                 '^%s' % c.upper())
 
 # fill dispatch with cool characters
-cli_key_dispatch['C-['] = (chr(27), '^[')
-cli_key_dispatch['C-\\'] = (chr(28), '^\\')
-cli_key_dispatch['C-]'] = (chr(29), '^]')
-cli_key_dispatch['C-^'] = (chr(30), '^^')
-cli_key_dispatch['C-_'] = (chr(31), '^_')
+key_dispatch['C-['] = (chr(27), '^[')
+key_dispatch['C-\\'] = (chr(28), '^\\')
+key_dispatch['C-]'] = (chr(29), '^]')
+key_dispatch['C-^'] = (chr(30), '^^')
+key_dispatch['C-_'] = (chr(31), '^_')
 
 # fill dispatch with function keys
 for x in xrange(1, 13):
-    cli_key_dispatch['F%s' % str(x)] = ('KEY_F(%s)' % str(x),)
+    key_dispatch['F%s' % str(x)] = ('KEY_F(%s)' % str(x),)
