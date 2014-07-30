@@ -3,6 +3,8 @@ from __future__ import absolute_import
 import sys
 import code
 import logging
+import select
+from subprocess import Popen, PIPE
 from optparse import Option
 from itertools import izip
 
@@ -71,6 +73,8 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                 hide_cursor=False,
                 extra_bytes_callback=input_generator.unget_bytes) as window:
 
+            p = Popen(['python', '-m', 'bpython.curtsiesfrontend.beeper'], stdout=PIPE)
+
             refresh_requests = []
             def request_refresh():
                 refresh_requests.append(curtsies.events.RefreshRequestEvent())
@@ -79,7 +83,18 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                     if refresh_requests:
                         yield refresh_requests.pop()
                     else:
-                        yield input_generator.send(timeout)
+                        try:
+                            rs, ws, es = select.select([input_generator, p.stdout], [], [])
+                        except select.error as e:
+                            print e
+                            yield curtsies.events.SigIntEvent()
+                        else:
+                            for r in rs:
+                                if r is input_generator:
+                                    yield input_generator.send(timeout)
+                                else:
+                                    p.stdout.readline()
+                                    yield u'a'
 
             global repl # global for easy introspection `from bpython.curtsies import repl`
             with Repl(config=config,
