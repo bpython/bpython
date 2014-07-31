@@ -3,10 +3,10 @@ from __future__ import absolute_import
 import sys
 import code
 import logging
-import select
 from subprocess import Popen, PIPE
 from optparse import Option
 from itertools import izip
+from functools import wraps
 
 import curtsies
 import curtsies.window
@@ -18,6 +18,8 @@ from bpython.curtsiesfrontend.coderunner import SystemExitFromCodeGreenlet
 from bpython import args as bpargs
 from bpython.translations import _
 from bpython.importcompletion import find_iterator
+
+import wdtest
 
 repl = None # global for `from bpython.curtsies import repl`
 #WARNING Will be a problem if more than one repl is ever instantiated this way
@@ -73,28 +75,38 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                 hide_cursor=False,
                 extra_bytes_callback=input_generator.unget_bytes) as window:
 
-            p = Popen(['python', '-m', 'bpython.curtsiesfrontend.beeper'], stdout=PIPE)
-
+            reload_requests = []
+            def request_reload():
+                reload_requests.append('reload!')
             refresh_requests = []
             def request_refresh():
                 refresh_requests.append(curtsies.events.RefreshRequestEvent())
+
+            watcher = wdtest.ModuleChangedEventHandler([], request_reload)
+
+            orig_import = __builtins__['__import__']
+            @wraps(orig_import)
+            def new_import(name, globals={}, locals={}, fromlist=[], level=-1):
+                m = orig_import(name, globals=globals, locals=locals, fromlist=fromlist)
+                watcher.add_module(m.__file__)
+                return m
+            __builtins__['__import__'] = new_import
+
             def event_or_refresh(timeout=None):
                 while True:
                     if refresh_requests:
                         yield refresh_requests.pop()
                     else:
-                        try:
-                            rs, ws, es = select.select([input_generator, p.stdout], [], [])
-                        except select.error as e:
-                            print e
-                            yield curtsies.events.SigIntEvent()
-                        else:
-                            for r in rs:
-                                if r is input_generator:
-                                    yield input_generator.send(timeout)
-                                else:
-                                    p.stdout.readline()
-                                    yield u'a'
+                        while True:
+                            if reload_requests:
+                                del reload_requests[:]
+                                e = '<F6>'
+                                print 'asdf'
+                            else:
+                                e = input_generator.send(.2)
+                            if e is not None:
+                                break
+                        yield e
 
             global repl # global for easy introspection `from bpython.curtsies import repl`
             with Repl(config=config,
