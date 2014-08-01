@@ -33,11 +33,6 @@ def loadini(struct, configfile):
     """Loads .ini configuration file and stores its values in struct"""
 
     config_path = os.path.expanduser(configfile)
-    if not os.path.isfile(config_path) and configfile == default_config_path():
-        # We decided that '~/.bpython/config' still was a crappy
-        # place, use XDG Base Directory Specification instead.  Fall
-        # back to old config, though.
-        config_path = os.path.expanduser('~/.bpython/config')
 
     config = ConfigParser()
     fill_config_with_default_values(config, {
@@ -183,17 +178,9 @@ def loadini(struct, configfile):
         theme_filename = color_scheme_name + '.theme'
         path = os.path.expanduser(os.path.join(get_config_home(),
                                                theme_filename))
-        old_path = os.path.expanduser(os.path.join('~/.bpython',
-                                                   theme_filename))
-
-        for path in [path, old_path]:
-            try:
-                load_theme(struct, path, struct.color_scheme, default_colors)
-            except EnvironmentError:
-                continue
-            else:
-                break
-        else:
+        try:
+            load_theme(struct, path, struct.color_scheme, default_colors)
+        except EnvironmentError:
             sys.stderr.write("Could not load theme '%s'.\n" %
                                                          (color_scheme_name, ))
             sys.exit(1)
