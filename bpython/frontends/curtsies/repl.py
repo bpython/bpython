@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unicodedata
 
 from bpython import autocomplete
@@ -425,6 +426,7 @@ class Repl(BpythonRepl):
         elif e in key_dispatch[self.config.reimport_key]:
             self.clear_modules_and_reevaluate()
             self.update_completion()
+            self.status_bar.message(_('Reloaded at ')+time.strftime('%H:%M:%S'))
         elif e in key_dispatch[self.config.undo_key]: #ctrl-r for undo
             self.undo()
             self.update_completion()
