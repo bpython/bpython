@@ -88,7 +88,8 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
             @wraps(orig_import)
             def new_import(name, globals={}, locals={}, fromlist=[], level=-1):
                 m = orig_import(name, globals=globals, locals=locals, fromlist=fromlist)
-                watcher.add_module(m.__file__)
+                if hasattr(m, "__file__"):
+                    watcher.add_module(m.__file__)
                 return m
             __builtins__['__import__'] = new_import
 
