@@ -6,9 +6,7 @@ This chapter is about bpython's themeing capabalities.
 
 bpython uses .theme files placed in your ``$XDG_CONFIG_HOME/bpython`` directory
 [#f1]_.  You can set the theme in the :ref:`configuration_color_scheme` option
-in your ``$XDG_CONFIG_HOME/bpython/config`` file (:ref:`configuration`). You can
-find some of our themes in our gallery on our website:
-`<http://bpython-interpreter.org/themes/>`_
+in your ``$XDG_CONFIG_HOME/bpython/config`` file (:ref:`configuration`).
 
 Available Colors
 ----------------
