@@ -790,7 +790,7 @@ class Repl(BpythonRepl):
             self.clean_up_current_line_for_exit() # exception to not changing state!
 
         width, min_height = self.width, self.height
-        show_status_bar = bool(self.status_bar._message) or (self.config.curtsies_fill_terminal or self.status_bar.has_focus)
+        show_status_bar = bool(self.status_bar.should_show_message) or (self.config.curtsies_fill_terminal or self.status_bar.has_focus)
         if show_status_bar:
             min_height -= 1
 

@@ -103,6 +103,11 @@ class StatusBar(BpythonInteraction):
             return self._message
         return self.permanent_text
 
+    @property
+    def should_show_message(self):
+        self._check_for_expired_message()
+        return bool(self._message)
+
     # interaction interface - should be called from other greenlets
     def notify(self, msg, n=3):
         self.request_greenlet = greenlet.getcurrent()
