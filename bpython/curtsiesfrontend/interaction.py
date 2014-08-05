@@ -41,6 +41,7 @@ class StatusBar(BpythonInteraction):
     def message(self, msg):
         self.message_start_time = time.time()
         self._message = msg
+        self.refresh_request(time.time() + self.message_time)
 
     def _check_for_expired_message(self):
         if self._message and time.time() > self.message_start_time + self.message_time:

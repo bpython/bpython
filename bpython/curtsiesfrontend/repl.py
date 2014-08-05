@@ -183,6 +183,7 @@ class Repl(BpythonRepl):
         config is a bpython config.Struct with config attributes
         request_refresh is a function that will be called when the Repl
             wants to refresh the display, but wants control returned to it afterwards
+            Takes as a kwarg when= which is when to fire
         get_term_hw is a function that returns the current width and height
             of the terminal
         get_cursor_vertical_diff is a function that returns how the cursor moved
@@ -210,11 +211,11 @@ class Repl(BpythonRepl):
 
         self.reevaluating = False
         self.fake_refresh_requested = False
-        def smarter_request_refresh():
+        def smarter_request_refresh(when='now'):
             if self.reevaluating or self.paste_mode:
                 self.fake_refresh_requested = True
             else:
-                request_refresh()
+                request_refresh(when=when)
         self.request_refresh = smarter_request_refresh
         self.get_term_hw = get_term_hw
         self.get_cursor_vertical_diff = get_cursor_vertical_diff
@@ -328,7 +329,9 @@ class Repl(BpythonRepl):
 
         logger.debug("processing event %r", e)
         if isinstance(e, events.RefreshRequestEvent):
-            if self.status_bar.has_focus:
+            if e.when != 'now':
+                pass # This is a scheduled refresh - it's really just a refresh (so nop)
+            elif self.status_bar.has_focus:
                 self.status_bar.process_event(e)
             else:
                 assert self.coderunner.code_is_waiting
