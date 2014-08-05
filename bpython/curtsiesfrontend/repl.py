@@ -358,6 +358,14 @@ class Repl(BpythonRepl):
             self.update_completion()
             return
 
+        elif isinstance(e, events.ReloadEvent) or e in key_dispatch[self.config.reimport_key]:
+            self.clear_modules_and_reevaluate()
+            self.update_completion()
+            if isinstance(e, events.ReloadEvent):
+                self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' because ' + ' & '.join(e.files_modified) + ' modified')
+            else:
+                self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' by user')
+
         elif (e in ("<RIGHT>", '<Ctrl-f>') and self.config.curtsies_right_arrow_completion
                 and self.cursor_offset == len(self.current_line)):
             self.current_line += self.current_suggestion
@@ -423,10 +431,6 @@ class Repl(BpythonRepl):
         elif e in ("<Shift-TAB>",):
             self.on_tab(back=True)
             self.rl_history.reset()
-        elif e in key_dispatch[self.config.reimport_key] or e.startswith('<F6>:'):
-            self.clear_modules_and_reevaluate()
-            self.update_completion()
-            self.status_bar.message('Reloaded ' + e[5:] + ' at '+time.strftime('%H:%M:%S'))
         elif e in key_dispatch[self.config.undo_key]: #ctrl-r for undo
             self.undo()
             self.update_completion()
