@@ -76,8 +76,8 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                 extra_bytes_callback=input_generator.unget_bytes) as window:
 
             reload_requests = []
-            def request_reload():
-                reload_requests.append('reload!')
+            def request_reload(desc):
+                reload_requests.append(desc)
             refresh_requests = []
             def request_refresh():
                 refresh_requests.append(curtsies.events.RefreshRequestEvent())
@@ -100,9 +100,9 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                     else:
                         while True:
                             if reload_requests:
+                                desc = ' & '.join(set(reload_requests))
                                 del reload_requests[:]
-                                e = '<F6>'
-                                print 'asdf'
+                                e = '<F6>:' + desc
                             else:
                                 e = input_generator.send(.2)
                             if e is not None:

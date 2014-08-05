@@ -30,12 +30,9 @@ class ModuleChangedEventHandler(FileSystemEventHandler):
 
     def on_any_event(self, event):
         dirpath = os.path.dirname(event.src_path)
-        paths = [path + suffix for suffix in importcompletion.SUFFIXES
-                               for path in self.dirs[dirpath]]
+        paths = [path + '.py' for path in self.dirs[dirpath]]
         if event.src_path in paths:
-            pass
-            #self.on_change()
-        self.on_change()
+            self.on_change(event.src_path)
 
 if __name__ == '__main__':
     m = ModuleChangedEventHandler([])
