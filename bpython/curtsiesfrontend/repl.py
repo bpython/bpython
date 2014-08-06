@@ -403,10 +403,9 @@ class Repl(BpythonRepl):
             else:
                 if self.config.highlight_show_source:
                     source = format(PythonLexer().get_tokens(source), TerminalFormatter())
-                with tempfile.NamedTemporaryFile() as tmp:
-                    tmp.write(source)
-                    tmp.flush()
-                    self.focus_on_subprocess(['less', '-R', tmp.name])
+                self.pager(source)
+        elif e in ('KEY_F(1)',):
+            self.pager(self.help_text())
         elif e in key_dispatch[self.config.suspend_key]:
             raise SystemExit()
         elif e in ("<Ctrl-d>",):
@@ -1024,6 +1023,26 @@ class Repl(BpythonRepl):
                     sys.__stdout__.flush()
         finally:
             signal.signal(signal.SIGWINCH, prev_sigwinch_handler)
+
+    def pager(self, text):
+        command = os.environ.get('PAGER', 'less -r').split()
+        with tempfile.NamedTemporaryFile() as tmp:
+            tmp.write(text)
+            tmp.flush()
+            self.focus_on_subprocess(command + [tmp.name])
+
+    def help_text(self):
+        NOT_IMPLEMENTED = ['suspend', 'cut to buffer', 'search', 'last output', 'yank from buffer', 'cut to buffer']
+        pairs = []
+        for functionality, key in [(attr[:-4].replace('_', ' '), getattr(self.config, attr))
+                                   for attr in self.config.__dict__
+                                   if attr.endswith('key')]:
+            if functionality in NOT_IMPLEMENTED: key = "Not Implemented"
+
+            pairs.append([functionality, key])
+
+        max_func = max(len(func) for func, key in pairs)
+        return '\n'.join('%s : %s' % (func.rjust(max_func), key) for func, key in pairs)
 
 def is_nop(char):
     return unicodedata.category(unicode(char)) == 'Cc'
