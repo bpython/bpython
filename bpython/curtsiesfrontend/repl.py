@@ -977,7 +977,7 @@ class Repl(BpythonRepl):
         self.display_lines = []
 
         if not self.weak_rewind:
-            self.interp = code.InteractiveInterpreter()
+            self.interp = self.interp.__class__()
             self.coderunner.interp = self.interp
 
         self.buffer = []
