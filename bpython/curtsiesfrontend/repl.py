@@ -275,6 +275,7 @@ class Repl(BpythonRepl):
         sys.stdin = self.stdin
         self.orig_sigwinch_handler = signal.getsignal(signal.SIGWINCH)
         signal.signal(signal.SIGWINCH, self.sigwinch_handler)
+        signal.signal(signal.SIGTSTP, lambda *args: None)
         return self
 
     def __exit__(self, *args):
