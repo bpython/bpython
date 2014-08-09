@@ -56,11 +56,41 @@ modules = set()
 fully_loaded = False
 
 
+def module_matches(cw, prefix=''):
+    """Modules names to replace cw with"""
+    full = '%s.%s' % (prefix, cw) if prefix else cw
+    matches = [name for name in modules
+               if (name.startswith(full) and
+                   name.find('.', len(full)) == -1)]
+    if prefix:
+        return [match[len(prefix)+1:] for match in matches]
+    else:
+        return matches
+
+def attr_matches(cw, prefix='', only_modules=False):
+    """Attributes to replace name with"""
+    full = '%s.%s' % (prefix, cw) if prefix else cw
+    module_name, _, name_after_dot = full.rpartition('.')
+    if module_name not in sys.modules:
+        return []
+    module = sys.modules[module_name]
+    if only_modules:
+        matches = [name for name in dir(module)
+                if name.startswith(name_after_dot) and
+                '%s.%s' % (module_name, name) in sys.modules]
+    else:
+        matches = [name for name in dir(module) if name.startswith(name_after_dot)]
+    module_part, _, _ = cw.rpartition('.')
+    if module_part:
+        return ['%s.%s' % (module_part, m) for m in matches]
+    return matches
+
+def module_attr_matches(name):
+    """Only attributes which are modules to replace name with"""
+    return attr_matches(name, prefix='', only_modules=True)
+
 def complete(cursor_offset, line):
     """Construct a full list of possibly completions for imports."""
-    # TODO if this is done in a thread (as it prob will be in Windows) we'll need this
-    # if not fully_loaded:
-    #     return []
     tokens = line.split()
     if 'from' not in tokens and 'import' not in tokens:
         return None
@@ -68,39 +98,6 @@ def complete(cursor_offset, line):
     result = lineparts.current_word(cursor_offset, line)
     if result is None:
         return None
-
-    def module_matches(cw, prefix=''):
-        """Modules names to replace cw with"""
-        full = '%s.%s' % (prefix, cw) if prefix else cw
-        matches = [name for name in modules
-                   if (name.startswith(full) and
-                       name.find('.', len(full)) == -1)]
-        if prefix:
-            return [match[len(prefix)+1:] for match in matches]
-        else:
-            return matches
-
-    def attr_matches(cw, prefix='', only_modules=False):
-        """Attributes to replace name with"""
-        full = '%s.%s' % (prefix, cw) if prefix else cw
-        module_name, _, name_after_dot = full.rpartition('.')
-        if module_name not in sys.modules:
-            return []
-        module = sys.modules[module_name]
-        if only_modules:
-            matches = [name for name in dir(module)
-                    if name.startswith(name_after_dot) and
-                    '%s.%s' % (module_name, name) in sys.modules]
-        else:
-            matches = [name for name in dir(module) if name.startswith(name_after_dot)]
-        module_part, _, _ = cw.rpartition('.')
-        if module_part:
-            return ['%s.%s' % (module_part, m) for m in matches]
-        return matches
-
-    def module_attr_matches(name):
-        """Only attributes which are modules to replace name with"""
-        return attr_matches(name, prefix='', only_modules=True)
 
     if lineparts.current_from_import_from(cursor_offset, line) is not None:
         if lineparts.current_from_import_import(cursor_offset, line) is not None:
