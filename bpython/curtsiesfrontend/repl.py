@@ -34,6 +34,7 @@ from curtsies.bpythonparse import func_for_letter, color_for_letter
 from curtsies import fmtfuncs
 from curtsies import events
 import curtsies
+import blessings
 
 from bpython.curtsiesfrontend.manual_readline import char_sequences as rl_char_sequences
 from bpython.curtsiesfrontend.manual_readline import get_updated_char_sequences
@@ -314,16 +315,17 @@ class Repl(BpythonRepl):
         signal.signal(signal.SIGWINCH, self.sigwinch_handler)
 
         self.orig_import = __builtins__['__import__']
-        @functools.wraps(self.orig_import)
-        def new_import(name, globals={}, locals={}, fromlist=[], level=-1):
-            m = self.orig_import(name, globals=globals, locals=locals, fromlist=fromlist)
-            if hasattr(m, "__file__"):
-                if self.watching_files:
-                    self.watcher.add_module(m.__file__)
-                else:
-                    self.watcher.add_module_later(m.__file__)
-            return m
-        __builtins__['__import__'] = new_import
+        if self.watcher:
+            @functools.wraps(self.orig_import)
+            def new_import(name, globals={}, locals={}, fromlist=[], level=-1):
+                m = self.orig_import(name, globals=globals, locals=locals, fromlist=fromlist)
+                if hasattr(m, "__file__"):
+                    if self.watching_files:
+                        self.watcher.add_module(m.__file__)
+                    else:
+                        self.watcher.add_module_later(m.__file__)
+                return m
+            __builtins__['__import__'] = new_import
 
         return self
 
@@ -417,15 +419,18 @@ class Repl(BpythonRepl):
                 self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' because ' + ' & '.join(e.files_modified) + ' modified')
 
         elif e in key_dispatch[self.config.toggle_file_watch_key]:
-            msg = "Auto-reloading active, watching for file changes..."
-            if self.watching_files:
-                self.watcher.deactivate()
-                self.watching_files = False
-                self.status_bar.pop_permanent_message(msg)
+            if self.watcher:
+                msg = "Auto-reloading active, watching for file changes..."
+                if self.watching_files:
+                    self.watcher.deactivate()
+                    self.watching_files = False
+                    self.status_bar.pop_permanent_message(msg)
+                else:
+                    self.watching_files = True
+                    self.status_bar.push_permanent_message(msg)
+                    self.watcher.activate()
             else:
-                self.watching_files = True
-                self.status_bar.push_permanent_message(msg)
-                self.watcher.activate()
+                self.status_bar.message('Autoreloading not available because watchdog not installed')
 
         elif e in key_dispatch[self.config.reimport_key]:
             self.clear_modules_and_reevaluate()
@@ -606,7 +611,7 @@ class Repl(BpythonRepl):
         self.cursor_offset = len(self.current_line)
 
     def clear_modules_and_reevaluate(self):
-        self.watcher.reset()
+        if self.watcher: self.watcher.reset()
         cursor, line = self.cursor_offset, self.current_line
         for modname in sys.modules.keys():
             if modname not in self.original_modules:
@@ -1045,7 +1050,7 @@ class Repl(BpythonRepl):
             self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
     def reevaluate(self, insert_into_history=False):
         """bpython.Repl.undo calls this"""
-        self.watcher.reset()
+        if self.watcher: self.watcher.reset()
         old_logical_lines = self.history
         self.history = []
         self.display_lines = []
@@ -1079,7 +1084,6 @@ class Repl(BpythonRepl):
         return s
 
     def focus_on_subprocess(self, args):
-        import blessings
         prev_sigwinch_handler = signal.getsignal(signal.SIGWINCH)
         try:
             signal.signal(signal.SIGWINCH, self.orig_sigwinch_handler)
