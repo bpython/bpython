@@ -57,8 +57,8 @@ Please report issues at https://github.com/bpython/bpython/issues
 Try using undo ({config.undo_key})!
 Edit the current line ({config.edit_current_block_key}) or the entire session ({config.external_editor_key}) in an external editor! (currently {config.editor})
 Save sessions ({config.save_key}) or post them to pastebins ({config.pastebin_key})! Current pastebin helper: {config.pastebin_helper}
-Re-execute the current session and reload all modules to test out changes to a module!
-Toggle auto-reload mode to re-execute the current session when a module you've imported is modified!
+Re-execute the current session and reload all modules ({config.reimport_key}) to test out changes to a module!
+Toggle auto-reload mode ({config.toggle_file_watch_key}) to re-execute the current session when a module you've imported is modified!
 
 Use bpython-curtsies -i your_script.py to run a file in interactive mode (interpreter in namespace of script).
 Use bpython-curtsies -t your_script.py to paste in the contents of a file, as though you typed them.
@@ -1113,7 +1113,7 @@ class Repl(BpythonRepl):
                 HELP_MESSAGE.format(config_file_location=default_config_path(),
                                     example_config_url='https://raw.githubusercontent.com/bpython/bpython/master/sample-config',
                                     config=self.config)
-                )
+               )
 
     def key_help_text(self):
         NOT_IMPLEMENTED = ['suspend', 'cut to buffer', 'search', 'last output', 'yank from buffer', 'cut to buffer']
