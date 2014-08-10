@@ -49,7 +49,8 @@ from curtsies.configfile_keynames import keymap as key_dispatch
 
 logger = logging.getLogger(__name__)
 
-HELP_MESSAGE = """Thanks for using bpython!
+HELP_MESSAGE = """
+Thanks for using bpython!
 
 See http://bpython-interpreter.org/ for info, http://docs.bpython-interpreter.org/ for docs, and https://github.com/bpython/bpython for source.
 Please report issues at https://github.com/bpython/bpython/issues
@@ -64,6 +65,7 @@ Use bpython-curtsies -i your_script.py to run a file in interactive mode (interp
 Use bpython-curtsies -t your_script.py to paste in the contents of a file, as though you typed them.
 
 Use a config file at {config_file_location} to customize keys and behavior of bpython.
+You can customize which pastebin helper to use and which external editor to use.
 See {example_config_url} for an example config file.
 """
 
