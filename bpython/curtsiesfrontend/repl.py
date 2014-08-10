@@ -1,6 +1,7 @@
 import code
 import contextlib
 import errno
+import functools
 import greenlet
 import logging
 import os
@@ -10,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unicodedata
 
 from bpython import autocomplete
@@ -39,6 +41,7 @@ from bpython.curtsiesfrontend.interaction import StatusBar
 from bpython.curtsiesfrontend import sitefix; sitefix.monkeypatch_quit()
 import bpython.curtsiesfrontend.replpainter as paint
 from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
+from bpython.curtsiesfrontend.filewatch import ModuleChangedEventHandler
 
 #TODO other autocomplete modes (also fix in other bpython implementations)
 
@@ -193,15 +196,16 @@ class Repl(BpythonRepl):
     """
 
     ## initialization, cleanup
-    def __init__(self, locals_=None, config=None,
-            request_refresh=lambda: None, get_term_hw=lambda:(50, 10),
-            get_cursor_vertical_diff=lambda: 0, banner=None, interp=None, interactive=True,
-            orig_tcattrs=None):
+    def __init__(self, locals_=None, config=None, request_refresh=lambda: None,
+            request_reload=lambda desc: None, get_term_hw=lambda:(50, 10),
+            get_cursor_vertical_diff=lambda: 0, banner=None, interp=None,
+            interactive=True, orig_tcattrs=None):
         """
         locals_ is a mapping of locals to pass into the interpreter
         config is a bpython config.Struct with config attributes
         request_refresh is a function that will be called when the Repl
             wants to refresh the display, but wants control returned to it afterwards
+            Takes as a kwarg when= which is when to fire
         get_term_hw is a function that returns the current width and height
             of the terminal
         get_cursor_vertical_diff is a function that returns how the cursor moved
@@ -229,18 +233,26 @@ class Repl(BpythonRepl):
 
         self.reevaluating = False
         self.fake_refresh_requested = False
-        def smarter_request_refresh():
+        def smarter_request_refresh(when='now'):
             if self.reevaluating or self.paste_mode:
                 self.fake_refresh_requested = True
             else:
-                request_refresh()
+                request_refresh(when=when)
         self.request_refresh = smarter_request_refresh
+        def smarter_request_reload(desc):
+            if self.watching_files:
+                request_reload(desc)
+            else:
+                pass
+        self.request_reload = smarter_request_reload
         self.get_term_hw = get_term_hw
         self.get_cursor_vertical_diff = get_cursor_vertical_diff
 
-        self.status_bar = StatusBar(banner, _(
-            " <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor"
-            ) % (config.undo_key, config.save_key, config.pastebin_key, config.external_editor_key),
+        self.status_bar = StatusBar(
+            banner,
+            (_(" <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor")
+             % (config.undo_key, config.save_key, config.pastebin_key, config.external_editor_key)
+             if config.curtsies_fill_terminal else ''),
             refresh_request=self.request_refresh
             )
         self.rl_char_sequences = get_updated_char_sequences(key_dispatch, config)
@@ -280,11 +292,14 @@ class Repl(BpythonRepl):
         self.paste_mode = False
         self.current_match = None
         self.list_win_visible = False
+        self.watching_files = False
 
         self.original_modules = sys.modules.keys()
 
         self.width = None  # will both be set by a window resize event
         self.height = None
+
+        self.watcher = ModuleChangedEventHandler([], smarter_request_reload)
 
     def __enter__(self):
         self.orig_stdout = sys.stdout
@@ -295,6 +310,19 @@ class Repl(BpythonRepl):
         sys.stdin = self.stdin
         self.orig_sigwinch_handler = signal.getsignal(signal.SIGWINCH)
         signal.signal(signal.SIGWINCH, self.sigwinch_handler)
+
+        self.orig_import = __builtins__['__import__']
+        @functools.wraps(self.orig_import)
+        def new_import(name, globals={}, locals={}, fromlist=[], level=-1):
+            m = self.orig_import(name, globals=globals, locals=locals, fromlist=fromlist)
+            if hasattr(m, "__file__"):
+                if self.watching_files:
+                    self.watcher.add_module(m.__file__)
+                else:
+                    self.watcher.add_module_later(m.__file__)
+            return m
+        __builtins__['__import__'] = new_import
+
         return self
 
     def __exit__(self, *args):
@@ -302,6 +330,7 @@ class Repl(BpythonRepl):
         sys.stdout = self.orig_stdout
         sys.stderr = self.orig_stderr
         signal.signal(signal.SIGWINCH, self.orig_sigwinch_handler)
+        __builtins__['__import__'] = self.orig_import
 
     def sigwinch_handler(self, signum, frame):
         old_rows, old_columns = self.height, self.width
@@ -347,7 +376,9 @@ class Repl(BpythonRepl):
 
         logger.debug("processing event %r", e)
         if isinstance(e, events.RefreshRequestEvent):
-            if self.status_bar.has_focus:
+            if e.when != 'now':
+                pass # This is a scheduled refresh - it's really just a refresh (so nop)
+            elif self.status_bar.has_focus:
                 self.status_bar.process_event(e)
             else:
                 assert self.coderunner.code_is_waiting
@@ -376,6 +407,28 @@ class Repl(BpythonRepl):
             self.keyboard_interrupt()
             self.update_completion()
             return
+
+        elif isinstance(e, events.ReloadEvent):
+            if self.watching_files:
+                self.clear_modules_and_reevaluate()
+                self.update_completion()
+                self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' because ' + ' & '.join(e.files_modified) + ' modified')
+
+        elif e in key_dispatch[self.config.toggle_file_watch_key]:
+            msg = "Auto-reloading active, watching for file changes..."
+            if self.watching_files:
+                self.watcher.deactivate()
+                self.watching_files = False
+                self.status_bar.pop_permanent_message(msg)
+            else:
+                self.watching_files = True
+                self.status_bar.push_permanent_message(msg)
+                self.watcher.activate()
+
+        elif e in key_dispatch[self.config.reimport_key]:
+            self.clear_modules_and_reevaluate()
+            self.update_completion()
+            self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' by user')
 
         elif (e in ("<RIGHT>", '<Ctrl-f>') and self.config.curtsies_right_arrow_completion
                 and self.cursor_offset == len(self.current_line)):
@@ -441,9 +494,6 @@ class Repl(BpythonRepl):
         elif e in ("<Shift-TAB>",):
             self.on_tab(back=True)
             self.rl_history.reset()
-        elif e in key_dispatch[self.config.reimport_key]:
-            self.clear_modules_and_reevaluate()
-            self.update_completion()
         elif e in key_dispatch[self.config.undo_key]: #ctrl-r for undo
             self.undo()
             self.update_completion()
@@ -554,6 +604,7 @@ class Repl(BpythonRepl):
         self.cursor_offset = len(self.current_line)
 
     def clear_modules_and_reevaluate(self):
+        self.watcher.reset()
         cursor, line = self.cursor_offset, self.current_line
         for modname in sys.modules.keys():
             if modname not in self.original_modules:
@@ -804,7 +855,7 @@ class Repl(BpythonRepl):
             self.clean_up_current_line_for_exit() # exception to not changing state!
 
         width, min_height = self.width, self.height
-        show_status_bar = bool(self.status_bar._message) or (self.config.curtsies_fill_terminal or self.status_bar.has_focus)
+        show_status_bar = bool(self.status_bar.should_show_message) or (self.config.curtsies_fill_terminal or self.status_bar.has_focus)
         if show_status_bar:
             min_height -= 1
 
@@ -992,6 +1043,7 @@ class Repl(BpythonRepl):
             self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
     def reevaluate(self, insert_into_history=False):
         """bpython.Repl.undo calls this"""
+        self.watcher.reset()
         old_logical_lines = self.history
         self.history = []
         self.display_lines = []

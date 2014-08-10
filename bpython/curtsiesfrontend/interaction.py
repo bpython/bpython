@@ -29,10 +29,21 @@ class StatusBar(BpythonInteraction):
         self._message = initial_message
         self.message_start_time = time.time()
         self.message_time = 3
-        self.permanent_text = permanent_text
+        self.permanent_stack = []
+        if permanent_text:
+            self.permanent_stack.append(permanent_text)
         self.main_greenlet = greenlet.getcurrent()
         self.request_greenlet = None
         self.refresh_request = refresh_request
+
+    def push_permanent_message(self, msg):
+        self.permanent_stack.append(msg)
+
+    def pop_permanent_message(self, msg):
+        if msg in self.permanent_stack:
+            self.permanent_stack.remove(msg)
+        else:
+            raise ValueError("Messsage %r was not in permanent_stack" % msg)
 
     @property
     def has_focus(self):
@@ -41,6 +52,7 @@ class StatusBar(BpythonInteraction):
     def message(self, msg):
         self.message_start_time = time.time()
         self._message = msg
+        self.refresh_request(time.time() + self.message_time)
 
     def _check_for_expired_message(self):
         if self._message and time.time() > self.message_start_time + self.message_time:
@@ -101,7 +113,13 @@ class StatusBar(BpythonInteraction):
             return self.prompt
         if self._message:
             return self._message
-        return self.permanent_text
+        if self.permanent_stack:
+            return self.permanent_stack[-1]
+        return ''
+
+    @property
+    def should_show_message(self):
+        return bool(self.current_line)
 
     # interaction interface - should be called from other greenlets
     def notify(self, msg, n=3):

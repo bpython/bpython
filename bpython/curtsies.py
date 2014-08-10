@@ -1,10 +1,13 @@
 from __future__ import absolute_import
 
-import sys
 import code
 import logging
+import sys
+import time
+from subprocess import Popen, PIPE
 from optparse import Option
 from itertools import izip
+from functools import wraps
 
 import curtsies
 import curtsies.window
@@ -71,20 +74,32 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                 hide_cursor=False,
                 extra_bytes_callback=input_generator.unget_bytes) as window:
 
+            reload_requests = []
+            def request_reload(desc):
+                reload_requests.append(curtsies.events.ReloadEvent([desc]))
             refresh_requests = []
-            def request_refresh():
-                refresh_requests.append(curtsies.events.RefreshRequestEvent())
+            def request_refresh(when='now'):
+                refresh_requests.append(curtsies.events.RefreshRequestEvent(when=when))
+
             def event_or_refresh(timeout=None):
                 while True:
-                    if refresh_requests:
-                        yield refresh_requests.pop()
+                    t = time.time()
+                    refresh_requests.sort(key=lambda r: 0 if r.when == 'now' else r.when)
+                    if refresh_requests and (refresh_requests[0].when == 'now' or refresh_requests[-1].when < t):
+                        yield refresh_requests.pop(0)
+                    elif reload_requests:
+                        e = reload_requests.pop()
+                        yield e
                     else:
-                        yield input_generator.send(timeout)
+                        e = input_generator.send(.2)
+                        if e is not None:
+                            yield e
 
             global repl # global for easy introspection `from bpython.curtsies import repl`
             with Repl(config=config,
                       locals_=locals_,
                       request_refresh=request_refresh,
+                      request_reload=request_reload,
                       get_term_hw=window.get_term_hw,
                       get_cursor_vertical_diff=window.get_cursor_vertical_diff,
                       banner=banner,
