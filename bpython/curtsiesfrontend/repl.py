@@ -24,12 +24,14 @@ from bpython import translations
 translations.init()
 from bpython.translations import _
 from bpython._py3compat import py3
+import bpython
 
 from curtsies import FSArray, fmtstr, FmtStr, Termmode
 from curtsies.bpythonparse import parse as bpythonparse
 from curtsies.bpythonparse import func_for_letter, color_for_letter
 from curtsies import fmtfuncs
 from curtsies import events
+import curtsies
 
 from bpython.curtsiesfrontend.manual_readline import char_sequences as rl_char_sequences
 from bpython.curtsiesfrontend.manual_readline import get_updated_char_sequences
@@ -43,6 +45,24 @@ from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 from bpython.keys import cli_key_dispatch as key_dispatch
 
 logger = logging.getLogger(__name__)
+
+HELP_MESSAGE = """Thanks for using bpython!
+
+See http://bpython-interpreter.org/ for info, http://docs.bpython-interpreter.org/ for docs, and https://github.com/bpython/bpython for source.
+Please report issues at https://github.com/bpython/bpython/issues
+
+Try using undo ({config.undo_key})!
+Edit the current line ({config.edit_current_block_key}) or the entire session ({config.external_editor_key}) in an external editor! (currently {config.editor})
+Save sessions ({config.save_key}) or post them to pastebins ({config.pastebin_key})! Current pastebin helper: {config.pastebin_helper}
+Re-execute the current session and reload all modules to test out changes to a module!
+Toggle auto-reload mode to re-execute the current session when a module you've imported is modified!
+
+Use bpython-curtsies -i your_script.py to run a file in interactive mode (interpreter in namespace of script).
+Use bpython-curtsies -t your_script.py to paste in the contents of a file, as though you typed them.
+
+Use a config file at {config_file_location} to customize keys and behavior of bpython.
+See {example_config_url} for an example config file.
+"""
 
 class FakeStdin(object):
     """Stdin object user code references so sys.stdin.read() asked user for interactive input"""
@@ -189,7 +209,7 @@ class Repl(BpythonRepl):
         if interp is None:
             interp = code.InteractiveInterpreter(locals=locals_)
         if banner is None:
-            banner = _('welcome to bpython')
+            banner = _('Welcome to bpython! Press <%s> for help.') % config.help_key
         config.autocomplete_mode = autocomplete.SIMPLE # only one implemented currently
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 1
@@ -205,7 +225,7 @@ class Repl(BpythonRepl):
         self.get_term_hw = get_term_hw
         self.get_cursor_vertical_diff = get_cursor_vertical_diff
 
-        self.status_bar = StatusBar(banner if config.curtsies_fill_terminal else '', _(
+        self.status_bar = StatusBar(banner, _(
             " <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor"
             ) % (config.undo_key, config.save_key, config.pastebin_key, config.external_editor_key),
             refresh_request=self.request_refresh
@@ -389,7 +409,7 @@ class Repl(BpythonRepl):
                 if self.config.highlight_show_source:
                     source = format(PythonLexer().get_tokens(source), TerminalFormatter())
                 self.pager(source)
-        elif e in ('KEY_F(1)',):
+        elif e in key_dispatch[self.config.help_key]:
             self.pager(self.help_text())
         elif e in key_dispatch[self.config.suspend_key]:
             raise SystemExit()
@@ -416,7 +436,7 @@ class Repl(BpythonRepl):
         elif e in key_dispatch[self.config.external_editor_key]:
             self.send_session_to_external_editor()
         #TODO add PAD keys hack as in bpython.cli
-        elif e in ["\x18"]:
+        elif e in key_dispatch[self.config.edit_current_block_key]:
             self.send_current_block_to_external_editor()
         elif e in ["\x1b"]: #ESC
             pass
@@ -1000,12 +1020,26 @@ class Repl(BpythonRepl):
             self.focus_on_subprocess(command + [tmp.name])
 
     def help_text(self):
+        return self.version_help_text() + '\n' + self.key_help_text()
+
+    def version_help_text(self):
+        return (('bpython-curtsies version %s' % bpython.__version__) + ' ' +
+                ('using curtsies version %s' % curtsies.__version__) + '\n' +
+                HELP_MESSAGE.format(config_file_location=default_config_path(),
+                                    example_config_url='https://raw.githubusercontent.com/bpython/bpython/master/sample-config',
+                                    config=self.config)
+                )
+
+    def key_help_text(self):
         NOT_IMPLEMENTED = ['suspend', 'cut to buffer', 'search', 'last output', 'yank from buffer', 'cut to buffer']
         pairs = []
+        pairs.append(['complete history suggestion', 'right arrow at end of line'])
+        pairs.append(['previous match with current line', 'up arrow'])
         for functionality, key in [(attr[:-4].replace('_', ' '), getattr(self.config, attr))
                                    for attr in self.config.__dict__
                                    if attr.endswith('key')]:
             if functionality in NOT_IMPLEMENTED: key = "Not Implemented"
+            if key == '': key = 'Disabled'
 
             pairs.append([functionality, key])
 
