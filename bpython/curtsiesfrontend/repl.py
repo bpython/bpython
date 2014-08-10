@@ -220,9 +220,11 @@ class Repl(BpythonRepl):
         self.get_term_hw = get_term_hw
         self.get_cursor_vertical_diff = get_cursor_vertical_diff
 
-        self.status_bar = StatusBar(banner if config.curtsies_fill_terminal else '', _(
-            " <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor"
-            ) % (config.undo_key, config.save_key, config.pastebin_key, config.external_editor_key),
+        self.status_bar = StatusBar(
+            banner if config.curtsies_fill_terminal else '',
+            (_(" <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor")
+             % (config.undo_key, config.save_key, config.pastebin_key, config.external_editor_key)
+             if config.curtsies_fill_terminal else ''),
             refresh_request=self.request_refresh
             )
         self.rl_char_sequences = get_updated_char_sequences(key_dispatch, config)
@@ -262,6 +264,7 @@ class Repl(BpythonRepl):
         self.paste_mode = False
         self.current_match = None
         self.list_win_visible = False
+        self.watching_files = False
 
         self.original_modules = sys.modules.keys()
 
@@ -361,13 +364,25 @@ class Repl(BpythonRepl):
             self.update_completion()
             return
 
-        elif isinstance(e, events.ReloadEvent) or e in key_dispatch[self.config.reimport_key]:
+        elif isinstance(e, events.ReloadEvent):
+            if self.watching_files:
+                self.clear_modules_and_reevaluate()
+                self.update_completion()
+                self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' because ' + ' & '.join(e.files_modified) + ' modified')
+
+        elif e in key_dispatch[self.config.toggle_file_watch_key]:
+            msg = "Auto-reloading active, watching for file changes..."
+            if self.watching_files:
+                self.watching_files = False
+                self.status_bar.pop_permanent_message(msg)
+            else:
+                self.watching_files = True
+                self.status_bar.push_permanent_message(msg)
+
+        elif e in key_dispatch[self.config.reimport_key]:
             self.clear_modules_and_reevaluate()
             self.update_completion()
-            if isinstance(e, events.ReloadEvent):
-                self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' because ' + ' & '.join(e.files_modified) + ' modified')
-            else:
-                self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' by user')
+            self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' by user')
 
         elif (e in ("<RIGHT>", '<Ctrl-f>') and self.config.curtsies_right_arrow_completion
                 and self.cursor_offset == len(self.current_line)):

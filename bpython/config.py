@@ -79,6 +79,7 @@ def loadini(struct, configfile):
             'save': 'C-s',
             'show_source': 'F2',
             'suspend': 'C-z',
+            'toggle_file_watch': 'F5',
             'undo': 'C-r',
             'reimport': 'F6',
             'search': 'C-o',
@@ -120,6 +121,7 @@ def loadini(struct, configfile):
     struct.search_key = config.get('keyboard', 'search')
     struct.show_source_key = config.get('keyboard', 'show_source')
     struct.suspend_key = config.get('keyboard', 'suspend')
+    struct.toggle_file_watch_key = config.get('keyboard', 'toggle_file_watch')
     struct.undo_key = config.get('keyboard', 'undo')
     struct.reimport_key = config.get('keyboard', 'reimport')
     struct.up_one_line_key = config.get('keyboard', 'up_one_line')
