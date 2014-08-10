@@ -39,6 +39,7 @@ def end_of_line(cursor_offset, line):
 
 @on('<Esc+f>')
 @on('<Ctrl-RIGHT>')
+@on('<Esc+RIGHT>')
 def forward_word(cursor_offset, line):
     patt = r"\S\s"
     match = re.search(patt, line[cursor_offset:]+' ')
@@ -47,6 +48,7 @@ def forward_word(cursor_offset, line):
 
 @on('<Esc+b>')
 @on('<Ctrl-LEFT>')
+@on('<Esc+LEFT>')
 def back_word(cursor_offset, line):
     return (last_word_pos(line[:cursor_offset]), line)
 
