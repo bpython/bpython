@@ -60,6 +60,7 @@ def last_word_pos(string):
     return index or 0
 
 @on('<PADDELETE>')
+@on('<Ctrl-d>')
 def delete(cursor_offset, line):
     return (cursor_offset,
             line[:cursor_offset] + line[cursor_offset+1:])
