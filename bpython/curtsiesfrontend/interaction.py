@@ -19,14 +19,14 @@ class StatusBar(BpythonInteraction):
     functionality in a evented or callback style, but trying to integrate
     bpython.Repl code.
     """
-    def __init__(self, initial_message='', permanent_text="", refresh_request=lambda: None):
+    def __init__(self, permanent_text="", refresh_request=lambda: None):
         self._current_line = ''
         self.cursor_offset_in_line = 0
         self.in_prompt = False
         self.in_confirm = False
         self.waiting_for_refresh = False
         self.prompt = ''
-        self._message = initial_message
+        self._message = ''
         self.message_start_time = time.time()
         self.message_time = 3
         self.permanent_stack = []
@@ -37,6 +37,7 @@ class StatusBar(BpythonInteraction):
         self.refresh_request = refresh_request
 
     def push_permanent_message(self, msg):
+        self._message = ''
         self.permanent_stack.append(msg)
 
     def pop_permanent_message(self, msg):

@@ -252,7 +252,6 @@ class Repl(BpythonRepl):
         self.get_cursor_vertical_diff = get_cursor_vertical_diff
 
         self.status_bar = StatusBar(
-            banner,
             (_(" <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor")
              % (config.undo_key, config.save_key, config.pastebin_key, config.external_editor_key)
              if config.curtsies_fill_terminal else ''),
@@ -301,6 +300,8 @@ class Repl(BpythonRepl):
 
         self.width = None  # will both be set by a window resize event
         self.height = None
+
+        self.status_bar.message(banner)
 
         self.watcher = ModuleChangedEventHandler([], smarter_request_reload)
 
