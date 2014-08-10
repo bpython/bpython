@@ -9,12 +9,16 @@ from watchdog.events import FileSystemEventHandler
 
 class ModuleChangedEventHandler(FileSystemEventHandler):
     def __init__(self, paths, on_change):
-        self.dirs = defaultdict(list)
+        self.dirs = defaultdict(set)
         self.on_change = on_change
         self.observer = Observer()
         for path in paths:
             self.add_module(path)
         self.observer.start()
+
+    def reset(self):
+        self.dirs = defaultdict(set)
+        self.observer.unschedule_all()
 
     def add_module(self, path):
         """Add a python module to track changes to"""
@@ -26,7 +30,7 @@ class ModuleChangedEventHandler(FileSystemEventHandler):
         dirname = os.path.dirname(path)
         if dirname not in self.dirs:
             self.observer.schedule(self, dirname, recursive=False)
-            self.dirs[os.path.dirname(path)].append(path)
+            self.dirs[os.path.dirname(path)].add(path)
 
     def on_any_event(self, event):
         dirpath = os.path.dirname(event.src_path)

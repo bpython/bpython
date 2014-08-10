@@ -1,6 +1,7 @@
 import code
 import contextlib
 import errno
+import functools
 import greenlet
 import logging
 import os
@@ -38,6 +39,7 @@ from bpython.curtsiesfrontend.interaction import StatusBar
 from bpython.curtsiesfrontend import sitefix; sitefix.monkeypatch_quit()
 import bpython.curtsiesfrontend.replpainter as paint
 from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
+from bpython.curtsiesfrontend.filewatch import ModuleChangedEventHandler
 
 #TODO other autocomplete modes (also fix in other bpython implementations)
 
@@ -174,10 +176,10 @@ class Repl(BpythonRepl):
     """
 
     ## initialization, cleanup
-    def __init__(self, locals_=None, config=None,
-            request_refresh=lambda: None, get_term_hw=lambda:(50, 10),
-            get_cursor_vertical_diff=lambda: 0, banner=None, interp=None, interactive=True,
-            orig_tcattrs=None):
+    def __init__(self, locals_=None, config=None, request_refresh=lambda: None,
+            request_reload=lambda desc: None, get_term_hw=lambda:(50, 10),
+            get_cursor_vertical_diff=lambda: 0, banner=None, interp=None,
+            interactive=True, orig_tcattrs=None):
         """
         locals_ is a mapping of locals to pass into the interpreter
         config is a bpython config.Struct with config attributes
@@ -217,6 +219,12 @@ class Repl(BpythonRepl):
             else:
                 request_refresh(when=when)
         self.request_refresh = smarter_request_refresh
+        def smarter_request_reload(desc):
+            if self.watching_files:
+                request_reload(desc)
+            else:
+                pass
+        self.request_reload = smarter_request_reload
         self.get_term_hw = get_term_hw
         self.get_cursor_vertical_diff = get_cursor_vertical_diff
 
@@ -271,6 +279,8 @@ class Repl(BpythonRepl):
         self.width = None  # will both be set by a window resize event
         self.height = None
 
+        self.watcher = ModuleChangedEventHandler([], smarter_request_reload)
+
     def __enter__(self):
         self.orig_stdout = sys.stdout
         self.orig_stderr = sys.stderr
@@ -280,6 +290,16 @@ class Repl(BpythonRepl):
         sys.stdin = self.stdin
         self.orig_sigwinch_handler = signal.getsignal(signal.SIGWINCH)
         signal.signal(signal.SIGWINCH, self.sigwinch_handler)
+
+        self.orig_import = __builtins__['__import__']
+        @functools.wraps(self.orig_import)
+        def new_import(name, globals={}, locals={}, fromlist=[], level=-1):
+            m = self.orig_import(name, globals=globals, locals=locals, fromlist=fromlist)
+            if hasattr(m, "__file__"):
+                self.watcher.add_module(m.__file__)
+            return m
+        __builtins__['__import__'] = new_import
+
         return self
 
     def __exit__(self, *args):
@@ -287,6 +307,7 @@ class Repl(BpythonRepl):
         sys.stdout = self.orig_stdout
         sys.stderr = self.orig_stderr
         signal.signal(signal.SIGWINCH, self.orig_sigwinch_handler)
+        __builtins__['__import__'] = self.orig_import
 
     def sigwinch_handler(self, signum, frame):
         old_rows, old_columns = self.height, self.width
@@ -373,6 +394,7 @@ class Repl(BpythonRepl):
         elif e in key_dispatch[self.config.toggle_file_watch_key]:
             msg = "Auto-reloading active, watching for file changes..."
             if self.watching_files:
+                self.watcher.reset()
                 self.watching_files = False
                 self.status_bar.pop_permanent_message(msg)
             else:

@@ -20,8 +20,6 @@ from bpython import args as bpargs
 from bpython.translations import _
 from bpython.importcompletion import find_iterator
 
-import wdtest
-
 repl = None # global for `from bpython.curtsies import repl`
 #WARNING Will be a problem if more than one repl is ever instantiated this way
 
@@ -83,17 +81,6 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
             def request_refresh(when='now'):
                 refresh_requests.append(curtsies.events.RefreshRequestEvent(when=when))
 
-            watcher = wdtest.ModuleChangedEventHandler([], request_reload)
-
-            orig_import = __builtins__['__import__']
-            @wraps(orig_import)
-            def new_import(name, globals={}, locals={}, fromlist=[], level=-1):
-                m = orig_import(name, globals=globals, locals=locals, fromlist=fromlist)
-                if hasattr(m, "__file__"):
-                    watcher.add_module(m.__file__)
-                return m
-            __builtins__['__import__'] = new_import
-
             def event_or_refresh(timeout=None):
                 while True:
                     t = time.time()
@@ -112,6 +99,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
             with Repl(config=config,
                       locals_=locals_,
                       request_refresh=request_refresh,
+                      request_reload=request_reload,
                       get_term_hw=window.get_term_hw,
                       get_cursor_vertical_diff=window.get_cursor_vertical_diff,
                       banner=banner,
