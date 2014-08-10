@@ -492,6 +492,10 @@ class Repl(BpythonRepl):
         elif e in ("<Ctrl-d>",):
             if self.current_line == '':
                 raise SystemExit()
+            else:
+                self.current_line = self.current_line[:self.cursor_offset] + self.current_line[self.cursor_offset+1:]
+                self.update_completion()
+                self.rl_history.reset()
         elif e in key_dispatch[self.config.exit_key]:
                 raise SystemExit()
         elif e in ("\n", "\r", "<PADENTER>", "<Ctrl-j>", "<Ctrl-m>"):
