@@ -69,6 +69,8 @@ def loadini(struct, configfile):
             'down_one_line': 'C-n',
             'exit': '',
             'external_editor': 'F7',
+            'edit_current_block': 'C-x',
+            'help': 'F1',
             'last_output': 'F9',
             'pastebin': 'F8',
             'save': 'C-s',
@@ -127,7 +129,9 @@ def loadini(struct, configfile):
     struct.delete_key = config.get('keyboard', 'delete')
     struct.exit_key = config.get('keyboard', 'exit')
     struct.last_output_key = config.get('keyboard', 'last_output')
+    struct.edit_current_block_key = config.get('keyboard', 'edit_current_block')
     struct.external_editor_key = config.get('keyboard', 'external_editor')
+    struct.help_key = config.get('keyboard', 'help')
 
     struct.pastebin_confirm = config.getboolean('general', 'pastebin_confirm')
     struct.pastebin_private = config.getboolean('general', 'pastebin_private')
