@@ -37,7 +37,7 @@ def beginning_of_line(cursor_offset, line):
 def end_of_line(cursor_offset, line):
     return len(line), line
 
-@on('<Esc-f>')
+@on('<Esc+f>')
 @on('<Ctrl-RIGHT>')
 def forward_word(cursor_offset, line):
     patt = r"\S\s"
@@ -45,7 +45,7 @@ def forward_word(cursor_offset, line):
     delta = match.end() - 1 if match else 0
     return (cursor_offset + delta, line)
 
-@on('<Esc-b>')
+@on('<Esc+b>')
 @on('<Ctrl-LEFT>')
 def back_word(cursor_offset, line):
     return (last_word_pos(line[:cursor_offset]), line)
@@ -117,11 +117,11 @@ def transpose_word_before_cursor(cursor_offset, line):
 def delete_line(cursor_offset, line):
     return 0, ""
 
-@on('<Esc-u>')
+@on('<Esc+u>')
 def uppercase_next_word(cursor_offset, line):
     return cursor_offset, line #TODO Not implemented
 
-@on('<Esc-c>')
+@on('<Esc+c>')
 def titlecase_next_word(cursor_offset, line):
     return cursor_offset, line #TODO Not implemented
 
