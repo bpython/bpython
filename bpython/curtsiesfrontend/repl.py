@@ -581,13 +581,15 @@ class Repl(BpythonRepl):
             self.cursor_offset, self.current_line = self.matches_iter.cur_line()
 
     def process_simple_event(self, e):
-        if e in ("\n", "\r", "PAD_ENTER"):
+        if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>"):
             self.on_enter()
             while self.fake_refresh_requested:
                 self.fake_refresh_requested = False
                 self.process_event(events.RefreshRequestEvent())
         elif isinstance(e, events.Event):
             pass # ignore events
+        elif e == '<SPACE>':
+            self.add_normal_character(' ')
         else:
             self.add_normal_character(e)
 
