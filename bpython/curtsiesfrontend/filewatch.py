@@ -11,13 +11,17 @@ class ModuleChangedEventHandler(FileSystemEventHandler):
     def __init__(self, paths, on_change):
         self.dirs = defaultdict(set)
         self.on_change = on_change
+        self.modules_to_add_later = []
         self.observer = Observer()
+        self.old_dirs = defaultdict(set)
         for path in paths:
             self.add_module(path)
         self.observer.start()
 
     def reset(self):
         self.dirs = defaultdict(set)
+        del self.modules_to_add_later[:]
+        self.old_dirs = defaultdict(set)
         self.observer.unschedule_all()
 
     def add_module(self, path):
@@ -31,6 +35,22 @@ class ModuleChangedEventHandler(FileSystemEventHandler):
         if dirname not in self.dirs:
             self.observer.schedule(self, dirname, recursive=False)
             self.dirs[os.path.dirname(path)].add(path)
+
+    def add_module_later(self, path):
+        self.modules_to_add_later.append(path)
+
+    def activate(self):
+        self.dirs = self.old_dirs
+        for dirname in self.dirs:
+            self.observer.schedule(self, dirname, recursive=False)
+        for module in self.modules_to_add_later:
+            self.add_module(module)
+        del self.modules_to_add_later[:]
+
+    def deactivate(self):
+        self.observer.unschedule_all()
+        self.old_dirs = self.dirs
+        self.dirs = defaultdict(set)
 
     def on_any_event(self, event):
         dirpath = os.path.dirname(event.src_path)

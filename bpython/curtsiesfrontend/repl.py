@@ -296,7 +296,10 @@ class Repl(BpythonRepl):
         def new_import(name, globals={}, locals={}, fromlist=[], level=-1):
             m = self.orig_import(name, globals=globals, locals=locals, fromlist=fromlist)
             if hasattr(m, "__file__"):
-                self.watcher.add_module(m.__file__)
+                if self.watching_files:
+                    self.watcher.add_module(m.__file__)
+                else:
+                    self.watcher.add_module_later(m.__file__)
             return m
         __builtins__['__import__'] = new_import
 
@@ -394,12 +397,13 @@ class Repl(BpythonRepl):
         elif e in key_dispatch[self.config.toggle_file_watch_key]:
             msg = "Auto-reloading active, watching for file changes..."
             if self.watching_files:
-                self.watcher.reset()
+                self.watcher.deactivate()
                 self.watching_files = False
                 self.status_bar.pop_permanent_message(msg)
             else:
                 self.watching_files = True
                 self.status_bar.push_permanent_message(msg)
+                self.watcher.activate()
 
         elif e in key_dispatch[self.config.reimport_key]:
             self.clear_modules_and_reevaluate()
@@ -580,6 +584,7 @@ class Repl(BpythonRepl):
         self.cursor_offset = len(self.current_line)
 
     def clear_modules_and_reevaluate(self):
+        self.watcher.reset()
         cursor, line = self.cursor_offset, self.current_line
         for modname in sys.modules.keys():
             if modname not in self.original_modules:
@@ -1018,6 +1023,7 @@ class Repl(BpythonRepl):
             self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
     def reevaluate(self, insert_into_history=False):
         """bpython.Repl.undo calls this"""
+        self.watcher.reset()
         old_logical_lines = self.history
         self.history = []
         self.display_lines = []
