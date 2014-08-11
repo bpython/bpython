@@ -18,6 +18,8 @@ Getting your development environment set up
 
 Using a virtual environment is probably a good idea. Create a virtual environment with
 
+.. code-block:: bash
+
     $ virtualenv bpython-dev
     $ source bpython-dev/bin/activate   # this step is necssary every time you work on bpython
     <hack on bpython>
@@ -25,9 +27,13 @@ Using a virtual environment is probably a good idea. Create a virtual environmen
 
 Fork bpython in the GitHub web interace, then clone the repo:
 
+.. code-block:: bash
+
     $ git clone git@github.com:YOUR_GITHUB_USERNAME/bpython.git
 
 Next install this development version of bpython:
+
+.. code-block:: bash
 
     $ pip install pygments curtsies greenlet watchdog urwid  # install all the dependencies
     $ pip install sphinx mock                                # development dependencies
@@ -45,7 +51,20 @@ To run tests:
 To build the docs:
 ------------------
 
-TODO
+The documentation is included in the regular `bpython` repository so if you did the
+previous step your install can support generating and working on the documentation.
+
+Install `sphinx` (or in your current `virtualenv`). And go to the following directory:
+
+.. code-block:: bash
+
+    $ pip install sphinx
+    $ cd bpython/doc/sphinx/ # assuming you are in the root dir of the bpython project
+    $ make html
+
+Afterwards you can point your browser to `bpython/doc/source/index.html`. Don't forget
+to recreate the HTML after you make changes.
+
 
 To hack on the site:
 --------------------
