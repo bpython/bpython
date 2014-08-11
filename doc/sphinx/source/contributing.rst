@@ -25,13 +25,13 @@ Using a virtual environment is probably a good idea. Create a virtual environmen
     <hack on bpython>
     $ deactivate                        # back to normal system environment
 
-Fork bpython in the GitHub web interace, then clone the repo:
+Fork `bpython` in the GitHub web interface, then clone the repo:
 
 .. code-block:: bash
 
     $ git clone git@github.com:YOUR_GITHUB_USERNAME/bpython.git
 
-Next install this development version of bpython:
+Next install this development version of `bpython`:
 
 .. code-block:: bash
 
@@ -42,7 +42,7 @@ Next install this development version of bpython:
     <modify a file in some way>
     $ bpython-curtsies      # this runs your modified copy of bpython!
 
-As a first dev task, I recommend getting bpython to print your name every time you hit a specific key.
+As a first dev task, I recommend getting `bpython` to print your name every time you hit a specific key.
 
 To run tests:
 
