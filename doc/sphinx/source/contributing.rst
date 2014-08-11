@@ -66,10 +66,39 @@ Afterwards you can point your browser to `bpython/doc/source/index.html`. Don't 
 to recreate the HTML after you make changes.
 
 
-To hack on the site:
---------------------
+To hack on the site or theme
+----------------------------
 
-TODO
+The site (and it's theme as well) is stored in a separate repository and built using
+pelican. To start hacking on the site you need to start out with a checkout and
+probably a virtual environment:
+
+.. code-block:: bash
+
+    $ virtualenv bpython-site-dev
+    $ source bpython-site-dev/bin/activate
+    $ pip install pelican
+
+Fork bsite and bsite-theme in the GitHub web interface, then clone the 
+repositories:
+
+.. code-block:: bash
+
+    $ git clone git@github.com:YOUR_GITHUB_USERNAME/bsite.git
+    $ git clone git@github.com:YOUR_GITHUB_USERNAME/bsite-theme.git
+
+Next you can fiddle around in the source files. If you want to build the site
+you activate your virtualenv and tell pelican to generate the site with the
+included configuration file.
+
+.. code-block:: bash
+
+    $ source bpython-site-dev/bin/activate
+    $ cd bsite # if you want to fiddle on the text of the site otherwise go into bsite-theme
+    $ pelican -t ../bsite-theme -s pelicanconf.py # if you checked out the theme in a different place, use that path
+
+After this you can open the `output/index.html` in your favourite browser and see
+if your changes had an effect.
 
 ..  _GitHub issue tracker: https://github.com/bpython/bpython/issues
 .. _bite-size: https://github.com/bpython/bpython/labels/bitesize
