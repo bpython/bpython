@@ -51,19 +51,17 @@ To run tests:
 To build the docs:
 ------------------
 
-The documentation is included in the regular `bpython` repository so if you did the
-previous step your install can support generating and working on the documentation.
-
-Install `sphinx` (or in your current `virtualenv`). And go to the following directory:
+The documentation is included in the regular `bpython` repository. After
+checking out the `bpython` repository and installing `sphinx` as described in
+the previous step, you can run the following command in your checkout of the
+repository to build the documentation:
 
 .. code-block:: bash
 
-    $ pip install sphinx
-    $ cd bpython/doc/sphinx/ # assuming you are in the root dir of the bpython project
-    $ make html
+    $ make -C doc/sphinx html
 
-Afterwards you can point your browser to `bpython/doc/source/index.html`. Don't forget
-to recreate the HTML after you make changes.
+Afterwards you can point your browser to `doc/sphinx/build/html/index.html`.
+Don't forget to recreate the HTML after you make changes.
 
 
 To hack on the site or theme
