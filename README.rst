@@ -51,8 +51,10 @@ or place them at the github issue page for this project at:
 http://github.com/bpython/bpython/issues/
 
 For any other ways of communicating with bpython users and devs you can find us
-at the communication page on the projects homepage:
+at the community page on the projects homepage:
 http://bpython-interpreter.org/community
+
+Or in the documentation at http://docs.bpython-interpreter.org/community.html.
 
 Hope to see you there!
 
