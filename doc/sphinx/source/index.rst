@@ -17,6 +17,7 @@ Contents:
    :maxdepth: 2
 
    authors
+   contributing
    configuration
    themes
    releases

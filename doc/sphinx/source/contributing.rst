@@ -1,14 +1,15 @@
+.. _contributing:
+
 Contributing to bpython
 =======================
 
 Thanks for working on bpython!
 
-On the [GitHub issue tracker](https://github.com/bpython/bpython/issues)
-some issues are labeled
-["bite-size"](https://github.com/bpython/bpython/labels/bitesize) -
+On the `GitHub issue tracker`_ some issues are labeled bite-size_
 these are particularly good ones to start out with.
 
-See http://bpython-interpreter.org/community for a list of resources.
+See our section about the :ref:`community` for a list of resources.
+
 `#bpython` on freenode is particularly useful, but you might have to wait for a while
 to get a question answered depending on the time of day.
 
@@ -50,3 +51,6 @@ To hack on the site:
 --------------------
 
 TODO
+
+..  _GitHub issue tracker: https://github.com/bpython/bpython/issues
+.. _bite-size: https://github.com/bpython/bpython/labels/bitesize
