@@ -267,7 +267,7 @@ class Repl(BpythonRepl):
         self.interact = self.status_bar # overwriting what bpython.Repl put there
                                         # interact is called to interact with the status bar,
                                         # so we're just using the same object
-        self.current_line = '' # line currently being edited, without '>>> '
+        self._current_line = '' # line currently being edited, without '>>> '
         self.current_stdouterr_line = '' # current line of output - stdout and stdin go here
         self.display_lines = [] # lines separated whenever logical line
                                 # length goes over what the terminal width
@@ -280,7 +280,7 @@ class Repl(BpythonRepl):
                                  # bpython.Repl
         self.scroll_offset = 0 # how many times display has been scrolled down
                                # because there wasn't room to display everything
-        self.cursor_offset = 0 # from the left, 0 means first char
+        self._cursor_offset = 0 # from the left, 0 means first char
         self.orig_tcattrs = orig_tcattrs # useful for shelling out with normal terminal
 
         self.coderunner = CodeRunner(self.interp, self.request_refresh)
@@ -407,7 +407,6 @@ class Repl(BpythonRepl):
                         self.stdin.process_event(ee)
                     else:
                         self.process_simple_keypress(ee)
-            self.update_completion()
 
         elif self.stdin.has_focus:
             return self.stdin.process_event(e)
@@ -415,13 +414,11 @@ class Repl(BpythonRepl):
         elif isinstance(e, events.SigIntEvent):
             logger.debug('received sigint event')
             self.keyboard_interrupt()
-            self.update_completion()
             return
 
         elif isinstance(e, events.ReloadEvent):
             if self.watching_files:
                 self.clear_modules_and_reevaluate()
-                self.update_completion()
                 self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' because ' + ' & '.join(e.files_modified) + ' modified')
 
         else:
@@ -451,18 +448,15 @@ class Repl(BpythonRepl):
 
         elif e in key_dispatch[self.config.reimport_key]:
             self.clear_modules_and_reevaluate()
-            self.update_completion()
             self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' by user')
 
         elif (e in ("<RIGHT>", '<Ctrl-f>') and self.config.curtsies_right_arrow_completion
                 and self.cursor_offset == len(self.current_line)):
             self.current_line += self.current_suggestion
             self.cursor_offset = len(self.current_line)
-            self.update_completion()
 
         elif e in self.rl_char_sequences:
             self.cursor_offset, self.current_line = self.rl_char_sequences[e](self.cursor_offset, self.current_line)
-            self.update_completion()
             self.rl_history.reset()
 
         # readline history commands
@@ -510,7 +504,6 @@ class Repl(BpythonRepl):
                 raise SystemExit()
             else:
                 self.current_line = self.current_line[:self.cursor_offset] + self.current_line[self.cursor_offset+1:]
-                self.update_completion()
                 self.rl_history.reset()
         elif e in key_dispatch[self.config.exit_key]:
                 raise SystemExit()
@@ -524,7 +517,6 @@ class Repl(BpythonRepl):
             self.rl_history.reset()
         elif e in key_dispatch[self.config.undo_key]: #ctrl-r for undo
             self.undo()
-            self.update_completion()
         elif e in key_dispatch[self.config.save_key]: # ctrl-s for save
             g = greenlet.greenlet(self.write2file)
             g.switch()
@@ -541,11 +533,9 @@ class Repl(BpythonRepl):
             pass
         elif e in ["<SPACE>"]:
             self.add_normal_character(' ')
-            self.update_completion()
         else:
             self.add_normal_character(e)
             self.rl_history.reset()
-            self.update_completion()
 
     def on_enter(self, insert_into_history=True):
         self.cursor_offset = -1 # so the cursor isn't touching a paren
@@ -587,14 +577,16 @@ class Repl(BpythonRepl):
 
         # 3. check to see if we can expand the current word
         if self.matches_iter.is_cseq():
-            self.cursor_offset, self.current_line = self.matches_iter.substitute_cseq()
+            self._cursor_offset, self._current_line = self.matches_iter.substitute_cseq()
+            # using _current_line so we don't trigger a completion reset
             if not self.matches_iter:
                 self.list_win_visible = self.complete()
 
         elif self.matches_iter.matches:
             self.current_match = back and self.matches_iter.previous() \
                                   or self.matches_iter.next()
-            self.cursor_offset, self.current_line = self.matches_iter.cur_line()
+            self._cursor_offset, self._current_line = self.matches_iter.cur_line()
+            # using _current_line so we don't trigger a completion reset
 
     def process_simple_keypress(self, e):
         if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>"):
@@ -661,6 +653,7 @@ class Repl(BpythonRepl):
         # * when current line changes, unless via selecting a match
         # * when cursor position changes
         # * 
+        self.current_match = None
         self.list_win_visible = BpythonRepl.complete(self, tab)
         #look for history stuff
 
@@ -733,7 +726,6 @@ class Repl(BpythonRepl):
 
             self.current_line = ' '*indent
             self.cursor_offset = len(self.current_line)
-            self.update_completion()
 
     def keyboard_interrupt(self):
         #TODO factor out the common cleanup from running a line
@@ -1052,6 +1044,20 @@ class Repl(BpythonRepl):
         s += '>'
         return s
 
+    def _get_current_line(self):
+        return self._current_line
+    def _set_current_line(self, line):
+        self._current_line = line
+        self.update_completion()
+    current_line = property(_get_current_line, _set_current_line, None,
+                            "The current line")
+    def _get_cursor_offset(self):
+        return self._cursor_offset
+    def _set_cursor_offset(self, line):
+        self._cursor_offset = line
+        self.update_completion()
+    cursor_offset = property(_get_cursor_offset, _set_cursor_offset, None,
+                            "The current cursor offset from the front of the line")
     def echo(self, msg, redraw=True):
         """
         Notification that redrawing the current line is necessary (we don't
