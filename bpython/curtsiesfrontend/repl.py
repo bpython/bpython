@@ -372,14 +372,18 @@ class Repl(BpythonRepl):
     def process_event(self, e):
         """Returns True if shutting down, otherwise returns None.
         Mostly mutates state of Repl object"""
-        # event names uses here are curses compatible, or the full names
-        # for a full list of what should have pretty names, see curtsies.events.CURSES_TABLE
-
-        if not isinstance(e, events.Event):
-            self.last_events.append(e)
-            self.last_events.pop(0)
+        # for a full list of what should have pretty names, try python -m curtsies.events
 
         logger.debug("processing event %r", e)
+        if isinstance(e, events.Event):
+            return self.proccess_control_event(e)
+        else:
+            self.last_events.append(e)
+            self.last_events.pop(0)
+            return self.process_key_event(e)
+
+    def proccess_control_event(self, e):
+
         if isinstance(e, events.RefreshRequestEvent):
             if e.when != 'now':
                 pass # This is a scheduled refresh - it's really just a refresh (so nop)
@@ -388,6 +392,7 @@ class Repl(BpythonRepl):
             else:
                 assert self.coderunner.code_is_waiting
                 self.run_code_and_maybe_finish()
+
         elif self.status_bar.has_focus:
             return self.status_bar.process_event(e)
 
@@ -418,6 +423,17 @@ class Repl(BpythonRepl):
                 self.clear_modules_and_reevaluate()
                 self.update_completion()
                 self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' because ' + ' & '.join(e.files_modified) + ' modified')
+
+        else:
+            raise ValueError("don't know how to handle this event type: %r" % e)
+
+    def process_key_event(self, e):
+
+        if self.status_bar.has_focus:
+            return self.status_bar.process_event(e)
+
+        elif self.stdin.has_focus:
+            return self.stdin.process_event(e)
 
         elif e in key_dispatch[self.config.toggle_file_watch_key]:
             if self.watcher:
