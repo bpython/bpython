@@ -1111,7 +1111,7 @@ class Repl(BpythonRepl):
             signal.signal(signal.SIGWINCH, prev_sigwinch_handler)
 
     def pager(self, text):
-        command = os.environ.get('PAGER', 'less -r').split()
+        command = os.environ.get('PAGER', 'less -rf').split()
         with tempfile.NamedTemporaryFile() as tmp:
             tmp.write(text)
             tmp.flush()
