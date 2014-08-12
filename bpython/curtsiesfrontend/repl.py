@@ -406,7 +406,7 @@ class Repl(BpythonRepl):
                     if self.stdin.has_focus:
                         self.stdin.process_event(ee)
                     else:
-                        self.process_simple_event(ee)
+                        self.process_simple_keypress(ee)
             self.update_completion()
 
         elif self.stdin.has_focus:
@@ -596,7 +596,7 @@ class Repl(BpythonRepl):
                                   or self.matches_iter.next()
             self.cursor_offset, self.current_line = self.matches_iter.cur_line()
 
-    def process_simple_event(self, e):
+    def process_simple_keypress(self, e):
         if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>"):
             self.on_enter()
             while self.fake_refresh_requested:
@@ -618,7 +618,7 @@ class Repl(BpythonRepl):
         self.clear_current_block()
         with self.in_paste_mode():
             for e in events:
-                self.process_simple_event(e)
+                self.process_simple_keypress(e)
         self.current_line = ''
         self.cursor_offset = len(self.current_line)
 
@@ -655,7 +655,12 @@ class Repl(BpythonRepl):
             self.cursor_offset = max(0, self.cursor_offset - 4)
 
     def update_completion(self, tab=False):
-        """Update autocomplete info; self.matches_iter and self.argspec"""
+        """Update visible docstring and matches, and possibly hide/show completion box"""
+        #Update autocomplete info; self.matches_iter and self.argspec
+        #Should be called whenever the completion box might need to appear / dissapear
+        # * when current line changes, unless via selecting a match
+        # * when cursor position changes
+        # * 
         self.list_win_visible = BpythonRepl.complete(self, tab)
         #look for history stuff
 
@@ -1047,13 +1052,6 @@ class Repl(BpythonRepl):
         s += '>'
         return s
 
-    ## Provided for bpython.repl.Repl
-    def _get_current_line(self):
-        return self._current_line
-    def _set_current_line(self, line):
-        self._current_line = line
-    current_line = property(_get_current_line, _set_current_line, None,
-                            "The current line")
     def echo(self, msg, redraw=True):
         """
         Notification that redrawing the current line is necessary (we don't
