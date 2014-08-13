@@ -372,7 +372,6 @@ class Repl(BpythonRepl):
     def process_event(self, e):
         """Returns True if shutting down, otherwise returns None.
         Mostly mutates state of Repl object"""
-        # for a full list of what should have pretty names, try python -m curtsies.events
 
         logger.debug("processing event %r", e)
         if isinstance(e, events.Event):
@@ -425,30 +424,15 @@ class Repl(BpythonRepl):
             raise ValueError("don't know how to handle this event type: %r" % e)
 
     def process_key_event(self, e):
+        # To find the curtsies name for a keypress, try python -m curtsies.events
+        if self.status_bar.has_focus: return self.status_bar.process_event(e)
+        if self.stdin.has_focus:      return self.stdin.process_event(e)
 
-        if self.status_bar.has_focus:
-            return self.status_bar.process_event(e)
-
-        elif self.stdin.has_focus:
-            return self.stdin.process_event(e)
-
-        elif e in key_dispatch[self.config.toggle_file_watch_key]:
-            if self.watcher:
-                msg = "Auto-reloading active, watching for file changes..."
-                if self.watching_files:
-                    self.watcher.deactivate()
-                    self.watching_files = False
-                    self.status_bar.pop_permanent_message(msg)
-                else:
-                    self.watching_files = True
-                    self.status_bar.push_permanent_message(msg)
-                    self.watcher.activate()
-            else:
-                self.status_bar.message('Autoreloading not available because watchdog not installed')
+        if e in key_dispatch[self.config.toggle_file_watch_key]:
+            return self.toggle_file_watch()
 
         elif e in key_dispatch[self.config.reimport_key]:
             self.clear_modules_and_reevaluate()
-            self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' by user')
 
         elif (e in ("<RIGHT>", '<Ctrl-f>') and self.config.curtsies_right_arrow_completion
                 and self.cursor_offset == len(self.current_line)):
@@ -457,75 +441,46 @@ class Repl(BpythonRepl):
 
         elif e in self.rl_char_sequences:
             self.cursor_offset, self.current_line = self.rl_char_sequences[e](self.cursor_offset, self.current_line)
-            self.rl_history.reset()
 
         # readline history commands
         elif e in ("<UP>",) + key_dispatch[self.config.up_one_line_key]:
             self.rl_history.enter(self.current_line)
-            self.current_line = self.rl_history.back(False,
-                    search=self.config.curtsies_right_arrow_completion)
-            self.cursor_offset = len(self.current_line)
+            self._set_current_line(self.rl_history.back(False, search=self.config.curtsies_right_arrow_completion),
+                                   reset_rl_history=False)
+            self._set_cursor_offset(len(self.current_line), reset_rl_history=False)
 
         elif e in ("<DOWN>",) + key_dispatch[self.config.down_one_line_key]:
             self.rl_history.enter(self.current_line)
-            self.current_line = self.rl_history.forward(False,
-                    search=self.config.curtsies_right_arrow_completion)
-            self.cursor_offset = len(self.current_line)
-
-        elif e in key_dispatch[self.config.search_key]: #TODO Not Implemented
-            pass
-        #TODO add rest of history commands
-
-        # Need to figure out what these are, but I think they belong in manual_realine
-        # under slightly different names
-        elif e in key_dispatch[self.config.cut_to_buffer_key]: #TODO Not Implemented
-            pass
-        elif e in key_dispatch[self.config.yank_from_buffer_key]: #TODO Not Implemented
-            pass
+            self._set_current_line(self.rl_history.forward(False, search=self.config.curtsies_right_arrow_completion),
+                                   reset_rl_history=False)
+            self._set_cursor_offset(len(self.current_line), reset_rl_history=False)
 
         elif e in key_dispatch[self.config.clear_screen_key]:
             self.request_paint_to_clear_screen = True
-        elif e in key_dispatch[self.config.last_output_key]: #TODO Not Implemented
-            pass
         elif e in key_dispatch[self.config.show_source_key]:
-            source = self.get_source_of_current_name()
-            if source is None:
-                self.status_bar.message(_('Cannot show source.'))
-            else:
-                if self.config.highlight_show_source:
-                    source = format(PythonLexer().get_tokens(source), TerminalFormatter())
-                self.pager(source)
+            self.show_source()
         elif e in key_dispatch[self.config.help_key]:
             self.pager(self.help_text())
         elif e in key_dispatch[self.config.suspend_key]:
             raise SystemExit()
         elif e in ("<Ctrl-d>",):
-            if self.current_line == '':
-                raise SystemExit()
-            else:
-                self.current_line = self.current_line[:self.cursor_offset] + self.current_line[self.cursor_offset+1:]
-                self.rl_history.reset()
+            self.on_control_d()
         elif e in key_dispatch[self.config.exit_key]:
-                raise SystemExit()
+            raise SystemExit()
         elif e in ("\n", "\r", "<PADENTER>", "<Ctrl-j>", "<Ctrl-m>"):
             self.on_enter()
         elif e == '<TAB>': # tab
             self.on_tab()
-            self.rl_history.reset()
         elif e in ("<Shift-TAB>",):
             self.on_tab(back=True)
-            self.rl_history.reset()
         elif e in key_dispatch[self.config.undo_key]: #ctrl-r for undo
             self.undo()
         elif e in key_dispatch[self.config.save_key]: # ctrl-s for save
-            g = greenlet.greenlet(self.write2file)
-            g.switch()
+            greenlet.greenlet(self.write2file).switch()
         elif e in key_dispatch[self.config.pastebin_key]: # F8 for pastebin
-            g = greenlet.greenlet(self.pastebin)
-            g.switch()
+            greenlet.greenlet(self.pastebin).switch()
         elif e in key_dispatch[self.config.external_editor_key]:
             self.send_session_to_external_editor()
-            self.rl_history.reset()
         #TODO add PAD keys hack as in bpython.cli
         elif e in key_dispatch[self.config.edit_current_block_key]:
             self.send_current_block_to_external_editor()
@@ -535,7 +490,6 @@ class Repl(BpythonRepl):
             self.add_normal_character(' ')
         else:
             self.add_normal_character(e)
-            self.rl_history.reset()
 
     def on_enter(self, insert_into_history=True):
         self.cursor_offset = -1 # so the cursor isn't touching a paren
@@ -588,6 +542,12 @@ class Repl(BpythonRepl):
             self._cursor_offset, self._current_line = self.matches_iter.cur_line()
             # using _current_line so we don't trigger a completion reset
 
+    def on_control_d(self):
+        if self.current_line == '':
+            raise SystemExit()
+        else:
+            self.current_line = self.current_line[:self.cursor_offset] + self.current_line[self.cursor_offset+1:]
+
     def process_simple_keypress(self, e):
         if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>"):
             self.on_enter()
@@ -633,6 +593,21 @@ class Repl(BpythonRepl):
                 del sys.modules[modname]
         self.reevaluate(insert_into_history=True)
         self.cursor_offset, self.current_line = cursor, line
+        self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' by user')
+
+    def toggle_file_watch(self):
+        if self.watcher:
+            msg = "Auto-reloading active, watching for file changes..."
+            if self.watching_files:
+                self.watcher.deactivate()
+                self.watching_files = False
+                self.status_bar.pop_permanent_message(msg)
+            else:
+                self.watching_files = True
+                self.status_bar.push_permanent_message(msg)
+                self.watcher.activate()
+        else:
+            self.status_bar.message('Autoreloading not available because watchdog not installed')
 
     ## Handler Helpers
     def add_normal_character(self, char):
@@ -650,12 +625,9 @@ class Repl(BpythonRepl):
         """Update visible docstring and matches, and possibly hide/show completion box"""
         #Update autocomplete info; self.matches_iter and self.argspec
         #Should be called whenever the completion box might need to appear / dissapear
-        # * when current line changes, unless via selecting a match
-        # * when cursor position changes
-        # * 
+        #when current line or cursor offset changes, unless via selecting a match
         self.current_match = None
         self.list_win_visible = BpythonRepl.complete(self, tab)
-        #look for history stuff
 
     def push(self, line, insert_into_history=True):
         """Push a line of code onto the buffer, start running the buffer
@@ -1046,15 +1018,22 @@ class Repl(BpythonRepl):
 
     def _get_current_line(self):
         return self._current_line
-    def _set_current_line(self, line):
+    def _set_current_line(self, line, update_completion=True, reset_rl_history=True):
         self._current_line = line
-        self.update_completion()
+        if update_completion:
+            self.update_completion()
+        if reset_rl_history:
+            self.rl_history.reset()
     current_line = property(_get_current_line, _set_current_line, None,
                             "The current line")
     def _get_cursor_offset(self):
         return self._cursor_offset
-    def _set_cursor_offset(self, line):
-        self._cursor_offset = line
+    def _set_cursor_offset(self, offset, update_completion=True, reset_rl_history=True):
+        if update_completion:
+            self.update_completion()
+        if reset_rl_history:
+            self.rl_history.reset()
+        self._cursor_offset = offset
         self.update_completion()
     cursor_offset = property(_get_cursor_offset, _set_cursor_offset, None,
                             "The current cursor offset from the front of the line")
@@ -1136,6 +1115,15 @@ class Repl(BpythonRepl):
             tmp.write(text)
             tmp.flush()
             self.focus_on_subprocess(command + [tmp.name])
+
+    def show_source(self):
+        source = self.get_source_of_current_name()
+        if source is None:
+            self.status_bar.message(_('Cannot show source.'))
+        else:
+            if self.config.highlight_show_source:
+                source = format(PythonLexer().get_tokens(source), TerminalFormatter())
+            self.pager(source)
 
     def help_text(self):
         return self.version_help_text() + '\n' + self.key_help_text()
