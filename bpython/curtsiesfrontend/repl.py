@@ -277,7 +277,7 @@ class Repl(BpythonRepl):
         self.interact = self.status_bar # overwriting what bpython.Repl put there
                                         # interact is called to interact with the status bar,
                                         # so we're just using the same object
-        self._current_line = '' # line currently being edited, without '>>> '
+        self._current_line = '' # line currently being edited, without ps1 (usually '>>> ')
         self.current_stdouterr_line = '' # current line of output - stdout and stdin go here
         self.display_lines = [] # lines separated whenever logical line
                                 # length goes over what the terminal width
@@ -586,8 +586,10 @@ class Repl(BpythonRepl):
 
     def send_session_to_external_editor(self, filename=None):
         for_editor = '### current bpython session - file will be reevaluated, ### lines will not be run\n'.encode('utf8')
-        for_editor += ('\n'.join(line[4:] if line[:4] in ('... ', '>>> ') else '### '+line
-                       for line in self.getstdout().split('\n')).encode('utf8'))
+        for_editor += ('\n'.join(line[len(self.ps1):] if line.startswith(self.ps1) else
+                                 (line[len(self.ps2):] if line.startswith(self.ps2) else
+                                 '### '+line)
+                                 for line in self.getstdout().split('\n')).encode('utf8'))
         text = self.send_to_external_editor(for_editor)
         lines = text.split('\n')
         self.history = [line for line in lines if line[:4] != '### ']
@@ -627,7 +629,7 @@ class Repl(BpythonRepl):
                              char +
                              self.current_line[self.cursor_offset:])
         self.cursor_offset += 1
-        if self.config.cli_trim_prompts and self.current_line.startswith(">>> "):
+        if self.config.cli_trim_prompts and self.current_line.startswith(self.ps1):
             self.current_line = self.current_line[4:]
             self.cursor_offset = max(0, self.cursor_offset - 4)
 
@@ -673,11 +675,8 @@ class Repl(BpythonRepl):
         code_to_run = '\n'.join(self.buffer)
 
         logger.debug('running %r in interpreter', self.buffer)
-        try:
-            c = bool(code.compile_command('\n'.join(self.buffer)))
-            self.saved_predicted_parse_error = False
-        except (ValueError, SyntaxError, OverflowError):
-            c = self.saved_predicted_parse_error = True
+        c, code_will_parse = self.buffer_finished_will_parse()
+        self.saved_predicted_parse_error = not code_will_parse
         if c:
             logger.debug('finished - buffer cleared')
             self.display_lines.extend(self.display_buffer_lines)
@@ -687,6 +686,21 @@ class Repl(BpythonRepl):
 
         self.coderunner.load_code(code_to_run)
         self.run_code_and_maybe_finish()
+
+    def buffer_finished_will_parse(self):
+        """Returns a tuple of whether the buffer could be complete and whether it will parse
+
+        True, True means code block is finished and no predicted parse error
+        True, False means code block is finished because a parse error is predicted
+        False, True means code block is unfinished
+        False, False isn't possible - an predicted error makes code block done"""
+        try:
+            finished = bool(code.compile_command('\n'.join(self.buffer)))
+            code_will_parse = True
+        except (ValueError, SyntaxError, OverflowError):
+            finished = True
+            code_will_parse = False
+        return finished, code_will_parse
 
     def run_code_and_maybe_finish(self, for_code=None):
         r = self.coderunner.run_code(for_code=for_code)
@@ -1072,7 +1086,7 @@ class Repl(BpythonRepl):
         self.display_lines = []
 
         if not self.weak_rewind:
-            self.interp = code.InteractiveInterpreter()
+            self.interp = self.interp.__class__()
             self.coderunner.interp = self.interp
 
         self.buffer = []
