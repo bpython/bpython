@@ -16,6 +16,10 @@ bpython-curtsies
 * curtsies >= 0.1.0
 * greenlet
 
+and optionally (for monitoring imported modules for changes)
+
+* watchdog
+
 bpython-urwid
 -------------
 ``bpython-urwid`` requires the following additional packages:
