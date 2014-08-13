@@ -34,6 +34,12 @@ import unittest
         self.assertEqual(self.repl.cw(), 'datetime')
 """
 
+class TestSafeEval(unittest.TestCase):
+    def test_catches_syntax_error(self):
+        try:
+            autocomplete.safe_eval('1re',{})
+        except:
+            self.fail('safe_eval raises an error')
 
 # make some fake files? Dependency inject? mock?
 class TestFilenameCompletion(unittest.TestCase):
