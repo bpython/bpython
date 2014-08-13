@@ -14,35 +14,35 @@ import threading
 import time
 import unicodedata
 
-from bpython import autocomplete
-from bpython.repl import Repl as BpythonRepl
-from bpython.config import Struct, loadini, default_config_path
-from bpython.formatter import BPythonFormatter
 from pygments import format
 from pygments.lexers import PythonLexer
 from pygments.formatters import TerminalFormatter
-from bpython import importcompletion
-from bpython import translations
-translations.init()
-from bpython.translations import _
-from bpython._py3compat import py3
-import bpython
 
+import blessings
+
+import curtsies
 from curtsies import FSArray, fmtstr, FmtStr, Termmode
 from curtsies.bpythonparse import parse as bpythonparse
 from curtsies.bpythonparse import func_for_letter, color_for_letter
 from curtsies import fmtfuncs
 from curtsies import events
-import curtsies
-import blessings
 
-from bpython.curtsiesfrontend.manual_readline import char_sequences as rl_char_sequences
-from bpython.curtsiesfrontend.manual_readline import get_updated_char_sequences
-from bpython.curtsiesfrontend.interaction import StatusBar
+import bpython
+from bpython.repl import Repl as BpythonRepl
+from bpython.config import Struct, loadini, default_config_path
+from bpython.formatter import BPythonFormatter
+from bpython import autocomplete, importcompletion
+from bpython import translations; translations.init()
+from bpython.translations import _
+from bpython._py3compat import py3
+
+from bpython.curtsiesfrontend import replpainter as paint
 from bpython.curtsiesfrontend import sitefix; sitefix.monkeypatch_quit()
-import bpython.curtsiesfrontend.replpainter as paint
 from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 from bpython.curtsiesfrontend.filewatch import ModuleChangedEventHandler
+from bpython.curtsiesfrontend.interaction import StatusBar
+from bpython.curtsiesfrontend.manual_readline import char_sequences as rl_char_sequences
+from bpython.curtsiesfrontend.manual_readline import get_updated_char_sequences
 
 #TODO other autocomplete modes (also fix in other bpython implementations)
 
@@ -72,7 +72,7 @@ See {example_config_url} for an example config file.
 
 class FakeStdin(object):
     """Stdin object user code references so sys.stdin.read() asked user for interactive input"""
-    def __init__(self, coderunner, repl):
+    def __init__(self, coderunner, repl, updated_rl_char_sequences=None):
         self.coderunner = coderunner
         self.repl = repl
         self.has_focus = False # whether FakeStdin receives keypress events
@@ -80,16 +80,20 @@ class FakeStdin(object):
         self.cursor_offset = 0
         self.old_num_lines = 0
         self.readline_results = []
+        if updated_rl_char_sequences:
+            self.rl_char_sequences = updated_rl_char_sequences
+        else:
+            self.rl_char_sequences = rl_char_sequences
 
     def process_event(self, e):
         assert self.has_focus
         logger.debug('fake input processing event %r', e)
         if isinstance(e, events.PasteEvent):
             for ee in e.events:
-                if ee not in rl_char_sequences:
+                if ee not in self.rl_char_sequences:
                     self.add_input_character(ee)
-        elif e in rl_char_sequences:
-            self.cursor_offset, self.current_line = rl_char_sequences[e](self.cursor_offset, self.current_line)
+        elif e in self.rl_char_sequences:
+            self.cursor_offset, self.current_line = self.rl_char_sequences[e](self.cursor_offset, self.current_line)
         elif isinstance(e, events.SigIntEvent):
             self.coderunner.sigint_happened_in_main_greenlet = True
             self.has_focus = False
@@ -286,7 +290,7 @@ class Repl(BpythonRepl):
         self.coderunner = CodeRunner(self.interp, self.request_refresh)
         self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
         self.stderr = FakeOutput(self.coderunner, self.send_to_stderr)
-        self.stdin = FakeStdin(self.coderunner, self)
+        self.stdin = FakeStdin(self.coderunner, self, self.rl_char_sequences)
 
         self.request_paint_to_clear_screen = False # next paint should clear screen
         self.last_events = [None] * 50
