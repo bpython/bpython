@@ -342,7 +342,7 @@ def safe_eval(expr, namespace):
     try:
         obj = eval(expr, namespace)
         return obj
-    except (NameError, AttributeError) as e:
+    except (NameError, AttributeError, SyntaxError) as e:
         # If debugging safe_eval, raise this!
         # raise e
         return SafeEvalFailed
