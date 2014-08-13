@@ -203,10 +203,16 @@ class Repl(BpythonRepl):
     """
 
     ## initialization, cleanup
-    def __init__(self, locals_=None, config=None, request_refresh=lambda: None,
-            request_reload=lambda desc: None, get_term_hw=lambda:(50, 10),
-            get_cursor_vertical_diff=lambda: 0, banner=None, interp=None,
-            interactive=True, orig_tcattrs=None):
+    def __init__(self,
+                 locals_=None,
+                 config=None,
+                 request_refresh=lambda: None,
+                 request_reload=lambda desc: None, get_term_hw=lambda:(50, 10),
+                 get_cursor_vertical_diff=lambda: 0,
+                 banner=None,
+                 interp=None,
+                 interactive=True,
+                 orig_tcattrs=None):
         """
         locals_ is a mapping of locals to pass into the interpreter
         config is a bpython config.Struct with config attributes
