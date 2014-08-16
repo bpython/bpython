@@ -775,10 +775,12 @@ class Repl(BpythonRepl):
         logger.debug('display_lines: %r', self.display_lines)
 
     def send_to_stderr(self, error):
-        #self.send_to_stdout(error)
+        lines = error.split('\n')
+        if lines[-1]:
+            self.current_stdouterr_line += lines[-1]
         self.display_lines.extend([func_for_letter(self.config.color_scheme['error'])(line)
-                                   for line in sum([paint.display_linize(line, self.width)
-                                                    for line in error.split('\n')], [])])
+                                   for line in sum([paint.display_linize(line, self.width, blank_line=True)
+                                                    for line in lines[:-1]], [])])
 
     def send_to_stdin(self, line):
         if line.endswith('\n'):
