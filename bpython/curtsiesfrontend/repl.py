@@ -317,14 +317,26 @@ class Repl(BpythonRepl):
 
         self.orig_import = __builtins__['__import__']
         if self.watcher:
+            old_module_locations = {} # for readding modules if they fail to load
             @functools.wraps(self.orig_import)
             def new_import(name, globals={}, locals={}, fromlist=[], level=-1):
-                m = self.orig_import(name, globals=globals, locals=locals, fromlist=fromlist)
-                if hasattr(m, "__file__"):
-                    if self.watching_files:
-                        self.watcher.add_module(m.__file__)
-                    else:
-                        self.watcher.add_module_later(m.__file__)
+                try:
+                    m = self.orig_import(name, globals=globals, locals=locals, fromlist=fromlist)
+                except:
+                    if name in old_module_locations:
+                        loc = old_module_locations[name]
+                        if self.watching_files:
+                            self.watcher.add_module(old_module_locations[name])
+                        else:
+                            self.watcher.add_module_later(old_module_locations[name])
+                    raise
+                else:
+                    if hasattr(m, "__file__"):
+                        old_module_locations[name] = m.__file__
+                        if self.watching_files:
+                            self.watcher.add_module(m.__file__)
+                        else:
+                            self.watcher.add_module_later(m.__file__)
                 return m
             __builtins__['__import__'] = new_import
 
