@@ -14,35 +14,35 @@ import threading
 import time
 import unicodedata
 
-from bpython import autocomplete
-from bpython.repl import Repl as BpythonRepl
-from bpython.config import Struct, loadini, default_config_path
-from bpython.formatter import BPythonFormatter
 from pygments import format
 from pygments.lexers import PythonLexer
 from pygments.formatters import TerminalFormatter
-from bpython import importcompletion
-from bpython import translations
-translations.init()
-from bpython.translations import _
-from bpython._py3compat import py3
-import bpython
 
+import blessings
+
+import curtsies
 from curtsies import FSArray, fmtstr, FmtStr, Termmode
 from curtsies.bpythonparse import parse as bpythonparse
 from curtsies.bpythonparse import func_for_letter, color_for_letter
 from curtsies import fmtfuncs
 from curtsies import events
-import curtsies
-import blessings
 
-from bpython.curtsiesfrontend.manual_readline import char_sequences as rl_char_sequences
-from bpython.curtsiesfrontend.manual_readline import get_updated_char_sequences
-from bpython.curtsiesfrontend.interaction import StatusBar
+import bpython
+from bpython.repl import Repl as BpythonRepl
+from bpython.config import Struct, loadini, default_config_path
+from bpython.formatter import BPythonFormatter
+from bpython import autocomplete, importcompletion
+from bpython import translations; translations.init()
+from bpython.translations import _
+from bpython._py3compat import py3
+
+from bpython.curtsiesfrontend import replpainter as paint
 from bpython.curtsiesfrontend import sitefix; sitefix.monkeypatch_quit()
-import bpython.curtsiesfrontend.replpainter as paint
 from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 from bpython.curtsiesfrontend.filewatch import ModuleChangedEventHandler
+from bpython.curtsiesfrontend.interaction import StatusBar
+from bpython.curtsiesfrontend.manual_readline import char_sequences as rl_char_sequences
+from bpython.curtsiesfrontend.manual_readline import get_updated_char_sequences
 
 #TODO other autocomplete modes (also fix in other bpython implementations)
 
@@ -72,7 +72,7 @@ See {example_config_url} for an example config file.
 
 class FakeStdin(object):
     """Stdin object user code references so sys.stdin.read() asked user for interactive input"""
-    def __init__(self, coderunner, repl):
+    def __init__(self, coderunner, repl, updated_rl_char_sequences=None):
         self.coderunner = coderunner
         self.repl = repl
         self.has_focus = False # whether FakeStdin receives keypress events
@@ -80,16 +80,20 @@ class FakeStdin(object):
         self.cursor_offset = 0
         self.old_num_lines = 0
         self.readline_results = []
+        if updated_rl_char_sequences:
+            self.rl_char_sequences = updated_rl_char_sequences
+        else:
+            self.rl_char_sequences = rl_char_sequences
 
     def process_event(self, e):
         assert self.has_focus
         logger.debug('fake input processing event %r', e)
         if isinstance(e, events.PasteEvent):
             for ee in e.events:
-                if ee not in rl_char_sequences:
+                if ee not in self.rl_char_sequences:
                     self.add_input_character(ee)
-        elif e in rl_char_sequences:
-            self.cursor_offset, self.current_line = rl_char_sequences[e](self.cursor_offset, self.current_line)
+        elif e in self.rl_char_sequences:
+            self.cursor_offset, self.current_line = self.rl_char_sequences[e](self.cursor_offset, self.current_line)
         elif isinstance(e, events.SigIntEvent):
             self.coderunner.sigint_happened_in_main_greenlet = True
             self.has_focus = False
@@ -199,10 +203,16 @@ class Repl(BpythonRepl):
     """
 
     ## initialization, cleanup
-    def __init__(self, locals_=None, config=None, request_refresh=lambda: None,
-            request_reload=lambda desc: None, get_term_hw=lambda:(50, 10),
-            get_cursor_vertical_diff=lambda: 0, banner=None, interp=None,
-            interactive=True, orig_tcattrs=None):
+    def __init__(self,
+                 locals_=None,
+                 config=None,
+                 request_refresh=lambda: None,
+                 request_reload=lambda desc: None, get_term_hw=lambda:(50, 10),
+                 get_cursor_vertical_diff=lambda: 0,
+                 banner=None,
+                 interp=None,
+                 interactive=True,
+                 orig_tcattrs=None):
         """
         locals_ is a mapping of locals to pass into the interpreter
         config is a bpython config.Struct with config attributes
@@ -267,7 +277,7 @@ class Repl(BpythonRepl):
         self.interact = self.status_bar # overwriting what bpython.Repl put there
                                         # interact is called to interact with the status bar,
                                         # so we're just using the same object
-        self.current_line = '' # line currently being edited, without '>>> '
+        self._current_line = '' # line currently being edited, without ps1 (usually '>>> ')
         self.current_stdouterr_line = '' # current line of output - stdout and stdin go here
         self.display_lines = [] # lines separated whenever logical line
                                 # length goes over what the terminal width
@@ -280,13 +290,13 @@ class Repl(BpythonRepl):
                                  # bpython.Repl
         self.scroll_offset = 0 # how many times display has been scrolled down
                                # because there wasn't room to display everything
-        self.cursor_offset = 0 # from the left, 0 means first char
+        self._cursor_offset = 0 # from the left, 0 means first char
         self.orig_tcattrs = orig_tcattrs # useful for shelling out with normal terminal
 
         self.coderunner = CodeRunner(self.interp, self.request_refresh)
         self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
         self.stderr = FakeOutput(self.coderunner, self.send_to_stderr)
-        self.stdin = FakeStdin(self.coderunner, self)
+        self.stdin = FakeStdin(self.coderunner, self, self.rl_char_sequences)
 
         self.request_paint_to_clear_screen = False # next paint should clear screen
         self.last_events = [None] * 50
@@ -384,14 +394,17 @@ class Repl(BpythonRepl):
     def process_event(self, e):
         """Returns True if shutting down, otherwise returns None.
         Mostly mutates state of Repl object"""
-        # event names uses here are curses compatible, or the full names
-        # for a full list of what should have pretty names, see curtsies.events.CURSES_TABLE
-
-        if not isinstance(e, events.Event):
-            self.last_events.append(e)
-            self.last_events.pop(0)
 
         logger.debug("processing event %r", e)
+        if isinstance(e, events.Event):
+            return self.proccess_control_event(e)
+        else:
+            self.last_events.append(e)
+            self.last_events.pop(0)
+            return self.process_key_event(e)
+
+    def proccess_control_event(self, e):
+
         if isinstance(e, events.RefreshRequestEvent):
             if e.when != 'now':
                 pass # This is a scheduled refresh - it's really just a refresh (so nop)
@@ -400,6 +413,7 @@ class Repl(BpythonRepl):
             else:
                 assert self.coderunner.code_is_waiting
                 self.run_code_and_maybe_finish()
+
         elif self.status_bar.has_focus:
             return self.status_bar.process_event(e)
 
@@ -413,8 +427,7 @@ class Repl(BpythonRepl):
                     if self.stdin.has_focus:
                         self.stdin.process_event(ee)
                     else:
-                        self.process_simple_event(ee)
-            self.update_completion()
+                        self.process_simple_keypress(ee)
 
         elif self.stdin.has_focus:
             return self.stdin.process_event(e)
@@ -422,114 +435,74 @@ class Repl(BpythonRepl):
         elif isinstance(e, events.SigIntEvent):
             logger.debug('received sigint event')
             self.keyboard_interrupt()
-            self.update_completion()
             return
 
         elif isinstance(e, events.ReloadEvent):
             if self.watching_files:
                 self.clear_modules_and_reevaluate()
-                self.update_completion()
                 self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' because ' + ' & '.join(e.files_modified) + ' modified')
 
-        elif e in key_dispatch[self.config.toggle_file_watch_key]:
-            if self.watcher:
-                msg = "Auto-reloading active, watching for file changes..."
-                if self.watching_files:
-                    self.watcher.deactivate()
-                    self.watching_files = False
-                    self.status_bar.pop_permanent_message(msg)
-                else:
-                    self.watching_files = True
-                    self.status_bar.push_permanent_message(msg)
-                    self.watcher.activate()
-            else:
-                self.status_bar.message('Autoreloading not available because watchdog not installed')
+        else:
+            raise ValueError("don't know how to handle this event type: %r" % e)
+
+    def process_key_event(self, e):
+        # To find the curtsies name for a keypress, try python -m curtsies.events
+        if self.status_bar.has_focus: return self.status_bar.process_event(e)
+        if self.stdin.has_focus:      return self.stdin.process_event(e)
+
+        if e in key_dispatch[self.config.toggle_file_watch_key]:
+            return self.toggle_file_watch()
 
         elif e in key_dispatch[self.config.reimport_key]:
             self.clear_modules_and_reevaluate()
-            self.update_completion()
-            self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' by user')
 
         elif (e in ("<RIGHT>", '<Ctrl-f>') and self.config.curtsies_right_arrow_completion
                 and self.cursor_offset == len(self.current_line)):
             self.current_line += self.current_suggestion
             self.cursor_offset = len(self.current_line)
-            self.update_completion()
 
         elif e in self.rl_char_sequences:
             self.cursor_offset, self.current_line = self.rl_char_sequences[e](self.cursor_offset, self.current_line)
-            self.update_completion()
-            self.rl_history.reset()
 
         # readline history commands
         elif e in ("<UP>",) + key_dispatch[self.config.up_one_line_key]:
             self.rl_history.enter(self.current_line)
-            self.current_line = self.rl_history.back(False,
-                    search=self.config.curtsies_right_arrow_completion)
-            self.cursor_offset = len(self.current_line)
+            self._set_current_line(self.rl_history.back(False, search=self.config.curtsies_right_arrow_completion),
+                                   reset_rl_history=False)
+            self._set_cursor_offset(len(self.current_line), reset_rl_history=False)
 
         elif e in ("<DOWN>",) + key_dispatch[self.config.down_one_line_key]:
             self.rl_history.enter(self.current_line)
-            self.current_line = self.rl_history.forward(False,
-                    search=self.config.curtsies_right_arrow_completion)
-            self.cursor_offset = len(self.current_line)
-
-        elif e in key_dispatch[self.config.search_key]: #TODO Not Implemented
-            pass
-        #TODO add rest of history commands
-
-        # Need to figure out what these are, but I think they belong in manual_realine
-        # under slightly different names
-        elif e in key_dispatch[self.config.cut_to_buffer_key]: #TODO Not Implemented
-            pass
-        elif e in key_dispatch[self.config.yank_from_buffer_key]: #TODO Not Implemented
-            pass
+            self._set_current_line(self.rl_history.forward(False, search=self.config.curtsies_right_arrow_completion),
+                                   reset_rl_history=False)
+            self._set_cursor_offset(len(self.current_line), reset_rl_history=False)
 
         elif e in key_dispatch[self.config.clear_screen_key]:
             self.request_paint_to_clear_screen = True
-        elif e in key_dispatch[self.config.last_output_key]: #TODO Not Implemented
-            pass
         elif e in key_dispatch[self.config.show_source_key]:
-            source = self.get_source_of_current_name()
-            if source is None:
-                self.status_bar.message(_('Cannot show source.'))
-            else:
-                if self.config.highlight_show_source:
-                    source = format(PythonLexer().get_tokens(source), TerminalFormatter())
-                self.pager(source)
+            self.show_source()
         elif e in key_dispatch[self.config.help_key]:
             self.pager(self.help_text())
         elif e in key_dispatch[self.config.suspend_key]:
             raise SystemExit()
         elif e in ("<Ctrl-d>",):
-            if self.current_line == '':
-                raise SystemExit()
-            else:
-                self.current_line = self.current_line[:self.cursor_offset] + self.current_line[self.cursor_offset+1:]
-                self.update_completion()
-                self.rl_history.reset()
+            self.on_control_d()
         elif e in key_dispatch[self.config.exit_key]:
-                raise SystemExit()
+            raise SystemExit()
         elif e in ("\n", "\r", "<PADENTER>", "<Ctrl-j>", "<Ctrl-m>"):
             self.on_enter()
         elif e == '<TAB>': # tab
             self.on_tab()
-            self.rl_history.reset()
         elif e in ("<Shift-TAB>",):
             self.on_tab(back=True)
-            self.rl_history.reset()
         elif e in key_dispatch[self.config.undo_key]: #ctrl-r for undo
             self.undo()
-            self.update_completion()
         elif e in key_dispatch[self.config.save_key]: # ctrl-s for save
-            g = greenlet.greenlet(self.write2file)
-            g.switch()
+            greenlet.greenlet(self.write2file).switch()
         elif e in key_dispatch[self.config.pastebin_key]: # F8 for pastebin
-            g = greenlet.greenlet(self.pastebin)
-            g.switch()
+            greenlet.greenlet(self.pastebin).switch()
         elif e in key_dispatch[self.config.external_editor_key]:
             self.send_session_to_external_editor()
-            self.rl_history.reset()
         #TODO add PAD keys hack as in bpython.cli
         elif e in key_dispatch[self.config.edit_current_block_key]:
             self.send_current_block_to_external_editor()
@@ -537,11 +510,8 @@ class Repl(BpythonRepl):
             pass
         elif e in ["<SPACE>"]:
             self.add_normal_character(' ')
-            self.update_completion()
         else:
             self.add_normal_character(e)
-            self.rl_history.reset()
-            self.update_completion()
 
     def on_enter(self, insert_into_history=True):
         self.cursor_offset = -1 # so the cursor isn't touching a paren
@@ -583,16 +553,24 @@ class Repl(BpythonRepl):
 
         # 3. check to see if we can expand the current word
         if self.matches_iter.is_cseq():
-            self.cursor_offset, self.current_line = self.matches_iter.substitute_cseq()
+            self._cursor_offset, self._current_line = self.matches_iter.substitute_cseq()
+            # using _current_line so we don't trigger a completion reset
             if not self.matches_iter:
                 self.list_win_visible = self.complete()
 
         elif self.matches_iter.matches:
             self.current_match = back and self.matches_iter.previous() \
                                   or self.matches_iter.next()
-            self.cursor_offset, self.current_line = self.matches_iter.cur_line()
+            self._cursor_offset, self._current_line = self.matches_iter.cur_line()
+            # using _current_line so we don't trigger a completion reset
 
-    def process_simple_event(self, e):
+    def on_control_d(self):
+        if self.current_line == '':
+            raise SystemExit()
+        else:
+            self.current_line = self.current_line[:self.cursor_offset] + self.current_line[self.cursor_offset+1:]
+
+    def process_simple_keypress(self, e):
         if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>"):
             self.on_enter()
             while self.fake_refresh_requested:
@@ -614,14 +592,16 @@ class Repl(BpythonRepl):
         self.clear_current_block()
         with self.in_paste_mode():
             for e in events:
-                self.process_simple_event(e)
+                self.process_simple_keypress(e)
         self.current_line = ''
         self.cursor_offset = len(self.current_line)
 
     def send_session_to_external_editor(self, filename=None):
         for_editor = '### current bpython session - file will be reevaluated, ### lines will not be run\n'.encode('utf8')
-        for_editor += ('\n'.join(line[4:] if line[:4] in ('... ', '>>> ') else '### '+line
-                       for line in self.getstdout().split('\n')).encode('utf8'))
+        for_editor += ('\n'.join(line[len(self.ps1):] if line.startswith(self.ps1) else
+                                 (line[len(self.ps2):] if line.startswith(self.ps2) else
+                                 '### '+line)
+                                 for line in self.getstdout().split('\n')).encode('utf8'))
         text = self.send_to_external_editor(for_editor)
         lines = text.split('\n')
         self.history = [line for line in lines if line[:4] != '### ']
@@ -637,6 +617,21 @@ class Repl(BpythonRepl):
                 del sys.modules[modname]
         self.reevaluate(insert_into_history=True)
         self.cursor_offset, self.current_line = cursor, line
+        self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' by user')
+
+    def toggle_file_watch(self):
+        if self.watcher:
+            msg = "Auto-reloading active, watching for file changes..."
+            if self.watching_files:
+                self.watcher.deactivate()
+                self.watching_files = False
+                self.status_bar.pop_permanent_message(msg)
+            else:
+                self.watching_files = True
+                self.status_bar.push_permanent_message(msg)
+                self.watcher.activate()
+        else:
+            self.status_bar.message('Autoreloading not available because watchdog not installed')
 
     ## Handler Helpers
     def add_normal_character(self, char):
@@ -646,14 +641,17 @@ class Repl(BpythonRepl):
                              char +
                              self.current_line[self.cursor_offset:])
         self.cursor_offset += 1
-        if self.config.cli_trim_prompts and self.current_line.startswith(">>> "):
+        if self.config.cli_trim_prompts and self.current_line.startswith(self.ps1):
             self.current_line = self.current_line[4:]
             self.cursor_offset = max(0, self.cursor_offset - 4)
 
     def update_completion(self, tab=False):
-        """Update autocomplete info; self.matches_iter and self.argspec"""
+        """Update visible docstring and matches, and possibly hide/show completion box"""
+        #Update autocomplete info; self.matches_iter and self.argspec
+        #Should be called whenever the completion box might need to appear / dissapear
+        #when current line or cursor offset changes, unless via selecting a match
+        self.current_match = None
         self.list_win_visible = BpythonRepl.complete(self, tab)
-        #look for history stuff
 
     def push(self, line, insert_into_history=True):
         """Push a line of code onto the buffer, start running the buffer
@@ -689,11 +687,8 @@ class Repl(BpythonRepl):
         code_to_run = '\n'.join(self.buffer)
 
         logger.debug('running %r in interpreter', self.buffer)
-        try:
-            c = bool(code.compile_command('\n'.join(self.buffer)))
-            self.saved_predicted_parse_error = False
-        except (ValueError, SyntaxError, OverflowError):
-            c = self.saved_predicted_parse_error = True
+        c, code_will_parse = self.buffer_finished_will_parse()
+        self.saved_predicted_parse_error = not code_will_parse
         if c:
             logger.debug('finished - buffer cleared')
             self.display_lines.extend(self.display_buffer_lines)
@@ -703,6 +698,21 @@ class Repl(BpythonRepl):
 
         self.coderunner.load_code(code_to_run)
         self.run_code_and_maybe_finish()
+
+    def buffer_finished_will_parse(self):
+        """Returns a tuple of whether the buffer could be complete and whether it will parse
+
+        True, True means code block is finished and no predicted parse error
+        True, False means code block is finished because a parse error is predicted
+        False, True means code block is unfinished
+        False, False isn't possible - an predicted error makes code block done"""
+        try:
+            finished = bool(code.compile_command('\n'.join(self.buffer)))
+            code_will_parse = True
+        except (ValueError, SyntaxError, OverflowError):
+            finished = True
+            code_will_parse = False
+        return finished, code_will_parse
 
     def run_code_and_maybe_finish(self, for_code=None):
         r = self.coderunner.run_code(for_code=for_code)
@@ -724,7 +734,6 @@ class Repl(BpythonRepl):
 
             self.current_line = ' '*indent
             self.cursor_offset = len(self.current_line)
-            self.update_completion()
 
     def keyboard_interrupt(self):
         #TODO factor out the common cleanup from running a line
@@ -1052,13 +1061,27 @@ class Repl(BpythonRepl):
         s += '>'
         return s
 
-    ## Provided for bpython.repl.Repl
     def _get_current_line(self):
         return self._current_line
-    def _set_current_line(self, line):
+    def _set_current_line(self, line, update_completion=True, reset_rl_history=True):
         self._current_line = line
+        if update_completion:
+            self.update_completion()
+        if reset_rl_history:
+            self.rl_history.reset()
     current_line = property(_get_current_line, _set_current_line, None,
                             "The current line")
+    def _get_cursor_offset(self):
+        return self._cursor_offset
+    def _set_cursor_offset(self, offset, update_completion=True, reset_rl_history=True):
+        if update_completion:
+            self.update_completion()
+        if reset_rl_history:
+            self.rl_history.reset()
+        self._cursor_offset = offset
+        self.update_completion()
+    cursor_offset = property(_get_cursor_offset, _set_cursor_offset, None,
+                            "The current cursor offset from the front of the line")
     def echo(self, msg, redraw=True):
         """
         Notification that redrawing the current line is necessary (we don't
@@ -1084,7 +1107,7 @@ class Repl(BpythonRepl):
         self.display_lines = []
 
         if not self.weak_rewind:
-            self.interp = code.InteractiveInterpreter()
+            self.interp = self.interp.__class__()
             self.coderunner.interp = self.interp
 
         self.buffer = []
@@ -1137,6 +1160,15 @@ class Repl(BpythonRepl):
             tmp.write(text)
             tmp.flush()
             self.focus_on_subprocess(command + [tmp.name])
+
+    def show_source(self):
+        source = self.get_source_of_current_name()
+        if source is None:
+            self.status_bar.message(_('Cannot show source.'))
+        else:
+            if self.config.highlight_show_source:
+                source = format(PythonLexer().get_tokens(source), TerminalFormatter())
+            self.pager(source)
 
     def help_text(self):
         return self.version_help_text() + '\n' + self.key_help_text()
