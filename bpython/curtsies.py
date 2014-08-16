@@ -82,6 +82,11 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                 refresh_requests.append(curtsies.events.RefreshRequestEvent(when=when))
 
             def event_or_refresh(timeout=None):
+                if timeout is None:
+                    timeout = .2
+                else:
+                    timeout = min(.2, timeout)
+                starttime = time.time()
                 while True:
                     t = time.time()
                     refresh_requests.sort(key=lambda r: 0 if r.when == 'now' else r.when)
@@ -91,8 +96,8 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                         e = reload_requests.pop()
                         yield e
                     else:
-                        e = input_generator.send(.2)
-                        if e is not None:
+                        e = input_generator.send(timeout)
+                        if starttime + timeout < time.time() or e is not None:
                             yield e
 
             global repl # global for easy introspection `from bpython.curtsies import repl`
