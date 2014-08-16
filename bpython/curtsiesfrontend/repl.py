@@ -450,33 +450,21 @@ class Repl(BpythonRepl):
         if self.status_bar.has_focus: return self.status_bar.process_event(e)
         if self.stdin.has_focus:      return self.stdin.process_event(e)
 
-        if e in key_dispatch[self.config.toggle_file_watch_key]:
-            return self.toggle_file_watch()
-
-        elif e in key_dispatch[self.config.reimport_key]:
-            self.clear_modules_and_reevaluate()
-
-        elif (e in ("<RIGHT>", '<Ctrl-f>') and self.config.curtsies_right_arrow_completion
+        if (e in ("<RIGHT>", '<Ctrl-f>') and self.config.curtsies_right_arrow_completion
                 and self.cursor_offset == len(self.current_line)):
             self.current_line += self.current_suggestion
             self.cursor_offset = len(self.current_line)
 
+        elif e in ("<UP>",) + key_dispatch[self.config.up_one_line_key]:
+            self.up_one_line()
+        elif e in ("<DOWN>",) + key_dispatch[self.config.down_one_line_key]:
+            self.down_one_line()
         elif e in self.rl_char_sequences:
             self.cursor_offset, self.current_line = self.rl_char_sequences[e](self.cursor_offset, self.current_line)
-
-        # readline history commands
-        elif e in ("<UP>",) + key_dispatch[self.config.up_one_line_key]:
-            self.rl_history.enter(self.current_line)
-            self._set_current_line(self.rl_history.back(False, search=self.config.curtsies_right_arrow_completion),
-                                   reset_rl_history=False)
-            self._set_cursor_offset(len(self.current_line), reset_rl_history=False)
-
-        elif e in ("<DOWN>",) + key_dispatch[self.config.down_one_line_key]:
-            self.rl_history.enter(self.current_line)
-            self._set_current_line(self.rl_history.forward(False, search=self.config.curtsies_right_arrow_completion),
-                                   reset_rl_history=False)
-            self._set_cursor_offset(len(self.current_line), reset_rl_history=False)
-
+        elif e in key_dispatch[self.config.reimport_key]:
+            self.clear_modules_and_reevaluate()
+        elif e in key_dispatch[self.config.toggle_file_watch_key]:
+            return self.toggle_file_watch()
         elif e in key_dispatch[self.config.clear_screen_key]:
             self.request_paint_to_clear_screen = True
         elif e in key_dispatch[self.config.show_source_key]:
@@ -569,6 +557,18 @@ class Repl(BpythonRepl):
             raise SystemExit()
         else:
             self.current_line = self.current_line[:self.cursor_offset] + self.current_line[self.cursor_offset+1:]
+
+    def up_one_line(self):
+        self.rl_history.enter(self.current_line)
+        self._set_current_line(self.rl_history.back(False, search=self.config.curtsies_right_arrow_completion),
+                               reset_rl_history=False)
+        self._set_cursor_offset(len(self.current_line), reset_rl_history=False)
+
+    def down_one_line(self):
+        self.rl_history.enter(self.current_line)
+        self._set_current_line(self.rl_history.forward(False, search=self.config.curtsies_right_arrow_completion),
+                               reset_rl_history=False)
+        self._set_cursor_offset(len(self.current_line), reset_rl_history=False)
 
     def process_simple_keypress(self, e):
         if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>"):
