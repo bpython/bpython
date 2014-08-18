@@ -17,6 +17,7 @@ import unicodedata
 from pygments import format
 from pygments.lexers import PythonLexer
 from pygments.formatters import TerminalFormatter
+from interpreter import Interp
 
 import blessings
 
@@ -237,7 +238,7 @@ class Repl(BpythonRepl):
                                                    # would be unsafe because initial
                                                    # state was passed in
         if interp is None:
-            interp = code.InteractiveInterpreter(locals=locals_)
+            interp = Interp(locals=locals_)
         if banner is None:
             banner = _('Welcome to bpython! Press <%s> for help.') % config.help_key
         config.autocomplete_mode = autocomplete.SIMPLE # only one implemented currently
