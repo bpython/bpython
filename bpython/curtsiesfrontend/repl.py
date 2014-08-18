@@ -787,9 +787,7 @@ class Repl(BpythonRepl):
         lines = error.split('\n')
         if lines[-1]:
             self.current_stdouterr_line += lines[-1]
-        self.display_lines.extend([func_for_letter(self.config.color_scheme['error'])(line)
-                                   for line in sum([paint.display_linize(line, self.width, blank_line=True)
-                                                    for line in lines[:-1]], [])])
+        self.display_lines.extend(sum([paint.display_linize(line, self.width, blank_line=True) for line in lines[:-1]], []))
 
     def send_to_stdin(self, line):
         if line.endswith('\n'):
