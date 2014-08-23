@@ -18,9 +18,9 @@ else:
             self.modules_to_add_later = []
             self.observer = Observer()
             self.old_dirs = defaultdict(set)
+            self.started = False
             for path in paths:
                 self.add_module(path)
-            self.observer.start()
 
         def reset(self):
             self.dirs = defaultdict(set)
@@ -44,6 +44,9 @@ else:
             self.modules_to_add_later.append(path)
 
         def activate(self):
+            if not self.started:
+                self.started = True
+                self.observer.start()
             self.dirs = self.old_dirs
             for dirname in self.dirs:
                 self.observer.schedule(self, dirname, recursive=False)
