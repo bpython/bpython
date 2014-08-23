@@ -3,6 +3,11 @@ from functools import partial
 import inspect
 
 import unittest
+try:
+    from unittest import skip
+except ImportError:
+    def skip(f):
+        return lambda self: None
 
 
 # Parts of autocompletion to test:
@@ -48,7 +53,7 @@ class TestFilenameCompletion(unittest.TestCase):
 
 class TestFormatters(unittest.TestCase):
 
-    @unittest.skip('not done yet')
+    @skip('not done yet')
     def test_filename(self):
         self.assertEqual(autocomplete.last_part_of_filename('abc'), 'abc')
         self.assertEqual(autocomplete.last_part_of_filename('abc/'), 'abc/')
@@ -57,6 +62,6 @@ class TestFormatters(unittest.TestCase):
         self.assertEqual(autocomplete.last_part_of_filename('/abc'), 'abc')
         self.assertEqual(autocomplete.last_part_of_filename('ab.c/e.f.g/'), 'e.f.g/')
 
-    @unittest.skip('not done yet')
+    @skip('not done yet')
     def test_attribute(self):
         self.assertEqual(autocomplete.after_last_dot('abc.edf'), 'edf')

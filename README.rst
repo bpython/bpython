@@ -1,3 +1,8 @@
+|ImageLink|_
+
+.. |ImageLink| image:: https://travis-ci.org/thomasballinger/bpython.svg?branch=travis`
+.. _ImageLink: https://travis-ci.org/thomasballinger/bpython
+
 bpython - A fancy curses interface to the Python interactive interpreter
 ========================================================================
 

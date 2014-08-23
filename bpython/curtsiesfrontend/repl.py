@@ -206,7 +206,7 @@ class Repl(BpythonRepl):
     def __init__(self,
                  locals_=None,
                  config=None,
-                 request_refresh=lambda: None,
+                 request_refresh=lambda when='now': None,
                  request_reload=lambda desc: None, get_term_hw=lambda:(50, 10),
                  get_cursor_vertical_diff=lambda: 0,
                  banner=None,

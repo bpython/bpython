@@ -177,8 +177,7 @@ class TestMatchesIterator(unittest.TestCase):
                 self.matches_iterator.orig_line)
         self.matches_iterator.completer = completer
 
-        with self.assertRaises(ValueError):
-            self.matches_iterator.cur_line()
+        self.assertRaises(ValueError, self.matches_iterator.cur_line)
 
         self.assertEqual(self.matches_iterator.next(), self.matches[0])
         self.assertEqual(self.matches_iterator.cur_line(),

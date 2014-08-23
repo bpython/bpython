@@ -174,7 +174,7 @@ class TestManualReadline(unittest.TestCase):
 
         stages = [(s.index('|'), s.replace('|', '')) for s in strings]
         for (initial_pos, initial), (final_pos, final) in zip(stages[:-1], stages[1:]):
-            self.assertTupleEqual(func(initial_pos, initial), (final_pos, final))
+            self.assertEquals(func(initial_pos, initial), (final_pos, final))
 
     def test_transpose_character_before_cursor(self):
         self.try_stages(["as|df asdf",
