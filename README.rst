@@ -1,8 +1,7 @@
 |ImageLink|_
 
-.. |ImageLink| image:: https://travis-ci.org/bpython/bpython.svg?branch=master`
+.. |ImageLink| image:: https://travis-ci.org/bpython/bpython.svg?branch=master
 .. _ImageLink: https://travis-ci.org/bpython/bpython
-
 bpython - A fancy curses interface to the Python interactive interpreter
 ========================================================================
 
