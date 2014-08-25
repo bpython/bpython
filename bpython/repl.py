@@ -1022,6 +1022,41 @@ class Repl(object):
             else:
                 return text
 
+    def open_in_external_editor(self, filename):
+        editor_args = shlex.split(self.config.editor)
+        if subprocess.call(editor_args + [filename]) == 0:
+            return True
+        return False
+
+    def edit_config(self):
+        #TODO put default-config somewhere accessible to this code
+        DEFAULT = ("[general]\n"
+                   "syntax = True\n"
+                   "[keyboard]\n"
+                   "pastebin = F8\n"
+                   "save = C-s\n")
+
+        open('a.txt', 'w').write(repr(self.config.config_path))
+        if not (os.path.isfile(self.config.config_path)):
+            if self.interact.confirm(_("Config file does not exist - create new from default? (y/N)")):
+                try:
+                    containing_dir = os.path.dirname(os.path.abspath(self.config.config_path))
+                    if not os.path.exists(containing_dir):
+                        os.makedirs(containing_dir)
+                    with open(self.config.config_path, 'w') as f:
+                        f.write(DEFAULT)
+                except (IOError, OSError) as e:
+                    self.interact.notify('error creating file: %r' % e)
+                    raise e
+                    return False
+            else:
+                return False
+
+        if self.open_in_external_editor(self.config.config_path):
+            self.interact.notify('bpython config file edited. Restart bpython for changes to take effect.')
+        else:
+            self.interact.notify('error editing config file')
+
 
 def next_indentation(line, tab_length):
     """Given a code line, return the indentation of the next line."""
