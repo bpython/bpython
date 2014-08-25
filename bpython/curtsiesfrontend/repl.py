@@ -239,6 +239,7 @@ class Repl(BpythonRepl):
                                                    # state was passed in
         if interp is None:
             interp = Interp(locals=locals_)
+            interp.writetb = self.send_to_stderr
         if banner is None:
             banner = _('Welcome to bpython! Press <%s> for help.') % config.help_key
         config.autocomplete_mode = autocomplete.SIMPLE # only one implemented currently
@@ -1107,6 +1108,7 @@ class Repl(BpythonRepl):
 
         if not self.weak_rewind:
             self.interp = self.interp.__class__()
+            self.interp.writetb = self.send_to_stderr
             self.coderunner.interp = self.interp
 
         self.buffer = []
