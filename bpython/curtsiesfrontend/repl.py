@@ -458,12 +458,17 @@ class Repl(BpythonRepl):
             self.up_one_line()
         elif e in ("<DOWN>",) + key_dispatch[self.config.down_one_line_key]:
             self.down_one_line()
-        elif e in self.edit_keys:
-            self.cursor_offset, self.current_line = self.edit_keys[e](self.cursor_offset, self.current_line)
+        elif e in ("<Ctrl-d>",):
+            self.on_control_d()
+        elif e in self.edit_keys.cut_buffer_edits:
+            self.readline_kill(e)
+        elif e in self.edit_keys.simple_edits:
+            self.cursor_offset, self.current_line = self.edit_keys.call(e,
+                    cursor_offset=self.cursor_offset,
+                    line=self.current_line,
+                    cut_buffer=self.cut_buffer)
         elif e in key_dispatch[self.config.cut_to_buffer_key]:
             self.cut_to_buffer()
-        elif e in key_dispatch[self.config.yank_from_buffer_key]:
-            self.yank_from_buffer()
         elif e in key_dispatch[self.config.reimport_key]:
             self.clear_modules_and_reevaluate()
         elif e in key_dispatch[self.config.toggle_file_watch_key]:
@@ -476,8 +481,6 @@ class Repl(BpythonRepl):
             self.pager(self.help_text())
         elif e in key_dispatch[self.config.suspend_key]:
             raise SystemExit()
-        elif e in ("<Ctrl-d>",):
-            self.on_control_d()
         elif e in key_dispatch[self.config.exit_key]:
             raise SystemExit()
         elif e in ("\n", "\r", "<PADENTER>", "<Ctrl-j>", "<Ctrl-m>"):
@@ -503,6 +506,16 @@ class Repl(BpythonRepl):
             self.add_normal_character(' ')
         else:
             self.add_normal_character(e)
+
+    def readline_kill(self, e):
+        func = self.edit_keys[e]
+        self.cursor_offset, self.current_line, cut = func(self.cursor_offset, self.current_line)
+        if self.last_events[-2] == e: # consecutive kill commands are cumulative
+            if func.kills == 'ahead': self.cut_buffer += cut
+            elif func.kills == 'behind': self.cut_buffer = cut + self.cut_buffer
+            else: raise ValueError("cut had value other than 'ahead' or 'behind'")
+        else:
+            self.cut_buffer = cut
 
     def on_enter(self, insert_into_history=True):
         self.cursor_offset = -1 # so the cursor isn't touching a paren

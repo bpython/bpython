@@ -17,7 +17,6 @@ class AbstractEdits(object):
             'line': 'hello world',
             'cursor_offset': 5,
             'cut_buffer': 'there',
-            'indent': 4,
             }
 
     def __contains__(self, key):
@@ -28,15 +27,22 @@ class AbstractEdits(object):
         else:
             return True
 
-    def add(self, key, func):
+    def add(self, key, func, overwrite=False):
         if key in self:
-            raise ValueError('key %r already has a mapping' % (key,))
+            if overwrite:
+                del self[key]
+            else:
+                raise ValueError('key %r already has a mapping' % (key,))
         params = inspect.getargspec(func)[0]
         args = dict((k, v) for k, v in self.default_kwargs.items() if k in params)
         r = func(**args)
         if len(r) == 2:
+            if hasattr(func, 'kills'):
+                raise ValueError('function %r returns two values, but has a kills attribute' % (func,))
             self.simple_edits[key] = func
         elif len(r) == 3:
+            if not hasattr(func, 'kills'):
+                raise ValueError('function %r returns three values, but has no kills attribute' % (func,))
             self.cut_buffer_edits[key] = func
         else:
             raise ValueError('return type of function %r not recognized' % (func,))
@@ -52,11 +58,20 @@ class AbstractEdits(object):
         args = dict((k, v) for k, v in kwargs.items() if k in params)
         return func(**args)
 
+    def call_without_cut(self, key, **kwargs):
+        """Looks up the function and calls it, returning only line and cursor offset"""
+        r = self.call_for_two(key, **kwargs)
+        return r[:2]
+
     def __getitem__(self, key):
         if key in self.simple_edits: return self.simple_edits[key]
         if key in self.cut_buffer_edits: return self.cut_buffer_edits[key]
         raise KeyError("key %r not mapped" % (key,))
 
+    def __delitem__(self, key):
+        if key in self.simple_edits: del self.simple_edits[key]
+        elif key in self.cut_buffer_edits: del self.cut_buffer_edits[key]
+        else: raise KeyError("key %r not mapped" % (key,))
 
 class UnconfiguredEdits(AbstractEdits):
     """Maps key to edit functions, and bins them by what parameters they take.
@@ -104,7 +119,8 @@ class ConfiguredEdits(AbstractEdits):
         self.simple_edits = dict(simple_edits)
         self.cut_buffer_edits = dict(cut_buffer_edits)
         for attr, func in awaiting_config.items():
-            super(ConfiguredEdits, self).add(key_dispatch[getattr(config, attr)], func)
+            for key in key_dispatch[getattr(config, attr)]:
+                super(ConfiguredEdits, self).add(key, func, overwrite=True)
 
     def add_config_attr(self, config_attr, func):
         raise NotImplementedError("Config already set on this mapping")
@@ -116,6 +132,14 @@ edit_keys = UnconfiguredEdits()
 
 # Because the edits.on decorator runs the functions, functions which depend
 # on other functions must be declared after their dependencies
+
+def kills_behind(func):
+    func.kills = 'behind'
+    return func
+
+def kills_ahead(func):
+    func.kills = 'ahead'
+    return func
 
 @edit_keys.on('<Ctrl-b>')
 @edit_keys.on('<LEFT>')
@@ -183,22 +207,29 @@ def delete_from_cursor_back(cursor_offset, line):
     return 0, line[cursor_offset:]
 
 @edit_keys.on('<Esc+d>') # option-d
+@kills_ahead
 def delete_rest_of_word(cursor_offset, line):
     m = re.search(r'\w\b', line[cursor_offset:])
     if not m:
-        return cursor_offset, line
-    return cursor_offset, line[:cursor_offset] + line[m.start()+cursor_offset+1:]
+        return cursor_offset, line, ''
+    return (cursor_offset, line[:cursor_offset] + line[m.start()+cursor_offset+1:],
+            line[cursor_offset:m.start()+cursor_offset+1])
 
 @edit_keys.on('<Ctrl-w>')
 @edit_keys.on(config='clear_word_key')
+@kills_behind
 def delete_word_to_cursor(cursor_offset, line):
     matches = list(re.finditer(r'\s\S', line[:cursor_offset]))
     start = matches[-1].start()+1 if matches else 0
-    return start, line[:start] + line[cursor_offset:]
+    return start, line[:start] + line[cursor_offset:], line[start:cursor_offset]
 
 @edit_keys.on('<Esc+y>')
-def yank_prev_prev_killed_text(cursor_offset, line):
-    return cursor_offset, line #TODO Not implemented
+def yank_prev_prev_killed_text(cursor_offset, line, cut_buffer): #TODO not implemented - just prev
+    return cursor_offset+len(cut_buffer), line[:cursor_offset] + cut_buffer + line[cursor_offset:]
+
+@edit_keys.on(config='yank_from_buffer_key')
+def yank_prev_killed_text(cursor_offset, line, cut_buffer):
+    return cursor_offset+len(cut_buffer), line[:cursor_offset] + cut_buffer + line[cursor_offset:]
 
 @edit_keys.on('<Ctrl-t>')
 def transpose_character_before_cursor(cursor_offset, line):
@@ -223,8 +254,9 @@ def uppercase_next_word(cursor_offset, line):
     return cursor_offset, line #TODO Not implemented
 
 @edit_keys.on('<Ctrl-k>')
+@kills_ahead
 def delete_from_cursor_forward(cursor_offset, line):
-    return cursor_offset, line[:cursor_offset]
+    return cursor_offset, line[:cursor_offset], line[cursor_offset:]
 
 @edit_keys.on('<Esc+c>')
 def titlecase_next_word(cursor_offset, line):
@@ -232,12 +264,14 @@ def titlecase_next_word(cursor_offset, line):
 
 @edit_keys.on('<Esc+BACKSPACE>')
 @edit_keys.on('<Meta-BACKSPACE>')
+@kills_behind
 def delete_word_from_cursor_back(cursor_offset, line):
     """Whatever my option-delete does in bash on my mac"""
     if not line:
         return cursor_offset, line
     starts = [m.start() for m in list(re.finditer(r'\b\w', line)) if m.start() < cursor_offset]
     if starts:
-        return starts[-1], line[:starts[-1]] + line[cursor_offset:]
-    return cursor_offset, line
+        return starts[-1], line[:starts[-1]] + line[cursor_offset:], line[starts[-1]:cursor_offset]
+    return cursor_offset, line, ''
+
 

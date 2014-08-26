@@ -243,6 +243,11 @@ class TestEdits(unittest.TestCase):
         self.assertEqual(configured_edits.call('c', cursor_offset=5, line='asfd'),
                          ('hi', 2))
 
+    def test_actual(self):
+        class config: att = 'c'
+        key_dispatch = {'c': 'c'}
+        configured_edits = self.edits.mapping_with_config(config, key_dispatch)
+
 
 if __name__ == '__main__':
     unittest.main()
