@@ -1029,25 +1029,20 @@ class Repl(object):
         return False
 
     def edit_config(self):
-        #TODO put default-config somewhere accessible to this code
-        DEFAULT = ("[general]\n"
-                   "syntax = True\n"
-                   "[keyboard]\n"
-                   "pastebin = F8\n"
-                   "save = C-s\n")
-
-        open('a.txt', 'w').write(repr(self.config.config_path))
         if not (os.path.isfile(self.config.config_path)):
             if self.interact.confirm(_("Config file does not exist - create new from default? (y/N)")):
                 try:
+                    bpython_dir, script_name = os.path.split(__file__)
+                    with open(os.path.join(bpython_dir, "sample-config")) as f:
+                        default_config = f.read()
+
                     containing_dir = os.path.dirname(os.path.abspath(self.config.config_path))
                     if not os.path.exists(containing_dir):
                         os.makedirs(containing_dir)
                     with open(self.config.config_path, 'w') as f:
-                        f.write(DEFAULT)
+                        f.write(default_config)
                 except (IOError, OSError) as e:
                     self.interact.notify('error creating file: %r' % e)
-                    raise e
                     return False
             else:
                 return False
