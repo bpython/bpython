@@ -1289,8 +1289,8 @@ def main(args=None, locals_=None, banner=None):
                                               encode=False)
 
         if banner is not None:
-            repl.write(banner)
-            repl.write('\n')
+            myrepl.write(banner)
+            myrepl.write('\n')
         myrepl.start()
 
         # This bypasses main_loop.set_alarm_in because we must *not*
