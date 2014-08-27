@@ -159,7 +159,7 @@ Valid keys are:
 
 pastebin
 ^^^^^^^^
-Default: <F8>
+Default: F8
 
 last_output
 ^^^^^^^^^^^
