@@ -41,8 +41,7 @@ from bpython.curtsiesfrontend import sitefix; sitefix.monkeypatch_quit()
 from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 from bpython.curtsiesfrontend.filewatch import ModuleChangedEventHandler
 from bpython.curtsiesfrontend.interaction import StatusBar
-from bpython.curtsiesfrontend.manual_readline import char_sequences as rl_char_sequences
-from bpython.curtsiesfrontend.manual_readline import get_updated_char_sequences
+from bpython.curtsiesfrontend.manual_readline import edit_keys
 
 #TODO other autocomplete modes (also fix in other bpython implementations)
 
@@ -72,7 +71,7 @@ See {example_config_url} for an example config file.
 
 class FakeStdin(object):
     """Stdin object user code references so sys.stdin.read() asked user for interactive input"""
-    def __init__(self, coderunner, repl, updated_rl_char_sequences=None):
+    def __init__(self, coderunner, repl, configured_edit_keys=None):
         self.coderunner = coderunner
         self.repl = repl
         self.has_focus = False # whether FakeStdin receives keypress events
@@ -80,10 +79,10 @@ class FakeStdin(object):
         self.cursor_offset = 0
         self.old_num_lines = 0
         self.readline_results = []
-        if updated_rl_char_sequences:
-            self.rl_char_sequences = updated_rl_char_sequences
+        if configured_edit_keys:
+            self.rl_char_sequences = configured_edit_keys
         else:
-            self.rl_char_sequences = rl_char_sequences
+            self.rl_char_sequences = edit_keys
 
     def process_event(self, e):
         assert self.has_focus
@@ -267,7 +266,7 @@ class Repl(BpythonRepl):
              if config.curtsies_fill_terminal else ''),
             refresh_request=self.request_refresh
             )
-        self.rl_char_sequences = get_updated_char_sequences(key_dispatch, config)
+        self.edit_keys = edit_keys.mapping_with_config(config, key_dispatch)
         logger.debug("starting parent init")
         super(Repl, self).__init__(interp, config)
         #TODO bring together all interactive stuff - including current directory in path?
@@ -296,7 +295,7 @@ class Repl(BpythonRepl):
         self.coderunner = CodeRunner(self.interp, self.request_refresh)
         self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
         self.stderr = FakeOutput(self.coderunner, self.send_to_stderr)
-        self.stdin = FakeStdin(self.coderunner, self, self.rl_char_sequences)
+        self.stdin = FakeStdin(self.coderunner, self, self.edit_keys)
 
         self.request_paint_to_clear_screen = False # next paint should clear screen
         self.last_events = [None] * 50
@@ -459,8 +458,17 @@ class Repl(BpythonRepl):
             self.up_one_line()
         elif e in ("<DOWN>",) + key_dispatch[self.config.down_one_line_key]:
             self.down_one_line()
-        elif e in self.rl_char_sequences:
-            self.cursor_offset, self.current_line = self.rl_char_sequences[e](self.cursor_offset, self.current_line)
+        elif e in ("<Ctrl-d>",):
+            self.on_control_d()
+        elif e in self.edit_keys.cut_buffer_edits:
+            self.readline_kill(e)
+        elif e in self.edit_keys.simple_edits:
+            self.cursor_offset, self.current_line = self.edit_keys.call(e,
+                    cursor_offset=self.cursor_offset,
+                    line=self.current_line,
+                    cut_buffer=self.cut_buffer)
+        elif e in key_dispatch[self.config.cut_to_buffer_key]:
+            self.cut_to_buffer()
         elif e in key_dispatch[self.config.reimport_key]:
             self.clear_modules_and_reevaluate()
         elif e in key_dispatch[self.config.toggle_file_watch_key]:
@@ -473,8 +481,6 @@ class Repl(BpythonRepl):
             self.pager(self.help_text())
         elif e in key_dispatch[self.config.suspend_key]:
             raise SystemExit()
-        elif e in ("<Ctrl-d>",):
-            self.on_control_d()
         elif e in key_dispatch[self.config.exit_key]:
             raise SystemExit()
         elif e in ("\n", "\r", "<PADENTER>", "<Ctrl-j>", "<Ctrl-m>"):
@@ -500,6 +506,16 @@ class Repl(BpythonRepl):
             self.add_normal_character(' ')
         else:
             self.add_normal_character(e)
+
+    def readline_kill(self, e):
+        func = self.edit_keys[e]
+        self.cursor_offset, self.current_line, cut = func(self.cursor_offset, self.current_line)
+        if self.last_events[-2] == e: # consecutive kill commands are cumulative
+            if func.kills == 'ahead': self.cut_buffer += cut
+            elif func.kills == 'behind': self.cut_buffer = cut + self.cut_buffer
+            else: raise ValueError("cut had value other than 'ahead' or 'behind'")
+        else:
+            self.cut_buffer = cut
 
     def on_enter(self, insert_into_history=True):
         self.cursor_offset = -1 # so the cursor isn't touching a paren
@@ -557,6 +573,13 @@ class Repl(BpythonRepl):
             raise SystemExit()
         else:
             self.current_line = self.current_line[:self.cursor_offset] + self.current_line[self.cursor_offset+1:]
+
+    def cut_to_buffer(self):
+        self.cut_buffer = self.current_line[self.cursor_offset:]
+        self.current_line = self.current_line[:self.cursor_offset]
+
+    def yank_from_buffer(self):
+        pass
 
     def up_one_line(self):
         self.rl_history.enter(self.current_line)

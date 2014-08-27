@@ -4,7 +4,7 @@ import curtsies.events as events
 
 from bpython.repl import Interaction as BpythonInteraction
 
-from bpython.curtsiesfrontend.manual_readline import char_sequences as rl_char_sequences
+from bpython.curtsiesfrontend.manual_readline import edit_keys
 
 class StatusBar(BpythonInteraction):
     """StatusBar and Interaction for Repl
@@ -68,8 +68,8 @@ class StatusBar(BpythonInteraction):
         elif isinstance(e, events.PasteEvent):
             for ee in e.events:
                 self.add_normal_character(ee if len(ee) == 1 else ee[-1]) #strip control seq
-        elif e in rl_char_sequences:
-            self.cursor_offset_in_line, self._current_line = rl_char_sequences[e](self.cursor_offset_in_line, self._current_line)
+        elif e in edit_keys:
+            self.cursor_offset_in_line, self._current_line = edit_keys[e](self.cursor_offset_in_line, self._current_line)
         elif e == "<Ctrl-c>":
             raise KeyboardInterrupt()
         elif e == "<Ctrl-d>":

@@ -1,3 +1,6 @@
+
+from collections import namedtuple
+
 from bpython.curtsiesfrontend.manual_readline import *
 import unittest
 
@@ -201,6 +204,50 @@ class TestManualReadline(unittest.TestCase):
                    "asd;fljk |",
                    "asd;|",
                   "|"], delete_word_from_cursor_back)
+
+class TestEdits(unittest.TestCase):
+
+    def setUp(self):
+        self.edits = UnconfiguredEdits()
+
+    def test_seq(self):
+        f = lambda cursor_offset, line: ('hi', 2)
+        self.edits.add('a', f)
+        self.assertTrue('a' in self.edits)
+        self.assertEqual(self.edits['a'], f)
+        self.assertEqual(self.edits.call('a', cursor_offset=3, line='hello'),
+                         ('hi', 2))
+        self.assertRaises(KeyError, self.edits.__getitem__, 'b')
+        self.assertRaises(KeyError, self.edits.call, 'b')
+
+    def test_functions_with_bad_signatures(self):
+        pass #TODO
+
+    def test_functions_with_bad_return_values(self):
+        pass #TODO
+
+    def test_config(self):
+        f = lambda cursor_offset, line: ('hi', 2)
+        g = lambda cursor_offset, line: ('hey', 3)
+        self.edits.add_config_attr('att', f)
+        self.assertFalse('att' in self.edits)
+        class config: att = 'c'
+        key_dispatch = {'c': 'c'}
+        configured_edits = self.edits.mapping_with_config(config, key_dispatch)
+        self.assertTrue(configured_edits.__contains__, 'c')
+        self.assertFalse('c' in self.edits)
+        self.assertRaises(NotImplementedError,
+                          configured_edits.add_config_attr, 'att2', g)
+        self.assertRaises(NotImplementedError,
+                          configured_edits.add, 'd', g)
+        self.assertEqual(configured_edits.call('c', cursor_offset=5, line='asfd'),
+                         ('hi', 2))
+
+    def test_actual(self):
+        class config: att = 'c'
+        key_dispatch = {'c': 'c'}
+        configured_edits = self.edits.mapping_with_config(config, key_dispatch)
+
 
 if __name__ == '__main__':
     unittest.main()
