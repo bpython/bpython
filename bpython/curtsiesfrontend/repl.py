@@ -594,7 +594,7 @@ class Repl(BpythonRepl):
         self._set_cursor_offset(len(self.current_line), reset_rl_history=False)
 
     def process_simple_keypress(self, e):
-        if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>"):
+        if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>", u"\n", u"\r"): # '\n' necessary for pastes
             self.on_enter()
             while self.fake_refresh_requested:
                 self.fake_refresh_requested = False
@@ -607,7 +607,7 @@ class Repl(BpythonRepl):
             self.add_normal_character(e)
 
     def send_current_block_to_external_editor(self, filename=None):
-        text = self.send_to_external_editor(self.get_current_block())
+        text = self.send_to_external_editor(self.get_current_block().encode('utf8'))
         lines = [line for line in text.split('\n')]
         while lines and not lines[-1].split():
             lines.pop()
@@ -616,7 +616,6 @@ class Repl(BpythonRepl):
         with self.in_paste_mode():
             for e in events:
                 self.process_simple_keypress(e)
-        self.current_line = ''
         self.cursor_offset = len(self.current_line)
 
     def send_session_to_external_editor(self, filename=None):
