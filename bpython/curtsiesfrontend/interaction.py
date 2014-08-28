@@ -51,6 +51,7 @@ class StatusBar(BpythonInteraction):
         return self.in_prompt or self.in_confirm or self.waiting_for_refresh
 
     def message(self, msg):
+        """Sets a temporary message"""
         self.message_start_time = time.time()
         self._message = msg
         self.refresh_request(time.time() + self.message_time)

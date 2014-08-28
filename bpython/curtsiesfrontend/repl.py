@@ -298,16 +298,19 @@ class Repl(BpythonRepl):
         self.stdin = FakeStdin(self.coderunner, self, self.edit_keys)
 
         self.request_paint_to_clear_screen = False # next paint should clear screen
-        self.last_events = [None] * 50
-        self.presentation_mode = False
-        self.paste_mode = False
-        self.current_match = None
-        self.list_win_visible = False
-        self.watching_files = False
+        self.last_events = [None] * 50 # some commands act differently based on the prev event
+                                       # this list doesn't include instances of event.Event,
+                                       # only keypress-type events (no refresh screen events etc.)
+        self.presentation_mode = False # displays prev events in a column on the right hand side
+        self.paste_mode = False        # currently processing a paste event
+        self.current_match = None      # currently tab-selected autocompletion suggestion
+        self.list_win_visible = False  # whether the infobox (suggestions, docstring) is visible
+        self.watching_files = False    # auto reloading turned on
+        self.special_mode = None       # 'reverse_incremental_search' and 'incremental_search'
 
         self.original_modules = sys.modules.keys()
 
-        self.width = None  # will both be set by a window resize event
+        self.width = None
         self.height = None
 
         self.status_bar.message(banner)
@@ -460,6 +463,12 @@ class Repl(BpythonRepl):
             self.down_one_line()
         elif e in ("<Ctrl-d>",):
             self.on_control_d()
+        elif e in ("<Ctrl-r>",):
+            self.incremental_search(reverse=True)
+        elif e in ("<Ctrl-s>",):
+            self.incremental_search()
+        elif e in ("<BACKSPACE>", '<Ctrl-h>') and self.special_mode:
+            self.add_to_incremental_search(self, backspace=True)
         elif e in self.edit_keys.cut_buffer_edits:
             self.readline_kill(e)
         elif e in self.edit_keys.simple_edits:
@@ -506,6 +515,21 @@ class Repl(BpythonRepl):
             self.add_normal_character(' ')
         else:
             self.add_normal_character(e)
+
+    def incremental_search(self, reverse=False):
+        if self.special_mode == None:
+            current_line = ''
+            if reverse:
+                self.special_mode = 'reverse_incremental_search'
+            else:
+                self.special_mode = 'incremental_search'
+        else:
+            self._set_current_line(self.rl_history.back(False, search=True)
+                                       if reverse else
+                                       self.rl_history.forward(False, search=True),
+                                   reset_rl_history=False, clear_special_mode=False)
+            self._set_cursor_offset(len(self.current_line), reset_rl_history=False,
+                                    clear_special_mode=False)
 
     def readline_kill(self, e):
         func = self.edit_keys[e]
@@ -659,13 +683,34 @@ class Repl(BpythonRepl):
     def add_normal_character(self, char):
         if len(char) > 1 or is_nop(char):
             return
-        self.current_line = (self.current_line[:self.cursor_offset] +
-                             char +
-                             self.current_line[self.cursor_offset:])
-        self.cursor_offset += 1
+        if self.special_mode == 'reverse_incremental_search':
+            self.add_to_incremental_search(char)
+        else:
+            self.current_line = (self.current_line[:self.cursor_offset] +
+                                 char +
+                                 self.current_line[self.cursor_offset:])
+            self.cursor_offset += 1
         if self.config.cli_trim_prompts and self.current_line.startswith(self.ps1):
             self.current_line = self.current_line[4:]
             self.cursor_offset = max(0, self.cursor_offset - 4)
+
+    def add_to_incremental_search(self, char=None, backspace=False):
+        if char is None and not backspace:
+            raise ValueError("must provide a char or set backspace to True")
+        saved_line = self.rl_history.saved_line
+        if backspace:
+            saved_line = saved_line[:-1]
+        else:
+            saved_line += char
+        self.update_completion()
+        self.rl_history.reset()
+        self.rl_history.enter(saved_line)
+        if self.special_mode == 'reverse_incremental_search':
+            self.incremental_search(reverse=True)
+        elif self.special_mode == 'incremental_search':
+            self.incremental_search()
+        else:
+            raise ValueError('add_to_incremental_search should only be called in a special mode')
 
     def update_completion(self, tab=False):
         """Update visible docstring and matches, and possibly hide/show completion box"""
@@ -866,6 +911,9 @@ class Repl(BpythonRepl):
     @property
     def display_line_with_prompt(self):
         """colored line with prompt"""
+        if self.special_mode == 'reverse_incremental_search':
+            return func_for_letter(self.config.color_scheme['prompt'])(
+                '(reverse-i-search)`%s\': ' % (self.rl_history.saved_line,)) + self.current_line_formatted
         return (func_for_letter(self.config.color_scheme['prompt'])(self.ps1)
                 if self.done else
                 func_for_letter(self.config.color_scheme['prompt_more'])(self.ps2)) + self.current_line_formatted
@@ -1085,21 +1133,25 @@ class Repl(BpythonRepl):
 
     def _get_current_line(self):
         return self._current_line
-    def _set_current_line(self, line, update_completion=True, reset_rl_history=True):
+    def _set_current_line(self, line, update_completion=True, reset_rl_history=True, clear_special_mode=True):
         self._current_line = line
         if update_completion:
             self.update_completion()
         if reset_rl_history:
             self.rl_history.reset()
+        if clear_special_mode:
+            self.special_mode = None
     current_line = property(_get_current_line, _set_current_line, None,
                             "The current line")
     def _get_cursor_offset(self):
         return self._cursor_offset
-    def _set_cursor_offset(self, offset, update_completion=True, reset_rl_history=True):
+    def _set_cursor_offset(self, offset, update_completion=True, reset_rl_history=True, clear_special_mode=True):
         if update_completion:
             self.update_completion()
         if reset_rl_history:
             self.rl_history.reset()
+        if clear_special_mode:
+            self.special_mode = None
         self._cursor_offset = offset
         self.update_completion()
     cursor_offset = property(_get_cursor_offset, _set_cursor_offset, None,

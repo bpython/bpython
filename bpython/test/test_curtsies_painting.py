@@ -38,8 +38,8 @@ class TestCurtsiesPainting(FormatStringTest):
 
     def test_enter_text(self):
         [self.repl.add_normal_character(c) for c in '1 + 1']
-        screen = fsarray([cyan('>>> ') + bold(green('1')+cyan(' ')+
-                          yellow('+') + cyan(' ') + green('1')), cyan('Welcome to')])
+        screen = fsarray([cyan('>>> ') + bold(blue('1')+cyan(' ')+
+                          yellow('+') + cyan(' ') + green('1')), cyan('welcome')])
         self.assert_paint(screen, (0, 9))
 
     def test_run_line(self):
