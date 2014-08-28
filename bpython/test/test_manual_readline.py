@@ -142,11 +142,11 @@ class TestManualReadline(unittest.TestCase):
         line = "everything after this will be deleted"
         pos = line.find("this")
         expected = (pos, "everything after ")
-        result = delete_from_cursor_forward(line.find("this"), line)
+        result = delete_from_cursor_forward(line.find("this"), line)[:-1]
         self.assertEquals(expected, result)
 
     def test_delete_rest_of_word(self):
-        self.try_stages(['z|s;df asdf d s;a;a',
+        self.try_stages_kill(['z|s;df asdf d s;a;a',
                          'z|;df asdf d s;a;a',
                          'z| asdf d s;a;a',
                          'z| d s;a;a',
@@ -156,7 +156,7 @@ class TestManualReadline(unittest.TestCase):
                          'z|'], delete_rest_of_word)
 
     def test_delete_word_to_cursor(self):
-        self.try_stages([
+        self.try_stages_kill([
                         '  a;d sdf ;a;s;d; fjksald|a',
                         '  a;d sdf ;a;s;d; |a',
                         '  a;d sdf |a',
@@ -179,6 +179,15 @@ class TestManualReadline(unittest.TestCase):
         for (initial_pos, initial), (final_pos, final) in zip(stages[:-1], stages[1:]):
             self.assertEquals(func(initial_pos, initial), (final_pos, final))
 
+    def try_stages_kill(self, strings, func):
+        if not all('|' in s for s in strings):
+            raise ValueError("Need to use '|' to specify cursor")
+
+        stages = [(s.index('|'), s.replace('|', '')) for s in strings]
+        for (initial_pos, initial), (final_pos, final) in zip(stages[:-1], stages[1:]):
+            self.assertEquals(func(initial_pos, initial)[:-1], (final_pos, final))
+
+
     def test_transpose_character_before_cursor(self):
         self.try_stages(["as|df asdf",
                          "ads|f asdf",
@@ -194,7 +203,7 @@ class TestManualReadline(unittest.TestCase):
         self.assertEquals(backspace(3, 'as '), (2, 'as'))
 
     def test_delete_word_from_cursor_back(self):
-        self.try_stages([
+        self.try_stages_kill([
                    "asd;fljk asd;lfjas;dlkfj asdlk jasdf;ljk|",
                    "asd;fljk asd;lfjas;dlkfj asdlk jasdf;|",
                    "asd;fljk asd;lfjas;dlkfj asdlk |",
