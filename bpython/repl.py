@@ -139,15 +139,16 @@ class Interpreter(code.InteractiveInterpreter):
 
 
 class History(object):
-    """Stores readline-style history allows access to it"""
+    """Stores readline-style history and current place in it"""
 
     def __init__(self, entries=None, duplicates=False):
         if entries is None:
             self.entries = ['']
         else:
             self.entries = list(entries)
-        self.index = 0
-        self.saved_line = ''
+        self.index = 0  # how many lines back in history is currently selected
+                        # where 0 is the saved typed line, 1 the prev entered line
+        self.saved_line = '' # what was on the prompt before using history
         self.duplicates = duplicates
 
     def append(self, line):
@@ -168,58 +169,68 @@ class History(object):
             self.index = len(self.entries)
         return self.entries[-self.index]
 
-    def back(self, start=True, search=False):
+    def back(self, start=True, search=False, target=None, include_current=False):
         """Move one step back in the history."""
+        if target is None:
+            target = self.saved_line
         if not self.is_at_end:
             if search:
-                self.index += self.find_partial_match_backward(self.saved_line)
+                self.index += self.find_partial_match_backward(target, include_current)
             elif start:
-                self.index += self.find_match_backward(self.saved_line)
+                self.index += self.find_match_backward(target, include_current)
             else:
                 self.index += 1
+        return self.entry
+
+    @property
+    def entry(self):
+        """The current entry, which may be the saved line"""
         return self.entries[-self.index] if self.index else self.saved_line
 
-    def find_match_backward(self, search_term):
-        filtered_list_len = len(self.entries) - self.index
-        for idx, val in enumerate(reversed(self.entries[:filtered_list_len])):
+    @property
+    def entries_by_index(self):
+        return list(reversed(self.entries + [self.saved_line]))
+
+    def find_match_backward(self, search_term, include_current=False):
+        for idx, val in enumerate(self.entries_by_index[self.index + (0 if include_current else 1):]):
             if val.startswith(search_term):
-                return idx + 1
+                return idx + (0 if include_current else 1)
         return 0
 
-    def find_partial_match_backward(self, search_term):
-        filtered_list_len = len(self.entries) - self.index
-        for idx, val in enumerate(reversed(self.entries[:filtered_list_len])):
+    def find_partial_match_backward(self, search_term, include_current=False):
+        for idx, val in enumerate(self.entries_by_index[self.index + (0 if include_current else 1):]):
             if search_term in val:
-                return idx + 1
+                return idx + (0 if include_current else 1)
         return 0
 
 
-    def forward(self, start=True, search=False):
+    def forward(self, start=True, search=False, target=None, include_current=False):
         """Move one step forward in the history."""
+        if target is None:
+            target = self.saved_line
         if self.index > 1:
             if search:
-                self.index -= self.find_partial_match_forward(self.saved_line)
+                self.index -= self.find_partial_match_forward(target, include_current)
             elif start:
-                self.index -= self.find_match_forward(self.saved_line)
+                self.index -= self.find_match_forward(target, include_current)
             else:
                 self.index -= 1
-            return self.entries[-self.index] if self.index else self.saved_line
+            return self.entry
         else:
             self.index = 0
             return self.saved_line
 
-    def find_match_forward(self, search_term):
-        filtered_list_len = len(self.entries) - self.index + 1
-        for idx, val in enumerate(self.entries[filtered_list_len:]):
+    def find_match_forward(self, search_term, include_current=False):
+        #TODO these are no longer efficient, because we realize the whole list. Does this matter?
+        for idx, val in enumerate(reversed(self.entries_by_index[:max(0, self.index - (1 if include_current else 0))])):
             if val.startswith(search_term):
-                return idx + 1
+                return idx + (0 if include_current else 1)
         return self.index
 
-    def find_partial_match_forward(self, search_term):
-        filtered_list_len = len(self.entries) - self.index + 1
-        for idx, val in enumerate(self.entries[filtered_list_len:]):
+    def find_partial_match_forward(self, search_term, include_current=False):
+        for idx, val in enumerate(reversed(self.entries_by_index[:max(0, self.index - (1 if include_current else 0))])):
             if search_term in val:
-                return idx + 1
+                return idx + (0 if include_current else 1)
         return self.index
 
 
