@@ -524,12 +524,16 @@ class Repl(BpythonRepl):
             else:
                 self.special_mode = 'incremental_search'
         else:
-            self._set_current_line(self.rl_history.back(False, search=True)
-                                       if reverse else
-                                       self.rl_history.forward(False, search=True),
-                                   reset_rl_history=False, clear_special_mode=False)
-            self._set_cursor_offset(len(self.current_line), reset_rl_history=False,
-                                    clear_special_mode=False)
+            if self.rl_history.saved_line:
+                line = (self.rl_history.back(False, search=True)
+                        if reverse else
+                        self.rl_history.forward(False, search=True))
+                if self.rl_history.is_at_start:
+                    line = '' # incremental search's search string isn't the current line
+                self._set_current_line(line,
+                                       reset_rl_history=False, clear_special_mode=False)
+                self._set_cursor_offset(len(self.current_line),
+                                        reset_rl_history=False, clear_special_mode=False)
 
     def readline_kill(self, e):
         func = self.edit_keys[e]
@@ -695,6 +699,10 @@ class Repl(BpythonRepl):
             self.cursor_offset = max(0, self.cursor_offset - 4)
 
     def add_to_incremental_search(self, char=None, backspace=False):
+        """Modify the current search term while in incremental search.
+
+        The only operations allowed in incremental search mode are
+        adding characters and backspacing."""
         if char is None and not backspace:
             raise ValueError("must provide a char or set backspace to True")
         saved_line = self.rl_history.saved_line

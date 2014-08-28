@@ -139,6 +139,7 @@ class Interpreter(code.InteractiveInterpreter):
 
 
 class History(object):
+    """Stores readline-style history allows access to it"""
 
     def __init__(self, entries=None, duplicates=False):
         if entries is None:
