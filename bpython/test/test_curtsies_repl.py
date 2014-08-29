@@ -39,7 +39,7 @@ class TestCurtsiesRepl(unittest.TestCase):
         self.assertTrue(self.repl.buffer_finished_will_parse(), (True, True))
 
     def test_external_communication(self):
-        self.assertEqual(type(self.repl.version_help_text()), type(b''))
+        self.assertEqual(type(self.repl.help_text()), type(b''))
         self.repl.send_current_block_to_external_editor()
         self.repl.send_session_to_external_editor()
 
