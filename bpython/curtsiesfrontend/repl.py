@@ -497,6 +497,8 @@ class Repl(BpythonRepl):
             greenlet.greenlet(self.pastebin).switch()
         elif e in key_dispatch[self.config.external_editor_key]:
             self.send_session_to_external_editor()
+        elif e in key_dispatch[self.config.edit_config_key]:
+            greenlet.greenlet(self.edit_config).switch()
         #TODO add PAD keys hack as in bpython.cli
         elif e in key_dispatch[self.config.edit_current_block_key]:
             self.send_current_block_to_external_editor()
