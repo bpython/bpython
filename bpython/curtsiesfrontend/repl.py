@@ -464,9 +464,9 @@ class Repl(BpythonRepl):
             self.down_one_line()
         elif e in ("<Ctrl-d>",):
             self.on_control_d()
-        elif e in ("<Ctrl-r>",):
+        elif e in ("<Esc+r>",):
             self.incremental_search(reverse=True)
-        elif e in ("<Ctrl-s>",):
+        elif e in ("<Esc+s>",):
             self.incremental_search()
         elif e in ("<BACKSPACE>", '<Ctrl-h>') and self.special_mode:
             self.add_to_incremental_search(self, backspace=True)
