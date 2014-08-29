@@ -238,7 +238,10 @@ class Repl(BpythonRepl):
         if interp is None:
             interp = code.InteractiveInterpreter(locals=locals_)
         if banner is None:
-            banner = _('Welcome to bpython! Press <%s> for help.') % config.help_key
+            if config.help_key:
+                banner = _('Welcome to bpython!') + ' ' + (_('Press <%s> for help.') % config.help_key)
+            else:
+                banner = None
         config.autocomplete_mode = autocomplete.SIMPLE # only one implemented currently
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 1
@@ -1261,7 +1264,7 @@ class Repl(BpythonRepl):
             self.pager(source)
 
     def help_text(self):
-        return self.version_help_text() + '\n' + self.key_help_text()
+        return (self.version_help_text() + '\n' + self.key_help_text()).encode('utf8')
 
     def version_help_text(self):
         return (('bpython-curtsies version %s' % bpython.__version__) + ' ' +
