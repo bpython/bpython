@@ -1,10 +1,22 @@
-import unittest
-import sys
+import code
 import os
+import sys
+import tempfile
+from contextlib import contextmanager
+from StringIO import StringIO
+
+import unittest
+try:
+    from unittest import skip
+except ImportError:
+    def skip(f):
+        return lambda self: None
+
 py3 = (sys.version_info[0] == 3)
 
-from bpython.curtsiesfrontend import repl
+from bpython.curtsiesfrontend import repl as curtsiesrepl
 from bpython import config
+from bpython import args
 
 def setup_config(conf):
     config_struct = config.Struct()
@@ -18,11 +30,7 @@ def setup_config(conf):
 class TestCurtsiesRepl(unittest.TestCase):
 
     def setUp(self):
-        self.config = setup_config({'editor':'true'})
-        self.repl = repl.Repl(config=self.config)
-        os.environ['PAGER'] = 'true'
-        self.repl.width = 50
-        self.repl.height = 20
+        self.repl = create_repl()
 
     def test_buffer_finished_will_parse(self):
         self.repl.buffer = ['1 + 1']
@@ -42,6 +50,48 @@ class TestCurtsiesRepl(unittest.TestCase):
         self.assertEqual(type(self.repl.help_text()), type(b''))
         self.repl.send_current_block_to_external_editor()
         self.repl.send_session_to_external_editor()
+
+@contextmanager # from http://stackoverflow.com/a/17981937/398212 - thanks @rkennedy
+def captured_output():
+    new_out, new_err = StringIO(), StringIO()
+    old_out, old_err = sys.stdout, sys.stderr
+    try:
+        sys.stdout, sys.stderr = new_out, new_err
+        yield sys.stdout, sys.stderr
+    finally:
+        sys.stdout, sys.stderr = old_out, old_err
+
+def create_repl(**kwargs):
+    config = setup_config({'editor':'true'})
+    repl = curtsiesrepl.Repl(config=config, **kwargs)
+    os.environ['PAGER'] = 'true'
+    repl.width = 50
+    repl.height = 20
+    return repl
+
+class TestFutureImports(unittest.TestCase):
+
+    def test_repl(self):
+        repl = create_repl()
+        with captured_output() as (out, err):
+            repl.push('from __future__ import division')
+            repl.push('1 / 2')
+        self.assertEqual(out.getvalue(), '0.5\n')
+
+    @skip('Failing - this is issue #369')
+    def test_interactive(self):
+        interp = code.InteractiveInterpreter(locals={})
+        with captured_output() as (out, err):
+            with tempfile.NamedTemporaryFile(suffix='.py') as f:
+                f.write('from __future__ import division\n')
+                f.write('print 1/2\n')
+                f.flush()
+                args.exec_code(interp, [f.name])
+
+            repl = create_repl(interp=interp)
+            repl.push('1 / 2')
+
+        self.assertEqual(out.getvalue(), '0.5\n0.5\n')
 
 
 if __name__ == '__main__':

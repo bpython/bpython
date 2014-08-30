@@ -45,7 +45,8 @@ def main(args=None, locals_=None, banner=None):
     interp = None
     paste = None
     if exec_args:
-        assert options, "don't pass in exec_args without options"
+        if not options:
+            raise ValueError("don't pass in exec_args without options")
         exit_value = 0
         if options.type:
             paste = curtsies.events.PasteEvent()

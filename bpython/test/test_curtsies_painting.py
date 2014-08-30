@@ -18,7 +18,6 @@ def setup_config():
 
 class TestCurtsiesPainting(FormatStringTest):
     def setUp(self):
-        self.refresh_requests = []
         self.repl = Repl(config=setup_config())
         self.repl.rl_history = History() # clear history
         self.repl.height, self.repl.width = (5, 10)
