@@ -57,6 +57,9 @@ MAGIC_METHODS = ["__%s__" % s for s in [
     "oct", "hex", "index", "coerce", "enter", "exit"]]
 
 
+def after_last_dot(name):
+    return name.rstrip('.').rsplit('.')[-1]
+
 def get_completer(cursor_offset, current_line, locals_, argspec, full_code, mode, complete_magic_methods):
     """Returns a list of matches and a class for what kind of completion is happening
 
@@ -132,9 +135,7 @@ class ImportCompletion(BaseCompletionType):
     def matches(cls, cursor_offset, current_line, **kwargs):
         return importcompletion.complete(cursor_offset, current_line)
     locate = staticmethod(lineparts.current_word)
-    @classmethod
-    def format(cls, name):
-        return name.rstrip('.').rsplit('.')[-1]
+    format = staticmethod(after_last_dot)
 
 class FilenameCompletion(BaseCompletionType):
     shown_before_tab = False
@@ -193,9 +194,7 @@ class AttrCompletion(BaseCompletionType):
         return matches
 
     locate = staticmethod(lineparts.current_dotted_attribute)
-    @classmethod
-    def format(cls, name):
-        return name.rstrip('.').rsplit('.')[-1]
+    format = staticmethod(after_last_dot)
 
 class DictKeyCompletion(BaseCompletionType):
     locate = staticmethod(lineparts.current_dict_key)

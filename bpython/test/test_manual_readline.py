@@ -230,10 +230,16 @@ class TestEdits(unittest.TestCase):
         self.assertRaises(KeyError, self.edits.call, 'b')
 
     def test_functions_with_bad_signatures(self):
-        pass #TODO
+        f = lambda something: (1, 2)
+        self.assertRaises(TypeError, self.edits.add, 'a', f)
+        g = lambda cursor_offset, line, something, something_else: (1, 2)
+        self.assertRaises(TypeError, self.edits.add, 'a', g)
 
     def test_functions_with_bad_return_values(self):
-        pass #TODO
+        f = lambda cursor_offset, line: ('hi',)
+        self.assertRaises(ValueError, self.edits.add, 'a', f)
+        g = lambda cursor_offset, line: ('hi', 1, 2, 3)
+        self.assertRaises(ValueError, self.edits.add, 'b', g)
 
     def test_config(self):
         f = lambda cursor_offset, line: ('hi', 2)
