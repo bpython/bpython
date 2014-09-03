@@ -38,6 +38,7 @@ Available Switches
 * main
 * prompt
 * prompt_more
+* right_arrow_suggestion
 
 Default Theme
 -------------
@@ -74,6 +75,7 @@ The default theme included in bpython is as follows:
   main = c
   prompt = c
   prompt_more = g
+  right_arrow_suggestion = K
 
 .. :: Footnotes
 

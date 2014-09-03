@@ -26,3 +26,4 @@ output = b
 main = b
 prompt = r
 prompt_more = g
+right_arrow_suggestion = K
