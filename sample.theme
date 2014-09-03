@@ -27,3 +27,4 @@ output = w
 main = c
 prompt = c
 prompt_more = g
+right_arrow_suggestion = K

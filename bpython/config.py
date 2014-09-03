@@ -178,6 +178,7 @@ def loadini(struct, configfile):
             'paren': 'R',
             'prompt': 'c',
             'prompt_more': 'g',
+            'right_arrow_suggestion': 'K',
         }
 
     if color_scheme_name == 'default':

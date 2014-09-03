@@ -948,7 +948,8 @@ class Repl(BpythonRepl):
     @property
     def current_cursor_line(self):
         if self.config.curtsies_right_arrow_completion:
-            return self.current_cursor_line_without_suggestion + fmtfuncs.bold(fmtfuncs.dark((self.current_suggestion)))
+            return (self.current_cursor_line_without_suggestion +
+                func_for_letter(self.config.color_scheme['right_arrow_suggestion'])(self.current_suggestion))
         else:
             return self.current_cursor_line_without_suggestion
 
