@@ -17,6 +17,7 @@ import unicodedata
 from pygments import format
 from pygments.lexers import PythonLexer
 from pygments.formatters import TerminalFormatter
+from interpreter import Interp
 
 import blessings
 
@@ -236,7 +237,8 @@ class Repl(BpythonRepl):
                                                    # would be unsafe because initial
                                                    # state was passed in
         if interp is None:
-            interp = code.InteractiveInterpreter(locals=locals_)
+            interp = Interp(locals=locals_)
+            interp.writetb = self.send_to_stderr
         if banner is None:
             if config.help_key:
                 banner = _('Welcome to bpython!') + ' ' + (_('Press <%s> for help.') % config.help_key)
@@ -867,9 +869,7 @@ class Repl(BpythonRepl):
         lines = error.split('\n')
         if lines[-1]:
             self.current_stdouterr_line += lines[-1]
-        self.display_lines.extend([func_for_letter(self.config.color_scheme['error'])(line)
-                                   for line in sum([paint.display_linize(line, self.width, blank_line=True)
-                                                    for line in lines[:-1]], [])])
+        self.display_lines.extend(sum([paint.display_linize(line, self.width, blank_line=True) for line in lines[:-1]], []))
 
     def send_to_stdin(self, line):
         if line.endswith('\n'):
@@ -1202,6 +1202,7 @@ class Repl(BpythonRepl):
 
         if not self.weak_rewind:
             self.interp = self.interp.__class__()
+            self.interp.writetb = self.send_to_stderr
             self.coderunner.interp = self.interp
 
         self.buffer = []
