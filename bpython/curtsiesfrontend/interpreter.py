@@ -106,26 +106,7 @@ class Interp(code.InteractiveInterpreter):
         l = traceback.format_exception_only(type, value)
         tbtext = ''.join(l)
         lexer = get_lexer_by_name("pytb")
-        traceback_informative_formatter = BPythonFormatter(default_colors)
-        traceback_code_formatter = BPythonFormatter({Token: ('d')})
-        tokens= list(lexer.get_tokens(tbtext))
-        no_format_mode = False
-        cur_line = []
-        for token, text in tokens:
-            if text.endswith('\n'):
-                cur_line.append((token,text))
-                if no_format_mode:
-                    traceback_code_formatter.format(cur_line, self.outfile)
-                    no_format_mode = False
-                else:
-                    traceback_informative_formatter.format(cur_line, self.outfile)
-                cur_line = []
-            elif text == '    ' and cur_line == []:
-                no_format_mode = True
-                cur_line.append((token,text))
-            else:
-                cur_line.append((token,text))
-        assert cur_line == [], cur_line
+        self.format(tbtext,lexer)
 
     def showtraceback(self):
         """Display the exception that just occurred.
@@ -147,7 +128,10 @@ class Interp(code.InteractiveInterpreter):
         tbtext = ''.join(l)
         lexer = get_lexer_by_name("pytb", stripall=True)
 
+        self.format(tbtext,lexer)
         
+
+    def format(self, tbtext, lexer):
         traceback_informative_formatter = BPythonFormatter(default_colors)
         traceback_code_formatter = BPythonFormatter({Token: ('d')})
         tokens= list(lexer.get_tokens(tbtext))
@@ -168,5 +152,4 @@ class Interp(code.InteractiveInterpreter):
                 cur_line.append((token,text))
             else:
                 cur_line.append((token,text))
-        assert cur_line == []
-
+        assert cur_line == [], cur_line
