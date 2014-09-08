@@ -1193,6 +1193,13 @@ class Repl(BpythonRepl):
         logger.debug("calling reprint line with %r %r", lineno, tokens)
         if self.config.syntax:
             self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
+
+    def take_back_buffer_line(self):
+        self.display_buffer.pop()
+        self.buffer.pop()
+        self.cursor_offset = 0
+        self.current_line = ''
+
     def reevaluate(self, insert_into_history=False):
         """bpython.Repl.undo calls this"""
         if self.watcher: self.watcher.reset()

@@ -902,8 +902,10 @@ class Repl(object):
         entries = list(self.rl_history.entries)
 
         self.history = self.history[:-n]
-
-        self.reevaluate()
+        if n == 1 and not self.done:
+            self.take_back_buffer_line()
+        else:
+            self.reevaluate()
 
         self.rl_history.entries = entries
 
