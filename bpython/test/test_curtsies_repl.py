@@ -93,6 +93,22 @@ class TestFutureImports(unittest.TestCase):
 
         self.assertEqual(out.getvalue(), '0.5\n0.5\n')
 
+class TestPredictedIndent(unittest.TestCase):
+    def setUp(self):
+        self.repl = create_repl()
+
+    def test_simple(self):
+        self.assertEqual(self.repl.predicted_indent(''), 0)
+        self.assertEqual(self.repl.predicted_indent('class Foo:'), 4)
+        self.assertEqual(self.repl.predicted_indent('class Foo: pass'), 0)
+        self.assertEqual(self.repl.predicted_indent('def asdf():'), 4)
+        self.assertEqual(self.repl.predicted_indent('def asdf(): return 7'), 0)
+
+    @skip
+    def test_complex(self):
+        self.assertEqual(self.repl.predicted_indent('[a,'), 1)
+        self.assertEqual(self.repl.predicted_indent('reduce(asdfasdf,'), 7)
+
 
 if __name__ == '__main__':
     unittest.main()
