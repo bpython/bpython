@@ -735,6 +735,18 @@ class Repl(BpythonRepl):
         self.current_match = None
         self.list_win_visible = BpythonRepl.complete(self, tab)
 
+    def predicted_indent(self, line):
+        logger.debug('line is %r', line)
+        indent = len(re.match(r'[ ]*', line).group())
+        if line.endswith(':'):
+            indent = max(0, indent + self.config.tab_length)
+        elif line and line.count(' ') == len(line):
+            indent = max(0, indent - self.config.tab_length)
+        elif line and ':' not in line and line.strip().startswith(('return', 'pass', 'raise', 'yield')):
+            indent = max(0, indent - self.config.tab_length)
+        logger.debug('indent we found was %s', indent)
+        return indent
+
     def push(self, line, insert_into_history=True):
         """Push a line of code onto the buffer, start running the buffer
 
@@ -743,14 +755,7 @@ class Repl(BpythonRepl):
         if self.paste_mode:
             self.saved_indent = 0
         else:
-            indent = len(re.match(r'[ ]*', line).group())
-            if line.endswith(':'):
-                indent = max(0, indent + self.config.tab_length)
-            elif line and line.count(' ') == len(line):
-                indent = max(0, indent - self.config.tab_length)
-            elif line and ':' not in line and line.strip().startswith(('return', 'pass', 'raise', 'yield')):
-                indent = max(0, indent - self.config.tab_length)
-            self.saved_indent = indent
+            self.saved_indent = self.predicted_indent(line)
 
         #current line not added to display buffer if quitting #TODO I don't understand this comment
         if self.config.syntax:
@@ -1197,8 +1202,15 @@ class Repl(BpythonRepl):
     def take_back_buffer_line(self):
         self.display_buffer.pop()
         self.buffer.pop()
-        self.cursor_offset = 0
-        self.current_line = ''
+
+        if not self.buffer:
+            self.current_line = ''
+            self.cursor_offset = 0
+        else:
+            line = self.buffer[-1]
+            indent = self.predicted_indent(line)
+            self.current_line = indent * ' '
+            self.cursor_offset = len(self.current_line)
 
     def reevaluate(self, insert_into_history=False):
         """bpython.Repl.undo calls this"""
