@@ -736,6 +736,7 @@ class Repl(BpythonRepl):
         self.list_win_visible = BpythonRepl.complete(self, tab)
 
     def predicted_indent(self, line):
+        #TODO get rid of this! It's repeated code! Combine with Repl.
         logger.debug('line is %r', line)
         indent = len(re.match(r'[ ]*', line).group())
         if line.endswith(':'):
