@@ -187,7 +187,7 @@ toggle_file_watch
 ^^^^^^^^^^^^^^^^^
 Default: F5
 
-Toggles file watching behaviour; re-runs entire bpython session whenever an imported 
+Toggles file watching behaviour; re-runs entire bpython session whenever an imported
 module is modified.
 
 .. versionadded:: 0.14
