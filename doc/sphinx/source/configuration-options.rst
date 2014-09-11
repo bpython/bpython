@@ -175,6 +175,23 @@ Reruns entire session, reloading all modules by clearing the sys.modules cache.
 
 .. versionadded:: 0.14
 
+help
+^^^^
+Default: F1
+
+Brings up sincerely cheerful description of bpython features and current key bindings.
+
+.. versionadded:: 0.14
+
+toggle_file_watch
+^^^^^^^^^^^^^^^^^
+Default: F5
+
+Toggles file watching behaviour; re-runs entire bpython session whenever an imported 
+module is modified.
+
+.. versionadded:: 0.14
+
 save
 ^^^^
 Default: C-s
