@@ -51,6 +51,15 @@ class TestCurtsiesRepl(unittest.TestCase):
         self.repl.send_current_block_to_external_editor()
         self.repl.send_session_to_external_editor()
 
+    def test_get_last_word(self):
+        self.repl.rl_history.entries=['1','2 3','4 5 6']
+        self.repl._set_current_line('abcde')
+        self.repl.get_last_word()
+        self.assertEqual(self.repl.current_line,'abcde6')
+        self.repl.get_last_word()
+        self.assertEqual(self.repl.current_line,'abcde3')
+
+
 @contextmanager # from http://stackoverflow.com/a/17981937/398212 - thanks @rkennedy
 def captured_output():
     new_out, new_err = StringIO(), StringIO()
