@@ -46,6 +46,7 @@ from bpython.curtsiesfrontend.manual_readline import edit_keys
 
 #TODO other autocomplete modes (also fix in other bpython implementations)
 
+
 from curtsies.configfile_keynames import keymap as key_dispatch
 
 logger = logging.getLogger(__name__)
@@ -87,6 +88,7 @@ class FakeStdin(object):
 
     def process_event(self, e):
         assert self.has_focus
+
         logger.debug('fake input processing event %r', e)
         if isinstance(e, events.PasteEvent):
             for ee in e.events:
@@ -100,6 +102,9 @@ class FakeStdin(object):
             self.current_line = ''
             self.cursor_offset = 0
             self.repl.run_code_and_maybe_finish()
+        elif e in ("<Esc+.>",):
+            self.get_last_word()
+
         elif e in ["<ESC>"]:
             pass
         elif e in ['<Ctrl-d>']:
@@ -469,6 +474,8 @@ class Repl(BpythonRepl):
             self.down_one_line()
         elif e in ("<Ctrl-d>",):
             self.on_control_d()
+        elif e in ("<Esc+.>",):
+            self.get_last_word()
         elif e in ("<Esc+r>",):
             self.incremental_search(reverse=True)
         elif e in ("<Esc+s>",):
@@ -523,6 +530,21 @@ class Repl(BpythonRepl):
             self.add_normal_character(' ')
         else:
             self.add_normal_character(e)
+
+    def get_last_word(self):
+
+        def last_word(line):
+            if not line:
+                return ''
+            return line.split().pop()
+
+        previous_word = last_word(self.rl_history.entry)
+        word = last_word(self.rl_history.back())
+        line=self.current_line
+        self._set_current_line(line[:len(line)-len(previous_word)]+word, reset_rl_history=False)
+        
+        self._set_cursor_offset(self.cursor_offset-len(previous_word)+len(word), reset_rl_history=False)
+ 
 
     def incremental_search(self, reverse=False, include_current=False):
         if self.special_mode == None:
@@ -808,7 +830,8 @@ class Repl(BpythonRepl):
             if err:
                 indent = 0
 
-            #TODO This should be printed ABOVE the error that just happened instead
+     
+           #TODO This should be printed ABOVE the error that just happened instead
             # or maybe just thrown away and not shown
             if self.current_stdouterr_line:
                 self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width))
