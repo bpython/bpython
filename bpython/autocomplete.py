@@ -383,7 +383,8 @@ def attr_lookup(obj, expr, attr, autocomplete_mode):
     n = len(attr)
     for word in words:
         if method_match(word, n, attr, autocomplete_mode) and word != "__builtins__":
-            matches.append("%s.%s" % (expr, word))
+            val = getattr(obj, word)
+            matches.append("%s.%s" % (expr, _callable_postfix(val, word)))
     return matches
 
 def _callable_postfix(value, word):
