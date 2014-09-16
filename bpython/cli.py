@@ -999,6 +999,9 @@ class CLIRepl(repl.Repl):
         elif key == '\x18':
             return self.send_current_line_to_editor()
 
+        elif key == '\x03':
+            raise KeyboardInterrupt()
+
         elif key[0:3] == 'PAD' and not key in ('PAD0', 'PADSTOP'):
             pad_keys = {
                 'PADMINUS': '-',
