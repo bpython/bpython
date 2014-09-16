@@ -59,6 +59,18 @@ class TestCurtsiesRepl(unittest.TestCase):
         self.repl.get_last_word()
         self.assertEqual(self.repl.current_line,'abcde3')
 
+    @skip # this is the behavior of bash - not currently implemented
+    def test_get_last_word_with_prev_line
+        self.repl.rl_history.entries=['1','2 3','4 5 6']
+        self.repl._set_current_line('abcde')
+        self.repl.up_one_line()
+        self.assertEqual(self.repl.current_line,'4 5 6')
+        self.repl.get_last_word()
+        self.assertEqual(self.repl.current_line,'4 5 63')
+        self.repl.get_last_word()
+        self.assertEqual(self.repl.current_line,'4 5 64')
+        self.repl.up_one_line()
+        self.assertEqual(self.repl.current_line,'2 3')
 
 @contextmanager # from http://stackoverflow.com/a/17981937/398212 - thanks @rkennedy
 def captured_output():
