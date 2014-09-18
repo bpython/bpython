@@ -144,6 +144,7 @@ class TestManualReadline(unittest.TestCase):
         expected = (pos, "everything after ")
         result = delete_from_cursor_forward(line.find("this"), line)[:-1]
         self.assertEquals(expected, result)
+        self.assertEquals(delete_from_cursor_forward(0, ''), (0, '', ''))
 
     def test_delete_rest_of_word(self):
         self.try_stages_kill(['z|s;df asdf d s;a;a',
@@ -153,6 +154,7 @@ class TestManualReadline(unittest.TestCase):
                          'z| s;a;a',
                          'z|;a;a',
                          'z|;a',
+                         'z|',
                          'z|'], delete_rest_of_word)
 
     def test_delete_word_to_cursor(self):
@@ -163,7 +165,7 @@ class TestManualReadline(unittest.TestCase):
                         '  a;d |a',
                         '  |a',
                         '|a',
-                        ], delete_word_to_cursor)
+                        '|a'], delete_word_to_cursor)
 
     def test_yank_prev_killed_text(self):
         pass
@@ -212,7 +214,8 @@ class TestManualReadline(unittest.TestCase):
                    "asd;fljk asd;|",
                    "asd;fljk |",
                    "asd;|",
-                  "|"], delete_word_from_cursor_back)
+                   "|",
+                   "|"], delete_word_from_cursor_back)
 
 class TestEdits(unittest.TestCase):
 
