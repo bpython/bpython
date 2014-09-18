@@ -268,7 +268,7 @@ def titlecase_next_word(cursor_offset, line):
 def delete_word_from_cursor_back(cursor_offset, line):
     """Whatever my option-delete does in bash on my mac"""
     if not line:
-        return cursor_offset, line
+        return cursor_offset, line, ''
     starts = [m.start() for m in list(re.finditer(r'\b\w', line)) if m.start() < cursor_offset]
     if starts:
         return starts[-1], line[:starts[-1]] + line[cursor_offset:], line[starts[-1]:cursor_offset]
