@@ -44,8 +44,8 @@ Soft tab size (default 4, see pep-8)
 pastebin_url
 ^^^^^^^^^^^^
 The pastebin url to post to (without a trailing slash). This pastebin has to be
-a pastebin which uses LodgeIt. Examples are: http://paste.pocoo.org/xmlrpc/ and
-http://bpaste.net/xmlrpc/ (default: http://bpaste.net/xmlrpc/)
+a pastebin which uses provides a similar interface to ``bpaste.net``'s JSON
+interface. (default: https://bpaste.net/json/new)
 
 pastebin_private
 ^^^^^^^^^^^^^^^^
@@ -57,9 +57,19 @@ Default: True).
 pastebin_show_url
 ^^^^^^^^^^^^^^^^^
 The url under which the new paste can be reached. ``$paste_id`` will be replaced
-by the ID of the new paste. Examples are: http://bpaste.net/show/$paste_id/ and
-http://paste.pocoo.org/show/$paste_id/ (default:
-http://bpaste.net/show/$paste_id/)
+by the ID of the new paste. (default: https://bpaste.net/show/$paste_id/)
+
+pastebin_removal_url
+^^^^^^^^^^^^^^^^^^^^
+The url under which a paste can be removed. ``$removal_id`` will be replaced
+by the removal ID of the paste. (default: https://bpaste.net/remova/$removal_id/)
+
+.. versionadded:: 0.14
+
+pastebin_expiry
+^^^^^^^^^^^^^^^
+Time duration after which a paste should expire. Valid values are ``1day``,
+``1week`` and ``1month``. (default: ``1week``)
 
 pastebin_helper
 ^^^^^^^^^^^^^^^

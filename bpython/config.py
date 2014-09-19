@@ -53,9 +53,11 @@ def loadini(struct, configfile):
             'tab_length': 4,
             'pastebin_confirm': True,
             'pastebin_private': False,
-            'pastebin_url': 'http://bpaste.net/xmlrpc/',
+            'pastebin_url': 'https://bpaste.net/json/new',
             'pastebin_private': True,
-            'pastebin_show_url': 'http://bpaste.net/show/$paste_id/',
+            'pastebin_show_url': 'https://bpaste.net/show/$paste_id',
+            'pastebin_removal_url': 'https://bpaste.net/remove/$removal_id',
+            'pastebin_expiry': '1week',
             'pastebin_helper': '',
             'save_append_py': False,
             'editor': os.environ.get('VISUAL', os.environ.get('EDITOR', 'vi'))
@@ -144,6 +146,8 @@ def loadini(struct, configfile):
     struct.pastebin_url = config.get('general', 'pastebin_url')
     struct.pastebin_private = config.get('general', 'pastebin_private')
     struct.pastebin_show_url = config.get('general', 'pastebin_show_url')
+    struct.pastebin_removal_url = config.get('general', 'pastebin_removal_url')
+    struct.pastebin_expiry = config.get('general', 'pastebin_expiry')
     struct.pastebin_helper = config.get('general', 'pastebin_helper')
 
     struct.cli_suggestion_width = config.getfloat('cli',
