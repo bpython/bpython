@@ -180,7 +180,8 @@ setup(
     long_description = """bpython is a fancy interface to the Python
     interpreter for Unix-like operating systems.""",
     install_requires = [
-        'pygments'
+        'pygments',
+        'requests'
     ],
     extras_require = extras_require,
     tests_require = ['mock'],

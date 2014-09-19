@@ -28,6 +28,7 @@ import errno
 import inspect
 import os
 import pydoc
+import requests
 import shlex
 import subprocess
 import sys
@@ -41,8 +42,7 @@ from locale import getpreferredencoding
 from socket import error as SocketError
 from string import Template
 from urllib import quote as urlquote
-from urlparse import urlparse
-from xmlrpclib import ServerProxy, Error as XMLRPCError
+from urlparse import urlparse, urljoin
 
 from pygments.token import Token
 
@@ -771,32 +771,41 @@ class Repl(object):
         if self.config.pastebin_helper:
             return self.do_pastebin_helper(s)
         else:
-            return self.do_pastebin_xmlrpc(s)
+            return self.do_pastebin_json(s)
 
-    def do_pastebin_xmlrpc(self, s):
-        """Upload to pastebin via XML-RPC."""
-        try:
-            pasteservice = ServerProxy(self.config.pastebin_url)
-        except IOError, e:
-            self.interact.notify(_("Pastebin error for URL '%s': %s") %
-                                 (self.config.pastebin_url, str(e)))
-            return
+    def do_pastebin_json(self, s):
+        """Upload to pastebin via json interface."""
+
+        url = urljoin(self.config.pastebin_url, '/json/new')
+        payload = {
+            'code': s,
+            'lexer': 'pycon',
+            'expiry': self.config.pastebin_expiry
+        }
 
         self.interact.notify(_('Posting data to pastebin...'))
         try:
-            paste_id = pasteservice.pastes.newPaste('pycon', s, '', '', '',
-                   self.config.pastebin_private)
-        except (SocketError, XMLRPCError), e:
-            self.interact.notify(_('Upload failed: %s') % (str(e), ) )
-            return
+            response = requests.post(url, data=payload, verify=True)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as exc:
+          self.interact.notify(_('Upload failed: %s') % (str(exc), ))
+          return
 
         self.prev_pastebin_content = s
+        data = response.json()
 
         paste_url_template = Template(self.config.pastebin_show_url)
-        paste_id = urlquote(paste_id)
+        paste_id = urlquote(data['paste_id'])
         paste_url = paste_url_template.safe_substitute(paste_id=paste_id)
+
+        removal_url_template = Template(self.config.pastebin_removal_url)
+        removal_id = urlquote(data['removal_id'])
+        removal_url = removal_url_template.safe_substitute(removal_id=removal_id)
+
         self.prev_pastebin_url = paste_url
-        self.interact.notify(_('Pastebin URL: %s') % (paste_url, ), 10)
+        self.interact.notify(_('Pastebin URL: %s - Removal URL: %s') %
+                             (paste_url, removal_url))
+
         return paste_url
 
     def do_pastebin_helper(self, s):
