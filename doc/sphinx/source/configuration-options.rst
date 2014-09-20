@@ -35,7 +35,7 @@ The time between lines before pastemode is activated in seconds (default: 0.02).
 
 hist_length
 ^^^^^^^^^^^
-Number of lines to store in history (set to 0 to disable) (default: 100)
+Number of lines to store in history (set to 0 to disable) (default: 100).
 
 tab_length
 ^^^^^^^^^^
@@ -45,31 +45,30 @@ pastebin_url
 ^^^^^^^^^^^^
 The pastebin url to post to (without a trailing slash). This pastebin has to be
 a pastebin which uses provides a similar interface to ``bpaste.net``'s JSON
-interface. (default: https://bpaste.net/json/new)
+interface (default: https://bpaste.net/json/new).
 
 pastebin_private
 ^^^^^^^^^^^^^^^^
-If the pastebin supports a private option to make a random paste id, use it.
-Default: True).
+If the pastebin supports a private option to make a random paste id, use it (default: True).
 
 .. versionadded:: 0.12
 
 pastebin_show_url
 ^^^^^^^^^^^^^^^^^
 The url under which the new paste can be reached. ``$paste_id`` will be replaced
-by the ID of the new paste. (default: https://bpaste.net/show/$paste_id/)
+by the ID of the new paste (default: https://bpaste.net/show/$paste_id/).
 
 pastebin_removal_url
 ^^^^^^^^^^^^^^^^^^^^
 The url under which a paste can be removed. ``$removal_id`` will be replaced
-by the removal ID of the paste. (default: https://bpaste.net/remova/$removal_id/)
+by the removal ID of the paste (default: https://bpaste.net/remova/$removal_id/).
 
 .. versionadded:: 0.14
 
 pastebin_expiry
 ^^^^^^^^^^^^^^^
 Time duration after which a paste should expire. Valid values are ``1day``,
-``1week`` and ``1month``. (default: ``1week``)
+``1week`` and ``1month`` (default: ``1week``).
 
 pastebin_helper
 ^^^^^^^^^^^^^^^
