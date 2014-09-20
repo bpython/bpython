@@ -38,6 +38,7 @@ Next install this development version of `bpython`:
     $ pip install pygments curtsies greenlet watchdog urwid  # install all the dependencies
     $ pip install sphinx mock                                # development dependencies
     $ cd bpython
+    $ python setup.py install
     $ python setup.py develop
     <modify a file in some way>
     $ bpython-curtsies      # this runs your modified copy of bpython!
