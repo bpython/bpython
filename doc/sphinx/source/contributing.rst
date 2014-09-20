@@ -5,7 +5,7 @@ Contributing to bpython
 
 Thanks for working on bpython!
 
-On the `GitHub issue tracker`_ some issues are labeled bite-size_
+On the `GitHub issue tracker`_ some issues are labeled bite-size_ -
 these are particularly good ones to start out with.
 
 See our section about the :ref:`community` for a list of resources.
@@ -16,27 +16,37 @@ to get a question answered depending on the time of day.
 Getting your development environment set up
 -------------------------------------------
 
+bpython supports Python 2.6, 2.7, 3.3 and 3.4. The code is written in Python
+2 and transformed for Python 3 with 2to3. This means that it's easier
+to work on bpython with Python 2 because it's you can use `python setup.py develop`
+(`development mode
+<https://pythonhosted.org/setuptools/setuptools.html#development-mode>`_ installs
+by linking to the bpython source instead of copying it over)
+in a more straightforward way to have your changes immediately reflected by
+your bpython installation and the `bpython`, `bpython-curtsies`, and `bpython-urwid`
+commands.
+
 Using a virtual environment is probably a good idea. Create a virtual environment with
 
 .. code-block:: bash
 
-    $ virtualenv bpython-dev
-    $ source bpython-dev/bin/activate   # this step is necssary every time you work on bpython
-    <hack on bpython>
-    $ deactivate                        # back to normal system environment
+    $ virtualenv bpython-dev            # determines Python version used
+    $ source bpython-dev/bin/activate   # necssary every time you work on bpython
 
-Fork `bpython` in the GitHub web interface, then clone the repo:
+Fork bpython in the GitHub web interface, then clone the repo:
 
 .. code-block:: bash
 
     $ git clone git@github.com:YOUR_GITHUB_USERNAME/bpython.git
+    $ # or "git clone https://github.com/YOUR_GITHUB_USERNAME/bpython.git"
 
-Next install this development version of `bpython`:
+Next install the dependencies and install your development copy of bpython:
 
 .. code-block:: bash
 
-    $ pip install pygments curtsies greenlet watchdog urwid  # install all the dependencies
-    $ pip install sphinx mock                                # development dependencies
+    $ pip install pygments requests                  # install required dependencies
+    $ pip install curtsies greenlet watchdog urwid   # install optional dependencies
+    $ pip install sphinx mock nosetests              # development dependencies
     $ cd bpython
     $ python setup.py develop
     <modify a file in some way>
@@ -44,15 +54,17 @@ Next install this development version of `bpython`:
 
 As a first dev task, I recommend getting `bpython` to print your name every time you hit a specific key.
 
-To run tests:
+To run tests from the bpython directory:
 
-    $ python -m unittest discover bpython
+.. code-block:: bash
+
+    $ nosetests
 
 To build the docs:
 ------------------
 
-The documentation is included in the regular `bpython` repository. After
-checking out the `bpython` repository and installing `sphinx` as described in
+The documentation is included in the bpython repository. After
+checking out the bpython repository and installing `sphinx` as described in
 the previous step, you can run the following command in your checkout of the
 repository to build the documentation:
 
@@ -62,7 +74,6 @@ repository to build the documentation:
 
 Afterwards you can point your browser to `doc/sphinx/build/html/index.html`.
 Don't forget to recreate the HTML after you make changes.
-
 
 To hack on the site or theme
 ----------------------------
