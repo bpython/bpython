@@ -47,13 +47,6 @@ The pastebin url to post to (without a trailing slash). This pastebin has to be
 a pastebin which uses provides a similar interface to ``bpaste.net``'s JSON
 interface. (default: https://bpaste.net/json/new)
 
-pastebin_private
-^^^^^^^^^^^^^^^^
-If the pastebin supports a private option to make a random paste id, use it.
-Default: True).
-
-.. versionadded:: 0.12
-
 pastebin_show_url
 ^^^^^^^^^^^^^^^^^
 The url under which the new paste can be reached. ``$paste_id`` will be replaced
