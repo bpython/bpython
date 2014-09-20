@@ -12,7 +12,7 @@ out of the box models and views for a lot of stuff.
 For those people wanting to use bpython with their Django installation you can
 follow the following steps. Written by Chanita Siridechkun. The following
 instructions make bpython try to import a setting module in the current folder
-and let django set up it's enviroment with the settings module (if found) if
+and let django set up its enviroment with the settings module (if found) if
 bpython can't find the settings module nothing happens and no enviroment gets
 set up.
 
