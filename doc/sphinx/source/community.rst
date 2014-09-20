@@ -24,5 +24,5 @@ list.
 Website
 -------
 Our main website is http://bpython-interpreter.org/, our documentation can be
-found at http://docs.bpython-interpreter.org/ and our pastebin can be found at
+found at http://docs.bpython-interpreter.org/, and our pastebin can be found at
 http://bpaste.net/.
