@@ -71,6 +71,8 @@ pastebin_expiry
 Time duration after which a paste should expire. Valid values are ``1day``,
 ``1week`` and ``1month``. (default: ``1week``)
 
+.. versionadded:: 0.14
+
 pastebin_helper
 ^^^^^^^^^^^^^^^
 
