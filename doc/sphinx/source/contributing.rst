@@ -67,7 +67,7 @@ Don't forget to recreate the HTML after you make changes.
 To hack on the site or theme
 ----------------------------
 
-The site (and it's theme as well) is stored in a separate repository and built using
+The site (and its theme as well) is stored in a separate repository and built using
 pelican. To start hacking on the site you need to start out with a checkout and
 probably a virtual environment:
 

@@ -28,5 +28,5 @@ Other contributors are (in alphabetical order):
 * Marien Zwart <marien dot zwart at gmail dot com>
 
 A big thanks goes out to all the people who help us out by either submitting
-patches, helping us determine problems, our package maintainers and of course
+patches, helping us determine problems, our package maintainers, and of course
 everybody who creates issues for us to fix.
