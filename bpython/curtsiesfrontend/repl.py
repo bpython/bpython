@@ -1306,8 +1306,10 @@ class Repl(BpythonRepl):
                 source = format(PythonLexer().get_tokens(source),
                                 TerminalFormatter())
             self.pager(source)
-        except (ValueError, NameError), e:
+        except (ValueError), e:
             self.status_bar.message(_(e))
+        except (NameError), e:
+            self.status_bar.message(_('Cannot get source: %s' % e))
         except (AttributeError, IOError, TypeError), e:
             self.status_bar.message(_('Failed to get source: %s' % e))
 
