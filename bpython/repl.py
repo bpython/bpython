@@ -589,7 +589,7 @@ class Repl(object):
 
     def get_source_of_current_name(self):
         """Return the source code of the object which is bound to the
-        current name in the current input line. Return `None` if the
+        current name in the current input line. Throw exception if the
         source cannot be found."""
         obj = self.current_func
         if obj is None:
