@@ -979,7 +979,7 @@ class CLIRepl(repl.Repl):
             except (NameError), e:
                 self.statusbar.message(_('Cannot get source: %s' % e))
             except (AttributeError, IOError, TypeError), e:
-                self.statusbar.message(_('Failed to get source: %s' % e))
+                self.pager.message(_('Failed to get source: %s' % e))
             return ''
 
         elif key in ('\n', '\r', 'PADENTER'):
