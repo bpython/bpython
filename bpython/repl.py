@@ -591,19 +591,16 @@ class Repl(object):
         """Return the source code of the object which is bound to the
         current name in the current input line. Return `None` if the
         source cannot be found."""
-        try:
-            obj = self.current_func
+        obj = self.current_func
+        if obj is None:
+            line = self.current_line
+            if line == "":
+            	raise ValueError("Cannot get source of an empty string")
+            if inspection.is_eval_safe_name(line):
+                obj = self.get_object(line)
             if obj is None:
-                line = self.current_line
-                if inspection.is_eval_safe_name(line):
-                    obj = self.get_object(line)
-                if obj is None:
-                    return None
-            source = inspect.getsource(obj)
-        except (AttributeError, IOError, NameError, TypeError):
-            return None
-        else:
-            return source
+                raise NameError("%s is not defined" % line)
+        return inspect.getsource(obj) #throws an exception that we'll catch
 
     def set_docstring(self):
         self.docstring = None
