@@ -974,10 +974,10 @@ class CLIRepl(repl.Repl):
                     source = format(PythonLexer().get_tokens(source),
                                     TerminalFormatter())
                 page(source)
-            except (ValueError, NameError), e:
+            except (ValueError, AttributeError, IOError, TypeError), e:
                 self.statusbar.message(_(e))
-            except (AttributeError, IOError, TypeError), e:
-                self.statusbar.message(_('Failed to get source: %s' % e))
+            except (NameError), e:
+                self.statusbar.message(_('Cannot get source: %s' % e))
             return ''
 
         elif key in ('\n', '\r', 'PADENTER'):
@@ -1000,6 +1000,9 @@ class CLIRepl(repl.Repl):
 
         elif key == '\x18':
             return self.send_current_line_to_editor()
+
+        elif key == '\x03':
+            raise KeyboardInterrupt()
 
         elif key[0:3] == 'PAD' and not key in ('PAD0', 'PADSTOP'):
             pad_keys = {

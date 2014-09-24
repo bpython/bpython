@@ -46,6 +46,7 @@ from bpython.curtsiesfrontend.manual_readline import edit_keys
 
 #TODO other autocomplete modes (also fix in other bpython implementations)
 
+
 from curtsies.configfile_keynames import keymap as key_dispatch
 
 logger = logging.getLogger(__name__)
@@ -87,6 +88,7 @@ class FakeStdin(object):
 
     def process_event(self, e):
         assert self.has_focus
+
         logger.debug('fake input processing event %r', e)
         if isinstance(e, events.PasteEvent):
             for ee in e.events:
@@ -100,6 +102,9 @@ class FakeStdin(object):
             self.current_line = ''
             self.cursor_offset = 0
             self.repl.run_code_and_maybe_finish()
+        elif e in ("<Esc+.>",):
+            self.get_last_word()
+
         elif e in ["<ESC>"]:
             pass
         elif e in ['<Ctrl-d>']:
@@ -469,6 +474,8 @@ class Repl(BpythonRepl):
             self.down_one_line()
         elif e in ("<Ctrl-d>",):
             self.on_control_d()
+        elif e in ("<Esc+.>",):
+            self.get_last_word()
         elif e in ("<Esc+r>",):
             self.incremental_search(reverse=True)
         elif e in ("<Esc+s>",):
@@ -523,6 +530,21 @@ class Repl(BpythonRepl):
             self.add_normal_character(' ')
         else:
             self.add_normal_character(e)
+
+    def get_last_word(self):
+
+        def last_word(line):
+            if not line:
+                return ''
+            return line.split().pop()
+
+        previous_word = last_word(self.rl_history.entry)
+        word = last_word(self.rl_history.back())
+        line=self.current_line
+        self._set_current_line(line[:len(line)-len(previous_word)]+word, reset_rl_history=False)
+        
+        self._set_cursor_offset(self.cursor_offset-len(previous_word)+len(word), reset_rl_history=False)
+ 
 
     def incremental_search(self, reverse=False, include_current=False):
         if self.special_mode == None:
@@ -735,6 +757,19 @@ class Repl(BpythonRepl):
         self.current_match = None
         self.list_win_visible = BpythonRepl.complete(self, tab)
 
+    def predicted_indent(self, line):
+        #TODO get rid of this! It's repeated code! Combine with Repl.
+        logger.debug('line is %r', line)
+        indent = len(re.match(r'[ ]*', line).group())
+        if line.endswith(':'):
+            indent = max(0, indent + self.config.tab_length)
+        elif line and line.count(' ') == len(line):
+            indent = max(0, indent - self.config.tab_length)
+        elif line and ':' not in line and line.strip().startswith(('return', 'pass', 'raise', 'yield')):
+            indent = max(0, indent - self.config.tab_length)
+        logger.debug('indent we found was %s', indent)
+        return indent
+
     def push(self, line, insert_into_history=True):
         """Push a line of code onto the buffer, start running the buffer
 
@@ -743,14 +778,7 @@ class Repl(BpythonRepl):
         if self.paste_mode:
             self.saved_indent = 0
         else:
-            indent = len(re.match(r'[ ]*', line).group())
-            if line.endswith(':'):
-                indent = max(0, indent + self.config.tab_length)
-            elif line and line.count(' ') == len(line):
-                indent = max(0, indent - self.config.tab_length)
-            elif line and ':' not in line and line.strip().startswith(('return', 'pass', 'raise', 'yield')):
-                indent = max(0, indent - self.config.tab_length)
-            self.saved_indent = indent
+            self.saved_indent = self.predicted_indent(line)
 
         #current line not added to display buffer if quitting #TODO I don't understand this comment
         if self.config.syntax:
@@ -808,7 +836,8 @@ class Repl(BpythonRepl):
             if err:
                 indent = 0
 
-            #TODO This should be printed ABOVE the error that just happened instead
+     
+           #TODO This should be printed ABOVE the error that just happened instead
             # or maybe just thrown away and not shown
             if self.current_stdouterr_line:
                 self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width))
@@ -1193,6 +1222,20 @@ class Repl(BpythonRepl):
         logger.debug("calling reprint line with %r %r", lineno, tokens)
         if self.config.syntax:
             self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
+
+    def take_back_buffer_line(self):
+        self.display_buffer.pop()
+        self.buffer.pop()
+
+        if not self.buffer:
+            self.current_line = ''
+            self.cursor_offset = 0
+        else:
+            line = self.buffer[-1]
+            indent = self.predicted_indent(line)
+            self.current_line = indent * ' '
+            self.cursor_offset = len(self.current_line)
+
     def reevaluate(self, insert_into_history=False):
         """bpython.Repl.undo calls this"""
         if self.watcher: self.watcher.reset()
@@ -1257,14 +1300,17 @@ class Repl(BpythonRepl):
             self.focus_on_subprocess(command + [tmp.name])
 
     def show_source(self):
-        source = self.get_source_of_current_name()
-        if source is None:
-            self.status_bar.message(_('Cannot show source.'))
-        else:
+        try:
+            source = self.get_source_of_current_name()
             if self.config.highlight_show_source:
-                source = format(PythonLexer().get_tokens(source), TerminalFormatter())
+                source = format(PythonLexer().get_tokens(source),
+                                TerminalFormatter())
             self.pager(source)
-
+        except (ValueError, AttributeError, IOError, TypeError), e:
+            self.status_bar.message(_(e))
+        except (NameError), e:
+            self.status_bar.message(_('Cannot get source: %s' % e))
+        
     def help_text(self):
         return (self.version_help_text() + '\n' + self.key_help_text()).encode('utf8')
 

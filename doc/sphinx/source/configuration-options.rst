@@ -35,7 +35,7 @@ The time between lines before pastemode is activated in seconds (default: 0.02).
 
 hist_length
 ^^^^^^^^^^^
-Number of lines to store in history (set to 0 to disable) (default: 100)
+Number of lines to store in history (set to 0 to disable) (default: 100).
 
 tab_length
 ^^^^^^^^^^
@@ -44,22 +44,27 @@ Soft tab size (default 4, see pep-8)
 pastebin_url
 ^^^^^^^^^^^^
 The pastebin url to post to (without a trailing slash). This pastebin has to be
-a pastebin which uses LodgeIt. Examples are: http://paste.pocoo.org/xmlrpc/ and
-http://bpaste.net/xmlrpc/ (default: http://bpaste.net/xmlrpc/)
-
-pastebin_private
-^^^^^^^^^^^^^^^^
-If the pastebin supports a private option to make a random paste id, use it.
-Default: True).
-
-.. versionadded:: 0.12
+a pastebin which uses provides a similar interface to ``bpaste.net``'s JSON
+interface (default: https://bpaste.net/json/new).
 
 pastebin_show_url
 ^^^^^^^^^^^^^^^^^
 The url under which the new paste can be reached. ``$paste_id`` will be replaced
-by the ID of the new paste. Examples are: http://bpaste.net/show/$paste_id/ and
-http://paste.pocoo.org/show/$paste_id/ (default:
-http://bpaste.net/show/$paste_id/)
+by the ID of the new paste (default: https://bpaste.net/show/$paste_id/).
+
+pastebin_removal_url
+^^^^^^^^^^^^^^^^^^^^
+The url under which a paste can be removed. ``$removal_id`` will be replaced
+by the removal ID of the paste (default: https://bpaste.net/remova/$removal_id/).
+
+.. versionadded:: 0.14
+
+pastebin_expiry
+^^^^^^^^^^^^^^^
+Time duration after which a paste should expire. Valid values are ``1day``,
+``1week`` and ``1month`` (default: ``1week``).
+
+.. versionadded:: 0.14
 
 pastebin_helper
 ^^^^^^^^^^^^^^^

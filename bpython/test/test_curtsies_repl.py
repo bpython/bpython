@@ -51,6 +51,27 @@ class TestCurtsiesRepl(unittest.TestCase):
         self.repl.send_current_block_to_external_editor()
         self.repl.send_session_to_external_editor()
 
+    def test_get_last_word(self):
+        self.repl.rl_history.entries=['1','2 3','4 5 6']
+        self.repl._set_current_line('abcde')
+        self.repl.get_last_word()
+        self.assertEqual(self.repl.current_line,'abcde6')
+        self.repl.get_last_word()
+        self.assertEqual(self.repl.current_line,'abcde3')
+
+    @skip # this is the behavior of bash - not currently implemented
+    def test_get_last_word_with_prev_line(self):
+        self.repl.rl_history.entries=['1','2 3','4 5 6']
+        self.repl._set_current_line('abcde')
+        self.repl.up_one_line()
+        self.assertEqual(self.repl.current_line,'4 5 6')
+        self.repl.get_last_word()
+        self.assertEqual(self.repl.current_line,'4 5 63')
+        self.repl.get_last_word()
+        self.assertEqual(self.repl.current_line,'4 5 64')
+        self.repl.up_one_line()
+        self.assertEqual(self.repl.current_line,'2 3')
+
 @contextmanager # from http://stackoverflow.com/a/17981937/398212 - thanks @rkennedy
 def captured_output():
     new_out, new_err = StringIO(), StringIO()
@@ -92,6 +113,22 @@ class TestFutureImports(unittest.TestCase):
             repl.push('1 / 2')
 
         self.assertEqual(out.getvalue(), '0.5\n0.5\n')
+
+class TestPredictedIndent(unittest.TestCase):
+    def setUp(self):
+        self.repl = create_repl()
+
+    def test_simple(self):
+        self.assertEqual(self.repl.predicted_indent(''), 0)
+        self.assertEqual(self.repl.predicted_indent('class Foo:'), 4)
+        self.assertEqual(self.repl.predicted_indent('class Foo: pass'), 0)
+        self.assertEqual(self.repl.predicted_indent('def asdf():'), 4)
+        self.assertEqual(self.repl.predicted_indent('def asdf(): return 7'), 0)
+
+    @skip
+    def test_complex(self):
+        self.assertEqual(self.repl.predicted_indent('[a,'), 1)
+        self.assertEqual(self.repl.predicted_indent('reduce(asdfasdf,'), 7)
 
 
 if __name__ == '__main__':
