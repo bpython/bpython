@@ -598,14 +598,12 @@ class Repl(object):
             	raise ValueError("Cannot get source of an empty string")
             if inspection.is_eval_safe_name(line):
                 obj = self.get_object(line)
-            if obj is None:
-                raise NameError("%s is not defined" % line)
+                
         try: 
             inspect.getsource(obj)
         except TypeError, e:
-            msg = e.msg
+            msg = e.message
             if "built-in" in msg:
-                msg.split(">")
                 raise TypeError("Cannot access source of <built-in function %s>" % self.current_line)
             else:
                 raise TypeError("No source code found for %s" % self.current_line)

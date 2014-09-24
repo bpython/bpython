@@ -974,12 +974,10 @@ class CLIRepl(repl.Repl):
                     source = format(PythonLexer().get_tokens(source),
                                     TerminalFormatter())
                 page(source)
-            except (ValueError), e:
+            except (ValueError, AttributeError, IOError, TypeError), e:
                 self.statusbar.message(_(e))
             except (NameError), e:
                 self.statusbar.message(_('Cannot get source: %s' % e))
-            except (AttributeError, IOError, TypeError), e:
-                self.pager.message(_('Failed to get source: %s' % e))
             return ''
 
         elif key in ('\n', '\r', 'PADENTER'):
