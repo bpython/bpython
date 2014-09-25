@@ -595,7 +595,7 @@ class Repl(object):
         if obj is None:
             line = self.current_line
             if line == "":
-            	raise ValueError("Cannot get source of an empty string")
+            	raise ValueError("Nothing to get source of")
             if inspection.is_eval_safe_name(line):
                 obj = self.get_object(line)
         try: 
