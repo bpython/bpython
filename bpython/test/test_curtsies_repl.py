@@ -23,7 +23,7 @@ def setup_config(conf):
     config.loadini(config_struct, os.devnull)
     for key, value in conf.items():
         if not hasattr(config_struct, key):
-            raise ValueError("%r is not a valid config attribute", (key,))
+            raise ValueError("%r is not a valid config attribute" % (key,))
         setattr(config_struct, key, value)
     return config_struct
 
