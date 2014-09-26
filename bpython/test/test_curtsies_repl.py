@@ -99,7 +99,6 @@ class TestFutureImports(unittest.TestCase):
             repl.push('1 / 2')
         self.assertEqual(out.getvalue(), '0.5\n')
 
-    @skip('Failing - this is issue #369')
     def test_interactive(self):
         interp = code.InteractiveInterpreter(locals={})
         with captured_output() as (out, err):
