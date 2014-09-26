@@ -968,14 +968,16 @@ class CLIRepl(repl.Repl):
             return ''
 
         elif key in key_dispatch[config.show_source_key]:
-            source = self.get_source_of_current_name()
-            if source is not None:
+            try:
+                source = self.get_source_of_current_name()
                 if config.highlight_show_source:
                     source = format(PythonLexer().get_tokens(source),
                                     TerminalFormatter())
                 page(source)
-            else:
-                self.statusbar.message(_('Cannot show source.'))
+            except (ValueError, AttributeError, IOError, TypeError), e:
+                self.statusbar.message(_(e))
+            except (NameError), e:
+                self.statusbar.message(_('Cannot get source: %s' % e))
             return ''
 
         elif key in ('\n', '\r', 'PADENTER'):
