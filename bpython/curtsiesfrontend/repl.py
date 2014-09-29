@@ -1300,14 +1300,17 @@ class Repl(BpythonRepl):
             self.focus_on_subprocess(command + [tmp.name])
 
     def show_source(self):
-        source = self.get_source_of_current_name()
-        if source is None:
-            self.status_bar.message(_('Cannot show source.'))
-        else:
+        try:
+            source = self.get_source_of_current_name()
             if self.config.highlight_show_source:
-                source = format(PythonLexer().get_tokens(source), TerminalFormatter())
+                source = format(PythonLexer().get_tokens(source),
+                                TerminalFormatter())
             self.pager(source)
-
+        except (ValueError, AttributeError, IOError, TypeError), e:
+            self.status_bar.message(_(e))
+        except (NameError), e:
+            self.status_bar.message(_('Cannot get source: %s' % e))
+        
     def help_text(self):
         return (self.version_help_text() + '\n' + self.key_help_text()).encode('utf8')
 

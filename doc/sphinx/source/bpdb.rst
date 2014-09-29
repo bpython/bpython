@@ -14,4 +14,4 @@ This will drop you into bpdb instead of pdb, which works exactly like pdb except
 that you can additionally start bpython at the current stack frame by issuing
 the command `Bpython` or `B`.
 
-You can exit bpython with `^D` to return to bpdb.
+You can exit bpython with `^d` to return to bpdb.

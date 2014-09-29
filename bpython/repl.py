@@ -589,21 +589,23 @@ class Repl(object):
 
     def get_source_of_current_name(self):
         """Return the source code of the object which is bound to the
-        current name in the current input line. Return `None` if the
+        current name in the current input line. Throw exception if the
         source cannot be found."""
-        try:
-            obj = self.current_func
-            if obj is None:
-                line = self.current_line
-                if inspection.is_eval_safe_name(line):
-                    obj = self.get_object(line)
-                if obj is None:
-                    return None
-            source = inspect.getsource(obj)
-        except (AttributeError, IOError, NameError, TypeError):
-            return None
-        else:
-            return source
+        obj = self.current_func
+        if obj is None:
+            line = self.current_line
+            if line == "":
+            	raise ValueError("Nothing to get source of")
+            if inspection.is_eval_safe_name(line):
+                obj = self.get_object(line)
+        try: 
+            inspect.getsource(obj)
+        except TypeError, e:
+            msg = e.message
+            if "built-in" in msg:
+                raise TypeError("Cannot access source of <built-in function %s>" % self.current_line)
+            else:
+                raise TypeError("No source code found for %s" % self.current_line)
 
     def set_docstring(self):
         self.docstring = None

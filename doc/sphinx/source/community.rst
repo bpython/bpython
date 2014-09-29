@@ -15,14 +15,14 @@ worry when you get no response (this does not usually happen) but we are all
 from Europe and when you get to the channel during our nighttime you might have
 to wait a while for a response.
 
-Mailinglist
+Mailing List
 -----------
-We have a mailinglist at `google groups <http://groups.google.com/group/bpython>`_.
+We have a mailing list at `google groups <http://groups.google.com/group/bpython>`_.
 You can post questions there and releases are announced on the mailing
 list.
 
 Website
 -------
 Our main website is http://bpython-interpreter.org/, our documentation can be
-found at http://docs.bpython-interpreter.org/ and our pastebin can be found at
+found at http://docs.bpython-interpreter.org/, and our pastebin can be found at
 http://bpaste.net/.

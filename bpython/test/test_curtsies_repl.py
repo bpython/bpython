@@ -23,7 +23,7 @@ def setup_config(conf):
     config.loadini(config_struct, os.devnull)
     for key, value in conf.items():
         if not hasattr(config_struct, key):
-            raise ValueError("%r is not a valid config attribute", (key,))
+            raise ValueError("%r is not a valid config attribute" % (key,))
         setattr(config_struct, key, value)
     return config_struct
 
@@ -99,7 +99,6 @@ class TestFutureImports(unittest.TestCase):
             repl.push('1 / 2')
         self.assertEqual(out.getvalue(), '0.5\n')
 
-    @skip('Failing - this is issue #369')
     def test_interactive(self):
         interp = code.InteractiveInterpreter(locals={})
         with captured_output() as (out, err):
