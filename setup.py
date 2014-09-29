@@ -129,7 +129,9 @@ else:
 
 data_files = [
     # desktop shortcut
-    (os.path.join('share', 'applications'), ['data/bpython.desktop'])
+    (os.path.join('share', 'applications'), ['data/bpython.desktop']),
+    # AppData
+    (os.path.join('share', 'appdata'), ['data/bpython.appdata.xml'])
 ]
 data_files.extend(man_pages)
 

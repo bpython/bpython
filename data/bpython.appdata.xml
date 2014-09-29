@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2014 bpython authors -->
+
+<application>
+  <id type="desktop">bpython.desktop</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>bpython interpreter</name>
+  <summary>Fancy interface for the Python interpreter</summary>
+  <description>
+    <p>
+      bpython is a fancy interface to the Python interpreter. It has the
+      following features:
+      <ul>
+        <li>In-line syntac highlighting.</li>
+        <li>Readline-like autocomplete with suggesstion displayed as you type.</li>
+        <li>Expected parameter list for any Python function.</li>
+        <li>"Rewind" function to pop the last line of code from memory and re-evaluate.</li>
+        <li>Send the code you've entered off to a pastebin.</li>
+        <li>Save the code you've entered to a file.</li>
+        <li>Auto-indentation.</li>
+      </ul>
+    </p>
+  </description>
+  <url type="homepage">http://www.bpython-interpreter.org/</url>
+  <screenshots>
+    <screenshot type="default">http://bpython-interpreter.org/images/8.png</screenshot>
+    <screenshot>http://bpython-interpreter.org/images/1.png</screenshot>
+    <screenshot>http://bpython-interpreter.org/images/2.png</screenshot>
+    <screenshot>http://bpython-interpreter.org/images/3.png</screenshot>
+    <screenshot>http://bpython-interpreter.org/images/4.png</screenshot>
+    <screenshot>http://bpython-interpreter.org/images/5.png</screenshot>
+    <screenshot>http://bpython-interpreter.org/images/6.png</screenshot>
+    <screenshot>http://bpython-interpreter.org/images/7.png</screenshot>
+  </screenshots>
+  <updatecontact>bpython@googlegroups.com</updatecontact>
+</application>
