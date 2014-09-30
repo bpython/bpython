@@ -102,7 +102,7 @@ class TestFutureImports(unittest.TestCase):
     def test_interactive(self):
         interp = code.InteractiveInterpreter(locals={})
         with captured_output() as (out, err):
-            with tempfile.NamedTemporaryFile(suffix='.py') as f:
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.py') as f:
                 f.write('from __future__ import division\n')
                 f.write('print 1/2\n')
                 f.flush()
