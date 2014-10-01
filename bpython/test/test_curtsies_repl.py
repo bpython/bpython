@@ -104,7 +104,7 @@ class TestFutureImports(unittest.TestCase):
         with captured_output() as (out, err):
             with tempfile.NamedTemporaryFile(mode='w', suffix='.py') as f:
                 f.write('from __future__ import division\n')
-                f.write('print 1/2\n')
+                f.write('print(1/2)\n')
                 f.flush()
                 args.exec_code(interp, [f.name])
 
