@@ -308,6 +308,7 @@ class Repl(BpythonRepl):
         self.stdin = FakeStdin(self.coderunner, self, self.edit_keys)
 
         self.request_paint_to_clear_screen = False # next paint should clear screen
+        self.inconsistent_history = False # offscreen command yields different result from history
         self.last_events = [None] * 50 # some commands act differently based on the prev event
                                        # this list doesn't include instances of event.Event,
                                        # only keypress-type events (no refresh screen events etc.)
@@ -1020,7 +1021,11 @@ class Repl(BpythonRepl):
         else:
             arr = FSArray(0, width)
         #TODO test case of current line filling up the whole screen (there aren't enough rows to show it)
-
+        if self.inconsistent_history == True:
+            msg = "#<---History inconsistent with output shown--->"
+            arr[0, 0:min(len(msg), width)] = [msg[:width]]
+            self.inconsistent_history = False
+"""FIX THE THING This if may need to go after the second one, but the while applies to both"""
         if current_line_start_row < 0: #if current line trying to be drawn off the top of the screen
             logger.debug('#<---History contiguity broken by rewind--->')
             msg = "#<---History contiguity broken by rewind--->"
@@ -1216,10 +1221,13 @@ class Repl(BpythonRepl):
         logger.debug("calling reprint line with %r %r", lineno, tokens)
         if self.config.syntax:
             self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
+
+        return self.display_lines
     def reevaluate(self, insert_into_history=False):
         """bpython.Repl.undo calls this"""
         if self.watcher: self.watcher.reset()
         old_logical_lines = self.history
+        old_display_lines = self.display_lines
         self.history = []
         self.display_lines = []
 
@@ -1242,7 +1250,9 @@ class Repl(BpythonRepl):
                 self.process_event(events.RefreshRequestEvent())
         sys.stdin = self.stdin
         self.reevaluating = False
-
+        num_lines_onscreen=len(self.lines_for_display)-max(0, self.scroll_offset)
+        if old_display_lines[:len(self.display_lines)-num_lines_onscreen]!=self.display_lines:
+            self.inconsistent_history = True
         self.cursor_offset = 0
         self.current_line = ''
 
