@@ -231,46 +231,6 @@ class MagicMethodCompletion(BaseCompletionType):
 class GlobalCompletion(BaseCompletionType):
     @classmethod
     def matches(cls, cursor_offset, line, locals_, mode, **kwargs):
-        r = cls.locate(cursor_offset, line)
-        if r is None:
-            return None
-        start, end, word = r
-        return global_matches(word, locals_, mode)
-    locate = staticmethod(lineparts.current_single_word)
-
-class ParameterNameCompletion(BaseCompletionType):
-    @classmethod
-    def matches(cls, cursor_offset, line, argspec, **kwargs):
-        if not argspec:
-            return None
-        r = cls.locate(cursor_offset, line)
-        if r is None:
-            return None
-        start, end, word = r
-        if argspec:
-            matches = [name + '=' for name in argspec[1][0]
-                       if isinstance(name, basestring) and name.startswith(word)]
-            if py3:
-                matches.extend(name + '=' for name in argspec[1][4]
-                               if name.startswith(word))
-        return matches
-    locate = staticmethod(lineparts.current_word)
-
-class MagicMethodCompletion(BaseCompletionType):
-    locate = staticmethod(lineparts.current_method_definition_name)
-    @classmethod
-    def matches(cls, cursor_offset, line, full_code, **kwargs):
-        r = cls.locate(cursor_offset, line)
-        if r is None:
-            return None
-        if 'class' not in full_code:
-            return None
-        start, end, word = r
-        return [name for name in MAGIC_METHODS if name.startswith(word)]
-
-class GlobalCompletion(BaseCompletionType):
-    @classmethod
-    def matches(cls, cursor_offset, line, locals_, mode, **kwargs):
         """Compute matches when text is a simple name.
         Return a list of all keywords, built-in functions and names currently
         defined in self.namespace that match.
