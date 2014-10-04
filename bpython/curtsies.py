@@ -4,10 +4,8 @@ import code
 import logging
 import sys
 import time
-from subprocess import Popen, PIPE
 from optparse import Option
 from itertools import izip
-from functools import wraps
 
 import curtsies
 import curtsies.window

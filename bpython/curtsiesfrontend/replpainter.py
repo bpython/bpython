@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 import logging
-import os
 
 from curtsies import fsarray, fmtstr
 from curtsies.bpythonparse import func_for_letter

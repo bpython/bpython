@@ -1,6 +1,4 @@
 from bpython import autocomplete
-from functools import partial
-import inspect
 
 import unittest
 try:

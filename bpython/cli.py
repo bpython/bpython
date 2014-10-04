@@ -84,7 +84,6 @@ from bpython.translations import _
 from bpython import repl
 from bpython._py3compat import py3
 from bpython.pager import page
-from bpython import autocomplete
 import bpython.args
 
 if not py3:

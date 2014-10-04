@@ -1,6 +1,3 @@
-
-from collections import namedtuple
-
 from bpython.curtsiesfrontend.manual_readline import *
 import unittest
 

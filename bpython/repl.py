@@ -26,7 +26,6 @@ import code
 import codecs
 import errno
 import inspect
-import logging
 import os
 import pydoc
 import requests
@@ -39,7 +38,6 @@ import traceback
 import unicodedata
 from itertools import takewhile
 from locale import getpreferredencoding
-from socket import error as SocketError
 from string import Template
 from urllib import quote as urlquote
 from urlparse import urlparse, urljoin

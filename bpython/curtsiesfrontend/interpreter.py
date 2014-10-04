@@ -1,13 +1,12 @@
 import code
 import traceback
 import sys
-from pygments.style import Style
 from pygments.token import *
 from pygments.formatter import Formatter
 from curtsies.bpythonparse import parse
-from codeop import CommandCompiler, compile_command
+from codeop import CommandCompiler
 from pygments.lexers import get_lexer_by_name
-from pygments.styles import get_style_by_name
+
 
 default_colors = {
         Generic.Error:'R',
