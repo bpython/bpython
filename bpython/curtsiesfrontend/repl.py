@@ -349,9 +349,9 @@ class Repl(BpythonRepl):
                     if name in old_module_locations:
                         loc = old_module_locations[name]
                         if self.watching_files:
-                            self.watcher.add_module(old_module_locations[name])
+                            self.watcher.add_module(loc)
                         else:
-                            self.watcher.add_module_later(old_module_locations[name])
+                            self.watcher.add_module_later(loc)
                     raise
                 else:
                     if hasattr(m, "__file__"):
@@ -1308,9 +1308,9 @@ class Repl(BpythonRepl):
             self.pager(source)
         except (ValueError, AttributeError, IOError, TypeError), e:
             self.status_bar.message(_(e))
-        except (NameError), e:
+        except NameError, e:
             self.status_bar.message(_('Cannot get source: %s' % e))
-        
+
     def help_text(self):
         return (self.version_help_text() + '\n' + self.key_help_text()).encode('utf8')
 

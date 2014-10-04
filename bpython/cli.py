@@ -975,7 +975,7 @@ class CLIRepl(repl.Repl):
                 page(source)
             except (ValueError, AttributeError, IOError, TypeError), e:
                 self.statusbar.message(_(e))
-            except (NameError), e:
+            except NameError, e:
                 self.statusbar.message(_('Cannot get source: %s' % e))
             return ''
 

@@ -341,9 +341,9 @@ def safe_eval(expr, namespace):
     try:
         obj = eval(expr, namespace)
         return obj
-    except (NameError, AttributeError, SyntaxError) as e:
+    except (NameError, AttributeError, SyntaxError):
         # If debugging safe_eval, raise this!
-        # raise e
+        # raise
         return SafeEvalFailed
 
 def attr_matches(text, namespace, autocomplete_mode):
