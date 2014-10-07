@@ -33,10 +33,10 @@ def main(args=None, locals_=None, banner=None):
             ]))
     if options.log:
         handler = logging.FileHandler(filename='bpython.log')
-        logging.getLogger('curtsies').setLevel(logging.DEBUG)
+        logging.getLogger('curtsies').setLevel(logging.WARNING)
         logging.getLogger('curtsies').addHandler(handler)
         logging.getLogger('curtsies').propagate = False
-        logging.getLogger('bpython').setLevel(logging.DEBUG)
+        logging.getLogger('bpython').setLevel(logging.WARNING)
         logging.getLogger('bpython').addHandler(handler)
         logging.getLogger('bpython').propagate = False
     else:
