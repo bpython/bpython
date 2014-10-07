@@ -1021,15 +1021,23 @@ class Repl(BpythonRepl):
         else:
             arr = FSArray(0, width)
         #TODO test case of current line filling up the whole screen (there aren't enough rows to show it)
-        if self.inconsistent_history == True:
-            msg = "#<---History inconsistent with output shown--->"
-            arr[0, 0:min(len(msg), width)] = [msg[:width]]
-            self.inconsistent_history = False
-"""FIX THE THING This if may need to go after the second one, but the while applies to both"""
-        if current_line_start_row < 0: #if current line trying to be drawn off the top of the screen
-            logger.debug('#<---History contiguity broken by rewind--->')
-            msg = "#<---History contiguity broken by rewind--->"
-            arr[0, 0:min(len(msg), width)] = [msg[:width]]
+        if self.inconsistent_history == False & current_line_start_row >= 0:
+            history = paint.paint_history(current_line_start_row, width, self.lines_for_display)
+            arr[:history.height,:history.width] = history
+
+        else:
+            if self.inconsistent_history == True:
+                logger.debug("#<---History inconsistent with output shown--->")
+                msg = "#<---History inconsistent with output shown--->"
+                arr[0, 0:min(len(msg), width)] = [msg[:width]]
+                self.inconsistent_history = False
+                # self.scroll_offset -= 1
+                current_line_start_row = len(self.lines_for_display )- max(-1, self.scroll_offset)
+
+            if current_line_start_row < 0: #if current line trying to be drawn off the top of the screen
+                logger.debug('#<---History contiguity broken by rewind--->')
+                msg = "#<---History contiguity broken by rewind--->"
+                arr[0, 0:min(len(msg), width)] = [msg[:width]]
 
             # move screen back up a screen minus a line
             while current_line_start_row < 0:
@@ -1041,9 +1049,7 @@ class Repl(BpythonRepl):
 
             if arr.height <= min_height:
                 arr[min_height, 0] = ' ' # force scroll down to hide broken history message
-        else:
-            history = paint.paint_history(current_line_start_row, width, self.lines_for_display)
-            arr[:history.height,:history.width] = history
+
 
         current_line = paint.paint_current_line(min_height, width, self.current_cursor_line)
         if user_quit: # quit() or exit() in interp
@@ -1252,7 +1258,12 @@ class Repl(BpythonRepl):
         self.reevaluating = False
         num_lines_onscreen=len(self.lines_for_display)-max(0, self.scroll_offset)
         if old_display_lines[:len(self.display_lines)-num_lines_onscreen]!=self.display_lines:
+        old_display_lines_offscreen=old_display_lines[:len(self.display_lines)-num_lines_onscreen]
+        display_lines_offscreen=self.display_lines[:-num_lines_onscreen]
+        
+        if old_display_lines_offscreen!=display_lines_offscreen:
             self.inconsistent_history = True
+            self.scroll_offset=self.scroll_offset-max(-1,(len(old_display_lines_offscreen)-len(display_lines_offscreen)+1))
         self.cursor_offset = 0
         self.current_line = ''
 
