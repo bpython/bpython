@@ -1257,13 +1257,17 @@ class Repl(BpythonRepl):
         sys.stdin = self.stdin
         self.reevaluating = False
         num_lines_onscreen=len(self.lines_for_display)-max(0, self.scroll_offset)
+        old_display_lines_offscreen=[]
+        display_lines_offscreen=[]
+
         if old_display_lines[:len(self.display_lines)-num_lines_onscreen]!=self.display_lines:
-        old_display_lines_offscreen=old_display_lines[:len(self.display_lines)-num_lines_onscreen]
-        display_lines_offscreen=self.display_lines[:-num_lines_onscreen]
-        
+             old_display_lines_offscreen=old_display_lines[:len(self.display_lines)-num_lines_onscreen]
+             display_lines_offscreen=self.display_lines[:-num_lines_onscreen]
+                        
         if old_display_lines_offscreen!=display_lines_offscreen:
             self.inconsistent_history = True
             self.scroll_offset=self.scroll_offset-max(-1,(len(old_display_lines_offscreen)-len(display_lines_offscreen)+1))
+
         self.cursor_offset = 0
         self.current_line = ''
 
