@@ -18,8 +18,10 @@ class TestSafeEval(unittest.TestCase):
     def test_catches_syntax_error(self):
         try:
             autocomplete.safe_eval('1re',{})
-        except:
+        except SyntaxError:
             self.fail('safe_eval raises an error')
+        except autocomplete.EvaluationError as e:
+            pass
 
 class TestFormatters(unittest.TestCase):
 
