@@ -29,7 +29,7 @@ from curtsies import fmtfuncs
 from curtsies import events
 
 import bpython
-from bpython.repl import Repl as BpythonRepl
+from bpython.repl import Repl as BpythonRepl, SourceNotFound
 from bpython.config import Struct, loadini, default_config_path
 from bpython.formatter import BPythonFormatter
 from bpython import autocomplete, importcompletion
@@ -1302,14 +1302,13 @@ class Repl(BpythonRepl):
     def show_source(self):
         try:
             source = self.get_source_of_current_name()
+        except SourceNotFound, e:
+            self.status_bar.message(_(e))
+        else:
             if self.config.highlight_show_source:
                 source = format(PythonLexer().get_tokens(source),
                                 TerminalFormatter())
             self.pager(source)
-        except (ValueError, AttributeError, IOError, TypeError), e:
-            self.status_bar.message(_(e))
-        except NameError, e:
-            self.status_bar.message(_('Cannot get source: %s' % e))
 
     def help_text(self):
         return (self.version_help_text() + '\n' + self.key_help_text()).encode('utf8')

@@ -377,6 +377,10 @@ class Interaction(object):
         raise NotImplementedError
 
 
+class SourceNotFound(Exception):
+    """Exception raised when the requested source could not be found."""
+
+
 class Repl(object):
     """Implements the necessary guff for a Python-repl-alike interface
 
@@ -587,23 +591,27 @@ class Repl(object):
 
     def get_source_of_current_name(self):
         """Return the source code of the object which is bound to the
-        current name in the current input line. Throw exception if the
+        current name in the current input line. Throw `SourceNotFound` if the
         source cannot be found."""
         obj = self.current_func
-        if obj is None:
-            line = self.current_line
-            if line == "":
-            	raise ValueError("Nothing to get source of")
-            if inspection.is_eval_safe_name(line):
-                obj = self.get_object(line)
         try:
-            return inspect.getsource(obj)
+            if obj is None:
+                line = self.current_line
+                if not line.strip():
+                    raise SourceNotFound("Nothing to get source of")
+                if inspection.is_eval_safe_name(line):
+                    obj = self.get_object(line)
+                return inspect.getsource(obj)
+        except (AttributeError, NameError), e:
+            msg = "Cannot get source: " + str(e)
+        except IOError, e:
+            msg = str(e)
         except TypeError, e:
-            msg = e.message
-            if "built-in" in msg:
-                raise TypeError("Cannot access source of <built-in function %s>" % self.current_line)
+            if "built-in" in str(e):
+                msg = "Cannot access source of %r" % (obj, )
             else:
-                raise TypeError("No source code found for %s" % self.current_line)
+                msg = "No source code found for %s" % (self.current_line, )
+        raise SourceNotFound(msg)
 
     def set_docstring(self):
         self.docstring = None
