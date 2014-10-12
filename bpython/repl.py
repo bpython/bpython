@@ -596,8 +596,8 @@ class Repl(object):
             	raise ValueError("Nothing to get source of")
             if inspection.is_eval_safe_name(line):
                 obj = self.get_object(line)
-        try: 
-            inspect.getsource(obj)
+        try:
+            return inspect.getsource(obj)
         except TypeError, e:
             msg = e.message
             if "built-in" in msg:
