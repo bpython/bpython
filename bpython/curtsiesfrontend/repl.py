@@ -311,7 +311,7 @@ class Repl(BpythonRepl):
 
         self.request_paint_to_clear_screen = False # next paint should clear screen
         self.inconsistent_history = False # offscreen command yields different result from history
-        self.history_messed_up = True  # history error message displayed
+        self.history_messed_up = False  # history error message displayed
         self.last_events = [None] * 50 # some commands act differently based on the prev event
                                        # this list doesn't include instances of event.Event,
                                        # only keypress-type events (no refresh screen events etc.)
@@ -1029,8 +1029,8 @@ class Repl(BpythonRepl):
             arr[:history.height,:history.width] = history
 
         else:
-            if self.inconsistent_history == True:
-                self.inconsistent_history = False
+            if self.inconsistent_history == True and self.history_messed_up == False:
+                self.history_messed_up = True
                 #if INCONSISTENT_HISTORY_MSG not in self.display_lines:
                 logger.debug(INCONSISTENT_HISTORY_MSG)
                 msg = INCONSISTENT_HISTORY_MSG
@@ -1038,7 +1038,7 @@ class Repl(BpythonRepl):
                 # self.scroll_offset -= 1
                 
                 current_line_start_row = len(self.lines_for_display )- max(-1, self.scroll_offset)
-
+            self.inconsistent_history = False
             if current_line_start_row < 0: #if current line trying to be drawn off the top of the screen
                 logger.debug(CONTIGUITY_BROKEN_MSG)
                 msg = CONTIGUITY_BROKEN_MSG
@@ -1269,7 +1269,7 @@ class Repl(BpythonRepl):
              old_display_lines_offscreen = old_display_lines[:len(self.display_lines) - num_lines_onscreen]
              display_lines_offscreen = self.display_lines[:-num_lines_onscreen]
                         
-        if old_display_lines_offscreen != display_lines_offscreen:
+        if old_display_lines_offscreen != display_lines_offscreen and self.history_messed_up == False:
             self.scroll_offset=self.scroll_offset-(len(old_display_lines)-len(self.display_lines))
 
             self.inconsistent_history = True
