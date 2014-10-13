@@ -309,6 +309,7 @@ class Repl(BpythonRepl):
 
         self.request_paint_to_clear_screen = False # next paint should clear screen
         self.inconsistent_history = False # offscreen command yields different result from history
+        self.history_messed_up = True  # history error message displayed
         self.last_events = [None] * 50 # some commands act differently based on the prev event
                                        # this list doesn't include instances of event.Event,
                                        # only keypress-type events (no refresh screen events etc.)
@@ -1022,27 +1023,30 @@ class Repl(BpythonRepl):
             arr = FSArray(0, width)
         #TODO test case of current line filling up the whole screen (there aren't enough rows to show it)
         if self.inconsistent_history == False & current_line_start_row >= 0:
+            logger.debug("start %i",current_line_start_row)
             history = paint.paint_history(current_line_start_row, width, self.lines_for_display)
             arr[:history.height,:history.width] = history
 
         else:
             if self.inconsistent_history == True:
-                logger.debug("#<---History inconsistent with output shown--->")
-                msg = "#<---History inconsistent with output shown--->"
-                arr[0, 0:min(len(msg), width)] = [msg[:width]]
                 self.inconsistent_history = False
+                #if INCONSISTENT_HISTORY_MSG not in self.display_lines:
+                logger.debug(INCONSISTENT_HISTORY_MSG)
+                msg = INCONSISTENT_HISTORY_MSG
+                arr[0, 0:min(len(msg), width)] = [msg[:width]]
                 # self.scroll_offset -= 1
+                
                 current_line_start_row = len(self.lines_for_display )- max(-1, self.scroll_offset)
 
             if current_line_start_row < 0: #if current line trying to be drawn off the top of the screen
-                logger.debug('#<---History contiguity broken by rewind--->')
-                msg = "#<---History contiguity broken by rewind--->"
+                logger.debug(CONTIGUITY_BROKEN_MSG)
+                msg = CONTIGUITY_BROKEN_MSG
                 arr[0, 0:min(len(msg), width)] = [msg[:width]]
 
             # move screen back up a screen minus a line
-            while current_line_start_row < 0:
-                self.scroll_offset = self.scroll_offset - self.height
-                current_line_start_row = len(self.lines_for_display) - max(-1, self.scroll_offset)
+                while current_line_start_row < 0:
+                    self.scroll_offset = self.scroll_offset - self.height
+                    current_line_start_row = len(self.lines_for_display) - max(-1, self.scroll_offset)
 
             history = paint.paint_history(max(0, current_line_start_row - 1), width, self.lines_for_display)
             arr[1:history.height+1,:history.width] = history
@@ -1256,17 +1260,19 @@ class Repl(BpythonRepl):
                 self.process_event(events.RefreshRequestEvent())
         sys.stdin = self.stdin
         self.reevaluating = False
-        num_lines_onscreen=len(self.lines_for_display)-max(0, self.scroll_offset)
-        old_display_lines_offscreen=[]
-        display_lines_offscreen=[]
-
-        if old_display_lines[:len(self.display_lines)-num_lines_onscreen]!=self.display_lines:
-             old_display_lines_offscreen=old_display_lines[:len(self.display_lines)-num_lines_onscreen]
-             display_lines_offscreen=self.display_lines[:-num_lines_onscreen]
+        
+        num_lines_onscreen = len(self.lines_for_display) - max(0, self.scroll_offset)
+        old_display_lines_offscreen = []
+        display_lines_offscreen = []
+        if old_display_lines[:len(self.display_lines) - num_lines_onscreen]!= self.display_lines:
+             old_display_lines_offscreen = old_display_lines[:len(self.display_lines) - num_lines_onscreen]
+             display_lines_offscreen = self.display_lines[:-num_lines_onscreen]
                         
-        if old_display_lines_offscreen!=display_lines_offscreen:
+        if old_display_lines_offscreen != display_lines_offscreen:
+            self.scroll_offset=self.scroll_offset-(len(old_display_lines)-len(self.display_lines))
+
             self.inconsistent_history = True
-            self.scroll_offset=self.scroll_offset-max(-1,(len(old_display_lines_offscreen)-len(display_lines_offscreen)+1))
+            #self.scroll_offset = self.scroll_offset - max(-1,(len(old_display_lines_offscreen)-len(display_lines_offscreen)+1))
 
         self.cursor_offset = 0
         self.current_line = ''
