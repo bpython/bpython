@@ -90,6 +90,7 @@ def parse(args, extras=None, ignore_stdin=False):
 
     if not ignore_stdin and not (sys.stdin.isatty() and sys.stdout.isatty()):
         interpreter = code.InteractiveInterpreter()
+        print "Entering st.read %s" % sys.stdout.isatty()
         interpreter.runsource(sys.stdin.read())
         raise SystemExit
 
@@ -107,5 +108,6 @@ def exec_code(interpreter, args):
         source = sourcefile.read()
     old_argv, sys.argv = sys.argv, args
     sys.path.insert(0, os.path.abspath(os.path.dirname(args[0])))
+    interpreter.locals['__file__'] = args[0]
     interpreter.runsource(source, args[0], 'exec')
     sys.argv = old_argv
