@@ -23,7 +23,7 @@ repl = None # global for `from bpython.curtsies import repl`
 
 def main(args=None, locals_=None, banner=None):
     config, options, exec_args = bpargs.parse(args, (
-        'scroll options', None, [
+        'curtsies options', None, [
             Option('--log', '-L', action='store_true',
                 help=_("log debug messages to bpython.log")),
             Option('--type', '-t', action='store_true',
