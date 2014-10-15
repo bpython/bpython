@@ -1006,9 +1006,11 @@ class Repl(BpythonRepl):
         width, min_height = self.width, self.height
         show_status_bar = bool(self.status_bar.should_show_message) or self.status_bar.has_focus
         if show_status_bar:
-            min_height -= 1
+            min_height -= 1 # because we're going to tack the status bar on at the end,
+                            # shoot for an array one less than the height of the screen
 
         current_line_start_row = len(self.lines_for_display) - max(0, self.scroll_offset)
+        #TODO how is the situation of self.scroll_offset < 0 possible?
         #current_line_start_row = len(self.lines_for_display) - self.scroll_offset
         if self.request_paint_to_clear_screen: # or show_status_bar and about_to_exit ?
             self.request_paint_to_clear_screen = False
@@ -1098,7 +1100,7 @@ class Repl(BpythonRepl):
 
         logger.debug('about to exit: %r', about_to_exit)
         if show_status_bar:
-            statusbar_row = min_height + 1 if arr.height == min_height else arr.height
+            statusbar_row = min_height if arr.height == min_height else arr.height
             if about_to_exit:
                 arr[statusbar_row, :] = FSArray(1, width)
             else:

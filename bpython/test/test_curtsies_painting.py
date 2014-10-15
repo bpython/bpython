@@ -71,7 +71,6 @@ class TestCurtsiesPaintingSimple(TestCurtsiesPainting):
                   u'┌───────────────────────┐',
                   u'│ set(     setattr(     │',
                   u'└───────────────────────┘',
-                  u'',
                   u'Welcome to bpython! Press <F1> f']
         self.assert_paint_ignoring_formatting(screen, (0, 4))
 
@@ -126,7 +125,6 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
         screen = [u'>>> ']
         self.assert_paint_ignoring_formatting(screen, (0, 4))
 
-    @skip('wrong message')
     def test_rewind_contiguity_loss(self):
         self.enter('1 + 1')
         self.enter('2 + 2')
@@ -182,7 +180,7 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
                   u'>>> ']
         self.assert_paint_ignoring_formatting(screen, (2, 4))
 
-    @skip('why is everything moved up?')
+    @skip('for inconsistent history check')
     def test_rewind_inconsistent_history(self):
         self.enter("1 + 1")
         self.enter("2 + 2")
@@ -224,7 +222,20 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
                   u'>>> ', u'', u'', u'', u'']
         self.assert_paint_ignoring_formatting(screen, (4, 4))
 
-    @skip('the screen moved up again!')
+    def test_scroll_down_while_banner_visible(self):
+        self.repl.status_bar.message('STATUS_BAR')
+        self.enter("1 + 1")
+        self.enter("2 + 2")
+        screen = [u">>> 1 + 1",
+                  u'2',
+                  u'>>> 2 + 2',
+                  u'4',
+                  u'>>> ',
+                  u'STATUS_BAR                      ']
+        self.assert_paint_ignoring_formatting(screen, (4, 4))
+        self.repl.scroll_offset += len(screen) - self.repl.height
+        self.assert_paint_ignoring_formatting(screen[1:], (3, 4))
+
     def test_clear_screen_while_banner_visible(self):
         self.repl.status_bar.message('STATUS_BAR')
         self.enter("1 + 1")
@@ -240,11 +251,10 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
         self.assert_paint_ignoring_formatting(screen[1:], (3, 4))
 
         self.repl.request_paint_to_clear_screen = True
-        screen = [u">>> 1 + 1",
-                  u'2',
+        screen = [u'2',
                   u'>>> 2 + 2',
                   u'4',
                   u'>>> ',
                   u'', u'', u'',
                   u'STATUS_BAR                      ']
-        self.assert_paint_ignoring_formatting(screen, (0, 4))
+        self.assert_paint_ignoring_formatting(screen, (3, 4))
