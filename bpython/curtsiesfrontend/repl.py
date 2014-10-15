@@ -272,12 +272,7 @@ class Repl(BpythonRepl):
         self.get_term_hw = get_term_hw
         self.get_cursor_vertical_diff = get_cursor_vertical_diff
 
-        self.status_bar = StatusBar(
-            (_(" <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor")
-             % (config.undo_key, config.save_key, config.pastebin_key, config.external_editor_key)
-             if config.curtsies_fill_terminal else ''),
-            refresh_request=self.request_refresh
-            )
+        self.status_bar = StatusBar('', refresh_request=self.request_refresh)
         self.edit_keys = edit_keys.mapping_with_config(config, key_dispatch)
         logger.debug("starting parent init")
         super(Repl, self).__init__(interp, config)
@@ -1009,7 +1004,7 @@ class Repl(BpythonRepl):
             self.clean_up_current_line_for_exit() # exception to not changing state!
 
         width, min_height = self.width, self.height
-        show_status_bar = bool(self.status_bar.should_show_message) or (self.config.curtsies_fill_terminal or self.status_bar.has_focus)
+        show_status_bar = bool(self.status_bar.should_show_message) or self.status_bar.has_focus
         if show_status_bar:
             min_height -= 1
 
@@ -1017,10 +1012,7 @@ class Repl(BpythonRepl):
         #current_line_start_row = len(self.lines_for_display) - self.scroll_offset
         if self.request_paint_to_clear_screen: # or show_status_bar and about_to_exit ?
             self.request_paint_to_clear_screen = False
-            if self.config.curtsies_fill_terminal: #TODO clean up this logic - really necessary check?
-                arr = FSArray(self.height - 1 + current_line_start_row, width)
-            else:
-                arr = FSArray(self.height + current_line_start_row, width)
+            arr = FSArray(min_height + current_line_start_row, width)
         else:
             arr = FSArray(0, width)
         #TODO test case of current line filling up the whole screen (there aren't enough rows to show it)
@@ -1106,23 +1098,11 @@ class Repl(BpythonRepl):
 
         logger.debug('about to exit: %r', about_to_exit)
         if show_status_bar:
-            if self.config.curtsies_fill_terminal:
-                if about_to_exit:
-                    arr[max(arr.height, min_height), :] = FSArray(1, width)
-                else:
-                    arr[max(arr.height, min_height), :] = paint.paint_statusbar(1, width, self.status_bar.current_line, self.config)
-
-                    if self.presentation_mode:
-                        rows = arr.height
-                        columns = arr.width
-                        last_key_box = paint.paint_last_events(rows, columns, [events.pp_event(x) for x in self.last_events if x])
-                        arr[arr.height-last_key_box.height:arr.height, arr.width-last_key_box.width:arr.width] = last_key_box
+            statusbar_row = min_height + 1 if arr.height == min_height else arr.height
+            if about_to_exit:
+                arr[statusbar_row, :] = FSArray(1, width)
             else:
-                statusbar_row = min_height + 1 if arr.height == min_height else arr.height
-                if about_to_exit:
-                    arr[statusbar_row, :] = FSArray(1, width)
-                else:
-                    arr[statusbar_row, :] = paint.paint_statusbar(1, width, self.status_bar.current_line, self.config)
+                arr[statusbar_row, :] = paint.paint_statusbar(1, width, self.status_bar.current_line, self.config)
 
         if self.config.color_scheme['background'] not in ('d', 'D'):
             for r in range(arr.height):
