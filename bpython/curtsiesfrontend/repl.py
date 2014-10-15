@@ -51,7 +51,9 @@ from curtsies.configfile_keynames import keymap as key_dispatch
 
 logger = logging.getLogger(__name__)
 
-HELP_MESSAGE = """
+INCONSISTENT_HISTORY_MSG = u"#<---History inconsistent with output shown--->"
+CONTIGUITY_BROKEN_MSG = u"#<---History contiguity broken by rewind--->"
+HELP_MESSAGE = u"""
 Thanks for using bpython!
 
 See http://bpython-interpreter.org/ for info, http://docs.bpython-interpreter.org/ for docs, and https://github.com/bpython/bpython for source.
