@@ -1018,7 +1018,7 @@ class Repl(BpythonRepl):
         else:
             arr = FSArray(0, width)
         #TODO test case of current line filling up the whole screen (there aren't enough rows to show it)
-        if self.inconsistent_history == False & current_line_start_row >= 0:
+        if self.inconsistent_history == False and current_line_start_row >= 0:
             logger.debug("start %i",current_line_start_row)
             history = paint.paint_history(current_line_start_row, width, self.lines_for_display)
             arr[:history.height,:history.width] = history
@@ -1031,7 +1031,7 @@ class Repl(BpythonRepl):
                 msg = INCONSISTENT_HISTORY_MSG
                 arr[0, 0:min(len(msg), width)] = [msg[:width]]
                 # self.scroll_offset -= 1
-                
+
                 current_line_start_row = len(self.lines_for_display )- max(-1, self.scroll_offset)
             self.inconsistent_history = False
             if current_line_start_row < 0: #if current line trying to be drawn off the top of the screen
@@ -1244,19 +1244,16 @@ class Repl(BpythonRepl):
                 self.process_event(events.RefreshRequestEvent())
         sys.stdin = self.stdin
         self.reevaluating = False
-        
-        num_lines_onscreen = len(self.lines_for_display) - max(0, self.scroll_offset)
-        old_display_lines_offscreen = []
-        display_lines_offscreen = []
-        if old_display_lines[:len(self.display_lines) - num_lines_onscreen]!= self.display_lines:
-             old_display_lines_offscreen = old_display_lines[:len(self.display_lines) - num_lines_onscreen]
-             display_lines_offscreen = self.display_lines[:-num_lines_onscreen]
-                        
-        if old_display_lines_offscreen != display_lines_offscreen and self.history_messed_up == False:
-            self.scroll_offset=self.scroll_offset-(len(old_display_lines)-len(self.display_lines))
 
+        num_lines_onscreen = len(self.lines_for_display) - max(0, self.scroll_offset)
+        display_lines_offscreen = self.display_lines[:len(self.display_lines) - num_lines_onscreen]
+        old_display_lines_offscreen = old_display_lines[:len(self.display_lines) - num_lines_onscreen]
+        logger.debug('old_display_lines_offscreen %r', old_display_lines_offscreen)
+        logger.debug('display_lines_offscreen %r', display_lines_offscreen)
+        if old_display_lines_offscreen[:len(display_lines_offscreen)] != display_lines_offscreen and self.history_messed_up == False:
+            self.scroll_offset = self.scroll_offset - (len(old_display_lines)-len(self.display_lines))
             self.inconsistent_history = True
-            #self.scroll_offset = self.scroll_offset - max(-1,(len(old_display_lines_offscreen)-len(display_lines_offscreen)+1))
+        logger.debug('after rewind, self.inconsistent_history is %r', self.inconsistent_history)
 
         self.cursor_offset = 0
         self.current_line = ''
