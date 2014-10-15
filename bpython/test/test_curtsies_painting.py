@@ -207,3 +207,44 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
                   u'']
         self.assert_paint_ignoring_formatting(screen, (5, 4))
 
+    def test_clear_screen(self):
+        self.enter("1 + 1")
+        self.enter("2 + 2")
+        screen = [u">>> 1 + 1",
+                  u'2',
+                  u'>>> 2 + 2',
+                  u'4',
+                  u'>>> ']
+        self.assert_paint_ignoring_formatting(screen, (4, 4))
+        self.repl.request_paint_to_clear_screen = True
+        screen = [u">>> 1 + 1",
+                  u'2',
+                  u'>>> 2 + 2',
+                  u'4',
+                  u'>>> ', u'', u'', u'', u'']
+        self.assert_paint_ignoring_formatting(screen, (4, 4))
+
+    @skip('the screen moved up again!')
+    def test_clear_screen_while_banner_visible(self):
+        self.repl.status_bar.message('STATUS_BAR')
+        self.enter("1 + 1")
+        self.enter("2 + 2")
+        screen = [u">>> 1 + 1",
+                  u'2',
+                  u'>>> 2 + 2',
+                  u'4',
+                  u'>>> ',
+                  u'STATUS_BAR                      ']
+        self.assert_paint_ignoring_formatting(screen, (4, 4))
+        self.repl.scroll_offset += len(screen) - self.repl.height
+        self.assert_paint_ignoring_formatting(screen[1:], (3, 4))
+
+        self.repl.request_paint_to_clear_screen = True
+        screen = [u">>> 1 + 1",
+                  u'2',
+                  u'>>> 2 + 2',
+                  u'4',
+                  u'>>> ',
+                  u'', u'', u'',
+                  u'STATUS_BAR                      ']
+        self.assert_paint_ignoring_formatting(screen, (0, 4))
