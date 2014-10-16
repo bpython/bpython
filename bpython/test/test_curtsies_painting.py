@@ -35,10 +35,11 @@ class TestCurtsiesPainting(FormatStringTest):
         self.assertFSArraysEqual(array, screen)
         self.assertEqual(cursor_pos, cursor_row_col)
 
-    def assert_paint_ignoring_formatting(self, screen, cursor_row_col):
+    def assert_paint_ignoring_formatting(self, screen, cursor_row_col=None):
         array, cursor_pos = self.repl.paint()
         self.assertFSArraysEqualIgnoringFormatting(array, screen)
-        self.assertEqual(cursor_pos, cursor_row_col)
+        if cursor_row_col is not None:
+            self.assertEqual(cursor_pos, cursor_row_col)
 
 class TestCurtsiesPaintingSimple(TestCurtsiesPainting):
 
@@ -180,7 +181,6 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
                   u'>>> ']
         self.assert_paint_ignoring_formatting(screen, (2, 4))
 
-    @skip('for inconsistent history check')
     def test_rewind_inconsistent_history(self):
         self.enter("1 + 1")
         self.enter("2 + 2")
@@ -202,8 +202,172 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
                   u'4',
                   u'>>> ',
                   u'',
-                  u'']
-        self.assert_paint_ignoring_formatting(screen, (5, 4))
+                  u' ']
+        self.assert_paint_ignoring_formatting(screen, (3, 4))
+        self.repl.scroll_offset += len(screen) - self.repl.height
+        self.assert_paint_ignoring_formatting(screen[1:-2], (2, 4))
+        self.assert_paint_ignoring_formatting(screen[1:-2], (2, 4))
+
+    def test_rewind_inconsistent_history_more_lines_same_screen(self):
+        self.repl.width = 60
+        sys.a = 5
+        self.enter("import sys")
+        self.enter("for i in range(sys.a): print(sys.a)")
+        self.enter()
+        self.enter("1 + 1")
+        self.enter("2 + 2")
+        screen = [u">>> import sys",
+                  u">>> for i in range(sys.a): print(sys.a)",
+                  u'... ',
+                  u'5',
+                  u'5',
+                  u'5',
+                  u'5',
+                  u'5',
+                  u'>>> 1 + 1',
+                  u'2',
+                  u'>>> 2 + 2',
+                  u'4',
+                  u'>>> ']
+        self.assert_paint_ignoring_formatting(screen, (12, 4))
+        self.repl.scroll_offset += len(screen) - self.repl.height
+        self.assert_paint_ignoring_formatting(screen[8:], (4, 4))
+        sys.a = 6
+        self.undo()
+        screen = [INCONSISTENT_HISTORY_MSG[:self.repl.width],
+                  u'6',
+                  u'>>> 1 + 1', # everything will jump down a line - that's perfectly reasonable
+                  u'2',
+                  u'>>> ',
+                  u' ']
+        self.assert_paint_ignoring_formatting(screen, (4, 4))
+        self.repl.scroll_offset += len(screen) - self.repl.height
+        self.assert_paint_ignoring_formatting(screen[1:-1], (3, 4))
+
+    def test_rewind_inconsistent_history_more_lines_lower_screen(self):
+        self.repl.width = 60
+        sys.a = 5
+        self.enter("import sys")
+        self.enter("for i in range(sys.a): print(sys.a)")
+        self.enter()
+        self.enter("1 + 1")
+        self.enter("2 + 2")
+        screen = [u">>> import sys",
+                  u">>> for i in range(sys.a): print(sys.a)",
+                  u'... ',
+                  u'5',
+                  u'5',
+                  u'5',
+                  u'5',
+                  u'5',
+                  u'>>> 1 + 1',
+                  u'2',
+                  u'>>> 2 + 2',
+                  u'4',
+                  u'>>> ']
+        self.assert_paint_ignoring_formatting(screen, (12, 4))
+        self.repl.scroll_offset += len(screen) - self.repl.height
+        self.assert_paint_ignoring_formatting(screen[8:], (4, 4))
+        sys.a = 8
+        self.undo()
+        screen = [INCONSISTENT_HISTORY_MSG[:self.repl.width],
+                  u'8',
+                  u'8',
+                  u'8',
+                  u'>>> 1 + 1',
+                  u'2',
+                  u'>>> ']
+        self.assert_paint_ignoring_formatting(screen)
+        self.repl.scroll_offset += len(screen) - self.repl.height
+        self.assert_paint_ignoring_formatting(screen[-5:])
+
+    def test_rewind_inconsistent_history_more_lines_raise_screen(self):
+        self.repl.width = 60
+        sys.a = 5
+        self.enter("import sys")
+        self.enter("for i in range(sys.a): print(sys.a)")
+        self.enter()
+        self.enter("1 + 1")
+        self.enter("2 + 2")
+        screen = [u">>> import sys",
+                  u">>> for i in range(sys.a): print(sys.a)",
+                  u'... ',
+                  u'5',
+                  u'5',
+                  u'5',
+                  u'5',
+                  u'5',
+                  u'>>> 1 + 1',
+                  u'2',
+                  u'>>> 2 + 2',
+                  u'4',
+                  u'>>> ']
+        self.assert_paint_ignoring_formatting(screen, (12, 4))
+        self.repl.scroll_offset += len(screen) - self.repl.height
+        self.assert_paint_ignoring_formatting(screen[8:], (4, 4))
+        sys.a = 1
+        self.undo()
+        screen = [INCONSISTENT_HISTORY_MSG[:self.repl.width],
+                  u'1',
+                  u'>>> 1 + 1',
+                  u'2',
+                  u'>>> ',
+                  u' ']
+        self.assert_paint_ignoring_formatting(screen)
+        self.repl.scroll_offset += len(screen) - self.repl.height
+        self.assert_paint_ignoring_formatting(screen[1:-1])
+
+    def test_rewind_history_not_quite_inconsistent(self):
+        self.repl.width = 50
+        sys.a = 5
+        self.enter("for i in range(__import__('sys').a): print(i)")
+        self.enter()
+        self.enter("1 + 1")
+        self.enter("2 + 2")
+        screen = [u">>> for i in range(__import__('sys').a): print(i)",
+                  u'... ',
+                  u'0',
+                  u'1',
+                  u'2',
+                  u'3',
+                  u'4',
+                  u'>>> 1 + 1',
+                  u'2',
+                  u'>>> 2 + 2',
+                  u'4',
+                  u'>>> ']
+        self.assert_paint_ignoring_formatting(screen, (11, 4))
+        self.repl.scroll_offset += len(screen) - self.repl.height
+        self.assert_paint_ignoring_formatting(screen[7:], (4, 4))
+        sys.a = 6
+        self.undo()
+        screen = [u'5',
+                  u'>>> 1 + 1', # everything will jump down a line - that's perfectly reasonable
+                  u'2',
+                  u'>>> ',]
+        self.assert_paint_ignoring_formatting(screen, (3, 4))
+
+    def test_rewind_barely_consistent(self):
+        self.enter("1 + 1")
+        self.enter("2 + 2")
+        self.enter("3 + 3")
+        screen = [u">>> 1 + 1",
+                  u'2',
+                  u'>>> 2 + 2',
+                  u'4',
+                  u'>>> 3 + 3',
+                  u'6',
+                  u'>>> ']
+        self.assert_paint_ignoring_formatting(screen, (6, 4))
+        self.repl.scroll_offset += len(screen) - self.repl.height
+        self.assert_paint_ignoring_formatting(screen[2:], (4, 4))
+        self.repl.display_lines[2] = self.repl.display_lines[2] * 2
+        self.undo()
+        screen = [u'>>> 2 + 2',
+                  u'4',
+                  u'>>> ']
+        self.assert_paint_ignoring_formatting(screen, (2, 4))
+
 
     def test_clear_screen(self):
         self.enter("1 + 1")
@@ -258,3 +422,27 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
                   u'', u'', u'',
                   u'STATUS_BAR                      ']
         self.assert_paint_ignoring_formatting(screen, (3, 4))
+
+    def test_cursor_stays_at_bottom_of_screen(self):
+        """infobox showing up during intermediate render was causing this to fail, #371"""
+        self.repl.width = 50
+        self.repl.current_line = "__import__('random').__name__"
+        with output_to_repl(self.repl):
+            self.repl.on_enter()
+        screen = [u">>> __import__('random').__name__",
+                  u"'random'"]
+        self.assert_paint_ignoring_formatting(screen)
+
+        with output_to_repl(self.repl):
+            self.repl.process_event(self.refresh_requests.pop())
+        screen = [u">>> __import__('random').__name__",
+                  u"'random'",
+                  u""]
+        self.assert_paint_ignoring_formatting(screen)
+
+        with output_to_repl(self.repl):
+            self.repl.process_event(self.refresh_requests.pop())
+        screen = [u">>> __import__('random').__name__",
+                  u"'random'",
+                  u">>> "]
+        self.assert_paint_ignoring_formatting(screen, (2, 4))
