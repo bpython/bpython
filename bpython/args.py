@@ -22,6 +22,10 @@ class RaisingOptionParser(OptionParser):
         raise OptionParserFailed()
 
 
+def version_banner():
+    return 'bpython version %s on top of Python %s %s' % (
+            __version__, sys.version.split()[0], sys.executable)
+
 def parse(args, extras=None, ignore_stdin=False):
     """Receive an argument list - if None, use sys.argv - parse all args and
     take appropriate action. Also receive optional extra options: this should
