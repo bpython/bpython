@@ -36,16 +36,16 @@ class BPythonFormatter(Formatter):
     them into the appropriate format string
     as defined above, then writes to the outfile
     object the final formatted string. This does not write real strings. It writes format string (FmtStr) objects.
- 
+
     See the Pygments source for more info; it's pretty
     straightforward."""
- 
+
     def __init__(self, color_scheme, **options):
         self.f_strings = {}
         for k, v in color_scheme.iteritems():
             self.f_strings[k] = '\x01%s' % (v,)
         Formatter.__init__(self, **options)
- 
+
     def format(self, tokensource, outfile):
         o = ''
 
@@ -54,7 +54,7 @@ class BPythonFormatter(Formatter):
                 token = token.parent
             o += "%s\x03%s\x04" % (self.f_strings[token], text)
         outfile.write(parse(o.rstrip()))
- 
+
 class Interp(code.InteractiveInterpreter):
     def __init__(self, locals=None):
         """Constructor.
@@ -128,7 +128,6 @@ class Interp(code.InteractiveInterpreter):
         lexer = get_lexer_by_name("pytb", stripall=True)
 
         self.format(tbtext,lexer)
-        
 
     def format(self, tbtext, lexer):
         traceback_informative_formatter = BPythonFormatter(default_colors)

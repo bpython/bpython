@@ -1046,11 +1046,14 @@ class Repl(object):
         """Returns modified text from an editor, or the oriignal text if editor exited with non-zero"""
         editor_args = shlex.split(self.config.editor)
         with tempfile.NamedTemporaryFile(suffix='.py') as temp:
-            temp.write(text)
+            temp.write(text.encode(getpreferredencoding()))
             temp.flush()
             if subprocess.call(editor_args + [temp.name]) == 0:
                 with open(temp.name) as f:
-                    return f.read()
+                    if py3:
+                        return f.read()
+                    else:
+                        return f.read().decode(getpreferredencoding())
             else:
                 return text
 

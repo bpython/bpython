@@ -667,7 +667,7 @@ class Repl(BpythonRepl):
             self.add_normal_character(e)
 
     def send_current_block_to_external_editor(self, filename=None):
-        text = self.send_to_external_editor(self.get_current_block().encode('utf8'))
+        text = self.send_to_external_editor(self.get_current_block())
         lines = [line for line in text.split('\n')]
         while lines and not lines[-1].split():
             lines.pop()
@@ -679,11 +679,11 @@ class Repl(BpythonRepl):
         self.cursor_offset = len(self.current_line)
 
     def send_session_to_external_editor(self, filename=None):
-        for_editor = '### current bpython session - file will be reevaluated, ### lines will not be run\n'.encode('utf8')
-        for_editor += ('\n'.join(line[len(self.ps1):] if line.startswith(self.ps1) else
-                                 (line[len(self.ps2):] if line.startswith(self.ps2) else
-                                 '### '+line)
-                                 for line in self.getstdout().split('\n')).encode('utf8'))
+        for_editor = u'### current bpython session - file will be reevaluated, ### lines will not be run\n'
+        for_editor += '\n'.join(line[len(self.ps1):] if line.startswith(self.ps1) else
+                                (line[len(self.ps2):] if line.startswith(self.ps2) else
+                                '### '+line)
+                                for line in self.getstdout().split('\n'))
         text = self.send_to_external_editor(for_editor)
         lines = text.split('\n')
         self.history = [line for line in lines if line[:4] != '### ']

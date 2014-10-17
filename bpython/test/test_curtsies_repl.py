@@ -53,8 +53,9 @@ class TestCurtsiesRepl(unittest.TestCase):
         self.repl.send_session_to_external_editor()
 
     def test_external_communication_encoding(self):
-        self.repl.display_lines.append(u'>>> åß∂ƒ')
-        self.repl.send_session_to_external_editor()
+        with captured_output():
+            self.repl.display_lines.append(u'>>> "åß∂ƒ"')
+            self.repl.send_session_to_external_editor()
 
     def test_get_last_word(self):
         self.repl.rl_history.entries=['1','2 3','4 5 6']
