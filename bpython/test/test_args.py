@@ -1,19 +1,22 @@
 import unittest
 import subprocess
-import tempfile
 import sys
-
-
+import tempfile
+from textwrap import dedent
 
 
 class TestExecArgs(unittest.TestCase):
     def test_exec_dunder_file(self):
-        with tempfile.NamedTemporaryFile(delete=False) as f:
-            f.write(
-            "import sys; sys.stderr.write(__file__); sys.stderr.flush();".encode('ascii'))
+        with tempfile.NamedTemporaryFile(delete=False, mode="w") as f:
+            f.write(dedent("""\
+                import sys
+                sys.stderr.write(__file__)
+                sys.stderr.flush()"""))
             f.flush()
-            p = subprocess.Popen(['bpython-curtsies', f.name], stderr=subprocess.PIPE)
+            p = subprocess.Popen(
+                [sys.executable, "-m", "bpython.curtsies", f.name],
+                stderr=subprocess.PIPE,
+                universal_newlines=True)
+            (_, stderr) = p.communicate()
 
-            self.assertEquals(p.stderr.read().strip().decode('ascii'), f.name)
-
-
+            self.assertEquals(stderr.strip(), f.name)
