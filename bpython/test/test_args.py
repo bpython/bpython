@@ -12,7 +12,6 @@ class TestExecArgs(unittest.TestCase):
             f.write(
             "import sys; sys.stderr.write(__file__); sys.stderr.flush();".encode('ascii'))
             f.flush()
-            print open(f.name).read()
             p = subprocess.Popen(['bpython-curtsies', f.name], stderr=subprocess.PIPE)
 
             self.assertEquals(p.stderr.read().strip().decode('ascii'), f.name)

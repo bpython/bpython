@@ -94,7 +94,6 @@ def parse(args, extras=None, ignore_stdin=False):
 
     if not ignore_stdin and not (sys.stdin.isatty() and sys.stdout.isatty()):
         interpreter = code.InteractiveInterpreter()
-        print "Entering st.read %s" % sys.stdout.isatty()
         interpreter.runsource(sys.stdin.read())
         raise SystemExit
 
