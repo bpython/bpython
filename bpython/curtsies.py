@@ -61,7 +61,7 @@ def main(args=None, locals_=None, banner=None):
     else:
         sys.path.insert(0, '') # expected for interactive sessions (vanilla python does it)
 
-
+    print(bpargs.version_banner())
     mainloop(config, locals_, banner, interp, paste, interactive=(not exec_args))
 
 def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True):
