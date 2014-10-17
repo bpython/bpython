@@ -1,3 +1,4 @@
+# coding: utf8
 import code
 import os
 import sys
@@ -49,6 +50,10 @@ class TestCurtsiesRepl(unittest.TestCase):
     def test_external_communication(self):
         self.assertEqual(type(self.repl.help_text()), type(b''))
         self.repl.send_current_block_to_external_editor()
+        self.repl.send_session_to_external_editor()
+
+    def test_external_communication_encoding(self):
+        self.repl.display_lines.append(u'>>> åß∂ƒ')
         self.repl.send_session_to_external_editor()
 
     def test_get_last_word(self):
