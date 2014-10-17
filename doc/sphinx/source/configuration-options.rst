@@ -312,13 +312,6 @@ This refers to the ``[curtsies]`` section in your config file.
 
 .. versionadded:: 0.13
 
-fill_terminal
-^^^^^^^^^^^^^
-Default: False
-
-Whether bpython should clear the screen on start, and always display a status
-bar at the bottom.
-
 list_above
 ^^^^^^^^^^
 Default: False
