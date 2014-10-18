@@ -339,11 +339,11 @@ class Repl(BpythonRepl):
 
         self.orig_import = __builtins__['__import__']
         if self.watcher:
-            old_module_locations = {} # for readding modules if they fail to load
+            old_module_locations = {} # for reading modules if they fail to load
             @functools.wraps(self.orig_import)
             def new_import(name, globals={}, locals={}, fromlist=[], level=-1):
                 try:
-                    m = self.orig_import(name, globals=globals, locals=locals, fromlist=fromlist)
+                    m = self.orig_import(name, globals=globals, locals=locals, fromlist=fromlist, level=level)
                 except:
                     if name in old_module_locations:
                         loc = old_module_locations[name]
