@@ -927,7 +927,7 @@ class Repl(BpythonRepl):
                 if self.incremental_search_target in self.current_line:
                     fs = fmtfuncs.on_magenta(self.incremental_search_target).join(fs.split(self.incremental_search_target))
             elif self.rl_history.saved_line and self.rl_history.saved_line in self.current_line:
-                if self.config.curtsies_right_arrow_completion:
+                if self.config.curtsies_right_arrow_completion and self.rl_history.index != 0:
                     fs = fmtfuncs.on_magenta(self.rl_history.saved_line).join(fs.split(self.rl_history.saved_line))
             logger.debug('Display line %r -> %r', self.current_line, fs)
         else:
@@ -1203,6 +1203,8 @@ class Repl(BpythonRepl):
     def _get_current_line(self):
         return self._current_line
     def _set_current_line(self, line, update_completion=True, reset_rl_history=True, clear_special_mode=True):
+        if self._current_line == line:
+            return
         self._current_line = line
         if update_completion:
             self.update_completion()
@@ -1214,7 +1216,7 @@ class Repl(BpythonRepl):
                             "The current line")
     def _get_cursor_offset(self):
         return self._cursor_offset
-    def _set_cursor_offset(self, offset, update_completion=True, reset_rl_history=True, clear_special_mode=True):
+    def _set_cursor_offset(self, offset, update_completion=True, reset_rl_history=False, clear_special_mode=True):
         if update_completion:
             self.update_completion()
         if reset_rl_history:
