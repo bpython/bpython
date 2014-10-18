@@ -82,9 +82,9 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
 
             def event_or_refresh(timeout=None):
                 if timeout is None:
-                    timeout = .2
+                    timeout = 1
                 else:
-                    timeout = min(.2, timeout)
+                    timeout = min(1, timeout)
                 starttime = time.time()
                 while True:
                     t = time.time()
