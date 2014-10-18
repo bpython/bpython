@@ -8,6 +8,12 @@ import textwrap
 import unittest
 
 try:
+    from unittest import skip
+except ImportError:
+    def skip(f):
+        return lambda self: None
+
+try:
     from twisted.internet import reactor
     from twisted.internet.defer import Deferred
     from twisted.internet.protocol import ProcessProtocol
@@ -104,6 +110,7 @@ if reactor is not None:
     class CursesCrashersTest(TrialTestCase, CrashersTest):
         backend = "cli"
 
+    @skip("take 6 seconds, and Simon says we can skip them")
     class UrwidCrashersTest(TrialTestCase, CrashersTest):
         backend = "urwid"
 

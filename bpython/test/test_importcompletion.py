@@ -15,11 +15,13 @@ class TestSimpleComplete(unittest.TestCase):
 
 
 class TestRealComplete(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         [_ for _ in importcompletion.find_iterator]
         __import__('sys')
         __import__('os')
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         importcompletion.find_iterator = importcompletion.find_all_modules()
         importcompletion.modules = set()
     def test_from_attribute(self):
