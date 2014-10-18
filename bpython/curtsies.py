@@ -99,6 +99,14 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                         if starttime + timeout < time.time() or e is not None:
                             yield e
 
+            def on_suspend():
+                window.__exit__(None, None, None)
+                input_generator.__exit__(None, None, None)
+
+            def after_suspend():
+                input_generator.__enter__()
+                window.__enter__()
+
             global repl # global for easy introspection `from bpython.curtsies import repl`
             with Repl(config=config,
                       locals_=locals_,
@@ -109,7 +117,9 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                       banner=banner,
                       interp=interp,
                       interactive=interactive,
-                      orig_tcattrs=input_generator.original_stty) as repl:
+                      orig_tcattrs=input_generator.original_stty,
+                      on_suspend=on_suspend,
+                      after_suspend=after_suspend) as repl:
                 repl.height, repl.width = window.t.height, window.t.width
 
                 def process_event(e):

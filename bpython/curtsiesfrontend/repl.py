@@ -219,7 +219,9 @@ class Repl(BpythonRepl):
                  banner=None,
                  interp=None,
                  interactive=True,
-                 orig_tcattrs=None):
+                 orig_tcattrs=None,
+                 on_suspend=lambda *args: None,
+                 after_suspend=lambda *args: None):
         """
         locals_ is a mapping of locals to pass into the interpreter
         config is a bpython config.Struct with config attributes
@@ -298,6 +300,8 @@ class Repl(BpythonRepl):
                                # because there wasn't room to display everything
         self._cursor_offset = 0 # from the left, 0 means first char
         self.orig_tcattrs = orig_tcattrs # useful for shelling out with normal terminal
+        self.on_suspend = on_suspend
+        self.after_suspend = after_suspend
 
         self.coderunner = CodeRunner(self.interp, self.request_refresh)
         self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
@@ -335,7 +339,9 @@ class Repl(BpythonRepl):
         sys.stderr = self.stderr
         sys.stdin = self.stdin
         self.orig_sigwinch_handler = signal.getsignal(signal.SIGWINCH)
+        self.orig_sigtstp_handler = signal.getsignal(signal.SIGTSTP)
         signal.signal(signal.SIGWINCH, self.sigwinch_handler)
+        signal.signal(signal.SIGTSTP, self.sigtstp_handler)
 
         self.orig_import = __builtins__['__import__']
         if self.watcher:
@@ -369,6 +375,7 @@ class Repl(BpythonRepl):
         sys.stdout = self.orig_stdout
         sys.stderr = self.orig_stderr
         signal.signal(signal.SIGWINCH, self.orig_sigwinch_handler)
+        signal.signal(signal.SIGTSTP, self.orig_sigtstp_handler)
         __builtins__['__import__'] = self.orig_import
 
     def sigwinch_handler(self, signum, frame):
@@ -378,6 +385,13 @@ class Repl(BpythonRepl):
         self.scroll_offset -= cursor_dy
         logger.info('sigwinch! Changed from %r to %r', (old_rows, old_columns), (self.height, self.width))
         logger.info('decreasing scroll offset by %d to %d', cursor_dy, self.scroll_offset)
+
+    def sigtstp_handler(self, signum, frame):
+        self.__exit__()
+        self.on_suspend()
+        os.kill(os.getpid(), signal.SIGTSTP)
+        self.after_suspend()
+        self.__enter__()
 
     def startup(self):
         """
