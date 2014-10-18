@@ -450,3 +450,16 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
                   u"'random'",
                   u">>> "]
         self.assert_paint_ignoring_formatting(screen, (2, 4))
+
+    def test_unhighlight_paren_bug(self):
+        """infobox showing up during intermediate render was causing this to fail, #371"""
+        self.enter('(')
+        screen = [u">>> (",
+                  u"... "]
+        self.assert_paint_ignoring_formatting(screen)
+
+        with output_to_repl(self.repl):
+            self.repl.process_event(')')
+        screen = fsarray([cyan(u">>> ")+yellow('('),
+                         green(u"... ")+yellow(')')])
+        self.assert_paint(screen, (1, 3))
