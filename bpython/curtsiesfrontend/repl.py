@@ -643,14 +643,16 @@ class Repl(BpythonRepl):
 
     def up_one_line(self):
         self.rl_history.enter(self.current_line)
-        self._set_current_line(self.rl_history.back(False, search=self.config.curtsies_right_arrow_completion),
-                               reset_rl_history=False)
+        self._set_current_line(tabs_to_spaces(self.rl_history.back(False,
+            search=self.config.curtsies_right_arrow_completion)),
+            reset_rl_history=False)
         self._set_cursor_offset(len(self.current_line), reset_rl_history=False)
 
     def down_one_line(self):
         self.rl_history.enter(self.current_line)
-        self._set_current_line(self.rl_history.forward(False, search=self.config.curtsies_right_arrow_completion),
-                               reset_rl_history=False)
+        self._set_current_line(tabs_to_spaces(self.rl_history.forward(False,
+            search=self.config.curtsies_right_arrow_completion)),
+            reset_rl_history=False)
         self._set_cursor_offset(len(self.current_line), reset_rl_history=False)
 
     def process_simple_keypress(self, e):
@@ -1368,6 +1370,9 @@ class Repl(BpythonRepl):
 
 def is_nop(char):
     return unicodedata.category(unicode(char)) == 'Cc'
+
+def tabs_to_spaces(line):
+    return line.replace('\t', '    ')
 
 def compress_paste_event(paste_event):
     """If all events in a paste event are identical and not simple characters, returns one of them
