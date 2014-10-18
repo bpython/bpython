@@ -547,17 +547,15 @@ class Repl(BpythonRepl):
     def get_last_word(self):
 
         def last_word(line):
-            if not line:
-                return ''
-            return line.split().pop()
+            return line.split().pop() if line else ''
 
         previous_word = last_word(self.rl_history.entry)
         word = last_word(self.rl_history.back())
-        line=self.current_line
-        self._set_current_line(line[:len(line)-len(previous_word)]+word, reset_rl_history=False)
-        
-        self._set_cursor_offset(self.cursor_offset-len(previous_word)+len(word), reset_rl_history=False)
- 
+        line = self.current_line
+        self._set_current_line(line[:len(line)-len(previous_word)] + word,
+                               reset_rl_history=False)
+        self._set_cursor_offset(self.cursor_offset-len(previous_word) + len(word),
+                                reset_rl_history=False)
 
     def incremental_search(self, reverse=False, include_current=False):
         if self.special_mode == None:

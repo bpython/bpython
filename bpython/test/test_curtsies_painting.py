@@ -40,6 +40,11 @@ class TestCurtsiesPainting(FormatStringTest):
         if cursor_row_col is not None:
             self.assertEqual(cursor_pos, cursor_row_col)
 
+class TestCurtsiesPaintingTest(TestCurtsiesPainting):
+
+    def test_history_is_cleared(self):
+        self.assertEqual(self.repl.rl_history.entries, [''])
+
 class TestCurtsiesPaintingSimple(TestCurtsiesPainting):
 
     def test_startup(self):
