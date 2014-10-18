@@ -493,7 +493,8 @@ class Repl(BpythonRepl):
             self.incremental_search(reverse=True)
         elif e in ("<Esc+s>",):
             self.incremental_search()
-        elif e in ("<BACKSPACE>", '<Ctrl-h>') and self.incremental_search_mode:
+        elif (e in ("<BACKSPACE>",) + key_dispatch[self.config.backspace_key]
+                   and self.incremental_search_mode):
             self.add_to_incremental_search(self, backspace=True)
         elif e in self.edit_keys.cut_buffer_edits:
             self.readline_kill(e)

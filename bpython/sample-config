@@ -49,6 +49,8 @@ auto_display_list = True
 
 [keyboard]
 
+# All key bindings are shown commented out with their default binding
+
 # pastebin = F8
 # last_output = F9
 # reimport = F6
@@ -61,6 +63,7 @@ auto_display_list = True
 # cut_to_buffer = C-k
 # search = C-o
 # yank_from_buffer = C-y
+# backspace = C-h
 # clear_word = C-w
 # clear_line = C-u
 # clear_screen = C-l

@@ -35,7 +35,7 @@ def loadini(struct, configfile):
     config_path = os.path.expanduser(configfile)
 
     config = ConfigParser()
-    fill_config_with_default_values(config, {
+    defaults = {
         'general': {
             'arg_spec': True,
             'auto_display_list': True,
@@ -61,8 +61,15 @@ def loadini(struct, configfile):
             'editor': os.environ.get('VISUAL', os.environ.get('EDITOR', 'vi'))
         },
         'keyboard': {
+            'backspace': 'C-h',
+            'left': 'C-b',
+            'right': 'C-f',
+            'beginning_of_line': 'C-a',
+            'end_of_line': 'C-e',
+            'transpose_chars': 'C-t',
             'clear_line': 'C-u',
             'clear_screen': 'C-l',
+            'kill_line': 'C-k',
             'clear_word': 'C-w',
             'cut_to_buffer': 'C-k',
             'delete': 'C-d',
@@ -90,7 +97,8 @@ def loadini(struct, configfile):
         'curtsies': {
             'list_above' : False,
             'right_arrow_completion' : True,
-        }})
+        }}
+    fill_config_with_default_values(config, defaults)
     if not config.read(config_path):
         # No config file. If the user has it in the old place then complain
         if os.path.isfile(os.path.expanduser('~/.bpython.ini')):
@@ -98,6 +106,18 @@ def loadini(struct, configfile):
                              "~/.bpython.ini. Please move your config file to "
                              "%s\n" % default_config_path())
             sys.exit(1)
+
+    def get_key_no_doublebind(attr, already_used={}):
+        """Clears any other configured keybindings using this key"""
+        key = config.get('keyboard', attr)
+        if key in already_used:
+            default = defaults['keyboard'][already_used[key]]
+            if default in already_used:
+                setattr(struct, '%s_key' % already_used[key], '')
+            else:
+                setattr(struct, '%s_key' % already_used[key], default)
+        already_used[key] = attr
+        return key
 
     struct.config_path = config_path
 
@@ -115,28 +135,39 @@ def loadini(struct, configfile):
     struct.hist_length = config.getint('general', 'hist_length')
     struct.hist_duplicates = config.getboolean('general', 'hist_duplicates')
     struct.flush_output = config.getboolean('general', 'flush_output')
-    struct.pastebin_key = config.get('keyboard', 'pastebin')
-    struct.save_key = config.get('keyboard', 'save')
-    struct.search_key = config.get('keyboard', 'search')
-    struct.show_source_key = config.get('keyboard', 'show_source')
-    struct.suspend_key = config.get('keyboard', 'suspend')
-    struct.toggle_file_watch_key = config.get('keyboard', 'toggle_file_watch')
-    struct.undo_key = config.get('keyboard', 'undo')
-    struct.reimport_key = config.get('keyboard', 'reimport')
-    struct.up_one_line_key = config.get('keyboard', 'up_one_line')
-    struct.down_one_line_key = config.get('keyboard', 'down_one_line')
-    struct.cut_to_buffer_key = config.get('keyboard', 'cut_to_buffer')
-    struct.yank_from_buffer_key = config.get('keyboard', 'yank_from_buffer')
-    struct.clear_word_key = config.get('keyboard', 'clear_word')
-    struct.clear_line_key = config.get('keyboard', 'clear_line')
-    struct.clear_screen_key = config.get('keyboard', 'clear_screen')
-    struct.delete_key = config.get('keyboard', 'delete')
-    struct.exit_key = config.get('keyboard', 'exit')
-    struct.last_output_key = config.get('keyboard', 'last_output')
-    struct.edit_config_key = config.get('keyboard', 'edit_config')
-    struct.edit_current_block_key = config.get('keyboard', 'edit_current_block')
-    struct.external_editor_key = config.get('keyboard', 'external_editor')
-    struct.help_key = config.get('keyboard', 'help')
+
+    struct.pastebin_key = get_key_no_doublebind('pastebin')
+    struct.save_key = get_key_no_doublebind('save')
+    struct.search_key = get_key_no_doublebind('search')
+    struct.show_source_key = get_key_no_doublebind('show_source')
+    struct.suspend_key = get_key_no_doublebind('suspend')
+    struct.toggle_file_watch_key = get_key_no_doublebind('toggle_file_watch')
+    struct.undo_key = get_key_no_doublebind('undo')
+    struct.reimport_key = get_key_no_doublebind('reimport')
+    struct.up_one_line_key = get_key_no_doublebind('up_one_line')
+    struct.down_one_line_key = get_key_no_doublebind('down_one_line')
+    struct.cut_to_buffer_key = get_key_no_doublebind('cut_to_buffer')
+    struct.yank_from_buffer_key = get_key_no_doublebind('yank_from_buffer')
+    struct.clear_word_key = get_key_no_doublebind('clear_word')
+    struct.backspace_key = get_key_no_doublebind('backspace')
+    struct.clear_line_key = get_key_no_doublebind('clear_line')
+    struct.clear_screen_key = get_key_no_doublebind('clear_screen')
+    struct.delete_key = get_key_no_doublebind('delete')
+
+    struct.left_key = get_key_no_doublebind('left')
+    struct.right_key = get_key_no_doublebind('right')
+    struct.end_of_line_key = get_key_no_doublebind('end_of_line')
+    struct.beginning_of_line_key = get_key_no_doublebind('beginning_of_line')
+    struct.transpose_chars_key = get_key_no_doublebind('transpose_chars')
+    struct.clear_line_key = get_key_no_doublebind('clear_line')
+    struct.clear_screen_key = get_key_no_doublebind('clear_screen')
+    struct.kill_line_key = get_key_no_doublebind('kill_line')
+    struct.exit_key = get_key_no_doublebind('exit')
+    struct.last_output_key = get_key_no_doublebind('last_output')
+    struct.edit_config_key = get_key_no_doublebind('edit_config')
+    struct.edit_current_block_key = get_key_no_doublebind('edit_current_block')
+    struct.external_editor_key = get_key_no_doublebind('external_editor')
+    struct.help_key = get_key_no_doublebind('help')
 
     struct.pastebin_confirm = config.getboolean('general', 'pastebin_confirm')
     struct.pastebin_url = config.get('general', 'pastebin_url')

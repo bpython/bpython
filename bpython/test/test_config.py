@@ -1,5 +1,6 @@
 import os
 import unittest
+import tempfile
 
 from bpython import config
 
@@ -18,5 +19,13 @@ class TestConfig(unittest.TestCase):
         config.load_theme(struct, TEST_THEME_PATH, struct.color_scheme, defaults)
         self.assertEquals(struct.color_scheme, expected)
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_load_config(self):
+        struct = config.Struct()
+        with tempfile.NamedTemporaryFile() as f:
+            f.write(''.encode('utf8'))
+            f.write('[keyboard]\nhelp = C-h\n'.encode('utf8'))
+            f.flush()
+            config.loadini(struct, f.name)
+        self.assertEqual(struct.help_key, 'C-h')
+        self.assertEqual(struct.backspace_key, '')
+

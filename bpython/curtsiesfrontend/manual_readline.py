@@ -141,22 +141,22 @@ def kills_ahead(func):
     func.kills = 'ahead'
     return func
 
-@edit_keys.on('<Ctrl-b>')
+@edit_keys.on(config='left_key')
 @edit_keys.on('<LEFT>')
 def left_arrow(cursor_offset, line):
     return max(0, cursor_offset - 1), line
 
-@edit_keys.on('<Ctrl-f>')
+@edit_keys.on(config='right_key')
 @edit_keys.on('<RIGHT>')
 def right_arrow(cursor_offset, line):
     return min(len(line), cursor_offset + 1), line
 
-@edit_keys.on('<Ctrl-a>')
+@edit_keys.on(config='beginning_of_line_key')
 @edit_keys.on('<HOME>')
 def beginning_of_line(cursor_offset, line):
     return 0, line
 
-@edit_keys.on('<Ctrl-e>')
+@edit_keys.on(config='end_of_line_key')
 @edit_keys.on('<END>')
 def end_of_line(cursor_offset, line):
     return len(line), line
@@ -188,9 +188,8 @@ def delete(cursor_offset, line):
     return (cursor_offset,
             line[:cursor_offset] + line[cursor_offset+1:])
 
-@edit_keys.on('<Ctrl-h>')
 @edit_keys.on('<BACKSPACE>')
-@edit_keys.on(config='delete_key')
+@edit_keys.on(config='backspace_key')
 def backspace(cursor_offset, line):
     if cursor_offset == 0:
         return cursor_offset, line
@@ -201,7 +200,6 @@ def backspace(cursor_offset, line):
     return (cursor_offset - 1,
             line[:cursor_offset - 1] + line[cursor_offset:])
 
-@edit_keys.on('<Ctrl-u>')
 @edit_keys.on(config='clear_line_key')
 def delete_from_cursor_back(cursor_offset, line):
     return 0, line[cursor_offset:]
@@ -215,7 +213,6 @@ def delete_rest_of_word(cursor_offset, line):
     return (cursor_offset, line[:cursor_offset] + line[m.start()+cursor_offset+1:],
             line[cursor_offset:m.start()+cursor_offset+1])
 
-@edit_keys.on('<Ctrl-w>')
 @edit_keys.on(config='clear_word_key')
 @kills_behind
 def delete_word_to_cursor(cursor_offset, line):
@@ -231,7 +228,7 @@ def yank_prev_prev_killed_text(cursor_offset, line, cut_buffer): #TODO not imple
 def yank_prev_killed_text(cursor_offset, line, cut_buffer):
     return cursor_offset+len(cut_buffer), line[:cursor_offset] + cut_buffer + line[cursor_offset:]
 
-@edit_keys.on('<Ctrl-t>')
+@edit_keys.on(config='transpose_chars_key')
 def transpose_character_before_cursor(cursor_offset, line):
     return (min(len(line), cursor_offset + 1),
             line[:cursor_offset-1] +
@@ -253,7 +250,7 @@ def delete_line(cursor_offset, line):
 def uppercase_next_word(cursor_offset, line):
     return cursor_offset, line #TODO Not implemented
 
-@edit_keys.on('<Ctrl-k>')
+@edit_keys.on(config='kill_line_key')
 @kills_ahead
 def delete_from_cursor_forward(cursor_offset, line):
     return cursor_offset, line[:cursor_offset], line[cursor_offset:]
