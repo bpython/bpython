@@ -594,8 +594,6 @@ class Repl(BpythonRepl):
         self.unhighlight_paren()        # in unhighlight_paren
         self.highlighted_paren = None
 
-        self.rl_history.append(self.current_line)
-        self.rl_history.last()
         self.history.append(self.current_line)
         self.push(self.current_line, insert_into_history=insert_into_history)
 
@@ -1038,6 +1036,10 @@ class Repl(BpythonRepl):
             arr = FSArray(0, width)
         #TODO test case of current line filling up the whole screen (there aren't enough rows to show it)
 
+        current_line = paint.paint_current_line(min_height, width, self.current_cursor_line)
+        # needs to happen before we calculate contents of history because calculating
+        # self.current_cursor_line has the side effect of unhighlighting parens in buffer
+
         def move_screen_up(current_line_start_row):
             # move screen back up a screen minus a line
             while current_line_start_row < 0:
@@ -1084,12 +1086,8 @@ class Repl(BpythonRepl):
             history = paint.paint_history(current_line_start_row, width, self.lines_for_display)
             arr[:history.height,:history.width] = history
 
-
-
-
         self.inconsistent_history = False
 
-        current_line = paint.paint_current_line(min_height, width, self.current_cursor_line)
         if user_quit: # quit() or exit() in interp
             current_line_start_row = current_line_start_row - current_line.height
         logger.debug("---current line row slice %r, %r", current_line_start_row, current_line_start_row + current_line.height)
@@ -1223,11 +1221,14 @@ class Repl(BpythonRepl):
             self.rl_history.reset()
         if clear_special_mode:
             self.special_mode = None
+        self.unhighlight_paren()
     current_line = property(_get_current_line, _set_current_line, None,
                             "The current line")
     def _get_cursor_offset(self):
         return self._cursor_offset
     def _set_cursor_offset(self, offset, update_completion=True, reset_rl_history=False, clear_special_mode=True):
+        if self._cursor_offset == offset:
+            return
         if update_completion:
             self.update_completion()
         if reset_rl_history:
@@ -1236,6 +1237,7 @@ class Repl(BpythonRepl):
             self.incremental_search_mode = None
         self._cursor_offset = offset
         self.update_completion()
+        self.unhighlight_paren()
     cursor_offset = property(_get_cursor_offset, _set_cursor_offset, None,
                             "The current cursor offset from the front of the line")
     def echo(self, msg, redraw=True):

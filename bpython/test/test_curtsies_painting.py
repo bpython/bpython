@@ -62,7 +62,7 @@ class TestCurtsiesPaintingSimple(TestCurtsiesPainting):
             orig_stdout = sys.stdout
             sys.stdout = self.repl.stdout
             [self.repl.add_normal_character(c) for c in '1 + 1']
-            self.repl.on_enter()
+            self.repl.on_enter(insert_into_history=False)
             screen = fsarray([u'>>> 1 + 1', '2', 'Welcome to'])
             self.assert_paint_ignoring_formatting(screen, (1, 1))
         finally:
@@ -105,7 +105,8 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
         if line is not None:
             self.repl.current_line = line
         with output_to_repl(self.repl):
-            self.repl.on_enter()
+            self.repl.on_enter(insert_into_history=False)
+            self.assertEqual(self.repl.rl_history.entries, [''])
             self.send_refreshes()
 
     def undo(self):
@@ -432,7 +433,7 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
         self.repl.width = 50
         self.repl.current_line = "__import__('random').__name__"
         with output_to_repl(self.repl):
-            self.repl.on_enter()
+            self.repl.on_enter(insert_into_history=False)
         screen = [u">>> __import__('random').__name__",
                   u"'random'"]
         self.assert_paint_ignoring_formatting(screen)
@@ -451,15 +452,28 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
                   u">>> "]
         self.assert_paint_ignoring_formatting(screen, (2, 4))
 
-    def test_unhighlight_paren_bug(self):
-        """infobox showing up during intermediate render was causing this to fail, #371"""
+    def test_unhighlight_paren_bugs(self):
+        """two previous bugs, paren did't highlight until next render
+        and paren didn't unhighlight until enter"""
+        self.assertEqual(self.repl.rl_history.entries, [''])
         self.enter('(')
+        self.assertEqual(self.repl.rl_history.entries, [''])
         screen = [u">>> (",
                   u"... "]
+        self.assertEqual(self.repl.rl_history.entries, [''])
         self.assert_paint_ignoring_formatting(screen)
+        self.assertEqual(self.repl.rl_history.entries, [''])
 
         with output_to_repl(self.repl):
+            self.assertEqual(self.repl.rl_history.entries, [''])
             self.repl.process_event(')')
+            self.assertEqual(self.repl.rl_history.entries, [''])
+        screen = fsarray([cyan(u">>> ")+on_magenta(bold(red('('))),
+                         green(u"... ")+on_magenta(bold(red(')')))])
+        self.assert_paint(screen, (1, 5))
+
+        with output_to_repl(self.repl):
+            self.repl.process_event(' ')
         screen = fsarray([cyan(u">>> ")+yellow('('),
-                         green(u"... ")+yellow(')')])
-        self.assert_paint(screen, (1, 3))
+                         green(u"... ")+yellow(')')+bold(cyan(" "))])
+        self.assert_paint(screen, (1, 6))
