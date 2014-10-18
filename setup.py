@@ -187,7 +187,7 @@ setup(
     packages = packages,
     data_files = data_files,
     package_data = {
-        'bpython': ['logo.png', 'sample-config'],
+        'bpython': ['logo.png'],
         'bpython.translations': mo_files,
         'bpython.test': ['test.config', 'test.theme']
     },
