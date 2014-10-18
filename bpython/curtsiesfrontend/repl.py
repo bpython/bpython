@@ -319,7 +319,7 @@ class Repl(BpythonRepl):
         self.current_match = None      # currently tab-selected autocompletion suggestion
         self.list_win_visible = False  # whether the infobox (suggestions, docstring) is visible
         self.watching_files = False    # auto reloading turned on
-        self.special_mode = None       # 'reverse_incremental_search' and 'incremental_search'
+        self.incremental_search_mode = None       # 'reverse_incremental_search' and 'incremental_search'
         self.incremental_search_target = ''
 
         self.original_modules = sys.modules.keys()
@@ -493,7 +493,7 @@ class Repl(BpythonRepl):
             self.incremental_search(reverse=True)
         elif e in ("<Esc+s>",):
             self.incremental_search()
-        elif e in ("<BACKSPACE>", '<Ctrl-h>') and self.special_mode:
+        elif e in ("<BACKSPACE>", '<Ctrl-h>') and self.incremental_search_mode:
             self.add_to_incremental_search(self, backspace=True)
         elif e in self.edit_keys.cut_buffer_edits:
             self.readline_kill(e)
@@ -538,7 +538,7 @@ class Repl(BpythonRepl):
         elif e in key_dispatch[self.config.edit_current_block_key]:
             self.send_current_block_to_external_editor()
         elif e in ["<ESC>"]: #ESC
-            self.special_mode = None
+            self.incremental_search_mode = None
         elif e in ["<SPACE>"]:
             self.add_normal_character(' ')
         else:
@@ -558,7 +558,7 @@ class Repl(BpythonRepl):
                                 reset_rl_history=False)
 
     def incremental_search(self, reverse=False, include_current=False):
-        if self.special_mode == None:
+        if self.incremental_search_mode == None:
             self.rl_history.enter(self.current_line)
             self.incremental_search_target = ''
         else:
@@ -575,9 +575,9 @@ class Repl(BpythonRepl):
                 self._set_cursor_offset(len(self.current_line),
                                         reset_rl_history=False, clear_special_mode=False)
         if reverse:
-            self.special_mode = 'reverse_incremental_search'
+            self.incremental_search_mode = 'reverse_incremental_search'
         else:
-            self.special_mode = 'incremental_search'
+            self.incremental_search_mode = 'incremental_search'
 
     def readline_kill(self, e):
         func = self.edit_keys[e]
@@ -733,7 +733,7 @@ class Repl(BpythonRepl):
     def add_normal_character(self, char):
         if len(char) > 1 or is_nop(char):
             return
-        if self.special_mode:
+        if self.incremental_search_mode:
             self.add_to_incremental_search(char)
         else:
             self.current_line = (self.current_line[:self.cursor_offset] +
@@ -755,9 +755,9 @@ class Repl(BpythonRepl):
             self.incremental_search_target = self.incremental_search_target[:-1]
         else:
             self.incremental_search_target += char
-        if self.special_mode == 'reverse_incremental_search':
+        if self.incremental_search_mode == 'reverse_incremental_search':
             self.incremental_search(reverse=True, include_current=True)
-        elif self.special_mode == 'incremental_search':
+        elif self.incremental_search_mode == 'incremental_search':
             self.incremental_search(include_current=True)
         else:
             raise ValueError('add_to_incremental_search should only be called in a special mode')
@@ -849,7 +849,7 @@ class Repl(BpythonRepl):
             if err:
                 indent = 0
 
-     
+
            #TODO This should be printed ABOVE the error that just happened instead
             # or maybe just thrown away and not shown
             if self.current_stdouterr_line:
@@ -935,7 +935,7 @@ class Repl(BpythonRepl):
         """The colored current line (no prompt, not wrapped)"""
         if self.config.syntax:
             fs = bpythonparse(format(self.tokenize(self.current_line), self.formatter))
-            if self.special_mode:
+            if self.incremental_search_mode:
                 if self.incremental_search_target in self.current_line:
                     fs = fmtfuncs.on_magenta(self.incremental_search_target).join(fs.split(self.incremental_search_target))
             elif self.rl_history.saved_line and self.rl_history.saved_line in self.current_line:
@@ -969,10 +969,10 @@ class Repl(BpythonRepl):
     @property
     def display_line_with_prompt(self):
         """colored line with prompt"""
-        if self.special_mode == 'reverse_incremental_search':
+        if self.incremental_search_mode == 'reverse_incremental_search':
             return func_for_letter(self.config.color_scheme['prompt'])(
                 '(reverse-i-search)`%s\': ' % (self.incremental_search_target,)) + self.current_line_formatted
-        elif self.special_mode == 'incremental_search':
+        elif self.incremental_search_mode == 'incremental_search':
             return func_for_letter(self.config.color_scheme['prompt'])(
                 '(i-search)`%s\': ' % (self.incremental_search_target,)) + self.current_line_formatted
         return (func_for_letter(self.config.color_scheme['prompt'])(self.ps1)
@@ -1019,7 +1019,6 @@ class Repl(BpythonRepl):
         less state is cool!
         """
         # The hairiest function in the curtsies - a cleanup would be great.
-
         if about_to_exit:
             self.clean_up_current_line_for_exit() # exception to not changing state!
 
@@ -1234,7 +1233,7 @@ class Repl(BpythonRepl):
         if reset_rl_history:
             self.rl_history.reset()
         if clear_special_mode:
-            self.special_mode = None
+            self.incremental_search_mode = None
         self._cursor_offset = offset
         self.update_completion()
     cursor_offset = property(_get_cursor_offset, _set_cursor_offset, None,
