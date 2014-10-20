@@ -14,8 +14,8 @@ except ImportError:
 
 class TestSafeEval(unittest.TestCase):
     def test_catches_syntax_error(self):
-        with self.assertRaises(autocomplete.EvaluationError):
-            autocomplete.safe_eval('1re',{})
+        self.assertRaises(autocomplete.EvaluationError,
+                          autocomplete.safe_eval, '1re', {})
 
 
 class TestFormatters(unittest.TestCase):
