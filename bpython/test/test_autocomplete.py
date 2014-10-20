@@ -14,10 +14,9 @@ except ImportError:
 
 class TestSafeEval(unittest.TestCase):
     def test_catches_syntax_error(self):
-        try:
+        with self.assertRaises(autocomplete.EvaluationError):
             autocomplete.safe_eval('1re',{})
-        except:
-            self.fail('safe_eval raises an error')
+
 
 class TestFormatters(unittest.TestCase):
 

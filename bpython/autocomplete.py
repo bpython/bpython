@@ -205,8 +205,9 @@ class DictKeyCompletion(BaseCompletionType):
             return None
         start, end, orig = r
         _, _, dexpr = lineparts.current_dict(cursor_offset, line)
-        obj = safe_eval(dexpr, locals_)
-        if obj is SafeEvalFailed:
+        try:
+            obj = safe_eval(dexpr, locals_)
+        except EvaluationError:
             return []
         if obj and isinstance(obj, type({})) and obj.keys():
             return ["{!r}]".format(k) for k in obj.keys() if repr(k).startswith(orig)]
@@ -288,23 +289,20 @@ class StringLiteralAttrCompletion(BaseCompletionType):
             return [match for match in matches if not match.startswith('_')]
         return matches
 
-class SafeEvalFailed(Exception):
-    """If this object is returned, safe_eval failed"""
-    # Because every normal Python value is a possible return value of safe_eval
+
+class EvaluationError(Exception):
+    """Raised if an exception occurred in safe_eval."""
+
 
 def safe_eval(expr, namespace):
     """Not all that safe, just catches some errors"""
-    if expr.isdigit():
-        # Special case: float literal, using attrs here will result in
-        # a SyntaxError
-        return SafeEvalFailed
     try:
-        obj = eval(expr, namespace)
-        return obj
+        return eval(expr, namespace)
     except (NameError, AttributeError, SyntaxError):
         # If debugging safe_eval, raise this!
         # raise
-        return SafeEvalFailed
+        raise EvaluationError
+
 
 def attr_matches(text, namespace, autocomplete_mode):
     """Taken from rlcompleter.py and bent to my will.
@@ -318,8 +316,13 @@ def attr_matches(text, namespace, autocomplete_mode):
         return []
 
     expr, attr = m.group(1, 3)
-    obj = safe_eval(expr, namespace)
-    if obj is SafeEvalFailed:
+    if expr.isdigit():
+        # Special case: float literal, using attrs here will result in
+        # a SyntaxError
+        return []
+    try:
+        obj = safe_eval(expr, namespace)
+    except EvaluationError:
         return []
     with inspection.AttrCleaner(obj):
         matches = attr_lookup(obj, expr, attr, autocomplete_mode)
