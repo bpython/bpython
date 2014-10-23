@@ -82,22 +82,39 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
 
             def event_or_refresh(timeout=None):
                 if timeout is None:
-                    timeout = 1
-                else:
-                    timeout = min(1, timeout)
-                starttime = time.time()
+                    timeout = 2**25  # a year
                 while True:
-                    t = time.time()
-                    refresh_requests.sort(key=lambda r: 0 if r.when == 'now' else r.when)
-                    if refresh_requests and (refresh_requests[0].when == 'now' or refresh_requests[-1].when < t):
-                        yield refresh_requests.pop(0)
-                    elif reload_requests:
-                        e = reload_requests.pop()
-                        yield e
-                    else:
-                        e = input_generator.send(timeout)
-                        if starttime + timeout < time.time() or e is not None:
+                    starttime = time.time()
+                    while True:
+                        t = time.time()
+                        refresh_requests.sort(key=lambda r: 0 if r.when == 'now' else r.when)
+                        if refresh_requests and (refresh_requests[0].when == 'now' or refresh_requests[-1].when < t):
+                            yield refresh_requests.pop(0)
+                        elif reload_requests:
+                            e = reload_requests.pop()
                             yield e
+                        else:
+                            if refresh_requests:
+                                next_refresh = refresh_requests.pop(0)
+                                time_until_next_scheduled_event = max(0, next_refresh.when - t)
+                            else:
+                                next_refresh = None
+                                time_until_next_scheduled_event = 2**25
+
+                            time_to_wait = min(time_until_next_scheduled_event, max(0, starttime + timeout - t))
+
+                            e = input_generator.send(time_to_wait)
+
+                            if next_refresh is not None:
+                                if e is None and time.time() > t + time_until_next_scheduled_event:
+                                    yield next_refresh
+                                    continue
+                                else:
+                                    refresh_requests.insert(0, next_refresh)
+
+                            if starttime + timeout < time.time() or e is not None:
+                                yield e
+                                break
 
             def on_suspend():
                 window.__exit__(None, None, None)
@@ -144,7 +161,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                 for _, e in izip(find_iterator, event_or_refresh(0)):
                     if e is not None:
                         process_event(e)
-                for e in event_or_refresh():
+                for e in event_or_refresh(None):
                     process_event(e)
 
 if __name__ == '__main__':
