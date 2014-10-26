@@ -19,7 +19,10 @@ class StatusBar(BpythonInteraction):
     functionality in a evented or callback style, but trying to integrate
     bpython.Repl code.
     """
-    def __init__(self, permanent_text="", refresh_request=lambda: None):
+    def __init__(self,
+                 permanent_text="",
+                 request_refresh=lambda: None,
+                 schedule_refresh=lambda when: None):
         self._current_line = ''
         self.cursor_offset_in_line = 0
         self.in_prompt = False
@@ -34,7 +37,8 @@ class StatusBar(BpythonInteraction):
             self.permanent_stack.append(permanent_text)
         self.main_greenlet = greenlet.getcurrent()
         self.request_greenlet = None
-        self.refresh_request = refresh_request
+        self.request_refresh = request_refresh
+        self.schedule_refresh = schedule_refresh
 
     def push_permanent_message(self, msg):
         self._message = ''
@@ -54,7 +58,7 @@ class StatusBar(BpythonInteraction):
         """Sets a temporary message"""
         self.message_start_time = time.time()
         self._message = msg
-        self.refresh_request(time.time() + self.message_time)
+        self.schedule_refresh(time.time() + self.message_time)
 
     def _check_for_expired_message(self):
         if self._message and time.time() > self.message_start_time + self.message_time:
@@ -129,7 +133,7 @@ class StatusBar(BpythonInteraction):
         self.message_time = n
         self.message(msg)
         self.waiting_for_refresh = True
-        self.refresh_request()
+        self.request_refresh()
         self.main_greenlet.switch(msg)
 
     # below Really ought to be called from greenlets other than main because they block

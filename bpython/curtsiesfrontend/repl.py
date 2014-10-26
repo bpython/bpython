@@ -43,6 +43,7 @@ from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 from bpython.curtsiesfrontend.filewatch import ModuleChangedEventHandler
 from bpython.curtsiesfrontend.interaction import StatusBar
 from bpython.curtsiesfrontend.manual_readline import edit_keys
+from bpython.curtsiesfrontend import events as bpythonevents
 
 #TODO other autocomplete modes (also fix in other bpython implementations)
 
@@ -213,8 +214,10 @@ class Repl(BpythonRepl):
     def __init__(self,
                  locals_=None,
                  config=None,
-                 request_refresh=lambda when='now': None,
-                 request_reload=lambda desc: None, get_term_hw=lambda:(50, 10),
+                 request_refresh=lambda: None,
+                 schedule_refresh=lambda when=0: None,
+                 request_reload=lambda desc: None,
+                 get_term_hw=lambda:(50, 10),
                  get_cursor_vertical_diff=lambda: 0,
                  banner=None,
                  interp=None,
@@ -259,22 +262,30 @@ class Repl(BpythonRepl):
 
         self.reevaluating = False
         self.fake_refresh_requested = False
-        def smarter_request_refresh(when='now'):
+        def smarter_request_refresh():
             if self.reevaluating or self.paste_mode:
                 self.fake_refresh_requested = True
             else:
-                request_refresh(when=when)
+                request_refresh()
         self.request_refresh = smarter_request_refresh
-        def smarter_request_reload(desc):
+        def smarter_schedule_refresh(when='now'):
+            if self.reevaluating or self.paste_mode:
+                self.fake_refresh_requested = True
+            else:
+                schedule_refresh(when=when)
+        self.schedule_refresh = smarter_schedule_refresh
+        def smarter_request_reload(files_modified=()):
             if self.watching_files:
-                request_reload(desc)
+                request_reload(files_modified=files_modified)
             else:
                 pass
         self.request_reload = smarter_request_reload
         self.get_term_hw = get_term_hw
         self.get_cursor_vertical_diff = get_cursor_vertical_diff
 
-        self.status_bar = StatusBar('', refresh_request=self.request_refresh)
+        self.status_bar = StatusBar('',
+                                    request_refresh=self.request_refresh,
+                                    schedule_refresh=self.schedule_refresh)
         self.edit_keys = edit_keys.mapping_with_config(config, key_dispatch)
         logger.debug("starting parent init")
         super(Repl, self).__init__(interp, config)
@@ -423,18 +434,20 @@ class Repl(BpythonRepl):
 
         logger.debug("processing event %r", e)
         if isinstance(e, events.Event):
-            return self.proccess_control_event(e)
+            return self.process_control_event(e)
         else:
             self.last_events.append(e)
             self.last_events.pop(0)
             return self.process_key_event(e)
 
-    def proccess_control_event(self, e):
+    def process_control_event(self, e):
 
-        if isinstance(e, events.RefreshRequestEvent):
-            if e.when != 'now':
-                pass # This is a scheduled refresh - it's really just a refresh (so nop)
-            elif self.status_bar.has_focus:
+        if isinstance(e, bpythonevents.ScheduledRefreshRequestEvent):
+            pass  # This is a scheduled refresh - it's really just a refresh (so nop)
+
+        elif isinstance(e, bpythonevents.RefreshRequestEvent):
+            logger.info('received ASAP refresh request event')
+            if self.status_bar.has_focus:
                 self.status_bar.process_event(e)
             else:
                 assert self.coderunner.code_is_waiting
@@ -463,7 +476,7 @@ class Repl(BpythonRepl):
             self.keyboard_interrupt()
             return
 
-        elif isinstance(e, events.ReloadEvent):
+        elif isinstance(e, bpythonevents.ReloadEvent):
             if self.watching_files:
                 self.clear_modules_and_reevaluate()
                 self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' because ' + ' & '.join(e.files_modified) + ' modified')
@@ -1296,7 +1309,7 @@ class Repl(BpythonRepl):
             self.on_enter(insert_into_history=insert_into_history)
             while self.fake_refresh_requested:
                 self.fake_refresh_requested = False
-                self.process_event(events.RefreshRequestEvent())
+                self.process_event(bpythonevents.RefreshRequestEvent())
         sys.stdin = self.stdin
         self.reevaluating = False
 
@@ -1405,6 +1418,7 @@ def compress_paste_event(paste_event):
     else:
         return None
 
+#TODO this needs some work to function again and be useful for embedding
 def simple_repl():
     refreshes = []
     def request_refresh():

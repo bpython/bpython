@@ -68,19 +68,19 @@ class CodeRunner(object):
     just passes whatever is passed in to run_code(for_code) to the
     code greenlet
     """
-    def __init__(self, interp=None, stuff_a_refresh_request=lambda:None):
+    def __init__(self, interp=None, request_refresh=lambda:None):
         """
         interp is an interpreter object to use. By default a new one is
         created.
 
-        stuff_a_refresh_request is a function that will be called each time
+        request_refresh is a function that will be called each time
         the running code asks for a refresh - to, for example, update the screen.
         """
         self.interp = interp or code.InteractiveInterpreter()
         self.source = None
         self.main_greenlet = greenlet.getcurrent()
         self.code_greenlet = None
-        self.stuff_a_refresh_request = stuff_a_refresh_request
+        self.request_refresh = request_refresh
         self.code_is_waiting = False # waiting for response from main thread
         self.sigint_happened_in_main_greenlet = False # sigint happened while in main thread
         self.orig_sigint_handler = None
@@ -125,12 +125,13 @@ class CodeRunner(object):
             else:
                 request = self.code_greenlet.switch(for_code)
 
+        logger.debug('request received from code was %r', request)
         if not issubclass(request, RequestFromCodeGreenlet):
             raise ValueError("Not a valid value from code greenlet: %r" % request)
         if request in [Wait, Refresh]:
             self.code_is_waiting = True
             if request == Refresh:
-                self.stuff_a_refresh_request()
+                self.request_refresh()
             return False
         elif request in [Done, Unfinished]:
             self._unload_code()
@@ -188,7 +189,7 @@ class FakeOutput(object):
 def test_simple():
     orig_stdout = sys.stdout
     orig_stderr = sys.stderr
-    c = CodeRunner(stuff_a_refresh_request=lambda: orig_stdout.flush() or orig_stderr.flush())
+    c = CodeRunner(request_refresh=lambda: orig_stdout.flush() or orig_stderr.flush())
     stdout = FakeOutput(c, orig_stdout.write)
     sys.stdout = stdout
     c.load_code('1 + 1')
@@ -199,7 +200,7 @@ def test_simple():
 def test_exception():
     orig_stdout = sys.stdout
     orig_stderr = sys.stderr
-    c = CodeRunner(stuff_a_refresh_request=lambda: orig_stdout.flush() or orig_stderr.flush())
+    c = CodeRunner(request_refresh=lambda: orig_stdout.flush() or orig_stderr.flush())
     def ctrlc():
         raise KeyboardInterrupt()
     stdout = FakeOutput(c, lambda x: ctrlc())

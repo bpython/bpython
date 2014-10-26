@@ -17,6 +17,10 @@ from bpython.curtsiesfrontend.coderunner import SystemExitFromCodeGreenlet
 from bpython import args as bpargs
 from bpython.translations import _
 from bpython.importcompletion import find_iterator
+from bpython.curtsiesfrontend import events as bpythonevents
+
+logger = logging.getLogger(__name__)
+
 
 repl = None # global for `from bpython.curtsies import repl`
 #WARNING Will be a problem if more than one repl is ever instantiated this way
@@ -73,48 +77,9 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                 hide_cursor=False,
                 extra_bytes_callback=input_generator.unget_bytes) as window:
 
-            reload_requests = []
-            def request_reload(desc):
-                reload_requests.append(curtsies.events.ReloadEvent([desc]))
-            refresh_requests = []
-            def request_refresh(when='now'):
-                refresh_requests.append(curtsies.events.RefreshRequestEvent(when=when))
-
-            def event_or_refresh(timeout=None):
-                if timeout is None:
-                    timeout = 2**25  # a year
-                while True:
-                    starttime = time.time()
-                    while True:
-                        t = time.time()
-                        refresh_requests.sort(key=lambda r: 0 if r.when == 'now' else r.when)
-                        if refresh_requests and (refresh_requests[0].when == 'now' or refresh_requests[-1].when < t):
-                            yield refresh_requests.pop(0)
-                        elif reload_requests:
-                            e = reload_requests.pop()
-                            yield e
-                        else:
-                            if refresh_requests:
-                                next_refresh = refresh_requests.pop(0)
-                                time_until_next_scheduled_event = max(0, next_refresh.when - t)
-                            else:
-                                next_refresh = None
-                                time_until_next_scheduled_event = 2**25
-
-                            time_to_wait = min(time_until_next_scheduled_event, max(0, starttime + timeout - t))
-
-                            e = input_generator.send(time_to_wait)
-
-                            if next_refresh is not None:
-                                if e is None and time.time() > t + time_until_next_scheduled_event:
-                                    yield next_refresh
-                                    continue
-                                else:
-                                    refresh_requests.insert(0, next_refresh)
-
-                            if starttime + timeout < time.time() or e is not None:
-                                yield e
-                                break
+            request_refresh = input_generator.event_trigger(bpythonevents.RefreshRequestEvent)
+            schedule_refresh = input_generator.scheduled_event_trigger(bpythonevents.ScheduledRefreshRequestEvent)
+            request_reload  = input_generator.threadsafe_event_trigger(bpythonevents.ReloadEvent)
 
             def on_suspend():
                 window.__exit__(None, None, None)
@@ -128,6 +93,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
             with Repl(config=config,
                       locals_=locals_,
                       request_refresh=request_refresh,
+                      schedule_refresh=schedule_refresh,
                       request_reload=request_reload,
                       get_term_hw=window.get_term_hw,
                       get_cursor_vertical_diff=window.get_cursor_vertical_diff,
@@ -157,11 +123,13 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                 if paste:
                     process_event(paste)
 
-                process_event(None) #priming the pump (do a display before waiting for first event) 
-                for _, e in izip(find_iterator, event_or_refresh(0)):
+                process_event(None) # do a display before waiting for first event
+                for _ in find_iterator:
+                    e = input_generator.send(0)
                     if e is not None:
                         process_event(e)
-                for e in event_or_refresh(None):
+
+                for e in input_generator:
                     process_event(e)
 
 if __name__ == '__main__':

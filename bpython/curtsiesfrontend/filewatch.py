@@ -63,7 +63,7 @@ else:
             dirpath = os.path.dirname(event.src_path)
             paths = [path + '.py' for path in self.dirs[dirpath]]
             if event.src_path in paths:
-                self.on_change(event.src_path)
+                self.on_change(files_modified=[event.src_path])
 
 if __name__ == '__main__':
     m = ModuleChangedEventHandler([])

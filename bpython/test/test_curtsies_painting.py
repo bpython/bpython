@@ -11,7 +11,7 @@ except ImportError:
 
 from curtsies.formatstringarray import FormatStringTest, fsarray
 from curtsies.fmtfuncs import *
-from curtsies.events import RefreshRequestEvent
+from bpython.curtsiesfrontend.events import RefreshRequestEvent
 
 from bpython import config
 from bpython.curtsiesfrontend.repl import Repl
@@ -89,8 +89,8 @@ def output_to_repl(repl):
         sys.stdout, sys.stderr = old_out, old_err
 
 class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
-    def refresh(self, when='now'):
-        self.refresh_requests.append(RefreshRequestEvent(when=when))
+    def refresh(self):
+        self.refresh_requests.append(RefreshRequestEvent())
 
     def send_refreshes(self):
         while self.refresh_requests:
