@@ -3,9 +3,7 @@ from __future__ import absolute_import
 import code
 import logging
 import sys
-import time
 from optparse import Option
-from itertools import izip
 
 import curtsies
 import curtsies.window
@@ -22,16 +20,17 @@ from bpython.curtsiesfrontend import events as bpythonevents
 logger = logging.getLogger(__name__)
 
 
-repl = None # global for `from bpython.curtsies import repl`
-#WARNING Will be a problem if more than one repl is ever instantiated this way
+repl = None  # global for `from bpython.curtsies import repl`
+# WARNING Will be a problem if more than one repl is ever instantiated this way
+
 
 def main(args=None, locals_=None, banner=None):
     config, options, exec_args = bpargs.parse(args, (
         'curtsies options', None, [
             Option('--log', '-L', action='store_true',
-                help=_("log debug messages to bpython.log")),
+                   help=_("log debug messages to bpython.log")),
             Option('--type', '-t', action='store_true',
-                help=_("enter lines of file as though interactively typed")),
+                   help=_("enter lines of file as though interactively typed")),
             ]))
     if options.log:
         handler = logging.FileHandler(filename='bpython.log')
@@ -63,7 +62,7 @@ def main(args=None, locals_=None, banner=None):
             if not options.interactive:
                 raise SystemExit(exit_value)
     else:
-        sys.path.insert(0, '') # expected for interactive sessions (vanilla python does it)
+        sys.path.insert(0, '')  # expected for interactive sessions (vanilla python does it)
 
     print(bpargs.version_banner())
     mainloop(config, locals_, banner, interp, paste, interactive=(not exec_args))
@@ -123,7 +122,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                 if paste:
                     process_event(paste)
 
-                process_event(None) # do a display before waiting for first event
+                process_event(None)  # do a display before waiting for first event
                 for _ in find_iterator:
                     e = input_generator.send(0)
                     if e is not None:
