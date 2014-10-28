@@ -594,6 +594,7 @@ class Repl(object):
         current name in the current input line. Throw `SourceNotFound` if the
         source cannot be found."""
         obj = self.current_func
+        msg = "Unexpected error retrieving source code for %s" % (obj,)
         try:
             if obj is None:
                 line = self.current_line
