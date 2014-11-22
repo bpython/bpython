@@ -41,7 +41,8 @@ def main(args=None, locals_=None, banner=None):
         logging.getLogger('bpython').addHandler(handler)
         logging.getLogger('bpython').propagate = False
     else:
-        logging.getLogger('bpython').setLevel(logging.WARNING)
+        logging.getLogger('bpython').setLevel(logging.ERROR)
+        logging.getLogger('curtsies').setLevel(logging.ERROR)
 
     interp = None
     paste = None
