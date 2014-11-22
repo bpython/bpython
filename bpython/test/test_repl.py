@@ -1,8 +1,12 @@
+import collections
+from itertools import islice
 import os
+import socket
 import sys
 import unittest
-from itertools import islice
+
 from mock import Mock, MagicMock
+
 try:
     from unittest import skip
 except ImportError:
@@ -12,6 +16,7 @@ except ImportError:
 py3 = (sys.version_info[0] == 3)
 
 from bpython import config, repl, cli, autocomplete
+
 
 def setup_config(conf):
     config_struct = config.Struct()
@@ -251,6 +256,48 @@ class TestArgspec(unittest.TestCase):
     def test_nonexistent_name(self):
         self.setInputLine("spamspamspam(")
         self.assertFalse(self.repl.get_args())
+
+
+class TestGetSource(unittest.TestCase):
+    def setUp(self):
+        self.repl = FakeRepl()
+
+    def set_input_line(self, line):
+        """Set current input line of the test REPL."""
+        self.repl.current_line = line
+        self.repl.cursor_offset = len(line)
+
+    def assert_get_source_error_for_current_function(self, func, msg):
+        self.repl.current_func = func
+        self.assertRaises(repl.SourceNotFound, self.repl.get_source_of_current_name)
+        try:
+            self.repl.get_source_of_current_name()
+        except repl.SourceNotFound as e:
+            self.assertEqual(e.args[0], msg)
+
+    def test_current_function(self):
+        self.set_input_line('INPUTLINE')
+        self.repl.current_func = collections.MutableSet.add
+        self.assertTrue("Add an element." in self.repl.get_source_of_current_name())
+
+        self.assert_get_source_error_for_current_function(
+                collections.defaultdict.copy, "No source code found for INPUTLINE")
+
+        self.assert_get_source_error_for_current_function(
+                collections.defaultdict, "could not find class definition")
+
+        self.assert_get_source_error_for_current_function(
+                [], "No source code found for INPUTLINE")
+
+        self.assert_get_source_error_for_current_function(
+                list.pop, "No source code found for INPUTLINE")
+
+    def test_current_line(self):
+        self.repl.interp.locals['a'] = socket.socket
+        self.set_input_line('a')
+        self.assertTrue('dup(self)' in self.repl.get_source_of_current_name())
+
+#TODO add tests for various failures without using current function
 
 
 class TestRepl(unittest.TestCase):
