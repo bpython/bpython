@@ -33,19 +33,19 @@ class TestCurtsiesRepl(unittest.TestCase):
     def setUp(self):
         self.repl = create_repl()
 
-    def test_buffer_finished_will_parse(self):
+    def test_code_finished_will_parse(self):
         self.repl.buffer = ['1 + 1']
-        self.assertTrue(self.repl.buffer_finished_will_parse(), (True, True))
+        self.assertTrue(curtsiesrepl.code_finished_will_parse('\n'.join(self.repl.buffer)), (True, True))
         self.repl.buffer = ['def foo(x):']
-        self.assertTrue(self.repl.buffer_finished_will_parse(), (False, True))
+        self.assertTrue(curtsiesrepl.code_finished_will_parse('\n'.join(self.repl.buffer)), (False, True))
         self.repl.buffer = ['def foo(x)']
-        self.assertTrue(self.repl.buffer_finished_will_parse(), (True, False))
+        self.assertTrue(curtsiesrepl.code_finished_will_parse('\n'.join(self.repl.buffer)), (True, False))
         self.repl.buffer = ['def foo(x):', 'return 1']
-        self.assertTrue(self.repl.buffer_finished_will_parse(), (True, False))
+        self.assertTrue(curtsiesrepl.code_finished_will_parse('\n'.join(self.repl.buffer)), (True, False))
         self.repl.buffer = ['def foo(x):', '    return 1']
-        self.assertTrue(self.repl.buffer_finished_will_parse(), (True, True))
+        self.assertTrue(curtsiesrepl.code_finished_will_parse('\n'.join(self.repl.buffer)), (True, True))
         self.repl.buffer = ['def foo(x):', '    return 1', '']
-        self.assertTrue(self.repl.buffer_finished_will_parse(), (True, True))
+        self.assertTrue(curtsiesrepl.code_finished_will_parse('\n'.join(self.repl.buffer)), (True, True))
 
     def test_external_communication(self):
         self.assertEqual(type(self.repl.help_text()), type(b''))

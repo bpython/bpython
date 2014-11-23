@@ -461,8 +461,11 @@ class Repl(BpythonRepl):
             ctrl_char = compress_paste_event(e)
             if ctrl_char is not None:
                 return self.process_event(ctrl_char)
+            simple_events = just_simple_events(e.events)
+            source = bad_empty_lines_removed(''.join(simple_events))
+
             with self.in_paste_mode():
-                for ee in e.events:
+                for ee in source:
                     if self.stdin.has_focus:
                         self.stdin.process_event(ee)
                     else:
@@ -712,7 +715,9 @@ class Repl(BpythonRepl):
                                 for line in self.getstdout().split('\n'))
         text = self.send_to_external_editor(for_editor)
         lines = text.split('\n')
-        self.history = [line for line in lines if line[:4] != '### ']
+        from_editor = [line for line in lines if line[:4] != '### ']
+        source = bad_empty_lines_removed('\n'.join(from_editor))
+        self.history = source.split('\n')
         self.reevaluate(insert_into_history=True)
         self.current_line = lines[-1][4:]
         self.cursor_offset = len(self.current_line)
@@ -822,7 +827,7 @@ class Repl(BpythonRepl):
         code_to_run = '\n'.join(self.buffer)
 
         logger.debug('running %r in interpreter', self.buffer)
-        c, code_will_parse = self.buffer_finished_will_parse()
+        c, code_will_parse = code_finished_will_parse('\n'.join(self.buffer))
         self.saved_predicted_parse_error = not code_will_parse
         if c:
             logger.debug('finished - buffer cleared')
@@ -833,21 +838,6 @@ class Repl(BpythonRepl):
 
         self.coderunner.load_code(code_to_run)
         self.run_code_and_maybe_finish()
-
-    def buffer_finished_will_parse(self):
-        """Returns a tuple of whether the buffer could be complete and whether it will parse
-
-        True, True means code block is finished and no predicted parse error
-        True, False means code block is finished because a parse error is predicted
-        False, True means code block is unfinished
-        False, False isn't possible - an predicted error makes code block done"""
-        try:
-            finished = bool(code.compile_command('\n'.join(self.buffer)))
-            code_will_parse = True
-        except (ValueError, SyntaxError, OverflowError):
-            finished = True
-            code_will_parse = False
-        return finished, code_will_parse
 
     def run_code_and_maybe_finish(self, for_code=None):
         r = self.coderunner.run_code(for_code=for_code)
@@ -860,7 +850,6 @@ class Repl(BpythonRepl):
             indent = self.saved_indent
             if err:
                 indent = 0
-
 
            #TODO This should be printed ABOVE the error that just happened instead
             # or maybe just thrown away and not shown
@@ -1417,6 +1406,77 @@ def compress_paste_event(paste_event):
         return event
     else:
         return None
+
+def just_simple_events(event_list):
+    simple_events = []
+    for e in event_list:
+        if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>", u"\n", u"\r"): # '\n' necessary for pastes
+            simple_events.append(u'\n')
+        elif isinstance(e, events.Event):
+            pass # ignore events
+        elif e == '<SPACE>':
+            simple_events.append(' ')
+        else:
+            simple_events.append(e)
+    return simple_events
+
+def code_finished_will_parse(s):
+    """Returns a tuple of whether the buffer could be complete and whether it will parse
+
+    True, True means code block is finished and no predicted parse error
+    True, False means code block is finished because a parse error is predicted
+    False, True means code block is unfinished
+    False, False isn't possible - an predicted error makes code block done"""
+    try:
+        finished = bool(code.compile_command(s))
+        code_will_parse = True
+    except (ValueError, SyntaxError, OverflowError):
+        finished = True
+        code_will_parse = False
+    return finished, code_will_parse
+
+def bad_empty_lines_removed(s):
+    """Removes empty lines that would cause unfinished input to be evaluated"""
+    #  If there's a syntax error followed by an empty line, remove the empty line
+    lines = s.split('\n')
+    #TODO this should be our interpreter object making this decision so it
+    #     can be compiler directive (__future__ statement) -aware
+    #TODO specifically catch IndentationErrors instead of any syntax errors
+
+    current_block = []
+    complete_blocks = []
+    for i, line in enumerate(s.split('\n')):
+        current_block.append(line)
+        could_be_finished, valid = code_finished_will_parse('\n'.join(current_block))
+        if could_be_finished and valid:
+            complete_blocks.append(current_block)
+            current_block = []
+            continue
+        elif could_be_finished and not valid:
+            if complete_blocks:
+                complete_blocks[-1].extend(current_block)
+                current_block = complete_blocks.pop()
+                if len(current_block) < 2:
+                    return s #TODO return partial result instead of giving up
+                last_line = current_block.pop(len(current_block) - 2)
+                assert not last_line, last_line
+                new_finished, new_valid = code_finished_will_parse('\n'.join(current_block))
+                if new_valid and new_finished:
+                    complete_blocks.append(current_block)
+                    current_block = []
+                elif new_valid:
+                    continue
+                else:
+                    return s #TODO return partial result instead of giving up
+
+            else:
+                return s #TODO return partial result instead of giving up
+        else:
+            continue
+    return '\n'.join(['\n'.join(block)
+                      for block in complete_blocks + [current_block]
+                      if block])
+
 
 #TODO this needs some work to function again and be useful for embedding
 def simple_repl():
