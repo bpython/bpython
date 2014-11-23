@@ -8,7 +8,7 @@ python:
 
 install:
     - "python setup.py install"
-    - "pip install curtsies greenlet pygments requests"
+    - "pip install 'curtsies<0.2.0' greenlet pygments requests"
 
 script:
     - cd build/lib/
