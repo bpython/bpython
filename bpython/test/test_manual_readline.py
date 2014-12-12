@@ -222,7 +222,7 @@ class TestEdits(unittest.TestCase):
     def test_seq(self):
         f = lambda cursor_offset, line: ('hi', 2)
         self.edits.add('a', f)
-        self.assertTrue('a' in self.edits)
+        self.assertIn('a', self.edits)
         self.assertEqual(self.edits['a'], f)
         self.assertEqual(self.edits.call('a', cursor_offset=3, line='hello'),
                          ('hi', 2))
@@ -245,12 +245,12 @@ class TestEdits(unittest.TestCase):
         f = lambda cursor_offset, line: ('hi', 2)
         g = lambda cursor_offset, line: ('hey', 3)
         self.edits.add_config_attr('att', f)
-        self.assertFalse('att' in self.edits)
+        self.assertNotIn('att', self.edits)
         class config: att = 'c'
         key_dispatch = {'c': 'c'}
         configured_edits = self.edits.mapping_with_config(config, key_dispatch)
         self.assertTrue(configured_edits.__contains__, 'c')
-        self.assertFalse('c' in self.edits)
+        self.assertNotIn('c', self.edits)
         self.assertRaises(NotImplementedError,
                           configured_edits.add_config_attr, 'att2', g)
         self.assertRaises(NotImplementedError,

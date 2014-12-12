@@ -183,7 +183,7 @@ setup(
         'requests'
     ],
     extras_require = extras_require,
-    tests_require = ['mock'],
+    tests_require = ['mock', 'unittest2'],
     packages = packages,
     data_files = data_files,
     package_data = {

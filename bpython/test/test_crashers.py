@@ -5,13 +5,11 @@ import struct
 import sys
 import termios
 import textwrap
-import unittest
 
 try:
-    from unittest import skip
+    import unittest2 as unittest
 except ImportError:
-    def skip(f):
-        return lambda self: None
+    import unittest
 
 try:
     from twisted.internet import reactor
@@ -103,14 +101,13 @@ class CrashersTest(object):
         return self.run_bpython(input).addCallback(self.check_no_traceback)
 
     def check_no_traceback(self, data):
-        tb = data[data.find("Traceback"):]
-        self.assertTrue("Traceback" not in data, tb)
+        self.assertNotIn("Traceback", data)
 
 if reactor is not None:
     class CursesCrashersTest(TrialTestCase, CrashersTest):
         backend = "cli"
 
-    @skip("take 6 seconds, and Simon says we can skip them")
+    @unittest.skip("take 6 seconds, and Simon says we can skip them")
     class UrwidCrashersTest(TrialTestCase, CrashersTest):
         backend = "urwid"
 
