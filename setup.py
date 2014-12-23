@@ -168,7 +168,11 @@ if sys.version_info[:2] >= (2, 6):
 
 if sys.version_info[0] == 2 and sys.platform == "darwin":
     # need PyOpenSSL for SNI support (only 2.X and on Darwin)
+    # list of packages taken from
+    # https://github.com/kennethreitz/requests/blob/master/requests/packages/urllib3/contrib/pyopenssl.py
     install_requires.append('PyOpenSSL')
+    install_requires.append('ndg-httpsclient')
+    install_requires.append('pyasn1')
 
 # translations
 mo_files = list()
