@@ -133,6 +133,11 @@ data_files = [
 ]
 data_files.extend(man_pages)
 
+install_requires = [
+    'pygments',
+    'requests'
+]
+
 extras_require = {
     'urwid' : ['urwid']
 }
@@ -162,6 +167,10 @@ if sys.version_info[:2] >= (2, 6):
     if not using_setuptools:
         scripts.append('data/bpython-curtsies')
 
+if sys.version_info[0] == 2 and sys.platform == "darwin":
+    # need PyOpenSSL for SNI support (only 2.X and on Darwin)
+    install_requires.append('PyOpenSSL')
+
 # translations
 mo_files = list()
 for language in os.listdir(translations_dir):
@@ -179,10 +188,7 @@ setup(
     url = "http://www.bpython-interpreter.org/",
     long_description = """bpython is a fancy interface to the Python
     interpreter for Unix-like operating systems.""",
-    install_requires = [
-        'pygments',
-        'requests'
-    ],
+    install_requires = install_requires,
     extras_require = extras_require,
     tests_require = ['mock'],
     packages = packages,
