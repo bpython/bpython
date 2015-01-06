@@ -3,15 +3,13 @@ from itertools import islice
 import os
 import socket
 import sys
-import unittest
 
 from mock import Mock, MagicMock
 
 try:
-    from unittest import skip
+    import unittest2 as unittest
 except ImportError:
-    def skip(f):
-        return lambda self: None
+    import unittest
 
 py3 = (sys.version_info[0] == 3)
 
@@ -101,7 +99,7 @@ class TestHistory(unittest.TestCase):
 
         self.assertEqual(self.history.back(), 'print "foo\n"')
 
-    @skip("I don't understand this test")
+    @unittest.skip("I don't understand this test")
     def test_enter(self):
         self.history.enter('#lastnumber!')
 
@@ -278,7 +276,7 @@ class TestGetSource(unittest.TestCase):
     def test_current_function(self):
         self.set_input_line('INPUTLINE')
         self.repl.current_func = collections.MutableSet.add
-        self.assertTrue("Add an element." in self.repl.get_source_of_current_name())
+        self.assertIn("Add an element.", self.repl.get_source_of_current_name())
 
         self.assert_get_source_error_for_current_function(
                 collections.defaultdict.copy, "No source code found for INPUTLINE")
@@ -295,7 +293,7 @@ class TestGetSource(unittest.TestCase):
     def test_current_line(self):
         self.repl.interp.locals['a'] = socket.socket
         self.set_input_line('a')
-        self.assertTrue('dup(self)' in self.repl.get_source_of_current_name())
+        self.assertIn('dup(self)', self.repl.get_source_of_current_name())
 
 #TODO add tests for various failures without using current function
 
@@ -334,7 +332,7 @@ class TestRepl(unittest.TestCase):
         self.assertEqual(self.repl.matches_iter.matches,
             ['def', 'del', 'delattr(', 'dict(', 'dir(', 'divmod('])
 
-    @skip("disabled while non-simple completion is disabled")
+    @unittest.skip("disabled while non-simple completion is disabled")
     def test_substring_global_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
         self.setInputLine("time")
@@ -344,7 +342,7 @@ class TestRepl(unittest.TestCase):
         self.assertEqual(self.repl.completer.matches,
             ['RuntimeError(', 'RuntimeWarning('])
 
-    @skip("disabled while non-simple completion is disabled")
+    @unittest.skip("disabled while non-simple completion is disabled")
     def test_fuzzy_global_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
         self.setInputLine("doc")
@@ -368,7 +366,7 @@ class TestRepl(unittest.TestCase):
         self.assertEqual(self.repl.matches_iter.matches,
             ['Foo.bar'])
 
-    @skip("disabled while non-simple completion is disabled")
+    @unittest.skip("disabled while non-simple completion is disabled")
     def test_substring_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
         self.setInputLine("Foo.az")
@@ -382,7 +380,7 @@ class TestRepl(unittest.TestCase):
         self.assertEqual(self.repl.completer.matches,
             ['Foo.baz'])
 
-    @skip("disabled while non-simple completion is disabled")
+    @unittest.skip("disabled while non-simple completion is disabled")
     def test_fuzzy_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
         self.setInputLine("Foo.br")
@@ -412,7 +410,7 @@ class TestRepl(unittest.TestCase):
         self.setInputLine("_")
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.matches_iter,'matches'))
-        self.assertTrue('__file__' not in self.repl.matches_iter.matches)
+        self.assertNotIn('__file__', self.repl.matches_iter.matches)
 
 
 class TestCliRepl(unittest.TestCase):
@@ -465,7 +463,7 @@ class TestCliReplTab(unittest.TestCase):
         self.repl.complete.assert_called_with(tab=True)
         self.assertEqual(self.repl.s, "foobar")
 
-    @skip("disabled while non-simple completion is disabled")
+    @unittest.skip("disabled while non-simple completion is disabled")
     def test_substring_tab_complete(self):
         self.repl.s = "bar"
         self.repl.config.autocomplete_mode = autocomplete.FUZZY
@@ -474,7 +472,7 @@ class TestCliReplTab(unittest.TestCase):
         self.repl.tab()
         self.assertEqual(self.repl.s, "foofoobar")
 
-    @skip("disabled while non-simple completion is disabled")
+    @unittest.skip("disabled while non-simple completion is disabled")
     def test_fuzzy_tab_complete(self):
         self.repl.s = "br"
         self.repl.config.autocomplete_mode = autocomplete.FUZZY
@@ -509,7 +507,7 @@ class TestCliReplTab(unittest.TestCase):
         self.assertTrue(self.repl.s, "previtem")
 
     # Attribute Tests
-    @skip("disabled while non-simple completion is disabled")
+    @unittest.skip("disabled while non-simple completion is disabled")
     def test_fuzzy_attribute_tab_complete(self):
         """Test fuzzy attribute with no text"""
         self.repl.s = "Foo."
@@ -518,7 +516,7 @@ class TestCliReplTab(unittest.TestCase):
         self.repl.tab()
         self.assertEqual(self.repl.s, "Foo.foobar")
 
-    @skip("disabled while non-simple completion is disabled")
+    @unittest.skip("disabled while non-simple completion is disabled")
     def test_fuzzy_attribute_tab_complete2(self):
         """Test fuzzy attribute with some text"""
         self.repl.s = "Foo.br"
@@ -538,14 +536,14 @@ class TestCliReplTab(unittest.TestCase):
         self.repl.tab()
         self.assertEqual(self.repl.s, "foo")
 
-    @skip("disabled while non-simple completion is disabled")
+    @unittest.skip("disabled while non-simple completion is disabled")
     def test_substring_expand_forward(self):
         self.repl.config.autocomplete_mode = autocomplete.SUBSTRING
         self.repl.s = "ba"
         self.repl.tab()
         self.assertEqual(self.repl.s, "bar")
 
-    @skip("disabled while non-simple completion is disabled")
+    @unittest.skip("disabled while non-simple completion is disabled")
     def test_fuzzy_expand(self):
         pass
 
