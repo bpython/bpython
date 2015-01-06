@@ -60,15 +60,26 @@ MAGIC_METHODS = ["__%s__" % s for s in [
 def after_last_dot(name):
     return name.rstrip('.').rsplit('.')[-1]
 
-def get_completer(cursor_offset, current_line, locals_, argspec, full_code, mode, complete_magic_methods):
+def get_completer(cursor_offset, current_line, locals_, argspec, current_block,
+                  mode, complete_magic_methods):
     """Returns a list of matches and a class for what kind of completion is happening
 
     If no completion type is relevant, returns None, None
 
-    argspec is an output of inspect.getargspec
+    Params:
+        cursor_offset is the current cursor column
+        current_line is a string of the current line
+        locals_ is a dictionary of the environment
+        argspec is an inspect.ArgSpec instance for the current function where
+            the cursor is
+        current_block is the possibly multiline not-yet-evaluated block of
+            code which the current line is part of
+        mode is one of SIMPLE, SUBSTRING or FUZZY - ways to find matches
+        complete_magic_methods is a bool of whether we ought to complete
+            double underscore methods like __len__ in method signatures
     """
 
-    kwargs = {'locals_':locals_, 'argspec':argspec, 'full_code':full_code,
+    kwargs = {'locals_':locals_, 'argspec':argspec, 'current_block':current_block,
               'mode':mode, 'complete_magic_methods':complete_magic_methods}
 
     # mutually exclusive if matches: If one of these returns [], try the next one
@@ -220,11 +231,11 @@ class DictKeyCompletion(BaseCompletionType):
 class MagicMethodCompletion(BaseCompletionType):
     locate = staticmethod(lineparts.current_method_definition_name)
     @classmethod
-    def matches(cls, cursor_offset, line, full_code, **kwargs):
+    def matches(cls, cursor_offset, line, current_block, **kwargs):
         r = cls.locate(cursor_offset, line)
         if r is None:
             return None
-        if 'class' not in full_code:
+        if 'class' not in current_block:
             return None
         start, end, word = r
         return [name for name in MAGIC_METHODS if name.startswith(word)]
