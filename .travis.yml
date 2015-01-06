@@ -7,7 +7,11 @@ python:
     - "3.4"
 
 install:
-    - "pip install 'curtsies<0.2.0' greenlet pygments requests"
+    - "pip install setuptools"
+    - "pip install pygments requests" # core dependencies
+    - "pip install 'curtsies<0.2.0' greenlet" # curtsies specific dependencies
+    - "pip install babel" # translation specific dependencies
+    - "pip install sphinx" # documentation specific dependencies
     - "python setup.py install"
 
 script:
