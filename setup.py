@@ -7,22 +7,14 @@ import platform
 import sys
 
 from distutils.command.build import build
+from setuptools import setup
+from setuptools.command.install import install as _install
+try:
+    from setuptools.command.build_py import build_py_2to3 as build_py
+except ImportError:
+    from setuptools.command.build_py import build_py
 
 from bpython import __version__, package_dir
-
-try:
-    from setuptools import setup
-    from setuptools.command.install import install as _install
-    using_setuptools = True
-except ImportError:
-    from distutils.core import setup
-    from distutils.command.install import install as _install
-    using_setuptools = False
-
-try:
-    from distutils.command.build_py import build_py_2to3 as build_py
-except ImportError:
-    from distutils.command.build_py import build_py
 
 try:
     from babel.messages.frontend import compile_catalog as _compile_catalog
@@ -153,9 +145,6 @@ entry_points = {
     ]
 }
 
-scripts = [] if using_setuptools else ['data/bpython',
-                                       'data/bpython-urwid']
-
 if sys.version_info[:2] >= (2, 6):
     # curtsies only supports 2.6 and onwards
     extras_require['curtsies'] = ['curtsies >=0.1.15, <0.2.0', 'greenlet']
@@ -163,8 +152,6 @@ if sys.version_info[:2] >= (2, 6):
     packages.append("bpython.curtsiesfrontend")
     entry_points['console_scripts'].append(
         'bpython-curtsies = bpython.curtsies:main [curtsies]')
-    if not using_setuptools:
-        scripts.append('data/bpython-curtsies')
 
 if sys.version_info[0] == 2 and sys.platform == "darwin":
     # need PyOpenSSL for SNI support (only 2.X and on Darwin)
@@ -206,7 +193,6 @@ setup(
         'bpython.test': ['test.config', 'test.theme']
     },
     entry_points = entry_points,
-    scripts = scripts,
     cmdclass = cmdclass,
     test_suite = 'bpython.test'
 )
