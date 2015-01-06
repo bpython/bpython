@@ -174,6 +174,10 @@ if sys.version_info[0] == 2 and sys.platform == "darwin":
     install_requires.append('ndg-httpsclient')
     install_requires.append('pyasn1')
 
+tests_require = ['mock']
+if sys.version_info[0] == 2 and sys.version_info[1] < 7:
+    tests_require.append('unittest2')
+
 # translations
 mo_files = list()
 for language in os.listdir(translations_dir):
@@ -193,7 +197,7 @@ setup(
     interpreter for Unix-like operating systems.""",
     install_requires = install_requires,
     extras_require = extras_require,
-    tests_require = ['mock', 'unittest2'],
+    tests_require = tests_require,
     packages = packages,
     data_files = data_files,
     package_data = {
