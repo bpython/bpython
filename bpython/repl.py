@@ -629,7 +629,7 @@ class Repl(object):
                     self.docstring = None
 
     def complete(self, tab=False):
-        """Construct a full list of possible completions and construct and
+        """Construct a full list of possible completions and
         display them in a window. Also check if there's an available argspec
         (via the inspect module) and bang that on top of the completions too.
         The return value is whether the list_win is visible or not.
