@@ -7,13 +7,17 @@ python:
     - "3.4"
 
 install:
-    - "pip install setuptools"
-    - "pip install pygments requests" # core dependencies
-    - "pip install 'curtsies<0.2.0' greenlet" # curtsies specific dependencies
-    - "pip install babel" # translation specific dependencies
-    - "pip install sphinx" # documentation specific dependencies
+    - pip install setuptools
+    # core dependencies
+    - pip install pygments requests
+    # curtsies specific dependencies
+    - pip install 'curtsies<0.2.0' greenlet
+    # translation specific dependencies
+    - pip install babel
+    # documentation specific dependencies
+    - pip install sphinx
     - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then pip install unittest2; fi
-    - "python setup.py install"
+    - python setup.py install
 
 script:
     - cd build/lib/
