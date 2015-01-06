@@ -9,10 +9,6 @@ import sys
 from distutils.command.build import build
 from setuptools import setup
 from setuptools.command.install import install as _install
-try:
-    from setuptools.command.build_py import build_py_2to3 as build_py
-except ImportError:
-    from setuptools.command.build_py import build_py
 
 from bpython import __version__, package_dir
 
@@ -44,7 +40,7 @@ class install(_install):
         self.run_command('build')
         _install.run(self)
 
-cmdclass = dict(build_py=build_py, build=build, install=install)
+cmdclass = dict(build=build, install=install)
 translations_dir = os.path.join(package_dir, 'translations')
 
 # localization options
@@ -194,7 +190,8 @@ setup(
     },
     entry_points = entry_points,
     cmdclass = cmdclass,
-    test_suite = 'bpython.test'
+    test_suite = 'bpython.test',
+    use_2to3 = True
 )
 
 # vim: fileencoding=utf-8 sw=4 ts=4 sts=4 ai et sta
