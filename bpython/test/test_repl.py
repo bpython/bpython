@@ -1,12 +1,10 @@
 import os
-import unittest
 from itertools import islice
 from mock import Mock
 try:
-    from unittest import skip
+    import unittest2 as unittest
 except ImportError:
-    def skip(f):
-        return lambda self: None
+    import unittest
 
 from bpython import config, repl, cli, autocomplete
 
@@ -245,7 +243,7 @@ class TestRepl(unittest.TestCase):
         self.assertEqual(self.repl.current_string(), '')
 
     # TODO: figure out how to capture whether foobar is in globals
-    @skip('not working yet')
+    @unittest.skip('not working yet')
     def test_push(self):
         self.repl = FakeRepl()
         self.repl.push("foobar = 2")
