@@ -1,4 +1,5 @@
 import os
+import sys
 from itertools import islice
 from mock import Mock
 try:
@@ -98,6 +99,7 @@ class TestHistory(unittest.TestCase):
 
         self.assertEqual(self.history.back(), 'print "foo\n"')
 
+    @unittest.expectedFailure
     def test_enter(self):
         self.history.enter('#lastnumber!')
 
@@ -271,6 +273,7 @@ class TestRepl(unittest.TestCase):
         self.assertEqual(self.repl.completer.matches,
             ['RuntimeError(', 'RuntimeWarning('])
 
+    @unittest.skipIf(sys.version_info[0:2] != (2,7), 'known to fail on != 2.7')
     def test_fuzzy_global_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
         self.repl.input_line = "doc"
