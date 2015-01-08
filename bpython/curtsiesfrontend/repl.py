@@ -371,7 +371,7 @@ class Repl(BpythonRepl):
         self.highlighted_paren = None
 
         self.rl_history.append(self._current_line)
-        self.rl_history.last()
+        self.rl_history.reset()
         self.history.append(self._current_line)
         line = self._current_line
         #self._current_line = ''
