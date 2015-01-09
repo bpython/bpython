@@ -159,4 +159,11 @@ To correct this I have provided my windows.theme file.
 This curses implementation has 16 colors (dark and light versions of the
 colours)
 
+See also
+========
 
+Documentation
+    http://docs.bpython-interpreter.org/
+
+Developer documentation
+    http://docs.bpython-interpreter.org/contributing.html
