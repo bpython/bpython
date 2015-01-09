@@ -602,11 +602,11 @@ class Repl(object):
                 if inspection.is_eval_safe_name(line):
                     obj = self.get_object(line)
             return inspect.getsource(obj)
-        except (AttributeError, NameError), e:
+        except (AttributeError, NameError) as e:
             msg = "Cannot get source: " + str(e)
-        except IOError, e:
+        except IOError as e:
             msg = str(e)
-        except TypeError, e:
+        except TypeError as e:
             if "built-in" in str(e):
                 msg = "Cannot access source of %r" % (obj, )
             else:
@@ -840,7 +840,7 @@ class Repl(object):
             helper.stdin.write(s.encode(getpreferredencoding()))
             output = helper.communicate()[0].decode(getpreferredencoding())
             paste_url = output.split()[0]
-        except OSError, e:
+        except OSError as e:
             if e.errno == errno.ENOENT:
                 self.interact.notify(_('Upload failed: '
                                        'Helper program not found.'))
@@ -898,7 +898,7 @@ class Repl(object):
             self.rl_history.append(s)
             try:
                 self.rl_history.save(histfilename, getpreferredencoding(), self.config.hist_length)
-            except EnvironmentError, err:
+            except EnvironmentError as err:
                 self.interact.notify("Error occured while writing to file %s (%s) " % (histfilename, err.strerror))
                 self.rl_history.entries = oldhistory
                 self.rl_history.append(s)

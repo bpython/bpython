@@ -58,7 +58,7 @@ def main(args=None, locals_=None, banner=None):
             try:
                 interp = code.InteractiveInterpreter(locals=locals_)
                 bpargs.exec_code(interp, exec_args)
-            except SystemExit, e:
+            except SystemExit as e:
                 exit_value = e.args
             if not options.interactive:
                 raise SystemExit(exit_value)

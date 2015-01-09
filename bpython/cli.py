@@ -1077,7 +1077,7 @@ class CLIRepl(repl.Repl):
         curses.raw(False)
         try:
             return repl.Repl.push(self, s, insert_into_history)
-        except SystemExit, e:
+        except SystemExit as e:
             # Avoid a traceback on e.g. quit()
             self.do_exit = True
             self.exit_value = e.args
@@ -1895,7 +1895,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
         exit_value = ()
         try:
             bpython.args.exec_code(interpreter, args)
-        except SystemExit, e:
+        except SystemExit as e:
             # The documentation of code.InteractiveInterpreter.runcode claims
             # that it reraises SystemExit. However, I can't manage to trigger
             # that. To be one the safe side let's catch SystemExit here anyway.

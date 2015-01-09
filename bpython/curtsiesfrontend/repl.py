@@ -1351,7 +1351,7 @@ class Repl(BpythonRepl):
     def show_source(self):
         try:
             source = self.get_source_of_current_name()
-        except SourceNotFound, e:
+        except SourceNotFound as e:
             self.status_bar.message(_(e))
         else:
             if self.config.highlight_show_source:
