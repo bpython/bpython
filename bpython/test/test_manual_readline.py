@@ -1,5 +1,8 @@
 from bpython.curtsiesfrontend.manual_readline import *
-import unittest
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 
 class TestManualReadline(unittest.TestCase):
     def setUp(self):
