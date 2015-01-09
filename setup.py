@@ -11,8 +11,6 @@ from distutils.command.build import build
 from setuptools import setup
 from setuptools.command.install import install as _install
 
-from bpython import package_dir
-
 try:
     from babel.messages.frontend import compile_catalog as _compile_catalog
     from babel.messages.frontend import extract_messages as _extract_messages
@@ -72,6 +70,7 @@ cmdclass = {
     'install': install
 }
 
+from bpython import package_dir
 translations_dir = os.path.join(package_dir, 'translations')
 
 # localization options
