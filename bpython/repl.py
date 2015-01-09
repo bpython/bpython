@@ -761,9 +761,8 @@ class Repl(object):
         s = self.formatforfile(self.getstdout())
 
         try:
-            f = open(fn, mode)
-            f.write(s)
-            f.close()
+            with open(fn, mode) as f:
+                f.write(s)
         except IOError:
             self.interact.notify("Disk write error for file '%s'." % (fn, ))
         else:
