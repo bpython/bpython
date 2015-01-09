@@ -22,7 +22,7 @@
 
 import os.path
 
-__version__ = 'mercurial'
+__version__ = 'git'
 package_dir = os.path.abspath(os.path.dirname(__file__))
 
 
