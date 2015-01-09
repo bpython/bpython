@@ -12,17 +12,10 @@ Dependencies
 * Sphinx != 1.1.2 (for the documentation only) (apt-get install python-sphinx)
 * mock (for the testsuite only)
 * babel (optional, for internationalization)
-
-bpython-curtsies
-----------------
-``bpython-curtsies`` requires the following additional packages:
-
-* curtsies >= 0.1.0
+* requests
+* curtsies >= 0.1.15,<0.2.0
 * greenlet
-
-and optionally (for monitoring imported modules for changes)
-
-* watchdog
+* watchdog (optional, (for monitoring imported modules for changes)
 
 bpython-urwid
 -------------
