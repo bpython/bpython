@@ -23,8 +23,6 @@ import blessings
 
 import curtsies
 from curtsies import FSArray, fmtstr, FmtStr, Termmode
-from curtsies.bpythonparse import parse as bpythonparse
-from curtsies.bpythonparse import func_for_letter, color_for_letter
 from curtsies import fmtfuncs
 from curtsies import events
 
@@ -44,6 +42,8 @@ from bpython.curtsiesfrontend.filewatch import ModuleChangedEventHandler
 from bpython.curtsiesfrontend.interaction import StatusBar
 from bpython.curtsiesfrontend.manual_readline import edit_keys
 from bpython.curtsiesfrontend import events as bpythonevents
+from bpython.curtsiesfrontend.parse import parse as bpythonparse
+from bpython.curtsiesfrontend.parse import func_for_letter, color_for_letter
 
 #TODO other autocomplete modes (also fix in other bpython implementations)
 

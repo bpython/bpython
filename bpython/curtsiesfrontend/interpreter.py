@@ -3,7 +3,7 @@ import traceback
 import sys
 from pygments.token import *
 from pygments.formatter import Formatter
-from curtsies.bpythonparse import parse
+from bpython.curtsiesfrontend.parse import parse
 from codeop import CommandCompiler
 from pygments.lexers import get_lexer_by_name
 
@@ -27,7 +27,7 @@ default_colors = {
         Name.Function:'d',
         Name.Class:'d',
     }
- 
+
 class BPythonFormatter(Formatter):
     """This is subclassed from the custom formatter for bpython.
     Its format() method receives the tokensource

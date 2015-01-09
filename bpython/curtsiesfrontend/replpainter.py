@@ -2,10 +2,10 @@
 import logging
 
 from curtsies import fsarray, fmtstr
-from curtsies.bpythonparse import func_for_letter
 from curtsies.formatstring import linesplit
 from curtsies.fmtfuncs import bold
 
+from bpython.curtsiesfrontend.parse import func_for_letter
 from bpython._py3compat import py3
 if not py3:
     import inspect
