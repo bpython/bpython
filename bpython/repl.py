@@ -649,7 +649,7 @@ class Repl(object):
                 self.interp.locals,
                 self.argspec,
                 '\n'.join(self.buffer + [self.current_line]),
-                self.config.autocomplete_mode if hasattr(self.config, 'autocomplete_mode') else autocomplete.SIMPLE,
+                self.config.autocomplete_mode,
                 self.config.complete_magic_methods)
         #TODO implement completer.shown_before_tab == False (filenames shouldn't fill screen)
 
