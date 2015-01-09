@@ -22,7 +22,7 @@
 
 import os.path
 
-__version__ = '0.13.1'
+__version__ = '0.13.2'
 package_dir = os.path.abspath(os.path.dirname(__file__))
 
 
