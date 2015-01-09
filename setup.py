@@ -35,24 +35,32 @@ except ImportError:
 
 # version handling
 version_file = 'bpython/_version.py'
+version = 'unkown'
 
 try:
     # get version from git describe
-    version = subprocess.check_output(['git', 'describe', '--tags']).rstrip()
-    version_split = version.split('-')
-    if len(version_split) == 4:
-        # format: version-release-commits-hash
-        version = '-'.join((version_split[0], version_split[2]))
-    elif len(version_split) == 2:
-        # format: version-release
-        version = version_split[0]
-except subprocess.CalledProcessError:
+    proc = subprocess.Popen(['git', 'describe', '--tags'],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout = proc.communicate()[0].rstrip()
+
+    if proc.returncode == 0:
+        version_split = stdout.split('-')
+        if len(version_split) == 4:
+            # format: version-release-commits-hash
+            version = '-'.join((version_split[0], version_split[2]))
+        elif len(version_split) == 2:
+            # format: version-release
+            version = version_split[0]
+except OSError:
+    pass
+
+if version == 'unknown':
     try:
         # get version from existing version file
         with open(version_file) as vf:
             version = vf.read().strip().split('=')[-1].replace('\'', '')
     except IOError:
-        version = 'unknown'
+        pass
 
 with open(version_file, 'w') as vf:
     vf.write('# Auto-generated file, do not edit!\n')
