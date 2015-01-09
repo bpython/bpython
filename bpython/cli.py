@@ -969,7 +969,7 @@ class CLIRepl(repl.Repl):
         elif key in key_dispatch[config.show_source_key]:
             try:
                 source = self.get_source_of_current_name()
-            except repl.SourceNotFound, e:
+            except repl.SourceNotFound as e:
                 self.statusbar.message(_(e))
             else:
                 if config.highlight_show_source:
