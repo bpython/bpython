@@ -11,7 +11,7 @@ install:
     # core dependencies
     - pip install pygments requests
     # curtsies specific dependencies
-    - pip install 'curtsies<0.2.0' greenlet
+    - pip install 'curtsies >=0.1.15,<0.2.0' greenlet
     # translation specific dependencies
     - pip install babel
     # documentation specific dependencies
