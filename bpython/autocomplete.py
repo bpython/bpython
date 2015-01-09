@@ -48,6 +48,8 @@ SIMPLE = 'simple'
 SUBSTRING = 'substring'
 FUZZY = 'fuzzy'
 
+ALL_MODES = (SIMPLE, SUBSTRING, FUZZY)
+
 MAGIC_METHODS = ["__%s__" % s for s in [
     "init", "repr", "str", "lt", "le", "eq", "ne", "gt", "ge", "cmp", "hash",
     "nonzero", "unicode", "getattr", "setattr", "get", "set","call", "len",

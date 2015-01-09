@@ -6,6 +6,8 @@ from itertools import chain
 from bpython.keys import cli_key_dispatch as key_dispatch
 from bpython.autocomplete import SIMPLE as default_completion
 
+import bpython.autocomplete
+
 class Struct(object):
     """Simple class for instantiating objects we can add arbitrary attributes
     to and use for various arbitrary things."""
@@ -229,7 +231,12 @@ def loadini(struct, configfile):
     for key in (struct.pastebin_key, struct.save_key):
         key_dispatch[key]
 
+    # expand path of history file
     struct.hist_file = os.path.expanduser(struct.hist_file)
+
+    # verify completion mode
+    if struct.autocomplete_mode not in bpython.autocomplete.ALL_MODES:
+        struct.autocomplete_mode = default_completion
 
 def load_theme(struct, path, colors, default_colors):
     theme = ConfigParser()
