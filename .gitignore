@@ -9,3 +9,4 @@ env
 .DS_Store
 .idea/
 doc/sphinx/build/*
+bpython/_version.py

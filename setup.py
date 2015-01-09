@@ -5,12 +5,13 @@
 import os
 import platform
 import sys
+import subprocess
 
 from distutils.command.build import build
 from setuptools import setup
 from setuptools.command.install import install as _install
 
-from bpython import __version__, package_dir
+from bpython import package_dir
 
 try:
     from babel.messages.frontend import compile_catalog as _compile_catalog
@@ -33,6 +34,25 @@ try:
 except ImportError:
     using_sphinx = False
 
+
+# version handling
+version_file = 'bpython/_version.py'
+
+try:
+    # get version from git describe
+    version = subprocess.check_output(['git', 'describe', '--tags']).rstrip()
+except OSError:
+    try:
+        # get version from existing version file
+        with open(version_file) as vf:
+            version = vf.read().strip().split('=')[-1].replace('\'', '')
+    except IOError:
+        version = 'unknown'
+
+with open(version_file, 'w') as vf:
+    vf.write('# Auto-generated file, do not edit!\n')
+    vf.write('__version__=\'%s\'\n' % (version, ))
+
 class install(_install):
     """Force install to run build target."""
 
@@ -40,7 +60,11 @@ class install(_install):
         self.run_command('build')
         _install.run(self)
 
-cmdclass = dict(build=build, install=install)
+cmdclass = {
+    'build': build,
+    'install': install
+}
+
 translations_dir = os.path.join(package_dir, 'translations')
 
 # localization options
@@ -172,7 +196,7 @@ for language in os.listdir(translations_dir):
 
 setup(
     name="bpython",
-    version = __version__,
+    version = version,
     author = "Bob Farrell, Andreas Stuehrk et al.",
     author_email = "robertanthonyfarrell@gmail.com",
     description = "Fancy Interface to the Python Interpreter",

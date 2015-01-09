@@ -21,8 +21,10 @@
 # THE SOFTWARE.
 
 import os.path
+import bpython._version
 
-__version__ = 'git'
+
+__version__ = bpython._version.__version__
 package_dir = os.path.abspath(os.path.dirname(__file__))
 
 
