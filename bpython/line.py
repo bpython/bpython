@@ -28,7 +28,7 @@ current_string_literal_attr_re = re.compile(
 def current_word(cursor_offset, line):
     """the object.attribute.attribute just before or under the cursor"""
     pos = cursor_offset
-    matches = list(current_word_re.finditer(line))
+    matches = current_word_re.finditer(line)
     start = pos
     end = pos
     word = None
@@ -43,7 +43,7 @@ def current_word(cursor_offset, line):
 
 def current_dict_key(cursor_offset, line):
     """If in dictionary completion, return the current key"""
-    matches = list(current_dict_key_re.finditer(line))
+    matches = current_dict_key_re.finditer(line)
     for m in matches:
         if m.start(1) <= cursor_offset and m.end(1) >= cursor_offset:
             return (m.start(1), m.end(1), m.group(1))
@@ -51,7 +51,7 @@ def current_dict_key(cursor_offset, line):
 
 def current_dict(cursor_offset, line):
     """If in dictionary completion, return the dict that should be used"""
-    matches = list(current_dict_re.finditer(line))
+    matches = current_dict_re.finditer(line)
     for m in matches:
         if m.start(2) <= cursor_offset and m.end(2) >= cursor_offset:
             return (m.start(1), m.end(1), m.group(1))
@@ -73,7 +73,7 @@ def current_object(cursor_offset, line):
     match = current_word(cursor_offset, line)
     if match is None: return None
     start, end, word = match
-    matches = list(current_object_re.finditer(word))
+    matches = current_object_re.finditer(word)
     s = ''
     for m in matches:
         if m.end(1) + start < cursor_offset:
@@ -105,7 +105,7 @@ def current_from_import_from(cursor_offset, line):
     tokens = line.split()
     if not ('from' in tokens or 'import' in tokens):
         return None
-    matches = list(current_from_import_from_re.finditer(line))
+    matches = current_from_import_from_re.finditer(line)
     for m in matches:
         if ((m.start(1) < cursor_offset and m.end(1) >= cursor_offset) or
             (m.start(2) < cursor_offset and m.end(2) >= cursor_offset)):
