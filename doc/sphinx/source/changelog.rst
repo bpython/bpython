@@ -1,6 +1,30 @@
 Changelog
 =========
 
+0.13.2
+------
+
+A bugfix release. The fixed bugs are:
+
+* #424: Use new JSON API at bpaste.net.
+* #430: Fixed SNI issues with new pastebin service on Mac OS X.
+
+0.13.1
+------
+
+A bugfix release. The fixed bugs are:
+
+* #287: Turned off dictionary completion in bpython-curtsies
+* #281: Fixed a crash on error-raising properties
+* #286: Fixed input in Python 3
+* #293: Added encoding attribute to stdin bpython curtsies
+* #296: Fixed warnings in import completion for Python 3
+* #290: Stop using root logger
+* #301: Specify curtsies version in requirements
+
+There's also a necessary regression: #232 (adding fileno() on stdin)
+is reintroduced because its previous fix was found to be the cause of #286
+
 0.13
 ----
 
