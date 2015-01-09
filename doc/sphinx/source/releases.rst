@@ -34,7 +34,7 @@ A checklist to perform some manual tests before a release:
 
 Check that all of the following work before a release:
 
-* Runs under Python 2.5, 2.6 and 3.1 (after 2to3).
+* Runs under Python 2.6, 2.7, 3.3, and 3.4 (after 2to3).
 * Save
 * Rewind
 * Pastebin
