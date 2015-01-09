@@ -63,11 +63,6 @@ def fs_from_match(d):
     return fmtstr(d['string'], **atts)
 
 def peel_off_string(s):
-    r"""
-    >>> r = peel_off_string('\x01RI\x03]\x04asdf')
-    >>> r == ({'bg': 'I', 'string': ']', 'fg': 'R', 'colormarker': '\x01RI', 'bold': ''}, 'asdf')
-    True
-    """
     p = r"""(?P<colormarker>\x01
                 (?P<fg>[krgybmcwdKRGYBMCWD]?)
                 (?P<bg>[krgybmcwdKRGYBMCWDI]?)?)
