@@ -4,6 +4,8 @@ All functions take cursor offset from the beginning of the line and the line of 
 and return None, or a tuple of the start index, end index, and the word"""
 
 import re
+from itertools import chain
+
 
 current_word_re = re.compile(r'[\w_][\w0-9._]*[(]?')
 current_dict_key_re = re.compile(r'''[\w_][\w0-9._]*\[([\w0-9._(), '"]*)''')
@@ -89,8 +91,9 @@ def current_object_attribute(cursor_offset, line):
     match = current_word(cursor_offset, line)
     if match is None: return None
     start, end, word = match
-    matches = list(current_object_attribute_re.finditer(word))
-    for m in matches[1:]:
+    matches = current_object_attribute_re.finditer(word)
+    matches.next()
+    for m in matches:
         if m.start(1) + start <= cursor_offset and m.end(1) + start >= cursor_offset:
             return m.start(1) + start, m.end(1) + start, m.group(1)
     return None
@@ -123,8 +126,8 @@ def current_from_import_import(cursor_offset, line):
     match1 = current_from_import_import_re_2.search(line[baseline.end():])
     if match1 is None:
         return None
-    matches = list(current_from_import_import_re_3.finditer(line[baseline.end():]))
-    for m in [match1] + matches:
+    matches = current_from_import_import_re_3.finditer(line[baseline.end():])
+    for m in chain((match1, ), matches):
         start = baseline.end() + m.start(1)
         end = baseline.end() + m.end(1)
         if start < cursor_offset and end >= cursor_offset:
@@ -139,8 +142,8 @@ def current_import(cursor_offset, line):
     match1 = current_import_re_2.search(line[baseline.end():])
     if match1 is None:
         return None
-    matches = list(current_import_re_3.finditer(line[baseline.end():]))
-    for m in [match1] + matches:
+    matches = current_import_re_3.finditer(line[baseline.end():])
+    for m in chain((match1, ), matches):
         start = baseline.end() + m.start(1)
         end = baseline.end() + m.end(1)
         if start < cursor_offset and end >= cursor_offset:
