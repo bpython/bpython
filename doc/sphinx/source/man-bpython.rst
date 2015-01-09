@@ -8,9 +8,9 @@ Synopsis
 
 **bpython** [*options*] [*file* [*args*]]
 
-**bpython-urwid** [*options*] [*file* [*args*]]
+**bpython-curses** [*options*] [*file* [*args*]]
 
-**bpython-curtsies** [*options*] [*file* [*args*]]
+**bpython-urwid** [*options*] [*file* [*args*]]
 
 
 Description

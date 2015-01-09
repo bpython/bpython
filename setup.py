@@ -125,29 +125,31 @@ data_files.extend(man_pages)
 
 install_requires = [
     'pygments',
-    'requests'
+    'requests',
+    'curtsies >=0.1.15, <0.2.0',
+    'greenlet'
 ]
 
 extras_require = {
-    'urwid' : ['urwid']
+    'urwid' : ['urwid'],
+    'watch' : ['watchdog']
 }
 
-packages = ['bpython', 'bpython.test', 'bpython.translations', 'bpdb']
+packages = [
+    'bpython',
+    'bpython.curtsiesfrontend',
+    'bpython.test',
+    'bpython.translations',
+    'bpdb'
+]
 
 entry_points = {
     'console_scripts': [
-        'bpython = bpython.cli:main',
+        'bpython = bpython.curtsies:main',
+        'bpython-curses = bpython.cli:main',
         'bpython-urwid = bpython.urwid:main [urwid]'
     ]
 }
-
-if sys.version_info[:2] >= (2, 6):
-    # curtsies only supports 2.6 and onwards
-    extras_require['curtsies'] = ['curtsies >=0.1.15, <0.2.0', 'greenlet']
-    extras_require['watch'] = ['watchdog']
-    packages.append("bpython.curtsiesfrontend")
-    entry_points['console_scripts'].append(
-        'bpython-curtsies = bpython.curtsies:main [curtsies]')
 
 if sys.version_info[0] == 2 and sys.platform == "darwin":
     # need PyOpenSSL for SNI support (only 2.X and on Darwin)
