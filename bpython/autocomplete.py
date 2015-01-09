@@ -24,6 +24,7 @@
 from __future__ import with_statement
 import __builtin__
 import __main__
+import abc
 import rlcompleter
 import line as lineparts
 import re
@@ -32,16 +33,6 @@ from glob import glob
 from bpython import inspection
 from bpython import importcompletion
 from bpython._py3compat import py3
-
-# Needed for special handling of __abstractmethods__
-# abc only exists since 2.6, so check both that it exists and that it's
-# the one we're expecting
-try:
-    import abc
-    abc.ABCMeta
-    has_abc = True
-except (ImportError, AttributeError):
-    has_abc = False
 
 # Autocomplete modes
 SIMPLE = 'simple'
@@ -338,7 +329,7 @@ def attr_lookup(obj, expr, attr, autocomplete_mode):
     if hasattr(obj, '__class__'):
         words.append('__class__')
         words = words + rlcompleter.get_class_members(obj.__class__)
-        if has_abc and not isinstance(obj.__class__, abc.ABCMeta):
+        if not isinstance(obj.__class__, abc.ABCMeta):
             try:
                 words.remove('__abstractmethods__')
             except ValueError:
