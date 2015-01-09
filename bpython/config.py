@@ -229,6 +229,8 @@ def loadini(struct, configfile):
     for key in (struct.pastebin_key, struct.save_key):
         key_dispatch[key]
 
+    struct.hist_file = os.path.expanduser(struct.hist_file)
+
 def load_theme(struct, path, colors, default_colors):
     theme = ConfigParser()
     with open(path, 'r') as f:

@@ -890,7 +890,7 @@ class Repl(object):
 
     def insert_into_history(self, s):
         if self.config.hist_length:
-            histfilename = os.path.expanduser(self.config.hist_file)
+            histfilename = self.config.hist_file
             oldhistory = self.rl_history.entries
             self.rl_history.entries = []
             if os.path.exists(histfilename):
