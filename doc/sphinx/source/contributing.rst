@@ -52,6 +52,10 @@ Next install the install your development copy of bpython and its dependencies:
     <modify a file in some way>
     $ bpython                                # this runs your modified copy of bpython!
 
+Many requirements are also available from your distribution's package manager.
+Installation of some dependencies requires Python headers and a C compiler.
+These are also available from your package manager.
+
 As a first dev task, I recommend getting `bpython` to print your name every time you hit a specific key.
 
 To run tests from the bpython directory:
