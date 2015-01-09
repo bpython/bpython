@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.13.2
+------
+
+A bugfix release. The fixed bugs are:
+
+* #424: Use new JSON API at bpaste.net.
+* #430: Fixed SNI issues with new pastebin service on Mac OS X.
+
 0.13.1
 ------
 
