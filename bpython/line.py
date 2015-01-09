@@ -8,24 +8,6 @@ from itertools import chain
 
 
 current_word_re = re.compile(r'[\w_][\w0-9._]*[(]?')
-current_dict_key_re = re.compile(r'''[\w_][\w0-9._]*\[([\w0-9._(), '"]*)''')
-current_dict_re = re.compile(r'''([\w_][\w0-9._]*)\[([\w0-9._(), '"]*)''')
-current_string_re = re.compile(
-    '''(?P<open>(?:""")|"|(?:''\')|')(?:((?P<closed>.+?)(?P=open))|(?P<unclosed>.+))''')
-current_object_re = re.compile(r'([\w_][\w0-9_]*)[.]')
-current_object_attribute_re = re.compile(r'([\w_][\w0-9_]*)[.]?')
-current_from_import_from_re = re.compile(r'from ([\w0-9_.]*)(?:\s+import\s+([\w0-9_]+[,]?\s*)+)*')
-current_from_import_import_re_1 = re.compile(r'from\s([\w0-9_.]*)\s+import')
-current_from_import_import_re_2 = re.compile(r'([\w0-9_]+)')
-current_from_import_import_re_3 = re.compile(r'[,][ ]([\w0-9_]*)')
-current_import_re_1 = re.compile(r'import')
-current_import_re_2 = re.compile(r'([\w0-9_.]+)')
-current_import_re_3 = re.compile(r'[,][ ]([\w0-9_.]*)')
-current_method_definition_name_re = re.compile("def\s+([a-zA-Z_][\w]*)")
-current_single_word_re = re.compile(r"(?<![.])\b([a-zA-Z_][\w]*)")
-current_string_literal_attr_re = re.compile(
-    "('''" +
-    r'''|"""|'|")((?:(?=([^"'\\]+|\\.|(?!\1)["']))\3)*)\1[.]([a-zA-Z_]?[\w]*)''')
 
 def current_word(cursor_offset, line):
     """the object.attribute.attribute just before or under the cursor"""
@@ -43,6 +25,9 @@ def current_word(cursor_offset, line):
         return None
     return (start, end, word)
 
+
+current_dict_key_re = re.compile(r'''[\w_][\w0-9._]*\[([\w0-9._(), '"]*)''')
+
 def current_dict_key(cursor_offset, line):
     """If in dictionary completion, return the current key"""
     matches = current_dict_key_re.finditer(line)
@@ -51,6 +36,9 @@ def current_dict_key(cursor_offset, line):
             return (m.start(1), m.end(1), m.group(1))
     return None
 
+
+current_dict_re = re.compile(r'''([\w_][\w0-9._]*)\[([\w0-9._(), '"]*)''')
+
 def current_dict(cursor_offset, line):
     """If in dictionary completion, return the dict that should be used"""
     matches = current_dict_re.finditer(line)
@@ -58,6 +46,10 @@ def current_dict(cursor_offset, line):
         if m.start(2) <= cursor_offset and m.end(2) >= cursor_offset:
             return (m.start(1), m.end(1), m.group(1))
     return None
+
+
+current_string_re = re.compile(
+    '''(?P<open>(?:""")|"|(?:''\')|')(?:((?P<closed>.+?)(?P=open))|(?P<unclosed>.+))''')
 
 def current_string(cursor_offset, line):
     """If inside a string of nonzero length, return the string (excluding quotes)
@@ -69,6 +61,9 @@ def current_string(cursor_offset, line):
         if m.start(i) <= cursor_offset and m.end(i) >= cursor_offset:
             return m.start(i), m.end(i), m.group(i)
     return None
+
+
+current_object_re = re.compile(r'([\w_][\w0-9_]*)[.]')
 
 def current_object(cursor_offset, line):
     """If in attribute completion, the object on which attribute should be looked up"""
@@ -86,6 +81,9 @@ def current_object(cursor_offset, line):
         return None
     return start, start+len(s), s
 
+
+current_object_attribute_re = re.compile(r'([\w_][\w0-9_]*)[.]?')
+
 def current_object_attribute(cursor_offset, line):
     """If in attribute completion, the attribute being completed"""
     match = current_word(cursor_offset, line)
@@ -97,6 +95,9 @@ def current_object_attribute(cursor_offset, line):
         if m.start(1) + start <= cursor_offset and m.end(1) + start >= cursor_offset:
             return m.start(1) + start, m.end(1) + start, m.group(1)
     return None
+
+
+current_from_import_from_re = re.compile(r'from ([\w0-9_.]*)(?:\s+import\s+([\w0-9_]+[,]?\s*)+)*')
 
 def current_from_import_from(cursor_offset, line):
     """If in from import completion, the word after from
@@ -114,6 +115,11 @@ def current_from_import_from(cursor_offset, line):
             (m.start(2) < cursor_offset and m.end(2) >= cursor_offset)):
             return m.start(1), m.end(1), m.group(1)
     return None
+
+
+current_from_import_import_re_1 = re.compile(r'from\s([\w0-9_.]*)\s+import')
+current_from_import_import_re_2 = re.compile(r'([\w0-9_]+)')
+current_from_import_import_re_3 = re.compile(r'[,][ ]([\w0-9_]*)')
 
 def current_from_import_import(cursor_offset, line):
     """If in from import completion, the word after import being completed
@@ -134,6 +140,11 @@ def current_from_import_import(cursor_offset, line):
             return start, end, m.group(1)
     return None
 
+
+current_import_re_1 = re.compile(r'import')
+current_import_re_2 = re.compile(r'([\w0-9_.]+)')
+current_import_re_3 = re.compile(r'[,][ ]([\w0-9_.]*)')
+
 def current_import(cursor_offset, line):
     #TODO allow for multiple as's
     baseline = current_import_re_1.search(line)
@@ -149,6 +160,9 @@ def current_import(cursor_offset, line):
         if start < cursor_offset and end >= cursor_offset:
             return start, end, m.group(1)
 
+
+current_method_definition_name_re = re.compile("def\s+([a-zA-Z_][\w]*)")
+
 def current_method_definition_name(cursor_offset, line):
     """The name of a method being defined"""
     matches = current_method_definition_name_re.finditer(line)
@@ -156,6 +170,9 @@ def current_method_definition_name(cursor_offset, line):
         if (m.start(1) <= cursor_offset and m.end(1) >= cursor_offset):
             return m.start(1), m.end(1), m.group(1)
     return None
+
+
+current_single_word_re = re.compile(r"(?<![.])\b([a-zA-Z_][\w]*)")
 
 def current_single_word(cursor_offset, line):
     """the un-dotted word just before or under the cursor"""
@@ -165,6 +182,7 @@ def current_single_word(cursor_offset, line):
             return m.start(1), m.end(1), m.group(1)
     return None
 
+
 def current_dotted_attribute(cursor_offset, line):
     """The dotted attribute-object pair before the cursor"""
     match = current_word(cursor_offset, line)
@@ -172,6 +190,11 @@ def current_dotted_attribute(cursor_offset, line):
     start, end, word = match
     if '.' in word[1:]:
         return start, end, word
+
+
+current_string_literal_attr_re = re.compile(
+    "('''" +
+    r'''|"""|'|")((?:(?=([^"'\\]+|\\.|(?!\1)["']))\3)*)\1[.]([a-zA-Z_]?[\w]*)''')
 
 def current_string_literal_attr(cursor_offset, line):
     """The attribute following a string literal"""
