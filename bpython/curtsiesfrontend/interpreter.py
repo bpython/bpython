@@ -1,7 +1,9 @@
 import code
 import traceback
 import sys
-from pygments.token import *
+from pygments.token import Generic, Token, Keyword, Name, Comment, String
+from pygments.token import Error, Literal, Number, Operator, Punctuation
+from pygments.token import Whitespace
 from pygments.formatter import Formatter
 from bpython.curtsiesfrontend.parse import parse
 from codeop import CommandCompiler
