@@ -41,6 +41,14 @@ version_file = 'bpython/_version.py'
 try:
     # get version from git describe
     version = subprocess.check_output(['git', 'describe', '--tags']).rstrip()
+    version_split = version.split('-')
+    if len(version_split) == 4:
+        # format: version-release-commits-hash
+        version = '-'.join((version_split[0], version_split[2]))
+    elif len(version_split) == 2:
+        # format: version-release
+        version = version_split[0]
+
 except OSError:
     try:
         # get version from existing version file
