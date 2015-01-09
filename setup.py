@@ -48,8 +48,7 @@ try:
     elif len(version_split) == 2:
         # format: version-release
         version = version_split[0]
-
-except OSError:
+except subprocess.CalledProcessError:
     try:
         # get version from existing version file
         with open(version_file) as vf:
