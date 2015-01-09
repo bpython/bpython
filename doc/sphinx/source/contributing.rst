@@ -18,12 +18,13 @@ Getting your development environment set up
 
 bpython supports Python 2.6, 2.7, 3.3 and 3.4. The code is written in Python
 2 and transformed for Python 3 with 2to3. This means that it's easier
-to work on bpython with Python 2 because it's you can use `python setup.py develop`
+to work on bpython with Python 2 because you can use ``python setup.py develop``
+or ``pip install -e .``
 (`development mode
 <https://pythonhosted.org/setuptools/setuptools.html#development-mode>`_ installs
 by linking to the bpython source instead of copying it over)
 in a more straightforward way to have your changes immediately reflected by
-your bpython installation and the `bpython`, `bpython-curtsies`, and `bpython-urwid`
+your bpython installation and the `bpython`, `bpython-curses`, and `bpython-urwid`
 commands.
 
 Using a virtual environment is probably a good idea. Create a virtual environment with
@@ -31,7 +32,7 @@ Using a virtual environment is probably a good idea. Create a virtual environmen
 .. code-block:: bash
 
     $ virtualenv bpython-dev            # determines Python version used
-    $ source bpython-dev/bin/activate   # necssary every time you work on bpython
+    $ source bpython-dev/bin/activate   # necessary every time you work on bpython
 
 Fork bpython in the GitHub web interface, then clone the repo:
 
@@ -40,17 +41,16 @@ Fork bpython in the GitHub web interface, then clone the repo:
     $ git clone git@github.com:YOUR_GITHUB_USERNAME/bpython.git
     $ # or "git clone https://github.com/YOUR_GITHUB_USERNAME/bpython.git"
 
-Next install the dependencies and install your development copy of bpython:
+Next install the install your development copy of bpython and its dependencies:
 
 .. code-block:: bash
 
-    $ pip install pygments requests                  # install required dependencies
-    $ pip install curtsies greenlet watchdog urwid   # install optional dependencies
-    $ pip install sphinx mock nosetests              # development dependencies
     $ cd bpython
-    $ python setup.py develop
+    $ pip install -e .                       # install bpython and required dependencies
+    $ pip install watchdog urwid             # install optional dependencies
+    $ pip install sphinx mock nose           # development dependencies
     <modify a file in some way>
-    $ bpython-curtsies      # this runs your modified copy of bpython!
+    $ bpython                                # this runs your modified copy of bpython!
 
 As a first dev task, I recommend getting `bpython` to print your name every time you hit a specific key.
 
@@ -60,8 +60,8 @@ To run tests from the bpython directory:
 
     $ nosetests
 
-To build the docs:
-------------------
+Building the documentation
+--------------------------
 
 The documentation is included in the bpython repository. After
 checking out the bpython repository and installing `sphinx` as described in
@@ -75,7 +75,7 @@ repository to build the documentation:
 Afterwards you can point your browser to `doc/sphinx/build/html/index.html`.
 Don't forget to recreate the HTML after you make changes.
 
-To hack on the site or theme
+Hacking on the site or theme
 ----------------------------
 
 The site (and its theme as well) is stored in a separate repository and built using
