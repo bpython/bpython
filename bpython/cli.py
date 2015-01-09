@@ -1957,7 +1957,6 @@ def main(args=None, locals_=None, banner=None):
     return repl.extract_exit_value(exit_value)
 
 if __name__ == '__main__':
-    from bpython.cli import main
     sys.exit(main())
 
 # vim: sw=4 ts=4 sts=4 ai et
