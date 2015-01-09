@@ -186,28 +186,3 @@ class FakeOutput(object):
     def isatty(self):
         return True
 
-def test_simple():
-    orig_stdout = sys.stdout
-    orig_stderr = sys.stderr
-    c = CodeRunner(request_refresh=lambda: orig_stdout.flush() or orig_stderr.flush())
-    stdout = FakeOutput(c, orig_stdout.write)
-    sys.stdout = stdout
-    c.load_code('1 + 1')
-    c.run_code()
-    c.run_code()
-    c.run_code()
-
-def test_exception():
-    orig_stdout = sys.stdout
-    orig_stderr = sys.stderr
-    c = CodeRunner(request_refresh=lambda: orig_stdout.flush() or orig_stderr.flush())
-    def ctrlc():
-        raise KeyboardInterrupt()
-    stdout = FakeOutput(c, lambda x: ctrlc())
-    sys.stdout = stdout
-    c.load_code('1 + 1')
-    c.run_code()
-
-if __name__ == '__main__':
-    test_simple()
-
