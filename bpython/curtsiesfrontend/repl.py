@@ -1214,6 +1214,7 @@ class Repl(BpythonRepl):
 
     def _get_current_line(self):
         return self._current_line
+
     def _set_current_line(self, line, update_completion=True, reset_rl_history=True, clear_special_mode=True):
         if self._current_line == line:
             return
@@ -1227,8 +1228,10 @@ class Repl(BpythonRepl):
         self.unhighlight_paren()
     current_line = property(_get_current_line, _set_current_line, None,
                             "The current line")
+
     def _get_cursor_offset(self):
         return self._cursor_offset
+
     def _set_cursor_offset(self, offset, update_completion=True, reset_rl_history=False, clear_special_mode=True):
         if self._cursor_offset == offset:
             return
@@ -1241,8 +1244,10 @@ class Repl(BpythonRepl):
         self._cursor_offset = offset
         self.update_completion()
         self.unhighlight_paren()
+
     cursor_offset = property(_get_cursor_offset, _set_cursor_offset, None,
                             "The current cursor offset from the front of the line")
+
     def echo(self, msg, redraw=True):
         """
         Notification that redrawing the current line is necessary (we don't
@@ -1252,10 +1257,12 @@ class Repl(BpythonRepl):
         It's not supposed to update the screen if it's reevaluating the code (as it
         does with undo)."""
         logger.debug("echo called with %r" % msg)
+
     @property
     def cpos(self):
         "many WATs were had - it's the pos from the end of the line back"""
         return len(self.current_line) - self.cursor_offset
+
     def reprint_line(self, lineno, tokens):
         logger.debug("calling reprint line with %r %r", lineno, tokens)
         if self.config.syntax:
