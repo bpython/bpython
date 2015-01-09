@@ -8,6 +8,8 @@ A bugfix release. The fixed bugs are:
 
 * #424: Use new JSON API at bpaste.net.
 * #430: Fixed SNI issues with new pastebin service on Mac OS X.
+* #432: Fixed crash in bpython-curtsies in special circumstances if history file
+  is empty. Thanks to Lisa van Gelder.
 
 0.13.1
 ------
