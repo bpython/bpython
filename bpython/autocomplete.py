@@ -297,6 +297,8 @@ def safe_eval(expr, namespace):
         raise EvaluationError
 
 
+attr_matches_re = re.compile(r"(\w+(\.\w+)*)\.(\w*)")
+
 def attr_matches(text, namespace, autocomplete_mode):
     """Taken from rlcompleter.py and bent to my will.
     """
@@ -304,7 +306,7 @@ def attr_matches(text, namespace, autocomplete_mode):
     # Gna, Py 2.6's rlcompleter searches for __call__ inside the
     # instance instead of the type, so we monkeypatch to prevent
     # side-effects (__getattr__/__getattribute__)
-    m = re.match(r"(\w+(\.\w+)*)\.(\w*)", text)
+    m = attr_matches_re.match(text)
     if not m:
         return []
 
