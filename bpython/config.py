@@ -245,4 +245,3 @@ def load_theme(struct, path, colors, default_colors):
     for k, v in default_colors.iteritems():
         if k not in colors:
             colors[k] = v
-    f.close()
