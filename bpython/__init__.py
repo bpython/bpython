@@ -21,10 +21,13 @@
 # THE SOFTWARE.
 
 import os.path
-import bpython._version
 
+try:
+    from bpython._version import __version__ as version
+except ImportError:
+    version = 'unkown'
 
-__version__ = bpython._version.__version__
+__version__ = version
 package_dir = os.path.abspath(os.path.dirname(__file__))
 
 
