@@ -52,11 +52,31 @@ Next install the install your development copy of bpython and its dependencies:
     <modify a file in some way>
     $ bpython                                # this runs your modified copy of bpython!
 
-Many requirements are also available from your distribution's package manager.
-Installation of some dependencies requires Python headers and a C compiler.
-These are also available from your package manager.
+.. note::
 
-As a first dev task, I recommend getting `bpython` to print your name every time you hit a specific key.
+    Many requirements are also available from your distribution's package
+    manager. On Debian/Ubuntu based systems, the following packages can be used:
+
+    .. code-block:: bash
+
+        $ sudp apt-get install python-greenlet python-pygments python-requests
+        $ sudo apt-get install python-watchdog python-urwid
+        $ sudo apt-get install python-sphinx python-mock python-nose
+
+    Rememeber to replace ``python`` with ``python3`` in every package name if
+    you intend to develop with Python 3. You also need to run `virtualenv` with
+    `--system-site-packages` packages, if you want to use the packages provided
+    by your distribution.
+
+    Installation of some dependencies with ``pip`` requires Python headers and a
+    C compiler. These are also available from your package manager.
+
+    .. code-block:: bash
+
+        $ sudo apt-get install gcc python-dev
+
+As a first dev task, I recommend getting `bpython` to print your name every
+time you hit a specific key.
 
 To run tests from the bpython directory:
 
