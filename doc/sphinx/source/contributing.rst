@@ -109,5 +109,5 @@ included configuration file.
 After this you can open the `output/index.html` in your favourite browser and see
 if your changes had an effect.
 
-..  _GitHub issue tracker: https://github.com/bpython/bpython/issues
+.. _GitHub issue tracker: https://github.com/bpython/bpython/issues
 .. _bite-size: https://github.com/bpython/bpython/labels/bitesize
