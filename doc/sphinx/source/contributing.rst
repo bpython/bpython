@@ -68,6 +68,8 @@ Next install the install your development copy of bpython and its dependencies:
     `--system-site-packages` packages, if you want to use the packages provided
     by your distribution.
 
+.. note::
+
     Installation of some dependencies with ``pip`` requires Python headers and a
     C compiler. These are also available from your package manager.
 
