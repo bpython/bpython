@@ -154,10 +154,10 @@ def paint_infobox(rows, columns, matches, argspec, match, docstring, config, for
 
     output_lines = []
     border_color = func_for_letter(config.color_scheme['main'])
-    output_lines.append(border_color(u'┌─'+u'─'*width+u'─┐'))
+    output_lines.append(border_color(config.left_top_corner+config.top_border*(width+2)+config.right_top_corner))
     for line in lines:
-        output_lines.append(border_color(u'│ ')+((line+' '*(width - len(line)))[:width])+border_color(u' │'))
-    output_lines.append(border_color(u'└─'+u'─'*width+u'─┘'))
+        output_lines.append(border_color(config.left_border+u' ')+((line+' '*(width - len(line)))[:width])+border_color(u' ' + config.right_border))
+    output_lines.append(border_color(config.left_bottom_corner+config.bottom_border*(width+2)+config.right_bottom_corner))
     r = fsarray(output_lines[:min(rows-1, len(output_lines)-1)] + output_lines[-1:])
     return r
 
@@ -166,10 +166,10 @@ def paint_last_events(rows, columns, names):
         return fsarray([])
     width = min(max(len(name) for name in names), columns-2)
     output_lines = []
-    output_lines.append(u'┌'+u'─'*width+u'┐')
+    output_lines.append(config.left_top_corner+config.top_border*(width+2)+config.right_top_corner)
     for name in names[-(rows-2):]:
-        output_lines.append(u'│'+name[:width].center(width)+u'│')
-    output_lines.append(u'└'+u'─'*width+u'┘')
+        output_lines.append(config.left_border+name[:width].center(width)+config.right_border)
+    output_lines.append(config.left_bottom_corner+config.bottom_border*width+config.right_bottom_corner)
     return fsarray(output_lines)
 
 def paint_statusbar(rows, columns, msg, config):

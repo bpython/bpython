@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from __future__ import with_statement
 import os
 import sys
@@ -60,7 +62,8 @@ def loadini(struct, configfile):
             'pastebin_expiry': '1week',
             'pastebin_helper': '',
             'save_append_py': False,
-            'editor': os.environ.get('VISUAL', os.environ.get('EDITOR', 'vi'))
+            'editor': os.environ.get('VISUAL', os.environ.get('EDITOR', 'vi')),
+            'unicode_box': True
         },
         'keyboard': {
             'backspace': 'C-h',
@@ -239,6 +242,27 @@ def loadini(struct, configfile):
     # verify completion mode
     if struct.autocomplete_mode not in bpython.autocomplete.ALL_MODES:
         struct.autocomplete_mode = default_completion
+
+    # set box drawing characters
+    if config.getboolean('general', 'unicode_box'):
+        struct.left_border = u'│'
+        struct.right_border = u'│'
+        struct.top_border = u'─'
+        struct.bottom_border = u'─'
+        struct.left_bottom_corner = u'└'
+        struct.right_bottom_corner = u'┘'
+        struct.left_top_corner = u'┌'
+        struct.right_top_corner = u'┐'
+    else:
+        struct.left_border = u'|'
+        struct.right_border = u'|'
+        struct.top_border = u'-'
+        struct.bottom_border = u'-'
+        struct.left_bottom_corner = u'+'
+        struct.right_bottom_corner = u'+'
+        struct.left_top_corner = u'+'
+        struct.right_top_corner = u'+'
+
 
 def load_theme(struct, path, colors, default_colors):
     theme = ConfigParser()
