@@ -204,7 +204,7 @@ class History(object):
             return self.append(s)
 
         try:
-            with codecs.open(filename, 'rw+', encoding, 'ignore') as hfile:
+            with codecs.open(filename, 'a+', encoding, 'ignore') as hfile:
                 with FileLock(hfile) as lock:
                     # read entries
                     hfile.seek(0, os.SEEK_SET)
