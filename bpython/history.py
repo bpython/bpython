@@ -37,7 +37,8 @@ class History(object):
         else:
             self.entries = list(entries)
         self.index = 0  # how many lines back in history is currently selected
-                        # where 0 is the saved typed line, 1 the prev entered line
+                        # where 0 is the saved typed line, 1 the prev entered
+                        # line
         self.saved_line = '' # what was on the prompt before using history
         self.duplicates = duplicates
         self.hist_size = hist_size
@@ -67,13 +68,15 @@ class History(object):
         return self.entries[-self.index]
 
 
-    def back(self, start=True, search=False, target=None, include_current=False):
+    def back(self, start=True, search=False, target=None,
+             include_current=False):
         """Move one step back in the history."""
         if target is None:
             target = self.saved_line
         if not self.is_at_end:
             if search:
-                self.index += self.find_partial_match_backward(target, include_current)
+                self.index += self.find_partial_match_backward(target,
+                                                               include_current)
             elif start:
                 self.index += self.find_match_backward(target, include_current)
             else:
@@ -106,7 +109,8 @@ class History(object):
         return 0
 
 
-    def forward(self, start=True, search=False, target=None, include_current=False):
+    def forward(self, start=True, search=False, target=None,
+                include_current=False):
         """Move one step forward in the history."""
         if target is None:
             target = self.saved_line
