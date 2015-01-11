@@ -23,6 +23,7 @@
 
 import codecs
 import os
+from itertools import islice
 
 from bpython.translations import _
 from bpython.filelock import FileLock
@@ -96,16 +97,20 @@ class History(object):
 
 
     def find_match_backward(self, search_term, include_current=False):
-        for idx, val in enumerate(self.entries_by_index[self.index + (0 if include_current else 1):]):
+        add = 0 if include_current else 1
+        start = self.index + add
+        for idx, val in enumerate(islice(self.entries_by_index, start, None)):
             if val.startswith(search_term):
-                return idx + (0 if include_current else 1)
+                return idx + add
         return 0
 
 
     def find_partial_match_backward(self, search_term, include_current=False):
-        for idx, val in enumerate(self.entries_by_index[self.index + (0 if include_current else 1):]):
+        add = 0 if include_current else 1
+        start = self.index + add
+        for idx, val in enumerate(islice(self.entries_by_index, start, None)):
             if search_term in val:
-                return idx + (0 if include_current else 1)
+                return idx + add
         return 0
 
 
@@ -116,7 +121,8 @@ class History(object):
             target = self.saved_line
         if self.index > 1:
             if search:
-                self.index -= self.find_partial_match_forward(target, include_current)
+                self.index -= self.find_partial_match_forward(target,
+                                                              include_current)
             elif start:
                 self.index -= self.find_match_forward(target, include_current)
             else:
@@ -128,17 +134,22 @@ class History(object):
 
 
     def find_match_forward(self, search_term, include_current=False):
-        #TODO these are no longer efficient, because we realize the whole list. Does this matter?
-        for idx, val in enumerate(reversed(self.entries_by_index[:max(0, self.index - (1 if include_current else 0))])):
+        add = 0 if include_current else 1
+        end = max(0, self.index - (1 - add))
+        for idx in xrange(end):
+            val = self.entries_by_index[end - 1 - idx]
             if val.startswith(search_term):
                 return idx + (0 if include_current else 1)
         return self.index
 
 
     def find_partial_match_forward(self, search_term, include_current=False):
-        for idx, val in enumerate(reversed(self.entries_by_index[:max(0, self.index - (1 if include_current else 0))])):
+        add = 0 if include_current else 1
+        end = max(0, self.index - (1 - add))
+        for idx in xrange(end):
+            val = self.entries_by_index[end - 1 - idx]
             if search_term in val:
-                return idx + (0 if include_current else 1)
+                return idx + add
         return self.index
 
 
