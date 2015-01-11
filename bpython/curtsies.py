@@ -105,6 +105,18 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                       after_suspend=after_suspend) as repl:
                 repl.height, repl.width = window.t.height, window.t.width
 
+                if interactive:
+                    # Add custom help command
+                    # TODO: add methods to run the code
+                    repl.coderunner.interp.locals['_repl'] = repl
+
+                    repl.coderunner.interp.runsource(
+                        'from bpython.curtsiesfrontend._internal import _Helper')
+                    repl.coderunner.interp.runsource('help = _Helper(_repl)\n')
+
+                    del repl.coderunner.interp.locals['_repl']
+                    del repl.coderunner.interp.locals['_Helper']
+
                 def process_event(e):
                     """If None is passed in, just paint the screen"""
                     try:
