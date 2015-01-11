@@ -547,6 +547,8 @@ class Repl(BpythonRepl):
             greenlet.greenlet(self.write2file).switch()
         elif e in key_dispatch[self.config.pastebin_key]: # F8 for pastebin
             greenlet.greenlet(self.pastebin).switch()
+        elif e in key_dispatch[self.config.copy_clipboard_key]:
+            greenlet.greenlet(self.copy2clipboard).switch()
         elif e in key_dispatch[self.config.external_editor_key]:
             self.send_session_to_external_editor()
         elif e in key_dispatch[self.config.edit_config_key]:

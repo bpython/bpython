@@ -82,6 +82,7 @@ def loadini(struct, configfile):
             'edit_current_block': 'C-x',
             'help': 'F1',
             'last_output': 'F9',
+            'copy_clipboard': 'F10',
             'pastebin': 'F8',
             'save': 'C-s',
             'show_source': 'F2',
@@ -139,6 +140,7 @@ def loadini(struct, configfile):
     struct.flush_output = config.getboolean('general', 'flush_output')
 
     struct.pastebin_key = get_key_no_doublebind('pastebin')
+    struct.copy_clipboard_key = get_key_no_doublebind('copy_clipboard')
     struct.save_key = get_key_no_doublebind('save')
     struct.search_key = get_key_no_doublebind('search')
     struct.show_source_key = get_key_no_doublebind('show_source')

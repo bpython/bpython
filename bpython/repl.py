@@ -48,6 +48,7 @@ from bpython import inspection
 from bpython._py3compat import PythonLexer, py3
 from bpython.formatter import Parenthesis
 from bpython.translations import _
+from bpython.clipboard import get_clipboard, CopyFailed
 import bpython.autocomplete as autocomplete
 
 
@@ -446,6 +447,7 @@ class Repl(object):
         # Necessary to fix mercurial.ui.ui expecting sys.stderr to have this
         # attribute
         self.closed = False
+        self.clipboard = get_clipboard()
 
         pythonhist = os.path.expanduser(self.config.hist_file)
         if os.path.exists(pythonhist):
@@ -767,6 +769,21 @@ class Repl(object):
             self.interact.notify("Disk write error for file '%s'." % (fn, ))
         else:
             self.interact.notify('Saved to %s.' % (fn, ))
+
+    def copy2clipboard(self):
+        """Copy current content to clipboard."""
+
+        if self.clipboard is None:
+            self.interact.notify(_('No clipboard available.'))
+            return
+
+        content = self.formatforfile(self.getstdout())
+        try:
+            self.clipboard.copy(content)
+        except CopyFailed:
+            self.interact.notify(_('Could not copy to clipboard.'))
+        else:
+            self.interact.notify(_('Copied content to clipboard.'))
 
     def pastebin(self, s=None):
         """Upload to a pastebin and display the URL in the status bar."""

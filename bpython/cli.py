@@ -962,6 +962,10 @@ class CLIRepl(repl.Repl):
             self.pastebin()
             return ''
 
+        elif key in key_dispatch[config.copy_clipboard_key]:
+            self.copy2clipboard()
+            return ''
+
         elif key in key_dispatch[config.last_output_key]:
             page(self.stdout_hist[self.prev_block_finished:-4])
             return ''

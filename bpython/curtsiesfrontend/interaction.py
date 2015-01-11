@@ -143,6 +143,7 @@ class StatusBar(BpythonInteraction):
         self.prompt = q
         self.in_confirm = True
         return self.main_greenlet.switch(q)
+
     def file_prompt(self, s):
         """Expected to return a file name, given """
         self.request_greenlet = greenlet.getcurrent()
