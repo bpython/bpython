@@ -738,10 +738,9 @@ class Repl(BpythonRepl):
             if self.watching_files:
                 self.watcher.deactivate()
                 self.watching_files = False
-                self.status_bar.pop_permanent_message(msg)
             else:
                 self.watching_files = True
-                self.status_bar.push_permanent_message(msg)
+                self.status_bar.message(msg)
                 self.watcher.activate()
         else:
             self.status_bar.message('Autoreloading not available because watchdog not installed')
