@@ -147,6 +147,12 @@ Editor for externally editing the current line.
 
 .. versionadded:: 0.13
 
+unicode_box
+^^^^^^^^^^^
+Whether to use Unicode characters to draw boxes.
+
+.. versionadded:: 0.14
+
 Keyboard
 --------
 This section refers to the ``[keyboard]`` section in your
