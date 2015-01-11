@@ -3,7 +3,7 @@ import time
 import curtsies.events as events
 
 from bpython.repl import Interaction as BpythonInteraction
-
+from bpython.curtsiesfrontend.events import RefreshRequestEvent
 from bpython.curtsiesfrontend.manual_readline import edit_keys
 
 class StatusBar(BpythonInteraction):
@@ -67,7 +67,7 @@ class StatusBar(BpythonInteraction):
     def process_event(self, e):
         """Returns True if shutting down"""
         assert self.in_prompt or self.in_confirm or self.waiting_for_refresh
-        if isinstance(e, events.RefreshRequestEvent):
+        if isinstance(e, RefreshRequestEvent):
             self.waiting_for_refresh = False
             self.request_greenlet.switch()
         elif isinstance(e, events.PasteEvent):
