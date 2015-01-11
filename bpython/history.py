@@ -25,6 +25,7 @@ import codecs
 import os
 
 from bpython.translations import _
+from bpython.filelock import FileLock
 
 
 class History(object):
@@ -173,7 +174,8 @@ class History(object):
 
     def load(self, filename, encoding):
         with codecs.open(filename, 'r', encoding, 'ignore') as hfile:
-            self.entries = self.load_from(hfile)
+            with FileLock(hfile) as lock:
+                self.entries = self.load_from(hfile)
 
 
     def load_from(self, fd):
@@ -185,7 +187,8 @@ class History(object):
 
     def save(self, filename, encoding, lines=0):
         with codecs.open(filename, 'w', encoding, 'ignore') as hfile:
-            self.save_to(hfile, self.entries, lines)
+            with FileLock(hfile) as lock:
+                self.save_to(hfile, self.entries, lines)
 
 
     def save_to(self, fd, entries=None, lines=0):
@@ -202,17 +205,18 @@ class History(object):
 
         try:
             with codecs.open(filename, 'rw+', encoding, 'ignore') as hfile:
-                # read entries
-                hfile.seek(0, os.SEEK_SET)
-                entries = self.load_from(hfile)
-                self.append_to(entries, s)
+                with FileLock(hfile) as lock:
+                    # read entries
+                    hfile.seek(0, os.SEEK_SET)
+                    entries = self.load_from(hfile)
+                    self.append_to(entries, s)
 
-                # write new entries
-                hfile.seek(0, os.SEEK_SET)
-                hfile.truncate()
-                self.save_to(hfile, entries, self.hist_size)
+                    # write new entries
+                    hfile.seek(0, os.SEEK_SET)
+                    hfile.truncate()
+                    self.save_to(hfile, entries, self.hist_size)
 
-                self.entries = entries
+                    self.entries = entries
         except EnvironmentError as err:
             raise RuntimeError(_('Error occurded while writing to file %s (%s)')
                                % (filename, err.strerror))
