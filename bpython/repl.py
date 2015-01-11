@@ -49,6 +49,7 @@ from bpython._py3compat import PythonLexer, py3
 from bpython.formatter import Parenthesis
 from bpython.translations import _
 from bpython.clipboard import get_clipboard, CopyFailed
+from bpython.history import History
 import bpython.autocomplete as autocomplete
 
 
@@ -135,143 +136,6 @@ class Interpreter(code.InteractiveInterpreter):
         fancy."""
         for line in lines:
             self.write(line)
-
-
-class History(object):
-    """Stores readline-style history and current place in it"""
-
-    def __init__(self, entries=None, duplicates=False):
-        if entries is None:
-            self.entries = ['']
-        else:
-            self.entries = list(entries)
-        self.index = 0  # how many lines back in history is currently selected
-                        # where 0 is the saved typed line, 1 the prev entered line
-        self.saved_line = '' # what was on the prompt before using history
-        self.duplicates = duplicates
-
-    def append(self, line):
-        line = line.rstrip('\n')
-        if line:
-            if not self.duplicates:
-                # remove duplicates
-                try:
-                    while True:
-                        self.entries.remove(line)
-                except ValueError:
-                    pass
-            self.entries.append(line)
-
-    def first(self):
-        """Move back to the beginning of the history."""
-        if not self.is_at_end:
-            self.index = len(self.entries)
-        return self.entries[-self.index]
-
-    def back(self, start=True, search=False, target=None, include_current=False):
-        """Move one step back in the history."""
-        if target is None:
-            target = self.saved_line
-        if not self.is_at_end:
-            if search:
-                self.index += self.find_partial_match_backward(target, include_current)
-            elif start:
-                self.index += self.find_match_backward(target, include_current)
-            else:
-                self.index += 1
-        return self.entry
-
-    @property
-    def entry(self):
-        """The current entry, which may be the saved line"""
-        return self.entries[-self.index] if self.index else self.saved_line
-
-    @property
-    def entries_by_index(self):
-        return list(reversed(self.entries + [self.saved_line]))
-
-    def find_match_backward(self, search_term, include_current=False):
-        for idx, val in enumerate(self.entries_by_index[self.index + (0 if include_current else 1):]):
-            if val.startswith(search_term):
-                return idx + (0 if include_current else 1)
-        return 0
-
-    def find_partial_match_backward(self, search_term, include_current=False):
-        for idx, val in enumerate(self.entries_by_index[self.index + (0 if include_current else 1):]):
-            if search_term in val:
-                return idx + (0 if include_current else 1)
-        return 0
-
-
-    def forward(self, start=True, search=False, target=None, include_current=False):
-        """Move one step forward in the history."""
-        if target is None:
-            target = self.saved_line
-        if self.index > 1:
-            if search:
-                self.index -= self.find_partial_match_forward(target, include_current)
-            elif start:
-                self.index -= self.find_match_forward(target, include_current)
-            else:
-                self.index -= 1
-            return self.entry
-        else:
-            self.index = 0
-            return self.saved_line
-
-    def find_match_forward(self, search_term, include_current=False):
-        #TODO these are no longer efficient, because we realize the whole list. Does this matter?
-        for idx, val in enumerate(reversed(self.entries_by_index[:max(0, self.index - (1 if include_current else 0))])):
-            if val.startswith(search_term):
-                return idx + (0 if include_current else 1)
-        return self.index
-
-    def find_partial_match_forward(self, search_term, include_current=False):
-        for idx, val in enumerate(reversed(self.entries_by_index[:max(0, self.index - (1 if include_current else 0))])):
-            if search_term in val:
-                return idx + (0 if include_current else 1)
-        return self.index
-
-
-
-    def last(self):
-        """Move forward to the end of the history."""
-        if not self.is_at_start:
-            self.index = 0
-        return self.entries[0]
-
-    @property
-    def is_at_end(self):
-        return self.index >= len(self.entries) or self.index == -1
-
-    @property
-    def is_at_start(self):
-        return self.index == 0
-
-    def enter(self, line):
-        if self.index == 0:
-            self.saved_line = line
-
-    @classmethod
-    def from_filename(cls, filename):
-        history = cls()
-        history.load(filename)
-        return history
-
-    def load(self, filename, encoding):
-        with codecs.open(filename, 'r', encoding, 'ignore') as hfile:
-            for line in hfile:
-                self.append(line)
-
-    def reset(self):
-        self.index = 0
-        self.saved_line = ''
-
-    def save(self, filename, encoding, lines=0):
-        with codecs.open(filename, 'w', encoding, 'ignore') as hfile:
-            for line in self.entries[-lines:]:
-                hfile.write(line)
-                hfile.write('\n')
 
 
 class MatchesIterator(object):
@@ -429,7 +293,8 @@ class Repl(object):
         self.interp = interp
         self.interp.syntaxerror_callback = self.clear_current_line
         self.match = False
-        self.rl_history = History(duplicates=config.hist_duplicates)
+        self.rl_history = History(duplicates=config.hist_duplicates,
+                                  hist_size=config.hist_length)
         self.s_hist = []
         self.history = []
         self.evaluating = False
@@ -451,8 +316,11 @@ class Repl(object):
 
         pythonhist = os.path.expanduser(self.config.hist_file)
         if os.path.exists(pythonhist):
-            self.rl_history.load(pythonhist,
-                    getpreferredencoding() or "ascii")
+            try:
+                self.rl_history.load(pythonhist,
+                                     getpreferredencoding() or "ascii")
+            except EnvironmentError:
+                pass
 
     @property
     def ps1(self):
@@ -905,21 +773,11 @@ class Repl(object):
         return more
 
     def insert_into_history(self, s):
-        if self.config.hist_length:
-            histfilename = self.config.hist_file
-            oldhistory = self.rl_history.entries
-            self.rl_history.entries = []
-            if os.path.exists(histfilename):
-                self.rl_history.load(histfilename, getpreferredencoding())
-            self.rl_history.append(s)
-            try:
-                self.rl_history.save(histfilename, getpreferredencoding(), self.config.hist_length)
-            except EnvironmentError as err:
-                self.interact.notify("Error occured while writing to file %s (%s) " % (histfilename, err.strerror))
-                self.rl_history.entries = oldhistory
-                self.rl_history.append(s)
-        else:
-            self.rl_history.append(s)
+        try:
+            self.rl_history.append_reload_and_write(s, self.config.hist_file,
+                                                    getpreferredencoding())
+        except RuntimeError as e:
+            self.interact.notify(str(e))
 
     def undo(self, n=1):
         """Go back in the undo history n steps and call reeavluate()
