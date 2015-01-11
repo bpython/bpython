@@ -34,6 +34,7 @@ from bpython import autocomplete, importcompletion
 from bpython import translations; translations.init()
 from bpython.translations import _
 from bpython._py3compat import py3
+from bpython.pager import get_pager_command
 
 from bpython.curtsiesfrontend import replpainter as paint
 from bpython.curtsiesfrontend import sitefix; sitefix.monkeypatch_quit()
@@ -1350,7 +1351,7 @@ class Repl(BpythonRepl):
             signal.signal(signal.SIGWINCH, prev_sigwinch_handler)
 
     def pager(self, text):
-        command = os.environ.get('PAGER', 'less -rf').split()
+        command = get_pager_command()
         with tempfile.NamedTemporaryFile() as tmp:
             tmp.write(text)
             tmp.flush()

@@ -27,10 +27,10 @@ import os
 import pydoc
 import subprocess
 import sys
+import shlex
 
-
-def get_pager_command():
-    command = os.environ.get('PAGER', 'less -r').split()
+def get_pager_command(default='less -r'):
+    command = shlex.split(os.environ.get('PAGER', default))
     return command
 
 
