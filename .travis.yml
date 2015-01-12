@@ -6,20 +6,24 @@ python:
     - "3.3"
     - "3.4"
 
+env:
+    - RUN=nosetests
+    - RUN=build_sphinx
+
 install:
     - pip install setuptools
     # core dependencies
-    - pip install pygments requests
+    - if [[ $RUN == nosetests ]]; then pip install pygments requests; fi
     # curtsies specific dependencies
-    - pip install 'curtsies >=0.1.15,<0.2.0' greenlet
+    - if [[ $RUN == nosetests ]]; then pip install 'curtsies >=0.1.15,<0.2.0' greenlet; fi
     # translation specific dependencies
-    - pip install babel
+    - if [[ $RUN == nosetests ]]; then pip install babel; fi
     # documentation specific dependencies
-    - pip install sphinx
-    - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then pip install unittest2; fi
-    - python setup.py install
+    - if [[ $RUN == build_sphinx ]]; then pip install sphinx; fi
+    - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]] && [[ $RUN == nosetests ]]; then pip install unittest2; fi
+    - if [[ $RUN == nosetests ]]; then python setup.py install; fi
 
 script:
-    - python setup.py build_sphinx
-    - cd build/lib/
-    - nosetests bpython/test
+    - if [[ $RUN == build_sphinx ]]; then python setup.py build_sphinx; fi
+    - if [[ $RUN == build_sphinx ]]; then python setup.py build_sphinx_man; fi
+    - if [[ $RUN == nosetests ]]; then cd build/lib/ && nosetests bpython/test; fi
