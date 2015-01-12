@@ -157,7 +157,9 @@ data_files = [
     # desktop shortcut
     (os.path.join('share', 'applications'), ['data/bpython.desktop']),
     # AppData
-    (os.path.join('share', 'appdata'), ['data/bpython.appdata.xml'])
+    (os.path.join('share', 'appdata'), ['data/bpython.appdata.xml']),
+    # icon
+    (os.path.join('share', 'pixmaps'), ['data/bpython.png'])
 ]
 data_files.extend(man_pages)
 
@@ -224,7 +226,6 @@ setup(
     packages = packages,
     data_files = data_files,
     package_data = {
-        'bpython': ['logo.png'],
         'bpython.translations': mo_files,
         'bpython.test': ['test.config', 'test.theme']
     },
