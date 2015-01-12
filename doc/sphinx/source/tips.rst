@@ -2,8 +2,8 @@
 
 Tips and tricks
 ===============
-There are various tricks and tips to bpython. We currently list one of
-them on this page. If you know any more. Don't hesitate to let us know
+There are various tricks and tips to bpython. We currently list one of them on
+this page. If you know any more, don't hesitate to let us know
 (:ref:`community`)!
 
 bpython and multiple python versions
@@ -14,11 +14,22 @@ to us by Simon Liedtke.
 Do a source checkout of bpython and add the following to your `.profile`
 equivalent file.
 
+.. code-block:: bash
+
   alias bpython2.6='PYTHONPATH=~/python/bpython python2.6 -m bpython.cli'
 
 Where the `~/python/bpython`-path is the path to where your bpython source code
 resides.
 
-You can offcourse add multiple aliasses (make sure you have pygments installed
-on all python versions though), so you can run bpython with 2.6, 2.7 and the 3
-series.
+.. note::
+
+    If you want to create the alias for Python 3.X, make sure to run `python3.X
+    setup.py build` first and point `PYTHONPATH` to the build location (usually
+    `build/lib`).
+
+You can of course add multiple aliases, so you can run bpython with 2.6, 2.7
+and the 3 series.
+
+.. note::
+
+    Make sure you have the dependencies installed on all Python versions.
