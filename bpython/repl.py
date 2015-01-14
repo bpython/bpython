@@ -498,8 +498,17 @@ class Repl(object):
                 if not self.docstring:
                     self.docstring = None
 
+    # What complete() does:
+    # Should we show the completion box? (are there matches, or is there a docstring to show?)
+    #   Some completions should always be shown, other only if tab=True
+    # set the current docstring to the "current function's" docstring
+    # Populate the matches_iter object with new matches from the current state
+    #    if none, clear the matches iterator
+    # If exactly one match that is equal to current line, clear matches
+    # If example one match and tab=True, then choose that and clear matches
+
     def complete(self, tab=False):
-        """Construct a full list of possible completions and construct and
+        """Construct a full list of possible completions and
         display them in a window. Also check if there's an available argspec
         (via the inspect module) and bang that on top of the completions too.
         The return value is whether the list_win is visible or not.
@@ -513,19 +522,16 @@ class Repl(object):
 
         self.set_docstring()
 
-        matches, completer = autocomplete.get_completer(
-                self.cursor_offset,
-                self.current_line,
-                self.interp.locals,
-                self.argspec,
-                '\n'.join(self.buffer + [self.current_line]),
-                self.config.autocomplete_mode,
-                self.config.complete_magic_methods)
+        matches, completer = autocomplete.get_completer_bpython(
+            cursor_offset=self.cursor_offset,
+            line=self.current_line,
+            locals_=self.interp.locals,
+            argspec=self.argspec,
+            current_block='\n'.join(self.buffer + [self.current_line]),
+            complete_magic_methods=self.config.complete_magic_methods)
         #TODO implement completer.shown_before_tab == False (filenames shouldn't fill screen)
 
-        if (matches is None            # no completion is relevant
-                or len(matches) == 0): # a target for completion was found
-                                       #   but no matches were found
+        if len(matches) == 0:
             self.matches_iter.clear()
             return bool(self.argspec)
 
@@ -533,15 +539,13 @@ class Repl(object):
                                  self.current_line, matches, completer)
 
         if len(matches) == 1:
-                self.matches_iter.next()
-                if tab: # if this complete is being run for a tab key press, tab() to do the swap
-
-                    self.cursor_offset, self.current_line = self.matches_iter.substitute_cseq()
-                    return Repl.complete(self)
-                elif self.matches_iter.current_word == matches[0]:
-                    self.matches_iter.clear()
-                    return False
-                return completer.shown_before_tab
+            if tab: # if this complete is being run for a tab key press, substitute common sequence
+                self._cursor_offset, self._current_line = self.matches_iter.substitute_cseq()
+                return Repl.complete(self)
+            elif self.matches_iter.current_word == matches[0]:
+                self.matches_iter.clear()
+                return False
+            return completer.shown_before_tab
 
         else:
             assert len(matches) > 1

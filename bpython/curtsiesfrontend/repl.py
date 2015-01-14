@@ -755,9 +755,12 @@ class Repl(BpythonRepl):
         if self.incremental_search_mode:
             self.add_to_incremental_search(char)
         else:
-            self.current_line = (self.current_line[:self.cursor_offset] +
-                                 char +
-                                 self.current_line[self.cursor_offset:])
+            self._set_current_line((self.current_line[:self.cursor_offset] +
+                                    char +
+                                    self.current_line[self.cursor_offset:]),
+                                    update_completion=False,
+                                    reset_rl_history=False,
+                                    clear_special_mode=False)
             self.cursor_offset += 1
         if self.config.cli_trim_prompts and self.current_line.startswith(self.ps1):
             self.current_line = self.current_line[4:]
@@ -1237,14 +1240,13 @@ class Repl(BpythonRepl):
     def _set_cursor_offset(self, offset, update_completion=True, reset_rl_history=False, clear_special_mode=True):
         if self._cursor_offset == offset:
             return
-        if update_completion:
-            self.update_completion()
         if reset_rl_history:
             self.rl_history.reset()
         if clear_special_mode:
             self.incremental_search_mode = None
         self._cursor_offset = offset
-        self.update_completion()
+        if update_completion:
+            self.update_completion()
         self.unhighlight_paren()
 
     cursor_offset = property(_get_cursor_offset, _set_cursor_offset, None,
