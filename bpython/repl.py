@@ -534,7 +534,8 @@ class Repl(object):
             locals_=self.interp.locals,
             argspec=self.argspec,
             current_block='\n'.join(self.buffer + [self.current_line]),
-            complete_magic_methods=self.config.complete_magic_methods)
+            complete_magic_methods=self.config.complete_magic_methods,
+            history=self.history)
         #TODO implement completer.shown_before_tab == False (filenames shouldn't fill screen)
 
         if len(matches) == 0:

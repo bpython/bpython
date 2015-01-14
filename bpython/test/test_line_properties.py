@@ -124,6 +124,10 @@ class TestCurrentWord(LineTestCase):
         self.assertAccess('stuff[<asd|fg>]')
         self.assertAccess('stuff[asdf[<asd|fg>]')
 
+    def test_open_paren(self):
+        self.assertAccess('<foo(|>')
+        # documenting current behavior - TODO is this intended?
+
 class TestCurrentDictKey(LineTestCase):
     def setUp(self):
         self.func = current_dict_key

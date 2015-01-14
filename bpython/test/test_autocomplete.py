@@ -83,18 +83,18 @@ class TestCumulativeCompleter(unittest.TestCase):
     def test_one_empty_completer_returns_empty(self):
         a = self.completer([])
         cumulative = autocomplete.CumulativeCompleter([a])
-        self.assertEqual(cumulative.matches(3, 'abc', 1, 1, 1, 1), [])
+        self.assertEqual(cumulative.matches(3, 'abc', 1, 1, 1, 1, 1), [])
 
     def test_one_none_completer_returns_empty(self):
         a = self.completer(None)
         cumulative = autocomplete.CumulativeCompleter([a])
-        self.assertEqual(cumulative.matches(3, 'abc', 1, 1, 1, 1), [])
+        self.assertEqual(cumulative.matches(3, 'abc', 1, 1, 1, 1, 1), [])
 
     def test_two_completers_get_both(self):
         a = self.completer(['a'])
         b = self.completer(['b'])
         cumulative = autocomplete.CumulativeCompleter([a, b])
-        self.assertEqual(cumulative.matches(3, 'abc', 1, 1, 1, 1), (['a', 'b']))
+        self.assertEqual(cumulative.matches(3, 'abc', 1, 1, 1, 1, 1), (['a', 'b']))
 
 
 class TestFilenameCompletion(unittest.TestCase):
