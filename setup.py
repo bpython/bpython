@@ -42,6 +42,8 @@ try:
     proc = subprocess.Popen(['git', 'describe', '--tags'],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout = proc.communicate()[0].rstrip()
+    if sys.version_info[0] > 2:
+        stdout = stdout.decode('ascii')
 
     if proc.returncode == 0:
         version_split = stdout.split('-')
