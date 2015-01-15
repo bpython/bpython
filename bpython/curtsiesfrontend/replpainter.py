@@ -152,12 +152,23 @@ def paint_infobox(rows, columns, matches, argspec, match, docstring, config, for
              (matches_lines(rows, width, matches, match, config, format) if matches else []) +
              (formatted_docstring(docstring, width, config) if docstring else []))
 
-    output_lines = []
+    def add_border(line):
+        """Add colored borders left and right to a line."""
+        new_line = border_color(config.left_border + ' ')
+        new_line += line.ljust(width)[:width]
+        new_line += border_color(' ' + config.right_border)
+        return new_line
+
     border_color = func_for_letter(config.color_scheme['main'])
-    output_lines.append(border_color(config.left_top_corner+config.top_border*(width+2)+config.right_top_corner))
-    for line in lines:
-        output_lines.append(border_color(config.left_border+u' ')+((line+' '*(width - len(line)))[:width])+border_color(u' ' + config.right_border))
-    output_lines.append(border_color(config.left_bottom_corner+config.bottom_border*(width+2)+config.right_bottom_corner))
+
+    top_line = border_color(config.left_top_corner +
+                            config.top_border * (width + 2) +
+                            config.right_top_corner)
+    bottom_line = border_color(config.left_bottom_corner +
+                                config.bottom_border * (width + 2) +
+                                config.right_bottom_corner)
+
+    output_lines = [top_line] + map(add_border, lines) + [bottom_line]
     r = fsarray(output_lines[:min(rows-1, len(output_lines)-1)] + output_lines[-1:])
     return r
 
