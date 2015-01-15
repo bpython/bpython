@@ -79,7 +79,8 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
 
             request_refresh = input_generator.event_trigger(bpythonevents.RefreshRequestEvent)
             schedule_refresh = input_generator.scheduled_event_trigger(bpythonevents.ScheduledRefreshRequestEvent)
-            request_reload  = input_generator.threadsafe_event_trigger(bpythonevents.ReloadEvent)
+            request_reload = input_generator.threadsafe_event_trigger(bpythonevents.ReloadEvent)
+            interrupting_refresh = input_generator.threadsafe_event_trigger(lambda: None)
 
             def on_suspend():
                 window.__exit__(None, None, None)
@@ -88,6 +89,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
             def after_suspend():
                 input_generator.__enter__()
                 window.__enter__()
+                interrupting_refresh()
 
             global repl # global for easy introspection `from bpython.curtsies import repl`
             with Repl(config=config,

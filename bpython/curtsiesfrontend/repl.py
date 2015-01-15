@@ -399,6 +399,7 @@ class Repl(BpythonRepl):
         logger.info('decreasing scroll offset by %d to %d', cursor_dy, self.scroll_offset)
 
     def sigtstp_handler(self, signum, frame):
+        self.scroll_offset = len(self.lines_for_display)
         self.__exit__()
         self.on_suspend()
         os.kill(os.getpid(), signal.SIGTSTP)
