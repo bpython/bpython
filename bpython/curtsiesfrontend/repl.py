@@ -1277,8 +1277,8 @@ class Repl(BpythonRepl):
         self.buffer.pop()
 
         if not self.buffer:
+            self._set_cursor_offset(0, update_completion=False)
             self.current_line = ''
-            self.cursor_offset = 0
         else:
             line = self.buffer[-1]
             indent = self.predicted_indent(line)
