@@ -690,7 +690,7 @@ class Repl(BpythonRepl):
             self.on_enter()
             while self.fake_refresh_requested:
                 self.fake_refresh_requested = False
-                self.process_event(events.RefreshRequestEvent())
+                self.process_event(bpythonevents.RefreshRequestEvent())
         elif isinstance(e, events.Event):
             pass # ignore events
         elif e == '<SPACE>':
