@@ -1,4 +1,4 @@
-"""Non-keybaord events used in bpython curtsies REPL"""
+"""Non-keyboard events used in bpython curtsies REPL"""
 import time
 
 import curtsies.events
@@ -25,7 +25,7 @@ class RefreshRequestEvent(curtsies.events.Event):
 class ScheduledRefreshRequestEvent(curtsies.events.ScheduledEvent):
     """Request to refresh the REPL display at some point in the future
 
-    Used to schedule the dissapearance of status bar message that only show
+    Used to schedule the disappearance of status bar message that only shows
     for a few seconds"""
     def __init__(self, when, who='?'):
         self.who = who

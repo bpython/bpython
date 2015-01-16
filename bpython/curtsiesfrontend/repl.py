@@ -73,6 +73,7 @@ Use bpython-curtsies -t your_script.py to paste in the contents of a file, as th
 Use a config file at {config_file_location} to customize keys and behavior of bpython.
 You can customize which pastebin helper to use and which external editor to use.
 See {example_config_url} for an example config file.
+Press {config.edit_config_key} to edit this config file.
 """
 
 class FakeStdin(object):
@@ -1385,6 +1386,8 @@ class Repl(BpythonRepl):
         pairs = []
         pairs.append(['complete history suggestion', 'right arrow at end of line'])
         pairs.append(['previous match with current line', 'up arrow'])
+        pairs.append(['reverse incremental search', 'M-r'])
+        pairs.append(['incremental search', 'M-s'])
         for functionality, key in [(attr[:-4].replace('_', ' '), getattr(self.config, attr))
                                    for attr in self.config.__dict__
                                    if attr.endswith('key')]:
