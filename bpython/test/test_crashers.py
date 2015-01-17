@@ -19,6 +19,18 @@ try:
 except ImportError:
     reactor = None
 
+try:
+    import urwid
+    have_urwid = True
+except ImportError:
+    have_urwid = False
+
+try:
+    from nose.plugins.attrib import attr
+except ImportError:
+    def attr(func, *args, **kwargs):
+        return func
+
 TEST_CONFIG = os.path.join(os.path.dirname(__file__), "test.config")
 
 def set_win_size(fd, rows, columns):
@@ -103,13 +115,15 @@ class CrashersTest(object):
     def check_no_traceback(self, data):
         self.assertNotIn("Traceback", data)
 
-if reactor is not None:
-    class CursesCrashersTest(TrialTestCase, CrashersTest):
-        backend = "cli"
+@unittest.skipIf(reactor is None, "twisted is not available")
+class CursesCrashersTest(TrialTestCase, CrashersTest):
+    backend = "cli"
 
-    @unittest.skip("take 6 seconds, and Simon says we can skip them")
-    class UrwidCrashersTest(TrialTestCase, CrashersTest):
-        backend = "urwid"
+@attr(speed='slow')
+@unittest.skipIf(not have_urwid, "urwid is not available")
+@unittest.skipIf(reactor is None, "twisted is not available")
+class UrwidCrashersTest(TrialTestCase, CrashersTest):
+    backend = "urwid"
 
 if __name__ == "__main__":
     unittest.main()
