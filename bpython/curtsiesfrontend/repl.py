@@ -366,18 +366,12 @@ class Repl(BpythonRepl):
                 except:
                     if name in old_module_locations:
                         loc = old_module_locations[name]
-                        if self.watching_files:
-                            self.watcher.add_module(loc)
-                        else:
-                            self.watcher.add_module_later(loc)
+                        self.watcher.track_module(loc)
                     raise
                 else:
                     if hasattr(m, "__file__"):
                         old_module_locations[name] = m.__file__
-                        if self.watching_files:
-                            self.watcher.add_module(m.__file__)
-                        else:
-                            self.watcher.add_module_later(m.__file__)
+                        self.watcher.track_module(m.__file__)
                 return m
             __builtins__['__import__'] = new_import
 

@@ -19,8 +19,9 @@ else:
             self.observer = Observer()
             self.old_dirs = defaultdict(set)
             self.started = False
+            self.activated = False
             for path in paths:
-                self.add_module(path)
+                self._add_module(path)
 
         def reset(self):
             self.dirs = defaultdict(set)
@@ -28,8 +29,10 @@ else:
             self.old_dirs = defaultdict(set)
             self.observer.unschedule_all()
 
-        def add_module(self, path):
-            """Add a python module to track changes to"""
+        def _add_module(self, path):
+            """Add a python module to track changes to
+            
+            Can"""
             path = os.path.abspath(path)
             for suff in importcompletion.SUFFIXES:
                 if path.endswith(suff):
@@ -40,24 +43,36 @@ else:
                 self.observer.schedule(self, dirname, recursive=False)
                 self.dirs[os.path.dirname(path)].add(path)
 
-        def add_module_later(self, path):
+        def _add_module_later(self, path):
             self.modules_to_add_later.append(path)
+            
+        def track_module(self, path):
+            """
+            Begins tracking this if activated, or remembers to track later.
+            """
+            if self.activated:
+                self._add_module(path)
+            else:
+                self._add_module_later(path)
 
         def activate(self):
+            if self.activated:
+                raise ValueError("%r is already activated." % (self,))
             if not self.started:
                 self.started = True
                 self.observer.start()
-            self.dirs = self.old_dirs
             for dirname in self.dirs:
                 self.observer.schedule(self, dirname, recursive=False)
             for module in self.modules_to_add_later:
-                self.add_module(module)
+                self._add_module(module)
             del self.modules_to_add_later[:]
+            self.activated = True
 
         def deactivate(self):
+            if not self.activated:
+                raise ValueError("%r is not activated." % (self,))
             self.observer.unschedule_all()
-            self.old_dirs = self.dirs
-            self.dirs = defaultdict(set)
+            self.activated = False
 
         def on_any_event(self, event):
             dirpath = os.path.dirname(event.src_path)
@@ -66,12 +81,5 @@ else:
                 self.on_change(files_modified=[event.src_path])
 
 if __name__ == '__main__':
-    m = ModuleChangedEventHandler([])
-    m.add_module('./wdtest.py')
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        m.observer.stop()
-    m.observer.join()
+    pass
 
