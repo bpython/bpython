@@ -7,6 +7,7 @@ except ImportError:
     import unittest
 
 try:
+    import watchdog
     from bpython.curtsiesfrontend.filewatch import ModuleChangedEventHandler
     has_watchdog = True
 except ImportError:
