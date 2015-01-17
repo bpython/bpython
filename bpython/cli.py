@@ -64,7 +64,7 @@ from types import ModuleType
 # These are used for syntax highlighting
 from pygments import format
 from pygments.formatters import TerminalFormatter
-from pygments.lexers import PythonLexer
+from bpython._py3compat import PythonLexer
 from pygments.token import Token
 from bpython.formatter import BPythonFormatter
 

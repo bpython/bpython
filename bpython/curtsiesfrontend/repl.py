@@ -15,7 +15,7 @@ import time
 import unicodedata
 
 from pygments import format
-from pygments.lexers import PythonLexer
+from bpython._py3compat import PythonLexer
 from pygments.formatters import TerminalFormatter
 from interpreter import Interp
 
