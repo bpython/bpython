@@ -17,6 +17,8 @@ try:
     from twisted.internet.protocol import ProcessProtocol
     from twisted.trial.unittest import TestCase as TrialTestCase
 except ImportError:
+    class TrialTestCase(object):
+        pass
     reactor = None
 
 try:
