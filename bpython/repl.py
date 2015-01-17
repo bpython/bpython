@@ -468,19 +468,19 @@ class Repl(object):
             if obj is None:
                 line = self.current_line
                 if not line.strip():
-                    raise SourceNotFound("Nothing to get source of")
+                    raise SourceNotFound(_("Nothing to get source of"))
                 if inspection.is_eval_safe_name(line):
                     obj = self.get_object(line)
             return inspect.getsource(obj)
         except (AttributeError, NameError) as e:
-            msg = "Cannot get source: " + str(e)
+            msg = _("Cannot get source: %s") % (str(e), )
         except IOError as e:
             msg = str(e)
         except TypeError as e:
             if "built-in" in str(e):
-                msg = "Cannot access source of %r" % (obj, )
+                msg = _("Cannot access source of %r") % (obj, )
             else:
-                msg = "No source code found for %s" % (self.current_line, )
+                msg = _("No source code found for %s") % (self.current_line, )
         raise SourceNotFound(msg)
 
     def set_docstring(self):
