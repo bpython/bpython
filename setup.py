@@ -168,7 +168,7 @@ data_files.extend(man_pages)
 install_requires = [
     'pygments',
     'requests',
-    'curtsies >=0.1.15, <0.2.0',
+    'curtsies >=0.1.16, <0.2.0',
     'greenlet'
 ]
 
