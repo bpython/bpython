@@ -737,13 +737,15 @@ class Repl(BpythonRepl):
 
     def toggle_file_watch(self):
         if self.watcher:
-            msg = "Auto-reloading active, watching for file changes..."
             if self.watching_files:
+                msg = "Auto-reloading deactivated"
+                self.status_bar.message(msg)
                 self.watcher.deactivate()
                 self.watching_files = False
             else:
-                self.watching_files = True
+                msg = "Auto-reloading active, watching for file changes..."
                 self.status_bar.message(msg)
+                self.watching_files = True
                 self.watcher.activate()
         else:
             self.status_bar.message('Autoreloading not available because watchdog not installed')
