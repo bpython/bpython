@@ -1,14 +1,14 @@
 # Translations template for bpython.
-# Copyright (C) 2014 ORGANIZATION
+# Copyright (C) 2015 ORGANIZATION
 # This file is distributed under the same license as the bpython project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2015.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: bpython mercurial\n"
+"Project-Id-Version: bpython 0.13-381\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-05-13 10:50+0200\n"
+"POT-Creation-Date: 2015-01-17 18:57+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,135 +17,191 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: bpython/args.py:53
+#: bpython/args.py:57
 msgid ""
 "Usage: %prog [options] [file [args]]\n"
 "NOTE: If bpython sees an argument it does not know, execution falls back "
 "to the regular Python interpreter."
 msgstr ""
 
-#: bpython/args.py:63
+#: bpython/args.py:67
 msgid "Use CONFIG instead of default config file."
 msgstr ""
 
-#: bpython/args.py:65
+#: bpython/args.py:69
 msgid "Drop to bpython shell after running file instead of exiting."
 msgstr ""
 
-#: bpython/args.py:68
+#: bpython/args.py:72
 msgid "Don't flush the output to stdout."
 msgstr ""
 
-#: bpython/args.py:70
+#: bpython/args.py:74
 msgid "Print version and exit."
 msgstr ""
 
-#: bpython/cli.py:325 bpython/urwid.py:553
+#: bpython/cli.py:321 bpython/urwid.py:555
 msgid "y"
 msgstr ""
 
-#: bpython/cli.py:325 bpython/urwid.py:553
+#: bpython/cli.py:321 bpython/urwid.py:555
 msgid "yes"
 msgstr ""
 
-#: bpython/cli.py:1001
-msgid "Cannot show source."
+#: bpython/cli.py:1696
+msgid "Rewind"
 msgstr ""
 
-#: bpython/cli.py:1751 bpython/urwid.py:615
-#, python-format
-msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
+#: bpython/cli.py:1697
+msgid "Save"
 msgstr ""
 
-#: bpython/curtsies.py:24
-msgid "log debug messages to bpython-curtsies.log"
+#: bpython/cli.py:1698
+msgid "Pastebin"
 msgstr ""
 
-#: bpython/curtsies.py:26
+#: bpython/cli.py:1699
+msgid "Pager"
+msgstr ""
+
+#: bpython/cli.py:1700
+msgid "Show Source"
+msgstr ""
+
+#: bpython/curtsies.py:31
+msgid "log debug messages to bpython.log"
+msgstr ""
+
+#: bpython/curtsies.py:33
 msgid "enter lines of file as though interactively typed"
 msgstr ""
 
-#: bpython/repl.py:755
+#: bpython/history.py:236
+#, python-format
+msgid "Error occurded while writing to file %s (%s)"
+msgstr ""
+
+#: bpython/repl.py:471
+msgid "Nothing to get source of"
+msgstr ""
+
+#: bpython/repl.py:476
+#, python-format
+msgid "Cannot get source: %s"
+msgstr ""
+
+#: bpython/repl.py:481
+#, python-format
+msgid "Cannot access source of %r"
+msgstr ""
+
+#: bpython/repl.py:483
+#, python-format
+msgid "No source code found for %s"
+msgstr ""
+
+#: bpython/repl.py:649
+msgid "No clipboard available."
+msgstr ""
+
+#: bpython/repl.py:656
+msgid "Could not copy to clipboard."
+msgstr ""
+
+#: bpython/repl.py:658
+msgid "Copied content to clipboard."
+msgstr ""
+
+#: bpython/repl.py:667
 msgid "Pastebin buffer? (y/N) "
 msgstr ""
 
-#: bpython/repl.py:756
+#: bpython/repl.py:668
 msgid "Pastebin aborted"
 msgstr ""
 
-#: bpython/repl.py:763
+#: bpython/repl.py:675
 #, python-format
 msgid "Duplicate pastebin. Previous URL: %s"
 msgstr ""
 
-#: bpython/repl.py:777
-#, python-format
-msgid "Pastebin error for URL '%s': %s"
-msgstr ""
-
-#: bpython/repl.py:781 bpython/repl.py:800
+#: bpython/repl.py:694 bpython/repl.py:721
 msgid "Posting data to pastebin..."
 msgstr ""
 
-#: bpython/repl.py:786
+#: bpython/repl.py:699
 #, python-format
 msgid "Upload failed: %s"
 msgstr ""
 
-#: bpython/repl.py:795 bpython/repl.py:839
+#: bpython/repl.py:714
 #, python-format
-msgid "Pastebin URL: %s"
+msgid "Pastebin URL: %s - Removal URL: %s"
 msgstr ""
 
-#: bpython/repl.py:812
+#: bpython/repl.py:733
 msgid "Upload failed: Helper program not found."
 msgstr ""
 
-#: bpython/repl.py:815
+#: bpython/repl.py:736
 msgid "Upload failed: Helper program could not be run."
 msgstr ""
 
-#: bpython/repl.py:822
+#: bpython/repl.py:743
 #, python-format
 msgid "Upload failed: Helper program returned non-zero exit status %s."
 msgstr ""
 
-#: bpython/repl.py:826
+#: bpython/repl.py:747
 msgid "Upload failed: No output from helper program."
 msgstr ""
 
-#: bpython/repl.py:833
+#: bpython/repl.py:754
 msgid "Upload failed: Failed to recognize the helper program's output as an URL."
 msgstr ""
 
-#: bpython/urwid.py:1114
+#: bpython/repl.py:760
+#, python-format
+msgid "Pastebin URL: %s"
+msgstr ""
+
+#: bpython/repl.py:946
+msgid "Config file does not exist - create new from default? (y/N)"
+msgstr ""
+
+#: bpython/urwid.py:617
+#, python-format
+msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
+msgstr ""
+
+#: bpython/urwid.py:1126
 msgid "Run twisted reactor."
 msgstr ""
 
-#: bpython/urwid.py:1116
+#: bpython/urwid.py:1128
 msgid "Select specific reactor (see --help-reactors). Implies --twisted."
 msgstr ""
 
-#: bpython/urwid.py:1119
+#: bpython/urwid.py:1131
 msgid "List available reactors for -r."
 msgstr ""
 
-#: bpython/urwid.py:1121
+#: bpython/urwid.py:1133
 msgid ""
 "twistd plugin to run (use twistd for a list). Use \"--\" to pass further "
 "options to the plugin."
 msgstr ""
 
-#: bpython/urwid.py:1124
+#: bpython/urwid.py:1136
 msgid "Port to run an eval server on (forces Twisted)."
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:175
-msgid "welcome to bpython"
+#: bpython/curtsiesfrontend/repl.py:258
+msgid "Welcome to bpython!"
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:189
+#: bpython/curtsiesfrontend/repl.py:258
 #, python-format
-msgid " <%s> Rewind  <%s> Save  <%s> Pastebin <%s> Editor"
+msgid "Press <%s> for help."
 msgstr ""
 

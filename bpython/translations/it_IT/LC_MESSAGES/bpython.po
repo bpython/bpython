@@ -7,172 +7,231 @@ msgid ""
 msgstr ""
 "Project-Id-Version: bpython 0.9.7\n"
 "Report-Msgid-Bugs-To: http://github.com/bpython/bpython/issues\n"
-"POT-Creation-Date: 2013-10-10 23:29+0200\n"
-"PO-Revision-Date: 2013-10-11 14:47+0200\n"
-"Last-Translator: Michele Orrù\n"
+"POT-Creation-Date: 2015-01-17 18:57+0100\n"
+"PO-Revision-Date: 2015-01-17 22:15+0100\n"
+"Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language-Team: Michele Orrù\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
+"Language: it_IT\n"
+"X-Generator: Poedit 1.6.10\n"
 
-#: bpython/args.py:53
+#: bpython/args.py:57
 msgid ""
 "Usage: %prog [options] [file [args]]\n"
-"NOTE: If bpython sees an argument it does not know, execution falls back "
-"to the regular Python interpreter."
+"NOTE: If bpython sees an argument it does not know, execution falls back to "
+"the regular Python interpreter."
 msgstr ""
 
-#: bpython/args.py:63
+#: bpython/args.py:67
 msgid "Use CONFIG instead of default config file."
 msgstr ""
 
-#: bpython/args.py:65
+#: bpython/args.py:69
 msgid "Drop to bpython shell after running file instead of exiting."
 msgstr ""
 
-#: bpython/args.py:68
+#: bpython/args.py:72
 msgid "Don't flush the output to stdout."
 msgstr ""
 
-#: bpython/args.py:70
+#: bpython/args.py:74
 msgid "Print version and exit."
 msgstr ""
 
-#: bpython/cli.py:304 bpython/urwid.py:553
+#: bpython/cli.py:321 bpython/urwid.py:555
 msgid "y"
 msgstr "s"
 
-#: bpython/cli.py:304 bpython/urwid.py:553
+#: bpython/cli.py:321 bpython/urwid.py:555
 msgid "yes"
 msgstr "si"
 
-#: bpython/cli.py:977 bpython/gtk_.py:483
-msgid "Cannot show source."
-msgstr "Non è possibile mostrare il codice sorgente"
+#: bpython/cli.py:1696
+msgid "Rewind"
+msgstr ""
 
-#: bpython/cli.py:1677 bpython/urwid.py:615
+#: bpython/cli.py:1697
+msgid "Save"
+msgstr ""
+
+#: bpython/cli.py:1698
+msgid "Pastebin"
+msgstr ""
+
+#: bpython/cli.py:1699
+msgid "Pager"
+msgstr ""
+
+#: bpython/cli.py:1700
+msgid "Show Source"
+msgstr ""
+
+#: bpython/curtsies.py:31
+msgid "log debug messages to bpython.log"
+msgstr ""
+
+#: bpython/curtsies.py:33
+msgid "enter lines of file as though interactively typed"
+msgstr ""
+
+#: bpython/history.py:236
 #, python-format
-msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
-msgstr " <%s> Rewind  <%s> Salva  <%s> Pastebin  <%s> Pager  <%s> Mostra Sorgente"
-
-#: bpython/gtk_.py:90 bpython/gtk_.py:115
-msgid "An error occurred."
-msgstr "È stato riscontrato un errore"
-
-#: bpython/gtk_.py:97
-msgid "Exception details"
-msgstr "Dettagli sull'eccezione"
-
-#: bpython/gtk_.py:149
-msgid "Statusbar"
-msgstr "Barra di stato"
-
-#: bpython/gtk_.py:226
-msgid "tooltip"
-msgstr "tooltip"
-
-#: bpython/gtk_.py:295
-msgid "File to save to"
-msgstr "File nel quale salvare"
-
-#: bpython/gtk_.py:306
-msgid "Python files"
-msgstr "Files python"
-
-#: bpython/gtk_.py:311
-msgid "All files"
-msgstr "Tutti i files"
-
-#: bpython/gtk_.py:771
-msgid "gtk-specific options"
-msgstr "Opzioni specifiche di gtk"
-
-#: bpython/gtk_.py:772
-msgid "Options specific to bpython's Gtk+ front end"
-msgstr "Opzioni specifiche riguardo il frontend gtk+ di bpython"
-
-#: bpython/gtk_.py:774
-msgid "Embed bpython"
+msgid "Error occurded while writing to file %s (%s)"
 msgstr ""
 
-#: bpython/gtk_.py:830
-msgid "Pastebin selection"
+#: bpython/repl.py:471
+msgid "Nothing to get source of"
 msgstr ""
 
-#: bpython/repl.py:741
+#: bpython/repl.py:476
+#, python-format
+msgid "Cannot get source: %s"
+msgstr ""
+
+#: bpython/repl.py:481
+#, python-format
+msgid "Cannot access source of %r"
+msgstr ""
+
+#: bpython/repl.py:483
+#, python-format
+msgid "No source code found for %s"
+msgstr ""
+
+#: bpython/repl.py:649
+msgid "No clipboard available."
+msgstr ""
+
+#: bpython/repl.py:656
+msgid "Could not copy to clipboard."
+msgstr ""
+
+#: bpython/repl.py:658
+msgid "Copied content to clipboard."
+msgstr ""
+
+#: bpython/repl.py:667
 msgid "Pastebin buffer? (y/N) "
 msgstr ""
 
-#: bpython/repl.py:742
+#: bpython/repl.py:668
 msgid "Pastebin aborted"
 msgstr ""
 
-#: bpython/repl.py:749
+#: bpython/repl.py:675
 #, python-format
 msgid "Duplicate pastebin. Previous URL: %s"
 msgstr ""
 
-#: bpython/repl.py:763
-#, python-format
-msgid "Pastebin error for URL '%s': %s"
-msgstr ""
-
-#: bpython/repl.py:767 bpython/repl.py:786
+#: bpython/repl.py:694 bpython/repl.py:721
 msgid "Posting data to pastebin..."
 msgstr ""
 
-#: bpython/repl.py:772
+#: bpython/repl.py:699
 #, python-format
 msgid "Upload failed: %s"
 msgstr ""
 
-#: bpython/repl.py:781 bpython/repl.py:825
+#: bpython/repl.py:714
 #, python-format
-msgid "Pastebin URL: %s"
+msgid "Pastebin URL: %s - Removal URL: %s"
 msgstr ""
 
-#: bpython/repl.py:798
+#: bpython/repl.py:733
 msgid "Upload failed: Helper program not found."
 msgstr ""
 
-#: bpython/repl.py:801
+#: bpython/repl.py:736
 msgid "Upload failed: Helper program could not be run."
 msgstr ""
 
-#: bpython/repl.py:808
+#: bpython/repl.py:743
 #, python-format
 msgid "Upload failed: Helper program returned non-zero exit status %s."
 msgstr ""
 
-#: bpython/repl.py:812
+#: bpython/repl.py:747
 msgid "Upload failed: No output from helper program."
 msgstr ""
 
-#: bpython/repl.py:819
-msgid "Upload failed: Failed to recognize the helper program's output as an URL."
+#: bpython/repl.py:754
+msgid ""
+"Upload failed: Failed to recognize the helper program's output as an URL."
 msgstr ""
 
-#: bpython/urwid.py:1114
+#: bpython/repl.py:760
+#, python-format
+msgid "Pastebin URL: %s"
+msgstr ""
+
+#: bpython/repl.py:946
+msgid "Config file does not exist - create new from default? (y/N)"
+msgstr ""
+
+#: bpython/urwid.py:617
+#, python-format
+msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
+msgstr ""
+" <%s> Rewind  <%s> Salva  <%s> Pastebin  <%s> Pager  <%s> Mostra Sorgente"
+
+#: bpython/urwid.py:1126
 msgid "Run twisted reactor."
 msgstr ""
 
-#: bpython/urwid.py:1116
+#: bpython/urwid.py:1128
 msgid "Select specific reactor (see --help-reactors). Implies --twisted."
 msgstr ""
 
-#: bpython/urwid.py:1119
+#: bpython/urwid.py:1131
 msgid "List available reactors for -r."
 msgstr ""
 
-#: bpython/urwid.py:1121
+#: bpython/urwid.py:1133
 msgid ""
 "twistd plugin to run (use twistd for a list). Use \"--\" to pass further "
 "options to the plugin."
 msgstr ""
 
-#: bpython/urwid.py:1124
+#: bpython/urwid.py:1136
 msgid "Port to run an eval server on (forces Twisted)."
 msgstr ""
 
+#: bpython/curtsiesfrontend/repl.py:258
+msgid "Welcome to bpython!"
+msgstr ""
+
+#: bpython/curtsiesfrontend/repl.py:258
+#, python-format
+msgid "Press <%s> for help."
+msgstr ""
+
+#~ msgid "An error occurred."
+#~ msgstr "È stato riscontrato un errore"
+
+#~ msgid "Exception details"
+#~ msgstr "Dettagli sull'eccezione"
+
+#~ msgid "Statusbar"
+#~ msgstr "Barra di stato"
+
+#~ msgid "tooltip"
+#~ msgstr "tooltip"
+
+#~ msgid "File to save to"
+#~ msgstr "File nel quale salvare"
+
+#~ msgid "Python files"
+#~ msgstr "Files python"
+
+#~ msgid "All files"
+#~ msgstr "Tutti i files"
+
+#~ msgid "gtk-specific options"
+#~ msgstr "Opzioni specifiche di gtk"
+
+#~ msgid "Options specific to bpython's Gtk+ front end"
+#~ msgstr "Opzioni specifiche riguardo il frontend gtk+ di bpython"
