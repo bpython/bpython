@@ -16,7 +16,7 @@ install:
     # core dependencies
     - if [[ $RUN == nosetests ]]; then pip install pygments requests; fi
     # curtsies specific dependencies
-    - if [[ $RUN == nosetests ]]; then pip install 'curtsies >=0.1.15,<0.2.0' greenlet watchdog; fi
+    - if [[ $RUN == nosetests ]]; then pip install 'curtsies >=0.1.16,<0.2.0' greenlet watchdog; fi
     # translation specific dependencies
     - if [[ $RUN == nosetests ]]; then pip install babel; fi
     # documentation specific dependencies
