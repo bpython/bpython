@@ -1,10 +1,11 @@
 # coding: utf8
 import code
+from contextlib import contextmanager
+from functools import partial
 import os
+from StringIO import StringIO
 import sys
 import tempfile
-from contextlib import contextmanager
-from StringIO import StringIO
 
 import unittest
 try:
@@ -16,6 +17,7 @@ except ImportError:
 py3 = (sys.version_info[0] == 3)
 
 from bpython.curtsiesfrontend import repl as curtsiesrepl
+from bpython.curtsiesfrontend import interpreter
 from bpython import config
 from bpython import args
 
@@ -28,24 +30,28 @@ def setup_config(conf):
         setattr(config_struct, key, value)
     return config_struct
 
+
 class TestCurtsiesRepl(unittest.TestCase):
 
     def setUp(self):
         self.repl = create_repl()
 
+    def cfwp(self, source):
+        return interpreter.code_finished_will_parse(source, self.repl.interp.compile)
+
     def test_code_finished_will_parse(self):
         self.repl.buffer = ['1 + 1']
-        self.assertTrue(curtsiesrepl.code_finished_will_parse('\n'.join(self.repl.buffer)), (True, True))
+        self.assertTrue(self.cfwp('\n'.join(self.repl.buffer)), (True, True))
         self.repl.buffer = ['def foo(x):']
-        self.assertTrue(curtsiesrepl.code_finished_will_parse('\n'.join(self.repl.buffer)), (False, True))
+        self.assertTrue(self.cfwp('\n'.join(self.repl.buffer)), (False, True))
         self.repl.buffer = ['def foo(x)']
-        self.assertTrue(curtsiesrepl.code_finished_will_parse('\n'.join(self.repl.buffer)), (True, False))
+        self.assertTrue(self.cfwp('\n'.join(self.repl.buffer)), (True, False))
         self.repl.buffer = ['def foo(x):', 'return 1']
-        self.assertTrue(curtsiesrepl.code_finished_will_parse('\n'.join(self.repl.buffer)), (True, False))
+        self.assertTrue(self.cfwp('\n'.join(self.repl.buffer)), (True, False))
         self.repl.buffer = ['def foo(x):', '    return 1']
-        self.assertTrue(curtsiesrepl.code_finished_will_parse('\n'.join(self.repl.buffer)), (True, True))
+        self.assertTrue(self.cfwp('\n'.join(self.repl.buffer)), (True, True))
         self.repl.buffer = ['def foo(x):', '    return 1', '']
-        self.assertTrue(curtsiesrepl.code_finished_will_parse('\n'.join(self.repl.buffer)), (True, True))
+        self.assertTrue(self.cfwp('\n'.join(self.repl.buffer)), (True, True))
 
     def test_external_communication(self):
         self.assertEqual(type(self.repl.help_text()), type(b''))

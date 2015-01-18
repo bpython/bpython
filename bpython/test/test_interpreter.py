@@ -1,7 +1,6 @@
 import unittest
 
 from bpython.curtsiesfrontend import interpreter
-from bpython.curtsiesfrontend.repl import bad_empty_lines_removed
 from curtsies.fmtfuncs import *
 
 class TestInterpreter(unittest.TestCase):
@@ -41,15 +40,4 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEquals(str(plain('').join(a)), str(expected))
         self.assertEquals(plain('').join(a), expected)
-
-class TestPreprocessing(unittest.TestCase):
-    def test_bad_empty_lines_removed(self):
-        self.assertEqual(bad_empty_lines_removed("def foo():\n"
-                                             "    return 1\n"
-                                             "\n"
-                                             "    pass\n"),
-                         "def foo():\n"
-                         "    return 1\n"
-                         "    pass\n")
-
 

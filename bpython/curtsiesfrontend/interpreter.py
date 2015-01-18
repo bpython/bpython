@@ -153,3 +153,19 @@ class Interp(code.InteractiveInterpreter):
             else:
                 cur_line.append((token,text))
         assert cur_line == [], cur_line
+
+
+def code_finished_will_parse(s, compiler):
+    """Returns a tuple of whether the buffer could be complete and whether it will parse
+
+    True, True means code block is finished and no predicted parse error
+    True, False means code block is finished because a parse error is predicted
+    False, True means code block is unfinished
+    False, False isn't possible - an predicted error makes code block done"""
+    try:
+        finished = bool(compiler(s))
+        code_will_parse = True
+    except (ValueError, SyntaxError, OverflowError):
+        finished = True
+        code_will_parse = False
+    return finished, code_will_parse

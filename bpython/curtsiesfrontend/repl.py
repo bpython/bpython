@@ -1,4 +1,3 @@
-import code
 import contextlib
 import errno
 import functools
@@ -17,7 +16,6 @@ import unicodedata
 from pygments import format
 from bpython._py3compat import PythonLexer
 from pygments.formatters import TerminalFormatter
-from interpreter import Interp
 
 import blessings
 
@@ -45,6 +43,8 @@ from bpython.curtsiesfrontend.manual_readline import edit_keys
 from bpython.curtsiesfrontend import events as bpythonevents
 from bpython.curtsiesfrontend.parse import parse as bpythonparse
 from bpython.curtsiesfrontend.parse import func_for_letter, color_for_letter
+from bpython.curtsiesfrontend.preprocess import indent_empty_lines
+from bpython.curtsiesfrontend.interpreter import Interp, code_finished_will_parse
 
 #TODO other autocomplete modes (also fix in other bpython implementations)
 
@@ -457,7 +457,7 @@ class Repl(BpythonRepl):
             if ctrl_char is not None:
                 return self.process_event(ctrl_char)
             simple_events = just_simple_events(e.events)
-            source = bad_empty_lines_removed(''.join(simple_events))
+            source = indent_empty_lines(''.join(simple_events), self.interp.compile)
 
             with self.in_paste_mode():
                 for ee in source:
@@ -713,7 +713,7 @@ class Repl(BpythonRepl):
         text = self.send_to_external_editor(for_editor)
         lines = text.split('\n')
         from_editor = [line for line in lines if line[:4] != '### ']
-        source = bad_empty_lines_removed('\n'.join(from_editor))
+        source = indent_empty_lines('\n'.join(from_editor), self.interp.compile)
         self.history = source.split('\n')
         self.reevaluate(insert_into_history=True)
         self.current_line = lines[-1][4:]
@@ -828,7 +828,8 @@ class Repl(BpythonRepl):
         code_to_run = '\n'.join(self.buffer)
 
         logger.debug('running %r in interpreter', self.buffer)
-        c, code_will_parse = code_finished_will_parse('\n'.join(self.buffer))
+        c, code_will_parse = code_finished_will_parse('\n'.join(self.buffer),
+                                                      self.interp.compile)
         self.saved_predicted_parse_error = not code_will_parse
         if c:
             logger.debug('finished - buffer cleared')
@@ -1428,63 +1429,6 @@ def just_simple_events(event_list):
         else:
             simple_events.append(e)
     return simple_events
-
-def code_finished_will_parse(s):
-    """Returns a tuple of whether the buffer could be complete and whether it will parse
-
-    True, True means code block is finished and no predicted parse error
-    True, False means code block is finished because a parse error is predicted
-    False, True means code block is unfinished
-    False, False isn't possible - an predicted error makes code block done"""
-    try:
-        finished = bool(code.compile_command(s))
-        code_will_parse = True
-    except (ValueError, SyntaxError, OverflowError):
-        finished = True
-        code_will_parse = False
-    return finished, code_will_parse
-
-def bad_empty_lines_removed(s):
-    """Removes empty lines that would cause unfinished input to be evaluated"""
-    #  If there's a syntax error followed by an empty line, remove the empty line
-    lines = s.split('\n')
-    #TODO this should be our interpreter object making this decision so it
-    #     can be compiler directive (__future__ statement) -aware
-    #TODO specifically catch IndentationErrors instead of any syntax errors
-
-    current_block = []
-    complete_blocks = []
-    for i, line in enumerate(s.split('\n')):
-        current_block.append(line)
-        could_be_finished, valid = code_finished_will_parse('\n'.join(current_block))
-        if could_be_finished and valid:
-            complete_blocks.append(current_block)
-            current_block = []
-            continue
-        elif could_be_finished and not valid:
-            if complete_blocks:
-                complete_blocks[-1].extend(current_block)
-                current_block = complete_blocks.pop()
-                if len(current_block) < 2:
-                    return s #TODO return partial result instead of giving up
-                last_line = current_block.pop(len(current_block) - 2)
-                assert not last_line, last_line
-                new_finished, new_valid = code_finished_will_parse('\n'.join(current_block))
-                if new_valid and new_finished:
-                    complete_blocks.append(current_block)
-                    current_block = []
-                elif new_valid:
-                    continue
-                else:
-                    return s #TODO return partial result instead of giving up
-
-            else:
-                return s #TODO return partial result instead of giving up
-        else:
-            continue
-    return '\n'.join(['\n'.join(block)
-                      for block in complete_blocks + [current_block]
-                      if block])
 
 
 #TODO this needs some work to function again and be useful for embedding
