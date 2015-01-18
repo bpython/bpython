@@ -4,7 +4,7 @@ set -x
 
 pip install setuptools
 
-if [[ $RUN == nosetests ]] then
+if [[ $RUN == nosetests ]]; then
     # core dependencies
     pip install pygments requests 'curtsies >=0.1.16,<0.2.0' greenlet
     # filewatch specific dependencies
@@ -12,14 +12,14 @@ if [[ $RUN == nosetests ]] then
     # translation specific dependencies
     pip install babel
     # Python 2.6 specific dependencies
-    if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]] then
+    if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then
       pip install unittest
     fi
     # dependencies for crasher tests
     pip install Twisted urwid
     # build and install
     python setup.py install
-elif [[ $RUN == build_sphinx ]] then
+elif [[ $RUN == build_sphinx ]]; then
     # documentation specific dependencies
     pip install sphinx
 fi
