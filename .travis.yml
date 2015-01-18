@@ -15,6 +15,4 @@ install:
     - ./.travis.install.sh
 
 script:
-    - if [[ $RUN == build_sphinx ]]; then python setup.py build_sphinx; fi
-    - if [[ $RUN == build_sphinx ]]; then python setup.py build_sphinx_man; fi
-    - if [[ $RUN == nosetests ]]; then cd build/lib/ && nosetests bpython/test; fi
+    - ./.travis.script.sh

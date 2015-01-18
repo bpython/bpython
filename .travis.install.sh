@@ -13,10 +13,14 @@ if [[ $RUN == nosetests ]]; then
     pip install babel
     # Python 2.6 specific dependencies
     if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then
-      pip install unittest
+      pip install unittest2
     fi
     # dependencies for crasher tests
-    pip install Twisted urwid
+    case $TRAVIS_PYTHON_VERSION in
+      2*)
+        pip install Twisted urwid
+        ;;
+    esac
     # build and install
     python setup.py install
 elif [[ $RUN == build_sphinx ]]; then
