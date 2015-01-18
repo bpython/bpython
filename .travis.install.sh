@@ -15,6 +15,8 @@ if [[ $RUN == nosetests ]] then
     if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]] then
       pip install unittest
     fi
+    # dependencies for crasher tests
+    pip install Twisted urwid
     # build and install
     python setup.py install
 elif [[ $RUN == build_sphinx ]] then
