@@ -86,6 +86,13 @@ To run tests from the bpython directory:
 
     $ nosetests
 
+If you want to skip test cases that are known to be slow, run `nosetests` in the
+following way:
+
+.. code-block:: bash
+
+    $ nosetests -A "speed != 'slow'"
+
 Building the documentation
 --------------------------
 
