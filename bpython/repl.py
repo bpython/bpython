@@ -159,6 +159,11 @@ class MatchesIterator(object):
         """MatchesIterator is False when word hasn't been replaced yet"""
         return self.index != -1
 
+    @property
+    def candidate_selected(self):
+        """True when word selected/replaced, False when word hasn't been replaced yet"""
+        return bool(self)
+
     def __iter__(self):
         return self
 
@@ -541,7 +546,7 @@ class Repl(object):
         if len(matches) == 1:
             if tab: # if this complete is being run for a tab key press, substitute common sequence
                 self._cursor_offset, self._current_line = self.matches_iter.substitute_cseq()
-                return Repl.complete(self)
+                return Repl.complete(self) # again for 
             elif self.matches_iter.current_word == matches[0]:
                 self.matches_iter.clear()
                 return False

@@ -624,10 +624,10 @@ class Repl(BpythonRepl):
 
         def only_whitespace_left_of_cursor():
             """returns true if all characters on current line before cursor are whitespace"""
-            return self.current_line[:self.cursor_offset].strip()
+            return not self.current_line[:self.cursor_offset].strip()
 
         logger.debug('self.matches_iter.matches: %r', self.matches_iter.matches)
-        if not only_whitespace_left_of_cursor():
+        if only_whitespace_left_of_cursor():
             front_white = (len(self.current_line[:self.cursor_offset]) -
                 len(self.current_line[:self.cursor_offset].lstrip()))
             to_add = 4 - (front_white % self.config.tab_length)
@@ -635,15 +635,18 @@ class Repl(BpythonRepl):
                 self.add_normal_character(' ')
             return
 
-        # run complete() if we aren't already iterating through matches
-        if not self.matches_iter:
+        #if not self.matches_iter.candidate_selected:
+        #    self.list_win_visible = self.complete(tab=True)
+
+        # run complete() if we don't already have matches
+        if len(self.matches_iter.matches) == 0:
             self.list_win_visible = self.complete(tab=True)
 
         # 3. check to see if we can expand the current word
         if self.matches_iter.is_cseq():
             self._cursor_offset, self._current_line = self.matches_iter.substitute_cseq()
             # using _current_line so we don't trigger a completion reset
-            if not self.matches_iter:
+            if not self.matches_iter.matches:
                 self.list_win_visible = self.complete()
 
         elif self.matches_iter.matches:
@@ -651,6 +654,7 @@ class Repl(BpythonRepl):
                                   or self.matches_iter.next()
             self._cursor_offset, self._current_line = self.matches_iter.cur_line()
             # using _current_line so we don't trigger a completion reset
+            self.list_win_visible = True
 
     def on_control_d(self):
         if self.current_line == '':
