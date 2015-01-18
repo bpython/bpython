@@ -181,6 +181,7 @@ packages = [
     'bpython',
     'bpython.curtsiesfrontend',
     'bpython.test',
+    'bpython.test.fodder',
     'bpython.translations',
     'bpdb'
 ]
