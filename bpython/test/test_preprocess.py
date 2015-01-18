@@ -21,7 +21,6 @@ indent_empty = partial(indent_empty_lines, compiler=compiler)
 
 def get_fodder_source(test_name):
     pattern = r'#StartTest-%s\n(.*?)#EndTest' % (test_name,)
-    print repr(pattern)
     orig, xformed = [re.search(pattern, inspect.getsource(module), re.DOTALL)
                      for module in [original, processed]]
 
@@ -44,7 +43,6 @@ class TestPreprocessing(unittest.TestCase):
         self.assertEqual(indent_empty('a\n    b\nc\n'), 'a\n    b\nc\n')
 
     def assertShowWhitespaceEqual(self, a, b):
-        print a
         self.assertEqual(
             a, b,
             ''.join(difflib.context_diff(a.replace(' ', '~').splitlines(True),
