@@ -95,6 +95,7 @@ class CrashersTest(object):
             usePTY=(master, slave, os.ttyname(slave)))
         return result
 
+    @attr(speed='slow')
     def test_issue108(self):
         input = textwrap.dedent(
             """\
@@ -105,6 +106,7 @@ class CrashersTest(object):
         deferred = self.run_bpython(input)
         return deferred.addCallback(self.check_no_traceback)
 
+    @attr(speed='slow')
     def test_issue133(self):
         input = textwrap.dedent(
             """\
@@ -121,7 +123,6 @@ class CrashersTest(object):
 class CursesCrashersTest(TrialTestCase, CrashersTest):
     backend = "cli"
 
-@attr(speed='slow')
 @unittest.skipIf(not have_urwid, "urwid is not available")
 @unittest.skipIf(reactor is None, "twisted is not available")
 class UrwidCrashersTest(TrialTestCase, CrashersTest):
