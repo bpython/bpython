@@ -20,3 +20,28 @@ for i in range(2):
     pass
 #EndTest
 
+#StartTest-blank_line_in_try_catch
+try:
+    1
+
+except:
+    2
+#EndTest
+
+#StartTest-blank_line_in_try_catch_else
+try:
+    1
+
+except:
+    2
+
+else:
+    3
+#EndTest
+
+#StartTest-blank_trailing_line
+def foo():
+    return 1
+
+#EndTest
+

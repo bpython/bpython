@@ -5,6 +5,12 @@ import inspect
 import re
 import unittest
 
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
+skip = unittest.skip
+
 from bpython.curtsiesfrontend.interpreter import code_finished_will_parse
 from bpython.curtsiesfrontend.preprocess import indent_empty_lines
 
@@ -34,14 +40,17 @@ class TestPreprocessing(unittest.TestCase):
 
     def test_indent_empty_lines_nops(self):
         self.assertEqual(indent_empty('hello'), 'hello')
+        self.assertEqual(indent_empty('hello\ngoodbye'), 'hello\ngoodbye')
+        self.assertEqual(indent_empty('a\n    b\nc\n'), 'a\n    b\nc\n')
 
     def assertShowWhitespaceEqual(self, a, b):
+        print a
         self.assertEqual(
-            indent_empty(a), b,
+            a, b,
             ''.join(difflib.context_diff(a.replace(' ', '~').splitlines(True),
                                          b.replace(' ', '~').splitlines(True),
-                                         fromfile='original',
-                                         tofile='processed',
+                                         fromfile='actual',
+                                         tofile='expected',
                                          n=5)))
 
     def assertDefinitionIndented(self, obj):
@@ -71,3 +80,14 @@ class TestPreprocessing(unittest.TestCase):
 
     def test_blank_lines_in_for_loop(self):
         self.assertIndented('blank_lines_in_for_loop')
+
+    @skip("More advanced technique required: need to try compiling and backtracking")
+    def test_blank_line_in_try_catch(self):
+        self.assertIndented('blank_line_in_try_catch')
+
+    @skip("More advanced technique required: need to try compiling and backtracking")
+    def test_blank_line_in_try_catch_else(self):
+        self.assertIndented('blank_line_in_try_catch_else')
+
+    def test_blank_trailing_line(self):
+        self.assertIndented('blank_trailing_line')
