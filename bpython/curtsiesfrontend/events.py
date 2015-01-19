@@ -34,3 +34,6 @@ class ScheduledRefreshRequestEvent(curtsies.events.ScheduledEvent):
     def __repr__(self):
         return ("<RefreshRequestEvent from %r for %s seconds from now>" %
                 (self.who, self.when - time.time()))
+
+class RunStartupFileEvent(curtsies.events.Event):
+    """Reqeust to run the startup file."""
