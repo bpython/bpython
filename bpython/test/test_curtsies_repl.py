@@ -2,7 +2,7 @@
 import code
 from contextlib import contextmanager
 from functools import partial
-from mock import Mock
+from mock import Mock, patch
 import os
 from StringIO import StringIO
 import sys
@@ -151,6 +151,46 @@ class TestCurtsiesReplTab(unittest.TestCase):
         self.repl.matches_iter.substitute_cseq.return_value = (None, None)
         self.repl.on_tab()
         self.repl.matches_iter.substitute_cseq.assert_called_once_with()
+
+
+class TestCurtsiesReplFilenameCompletion(unittest.TestCase):
+    def setUp(self):
+        self.repl = create_repl()
+
+    def test_list_win_visible_and_match_selected_on_tab_when_multiple_options(self):
+        self.repl._current_line = " './'"
+        self.repl._cursor_offset = 2
+        with patch('bpython.autocomplete.get_completer_bpython') as mock:
+            mock.return_value = (['./abc', './abcd', './bcd'], autocomplete.FilenameCompletion)
+            self.repl.update_completion()
+            self.assertEqual(self.repl.list_win_visible, False)
+            self.repl.on_tab()
+        self.assertEqual(self.repl.current_match, './abc')
+        self.assertEqual(self.repl.list_win_visible, True)
+
+    def test_list_win_not_visible_and_cseq_if_cseq(self):
+        self.repl._current_line = " './a'"
+        self.repl._cursor_offset = 5
+        with patch('bpython.autocomplete.get_completer_bpython') as mock:
+            mock.return_value = (['./abcd', './abce'], autocomplete.FilenameCompletion)
+            self.repl.update_completion()
+            self.assertEqual(self.repl.list_win_visible, False)
+        self.repl.on_tab()
+        self.assertEqual(self.repl._current_line, " './abc'")
+        self.assertEqual(self.repl.current_match, None)
+        self.assertEqual(self.repl.list_win_visible, False)
+
+    def test_list_win_not_visible_and_match_selected_if_one_option(self):
+        self.repl._current_line = " './a'"
+        self.repl._cursor_offset = 5
+        with patch('bpython.autocomplete.get_completer_bpython') as mock:
+            mock.return_value = (['./abcd'], autocomplete.FilenameCompletion)
+            self.repl.update_completion()
+            self.assertEqual(self.repl.list_win_visible, False)
+        self.repl.on_tab()
+        self.assertEqual(self.repl._current_line, " './abcd'")
+        self.assertEqual(self.repl.current_match, None)
+        self.assertEqual(self.repl.list_win_visible, False)
 
 
 @contextmanager # from http://stackoverflow.com/a/17981937/398212 - thanks @rkennedy
