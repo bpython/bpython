@@ -415,6 +415,8 @@ class Repl(BpythonRepl):
                         self.interp.runsource(f.read(), filename, 'exec')
                     else:
                         self.interp.runsource(f.read(), filename, 'exec')
+            else:
+                raise IOError("Python startup file (PYTHONSTARTUP) not found at %s" % filename)
 
     def clean_up_current_line_for_exit(self):
         """Called when trying to exit to prep for final paint"""
