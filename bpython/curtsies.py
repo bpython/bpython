@@ -134,6 +134,11 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                         scrolled = window.render_to_terminal(array, cursor_pos)
                         repl.scroll_offset += scrolled
 
+                # run startup file
+                if interactive:
+                    process_event(bpythonevents.RunStartupFileEvent())
+
+                # handle paste
                 if paste:
                     process_event(paste)
 

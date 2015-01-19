@@ -292,8 +292,6 @@ class Repl(BpythonRepl):
         logger.debug("starting parent init")
         super(Repl, self).__init__(interp, config)
         #TODO bring together all interactive stuff - including current directory in path?
-        if interactive:
-            self.startup()
         self.formatter = BPythonFormatter(config.color_scheme)
         self.interact = self.status_bar # overwriting what bpython.Repl put there
                                         # interact is called to interact with the status bar,
@@ -401,22 +399,19 @@ class Repl(BpythonRepl):
         self.after_suspend()
         self.__enter__()
 
-    def startup(self):
+    def run_startup(self):
         """
         Execute PYTHONSTARTUP file if it exits. Call this after front
         end-specific initialisation.
         """
         filename = os.environ.get('PYTHONSTARTUP')
         if filename:
-            if os.path.isfile(filename):
-                with open(filename, 'r') as f:
-                    if py3:
-                        #TODO runsource has a new signature in PY3
-                        self.interp.runsource(f.read(), filename, 'exec')
-                    else:
-                        self.interp.runsource(f.read(), filename, 'exec')
-            else:
-                raise IOError("Python startup file (PYTHONSTARTUP) not found at %s" % filename)
+            with open(filename, 'r') as f:
+                if py3:
+                    #TODO runsource has a new signature in PY3
+                    self.interp.runsource(f.read(), filename, 'exec')
+                else:
+                    self.interp.runsource(f.read(), filename, 'exec')
 
     def clean_up_current_line_for_exit(self):
         """Called when trying to exit to prep for final paint"""
@@ -467,6 +462,12 @@ class Repl(BpythonRepl):
                         self.stdin.process_event(ee)
                     else:
                         self.process_simple_keypress(ee)
+
+        elif isinstance(e, bpythonevents.RunStartupFileEvent):
+            try:
+                self.run_startup()
+            except IOError as e:
+                self.status_bar.message(_('Executing PYTHONSTARTUP failed: %s') % (str(e)))
 
         elif self.stdin.has_focus:
             return self.stdin.process_event(e)
