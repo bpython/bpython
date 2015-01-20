@@ -36,4 +36,4 @@ class ScheduledRefreshRequestEvent(curtsies.events.ScheduledEvent):
                 (self.who, self.when - time.time()))
 
 class RunStartupFileEvent(curtsies.events.Event):
-    """Reqeust to run the startup file."""
+    """Request to run the startup file."""
