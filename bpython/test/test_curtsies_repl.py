@@ -2,7 +2,7 @@
 import code
 from contextlib import contextmanager
 from functools import partial
-from mock import Mock, patch
+from mock import Mock, patch, MagicMock
 import os
 from StringIO import StringIO
 import sys
@@ -86,12 +86,17 @@ class TestCurtsiesRepl(unittest.TestCase):
         self.repl.up_one_line()
         self.assertEqual(self.repl.current_line,'2 3')
 
+def mock_next(obj, return_value):
+    if py3:
+        obj.__next__.return_value = return_value
+    else:
+        obj.next.return_value = return_value
 
 class TestCurtsiesReplTab(unittest.TestCase):
 
     def setUp(self):
         self.repl = create_repl()
-        self.repl.matches_iter = Mock()
+        self.repl.matches_iter = MagicMock()
         def add_matches(*args, **kwargs):
             self.repl.matches_iter.matches = ['aaa', 'aab', 'aac']
         self.repl.complete = Mock(side_effect=add_matches,
@@ -125,11 +130,11 @@ class TestCurtsiesReplTab(unittest.TestCase):
         self.repl._cursor_offset = 3
         self.repl.matches_iter.matches = []
         self.repl.matches_iter.is_cseq.return_value = False
-        self.repl.matches_iter.next.return_value = None
+
+        mock_next(self.repl.matches_iter, None)
         self.repl.matches_iter.cur_line.return_value = (None, None)
         self.repl.on_tab()
         self.repl.complete.assert_called_once_with(tab=True)
-        self.repl.matches_iter.next.assert_called_once_with()
         self.repl.matches_iter.cur_line.assert_called_once_with()
 
     def test_tab_with_matches_selects_next_match(self):
@@ -137,10 +142,9 @@ class TestCurtsiesReplTab(unittest.TestCase):
         self.repl._cursor_offset = 3
         self.repl.complete()
         self.repl.matches_iter.is_cseq.return_value = False
-        self.repl.matches_iter.next.return_value = None
+        mock_next(self.repl.matches_iter, None)
         self.repl.matches_iter.cur_line.return_value = (None, None)
         self.repl.on_tab()
-        self.repl.matches_iter.next.assert_called_once_with()
         self.repl.matches_iter.cur_line.assert_called_once_with()
 
     def test_tab_completes_common_sequence(self):
