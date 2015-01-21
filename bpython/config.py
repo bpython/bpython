@@ -105,37 +105,8 @@ def loadini(struct, configfile):
             'right_arrow_completion' : True,
         }}
 
-    default_keys_to_commands = {
-        '': 'exit',
-        'C-n': 'down_one_line',
-        'C-l': 'clear_screen',
-        'C-k': 'kill_line',
-        'C-o': 'search',
-        'C-h': 'backspace',
-        'C-f': 'right',
-        'C-e': 'end_of_line',
-        'C-d': 'delete',
-        'C-b':'left',
-        'C-a': 'beginning_of_line',
-        'C-z': 'suspend',
-        'C-y': 'yank_from_buffer',
-        'C-x': 'edit_current_block',
-        'C-w': 'clear_word',
-        'C-u': 'clear_line',
-        'C-t': 'transpose_chars',
-        'C-s': 'save',
-        'C-r': 'undo',
-        'C-p': 'up_one_line',
-        'F10': 'copy_clipboard',
-        'F1': 'help',
-        'F2': 'show_source',
-        'F3': 'edit_config',
-        'F5': 'toggle_file_watch',
-        'F6': 'reimport',
-        'F7': 'external_editor',
-        'F8': 'pastebin',
-        'F9': 'last_output'
-    }
+    default_keys_to_commands = dict((value, key) for (key, value)
+                                    in defaults['keyboard'].iteritems())
 
     fill_config_with_default_values(config, defaults)
     if not config.read(config_path):
