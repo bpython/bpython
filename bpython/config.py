@@ -74,7 +74,6 @@ def loadini(struct, configfile):
             'transpose_chars': 'C-t',
             'clear_line': 'C-u',
             'clear_screen': 'C-l',
-            'kill_line': 'C-k',
             'clear_word': 'C-w',
             'cut_to_buffer': 'C-k',
             'delete': 'C-d',
@@ -172,7 +171,6 @@ def loadini(struct, configfile):
     struct.transpose_chars_key = get_key_no_doublebind('transpose_chars')
     struct.clear_line_key = get_key_no_doublebind('clear_line')
     struct.clear_screen_key = get_key_no_doublebind('clear_screen')
-    struct.kill_line_key = get_key_no_doublebind('kill_line')
     struct.exit_key = get_key_no_doublebind('exit')
     struct.last_output_key = get_key_no_doublebind('last_output')
     struct.edit_config_key = get_key_no_doublebind('edit_config')

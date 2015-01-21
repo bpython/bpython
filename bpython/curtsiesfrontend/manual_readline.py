@@ -250,7 +250,7 @@ def delete_line(cursor_offset, line):
 def uppercase_next_word(cursor_offset, line):
     return cursor_offset, line #TODO Not implemented
 
-@edit_keys.on(config='kill_line_key')
+@edit_keys.on(config='cut_to_buffer_key')
 @kills_ahead
 def delete_from_cursor_forward(cursor_offset, line):
     return cursor_offset, line[:cursor_offset], line[cursor_offset:]
