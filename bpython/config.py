@@ -194,7 +194,8 @@ def loadini(struct, configfile):
     struct.save_append_py = config.getboolean('general', 'save_append_py')
 
     struct.curtsies_list_above = config.getboolean('curtsies', 'list_above')
-    struct.curtsies_right_arrow_completion = config.getboolean('curtsies', 'right_arrow_completion')
+    struct.curtsies_right_arrow_completion = config.getboolean('curtsies',
+                                                               'right_arrow_completion')
 
     color_scheme_name = config.get('general', 'color_scheme')
 
