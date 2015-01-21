@@ -24,10 +24,13 @@
 import __builtin__
 import __main__
 import abc
-import rlcompleter
-import re
+import keyword
 import os
+import re
+import rlcompleter
+
 from glob import glob
+
 from bpython import inspection
 from bpython import importcompletion
 from bpython import line as lineparts
@@ -255,7 +258,6 @@ class GlobalCompletion(BaseCompletionType):
 
         hash = {}
         n = len(text)
-        import keyword
         for word in keyword.kwlist:
             if method_match(word, n, text):
                 hash[word] = 1
