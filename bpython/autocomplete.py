@@ -1,6 +1,6 @@
 # The MIT License
 #
-# Copyright (c) 2009-2012 the bpython authors.
+# Copyright (c) 2009-2015 the bpython authors.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,18 +21,17 @@
 # THE SOFTWARE.
 #
 
-from __future__ import with_statement
 import __builtin__
 import __main__
 import abc
 import rlcompleter
-import line as lineparts
 import re
 import os
 from glob import glob
 from functools import partial
 from bpython import inspection
 from bpython import importcompletion
+from bpython import line as lineparts
 from bpython._py3compat import py3
 
 # Autocomplete modes
