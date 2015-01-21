@@ -112,7 +112,7 @@ class CumulativeCompleter(BaseCompletionType):
         return self._completers[0].format(word)
 
     def matches(self, cursor_offset, line, locals_, argspec, current_block, complete_magic_methods):
-        all_matches = []
+        all_matches = set()
         for completer in self._completers:
             # these have to be explicitely listed to deal with the different
             # signatures of various matches() methods of completers
@@ -123,9 +123,9 @@ class CumulativeCompleter(BaseCompletionType):
                                         current_block=current_block,
                                         complete_magic_methods=complete_magic_methods)
             if matches is not None:
-                all_matches.extend(matches)
+                all_matches.update(matches)
 
-        return sorted(set(all_matches))
+        return sorted(all_matches)
 
 
 class ImportCompletion(BaseCompletionType):
