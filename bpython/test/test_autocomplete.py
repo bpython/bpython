@@ -114,28 +114,31 @@ class TestFilenameCompletion(unittest.TestCase):
 
     @mock.patch('bpython.autocomplete.glob', new=lambda text: [])
     def test_match_returns_empty_list_when_no_files(self):
-        self.assertEqual(self.completer.matches(2, '"a'), [])
+        self.assertEqual(self.completer.matches(2, '"a'), set())
 
     @mock.patch('bpython.autocomplete.glob', new=lambda text: ['abcde', 'aaaaa'])
     @mock.patch('os.path.expanduser', new=lambda text: text)
     @mock.patch('os.path.isdir', new=lambda text: False)
     @mock.patch('os.path.sep', new='/')
     def test_match_returns_files_when_files_exist(self):
-        self.assertEqual(self.completer.matches(2, '"x'), ['abcde', 'aaaaa'])
+        self.assertEqual(sorted(self.completer.matches(2, '"x')),
+                         ['aaaaa', 'abcde'])
 
     @mock.patch('bpython.autocomplete.glob', new=lambda text: ['abcde', 'aaaaa'])
     @mock.patch('os.path.expanduser', new=lambda text: text)
     @mock.patch('os.path.isdir', new=lambda text: True)
     @mock.patch('os.path.sep', new='/')
     def test_match_returns_dirs_when_dirs_exist(self):
-        self.assertEqual(self.completer.matches(2, '"x'), ['abcde/', 'aaaaa/'])
+        self.assertEqual(sorted(self.completer.matches(2, '"x')),
+                         ['aaaaa/', 'abcde/'])
 
     @mock.patch('bpython.autocomplete.glob', new=lambda text: ['/expand/ed/abcde', '/expand/ed/aaaaa'])
     @mock.patch('os.path.expanduser', new=lambda text: text.replace('~', '/expand/ed'))
     @mock.patch('os.path.isdir', new=lambda text: False)
     @mock.patch('os.path.sep', new='/')
     def test_tilde_stays_pretty(self):
-        self.assertEqual(self.completer.matches(4, '"~/a'), ['~/abcde', '~/aaaaa'])
+        self.assertEqual(sorted(self.completer.matches(4, '"~/a')),
+                         ['~/aaaaa', '~/abcde'])
 
     @mock.patch('os.path.sep', new='/')
     def test_formatting_takes_just_last_part(self):

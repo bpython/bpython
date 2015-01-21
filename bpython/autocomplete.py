@@ -152,7 +152,7 @@ class FilenameCompletion(BaseCompletionType):
         if cs is None:
             return None
         start, end, text = cs
-        matches = []
+        matches = set()
         username = text.split(os.path.sep, 1)[0]
         user_dir = os.path.expanduser(username)
         for filename in glob(os.path.expanduser(text + '*')):
@@ -160,7 +160,7 @@ class FilenameCompletion(BaseCompletionType):
                 filename += os.path.sep
             if text.startswith('~'):
                 filename = username + filename[len(user_dir):]
-            matches.append(filename)
+            matches.add(filename)
         return matches
 
     def locate(self, current_offset, line):
@@ -191,14 +191,14 @@ class AttrCompletion(BaseCompletionType):
                 i -= 1
                 break
         methodtext = text[-i:]
-        matches = [''.join([text[:-i], m]) for m in
-                            attr_matches(methodtext, locals_)]
+        matches = set(''.join([text[:-i], m])
+                      for m in attr_matches(methodtext, locals_))
 
         #TODO add open paren for methods via _callable_prefix (or decide not to)
         # unless the first character is a _ filter out all attributes starting with a _
         if not text.split('.')[-1].startswith('_'):
-            matches = [match for match in matches
-                       if not match.split('.')[-1].startswith('_')]
+            matches = set(match for match in matches
+                          if not match.split('.')[-1].startswith('_'))
         return matches
 
     def locate(self, current_offset, line):
@@ -218,11 +218,12 @@ class DictKeyCompletion(BaseCompletionType):
         try:
             obj = safe_eval(dexpr, locals_)
         except EvaluationError:
-            return []
+            return set()
         if obj and isinstance(obj, type({})) and obj.keys():
-            return ["{!r}]".format(k) for k in obj.keys() if repr(k).startswith(orig)]
+            return set("{!r}".format(k) for k in obj.keys()
+                       if repr(k).startswith(orig))
         else:
-            return []
+            return set()
 
     def locate(self, current_offset, line):
         return lineparts.current_dict_key(current_offset, line)
@@ -239,7 +240,7 @@ class MagicMethodCompletion(BaseCompletionType):
         if 'class' not in current_block:
             return None
         start, end, word = r
-        return [name for name in MAGIC_METHODS if name.startswith(word)]
+        return set(name for name in MAGIC_METHODS if name.startswith(word))
 
     def locate(self, current_offset, line):
         return lineparts.current_method_definition_name(current_offset, line)
@@ -256,17 +257,15 @@ class GlobalCompletion(BaseCompletionType):
             return None
         start, end, text = r
 
-        hash = {}
+        matches = set()
         n = len(text)
         for word in keyword.kwlist:
             if method_match(word, n, text):
-                hash[word] = 1
+                matches.add(word)
         for nspace in [__builtin__.__dict__, locals_]:
             for word, val in nspace.items():
                 if method_match(word, len(text), text) and word != "__builtins__":
-                    hash[_callable_postfix(val, word)] = 1
-        matches = hash.keys()
-        matches.sort()
+                    matches.add(_callable_postfix(val, word))
         return matches
 
     def locate(self, current_offset, line):
@@ -282,10 +281,11 @@ class ParameterNameCompletion(BaseCompletionType):
             return None
         start, end, word = r
         if argspec:
-            matches = [name + '=' for name in argspec[1][0]
-                       if isinstance(name, basestring) and name.startswith(word)]
+            matches = set(name + '=' for name in argspec[1][0]
+                          if isinstance(name, basestring) and
+                          name.startswith(word))
             if py3:
-                matches.extend(name + '=' for name in argspec[1][4]
+                matches.update(name + '=' for name in argspec[1][4]
                                if name.startswith(word))
         return matches
 
@@ -300,9 +300,9 @@ class StringLiteralAttrCompletion(BaseCompletionType):
             return None
         start, end, word = r
         attrs = dir('')
-        matches = [att for att in attrs if att.startswith(word)]
+        matches = set(att for att in attrs if att.startswith(word))
         if not word.startswith('_'):
-            return [match for match in matches if not match.startswith('_')]
+            return set(match for match in matches if not match.startswith('_'))
         return matches
 
     def locate(self, current_offset, line):
@@ -329,7 +329,7 @@ def get_completer(completers, cursor_offset, line, **kwargs):
     for completer in completers:
         matches = completer.matches(cursor_offset, line, **kwargs)
         if matches is not None:
-            return matches, (completer if matches else None)
+            return sorted(matches), (completer if matches else None)
     return [], None
 
 BPYTHON_COMPLETER = (
