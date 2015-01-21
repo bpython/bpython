@@ -28,7 +28,6 @@ import rlcompleter
 import re
 import os
 from glob import glob
-from functools import partial
 from bpython import inspection
 from bpython import importcompletion
 from bpython import line as lineparts
