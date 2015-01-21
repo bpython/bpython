@@ -41,13 +41,13 @@ FUZZY = 'fuzzy'
 
 ALL_MODES = (SIMPLE, SUBSTRING, FUZZY)
 
-MAGIC_METHODS = ["__%s__" % s for s in [
+MAGIC_METHODS = ("__%s__" % s for s in (
     "init", "repr", "str", "lt", "le", "eq", "ne", "gt", "ge", "cmp", "hash",
     "nonzero", "unicode", "getattr", "setattr", "get", "set", "call", "len",
     "getitem", "setitem", "iter", "reversed", "contains", "add", "sub", "mul",
     "floordiv", "mod", "divmod", "pow", "lshift", "rshift", "and", "xor", "or",
     "div", "truediv", "neg", "pos", "abs", "invert", "complex", "int", "float",
-    "oct", "hex", "index", "coerce", "enter", "exit"]]
+    "oct", "hex", "index", "coerce", "enter", "exit"))
 
 
 def after_last_dot(name):
