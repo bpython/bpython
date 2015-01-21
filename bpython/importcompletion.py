@@ -59,11 +59,11 @@ fully_loaded = False
 def module_matches(cw, prefix=''):
     """Modules names to replace cw with"""
     full = '%s.%s' % (prefix, cw) if prefix else cw
-    matches = [name for name in modules
-               if (name.startswith(full) and
-                   name.find('.', len(full)) == -1)]
+    matches = set(name for name in modules
+                  if (name.startswith(full) and
+                      name.find('.', len(full)) == -1))
     if prefix:
-        return [match[len(prefix)+1:] for match in matches]
+        return set(match[len(prefix)+1:] for match in matches)
     else:
         return matches
 
@@ -72,19 +72,20 @@ def attr_matches(cw, prefix='', only_modules=False):
     full = '%s.%s' % (prefix, cw) if prefix else cw
     module_name, _, name_after_dot = full.rpartition('.')
     if module_name not in sys.modules:
-        return []
+        return set()
     module = sys.modules[module_name]
     if only_modules:
-        matches = [name for name in dir(module)
-                if name.startswith(name_after_dot) and
-                '%s.%s' % (module_name, name) in sys.modules]
+        matches = set(name for name in dir(module)
+                      if (name.startswith(name_after_dot) and
+                          '%s.%s' % (module_name, name)) in sys.modules)
     else:
-        matches = [name for name in dir(module) if name.startswith(name_after_dot)]
+        matches = set(name for name in dir(module)
+                      if name.startswith(name_after_dot))
     module_part, _, _ = cw.rpartition('.')
     if module_part:
-        return ['%s.%s' % (module_part, m) for m in matches]
-    return matches
+        matches = set('%s.%s' % (module_part, m) for m in matches)
 
+    return matches
 def module_attr_matches(name):
     """Only attributes which are modules to replace name with"""
     return attr_matches(name, prefix='', only_modules=True)
@@ -99,21 +100,27 @@ def complete(cursor_offset, line):
     if result is None:
         return None
 
-    if lineparts.current_from_import_from(cursor_offset, line) is not None:
-        if lineparts.current_from_import_import(cursor_offset, line) is not None:
+    from_import_from = lineparts.current_from_import_from(cursor_offset, line)
+    if from_import_from is not None:
+        from_import_import = lineparts.current_from_import_import(cursor_offset,
+                                                                  line)
+        if from_import_import is not None:
             # `from a import <b|>` completion
-            return (module_matches(lineparts.current_from_import_import(cursor_offset, line)[2],
-                                   lineparts.current_from_import_from(cursor_offset, line)[2]) +
-                    attr_matches(lineparts.current_from_import_import(cursor_offset, line)[2],
-                                 lineparts.current_from_import_from(cursor_offset, line)[2]))
+            matches = module_matches(from_import_import[2], from_import_from[2])
+            matches.update(attr_matches(from_import_import[2],
+                                        from_import_from[2]))
         else:
             # `from <a|>` completion
-            return (module_attr_matches(lineparts.current_from_import_from(cursor_offset, line)[2]) +
-                    module_matches(lineparts.current_from_import_from(cursor_offset, line)[2]))
-    elif lineparts.current_import(cursor_offset, line):
+            matches = module_attr_matches(from_import_from[2])
+            matches.update(module_matches(from_import_from[2]))
+        return matches
+
+    current_import = lineparts.current_import(cursor_offset, line)
+    if current_import is not None:
         # `import <a|>` completion
-        return (module_matches(lineparts.current_import(cursor_offset, line)[2]) +
-                module_attr_matches(lineparts.current_import(cursor_offset, line)[2]))
+        matches = module_matches(current_import[2])
+        matches.update(module_attr_matches(current_import[2]))
+        return matches
     else:
         return None
 

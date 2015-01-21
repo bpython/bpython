@@ -12,10 +12,12 @@ class TestSimpleComplete(unittest.TestCase):
         importcompletion.modules = self.original_modules
 
     def test_simple_completion(self):
-        self.assertEqual(importcompletion.complete(10, 'import zza'), ['zzabc', 'zzabd'])
+        self.assertEqual(sorted(importcompletion.complete(10, 'import zza')),
+                         ['zzabc', 'zzabd'])
 
     def test_package_completion(self):
-        self.assertEqual(importcompletion.complete(13, 'import zzabc.'), ['zzabc.e', 'zzabc.f', ])
+        self.assertEqual(sorted(importcompletion.complete(13, 'import zzabc.')),
+                         ['zzabc.e', 'zzabc.f', ])
 
 
 class TestRealComplete(unittest.TestCase):
@@ -32,11 +34,14 @@ class TestRealComplete(unittest.TestCase):
         importcompletion.modules = set()
 
     def test_from_attribute(self):
-        self.assertEqual(importcompletion.complete(19, 'from sys import arg'), ['argv'])
+        self.assertEqual(sorted(importcompletion.complete(19, 'from sys import arg')),
+                         ['argv'])
 
     def test_from_attr_module(self):
-        self.assertEqual(importcompletion.complete(9, 'from os.p'), ['os.path'])
+        self.assertEqual(sorted(importcompletion.complete(9, 'from os.p')),
+                         ['os.path'])
 
     def test_from_package(self):
-        self.assertEqual(importcompletion.complete(17, 'from xml import d'), ['dom'])
+        self.assertEqual(sorted(importcompletion.complete(17, 'from xml import d')),
+                         ['dom'])
 
