@@ -56,16 +56,27 @@ modules = set()
 fully_loaded = False
 
 
+def try_decode_module(module, encoding):
+    """Try to decode module names."""
+    if not py3 and not isinstance(module, unicode):
+        try:
+            return module.decode(encoding)
+        except UnicodeDecodeError:
+            # Not importable anyway, ignore it
+            return None
+    return module
+
+
 def module_matches(cw, prefix=''):
     """Modules names to replace cw with"""
     full = '%s.%s' % (prefix, cw) if prefix else cw
-    matches = set(name for name in modules
-                  if (name.startswith(full) and
-                      name.find('.', len(full)) == -1))
+    matches = (name for name in modules
+               if (name.startswith(full) and
+                   name.find('.', len(full)) == -1))
     if prefix:
         return set(match[len(prefix)+1:] for match in matches)
     else:
-        return matches
+        return set(matches)
 
 def attr_matches(cw, prefix='', only_modules=False):
     """Attributes to replace name with"""
@@ -75,17 +86,19 @@ def attr_matches(cw, prefix='', only_modules=False):
         return set()
     module = sys.modules[module_name]
     if only_modules:
-        matches = set(name for name in dir(module)
-                      if (name.startswith(name_after_dot) and
-                          '%s.%s' % (module_name, name)) in sys.modules)
+        matches = (name for name in dir(module)
+                   if (name.startswith(name_after_dot) and
+                       '%s.%s' % (module_name, name)) in sys.modules)
     else:
-        matches = set(name for name in dir(module)
-                      if name.startswith(name_after_dot))
+        matches = (name for name in dir(module)
+                   if name.startswith(name_after_dot))
     module_part, _, _ = cw.rpartition('.')
     if module_part:
-        matches = set('%s.%s' % (module_part, m) for m in matches)
+        matches = ('%s.%s' % (module_part, m) for m in matches)
 
-    return matches
+    return set(filter(lambda x: x is not None,
+                      (try_decode_module(match, 'ascii') for match in matches)))
+
 def module_attr_matches(name):
     """Only attributes which are modules to replace name with"""
     return attr_matches(name, prefix='', only_modules=True)
@@ -182,12 +195,9 @@ def find_all_modules(path=None):
         if not p:
             p = os.curdir
         for module in find_modules(p):
-            if not py3 and not isinstance(module, unicode):
-                try:
-                    module = module.decode(sys.getfilesystemencoding())
-                except UnicodeDecodeError:
-                    # Not importable anyway, ignore it
-                    continue
+            module = try_decode_module(module, sys.getfilesystemencoding())
+            if module is None:
+                continue
             modules.add(module)
             yield
 
