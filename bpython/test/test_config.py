@@ -34,6 +34,16 @@ class TestConfig(unittest.TestCase):
         config.load_theme(struct, TEST_THEME_PATH, struct.color_scheme, defaults)
         self.assertEquals(struct.color_scheme, expected)
 
+    def test_keybindings_default_contains_no_duplicates(self):
+        struct = self.load_temp_config("")
+
+        keys = (attr for attr in dir(struct) if attr.endswith('_key'))
+        mapped_keys = [getattr(struct, key) for key in keys if
+                       getattr(struct, key)]
+
+        mapped_keys_set = set(mapped_keys)
+        self.assertEqual(len(mapped_keys), len(mapped_keys_set))
+
     def test_keybindings_use_default(self):
         struct = self.load_temp_config(textwrap.dedent("""
             [keyboard]
