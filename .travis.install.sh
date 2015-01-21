@@ -6,7 +6,7 @@ pip install setuptools
 
 if [[ $RUN == nosetests ]]; then
     # core dependencies
-    pip install pygments requests 'curtsies >=0.1.16,<0.2.0' greenlet
+    pip install pygments requests 'curtsies >=0.1.17,<0.2.0' greenlet
     # filewatch specific dependencies
     pip install watchdog
     # translation specific dependencies
