@@ -104,6 +104,39 @@ def loadini(struct, configfile):
             'list_above' : False,
             'right_arrow_completion' : True,
         }}
+
+    default_keys_to_commands = {
+        '': 'exit',
+        'C-n': 'down_one_line',
+        'C-l': 'clear_screen',
+        'C-k': 'kill_line',
+        'C-o': 'search',
+        'C-h': 'backspace',
+        'C-f': 'right',
+        'C-e': 'end_of_line',
+        'C-d': 'delete',
+        'C-b':'left',
+        'C-a': 'beginning_of_line',
+        'C-z': 'suspend',
+        'C-y': 'yank_from_buffer',
+        'C-x': 'edit_current_block',
+        'C-w': 'clear_word',
+        'C-u': 'clear_line',
+        'C-t': 'transpose_chars',
+        'C-s': 'save',
+        'C-r': 'undo',
+        'C-p': 'up_one_line',
+        'F10': 'copy_clipboard',
+        'F1': 'help',
+        'F2': 'show_source',
+        'F3': 'edit_config',
+        'F5': 'toggle_file_watch',
+        'F6': 'reimport',
+        'F7': 'external_editor',
+        'F8': 'pastebin',
+        'F9': 'last_output'
+    }
+
     fill_config_with_default_values(config, defaults)
     if not config.read(config_path):
         # No config file. If the user has it in the old place then complain
@@ -113,17 +146,17 @@ def loadini(struct, configfile):
                              "%s\n" % default_config_path())
             sys.exit(1)
 
-    def get_key_no_doublebind(attr, already_used={}):
-        """Clears any other configured keybindings using this key"""
-        key = config.get('keyboard', attr)
-        if key in already_used:
-            default = defaults['keyboard'][already_used[key]]
-            if default in already_used:
-                setattr(struct, '%s_key' % already_used[key], '')
-            else:
-                setattr(struct, '%s_key' % already_used[key], default)
-        already_used[key] = attr
-        return key
+
+    def get_key_no_doublebind(command):
+        default_commands_to_keys = defaults['keyboard']
+        requested_key = config.get('keyboard', command)
+        default_command = default_keys_to_commands[requested_key]
+
+        if default_commands_to_keys[default_command] == \
+           config.get('keyboard', default_command):
+            setattr(struct, '%s_key' % default_command, '')
+
+        return requested_key
 
     struct.config_path = config_path
 
