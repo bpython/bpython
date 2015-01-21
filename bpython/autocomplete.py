@@ -66,7 +66,6 @@ def get_completer(completers, cursor_offset, line, **kwargs):
             the cursor is
         current_block is the possibly multiline not-yet-evaluated block of
             code which the current line is part of
-        mode is one of SIMPLE, SUBSTRING or FUZZY - ways to find matches
         complete_magic_methods is a bool of whether we ought to complete
             double underscore methods like __len__ in method signatures
     """
