@@ -53,44 +53,14 @@ MAGIC_METHODS = ("__%s__" % s for s in (
 def after_last_dot(name):
     return name.rstrip('.').rsplit('.')[-1]
 
-def get_completer(completers, cursor_offset, line, **kwargs):
-    """Returns a list of matches and an applicable completer
-
-    If no matches available, returns a tuple of an empty list and None
-
-    kwargs (all required):
-        cursor_offset is the current cursor column
-        line is a string of the current line
-        locals_ is a dictionary of the environment
-        argspec is an inspect.ArgSpec instance for the current function where
-            the cursor is
-        current_block is the possibly multiline not-yet-evaluated block of
-            code which the current line is part of
-        complete_magic_methods is a bool of whether we ought to complete
-            double underscore methods like __len__ in method signatures
-    """
-
-    for completer in completers:
-        matches = completer.matches(cursor_offset, line, **kwargs)
-        if matches is not None:
-            return matches, (completer if matches else None)
-    return [], None
-
-def get_completer_bpython(**kwargs):
-    """"""
-    return get_completer([DictKeyCompletion,
-                          StringLiteralAttrCompletion,
-                          ImportCompletion,
-                          FilenameCompletion,
-                          MagicMethodCompletion,
-                          GlobalCompletion,
-                          CumulativeCompleter([AttrCompletion, ParameterNameCompletion])],
-                         **kwargs)
 
 class BaseCompletionType(object):
     """Describes different completion types"""
-    @classmethod
-    def matches(cls, cursor_offset, line, **kwargs):
+
+    def __init__(self, shown_before_tab=True):
+        self._shown_before_tab = shown_before_tab
+
+    def matches(self, cursor_offset, line, **kwargs):
         """Returns a list of possible matches given a line and cursor, or None
         if this completion type isn't applicable.
 
@@ -105,37 +75,42 @@ class BaseCompletionType(object):
             * `substitute(cur, line, match)` in a match for what's found with `target`
             """
         raise NotImplementedError
-    @classmethod
-    def locate(cls, cursor_offset, line):
+
+    def locate(self, cursor_offset, line):
         """Returns a start, stop, and word given a line and cursor, or None
         if no target for this type of completion is found under the cursor"""
         raise NotImplementedError
-    @classmethod
-    def format(cls, word):
+
+    def format(self, word):
         return word
-    shown_before_tab = True # whether suggestions should be shown before the
-                            # user hits tab, or only once that has happened
-    def substitute(cls, cursor_offset, line, match):
+
+    def substitute(self, cursor_offset, line, match):
         """Returns a cursor offset and line with match swapped in"""
-        start, end, word = cls.locate(cursor_offset, line)
+        start, end, word = self.locate(cursor_offset, line)
         result = start + len(match), line[:start] + match + line[end:]
         return result
 
-class CumulativeCompleter(object):
+    @property
+    def shown_before_tab(self):
+        """Whether suggestions should be shown before the user hits tab, or only
+        once that has happened."""
+        return self._shown_before_tab
+
+class CumulativeCompleter(BaseCompletionType):
     """Returns combined matches from several completers"""
+
     def __init__(self, completers):
         if not completers:
             raise ValueError("CumulativeCompleter requires at least one completer")
         self._completers = completers
-        self.shown_before_tab = True
 
-    @property
-    def locate(self):
-        return self._completers[0].locate if self._completers else lambda *args: None
+        super(CumulativeCompleter, self).__init__(True)
 
-    @property
-    def format(self):
-        return self._completers[0].format if self._completers else lambda s: s
+    def locate(self, current_offset, line):
+        return self._completers[0].locate(current_offset, line)
+
+    def format(self, word):
+        return self._completers[0].format(word)
 
     def matches(self, cursor_offset, line, locals_, argspec, current_block, complete_magic_methods):
         all_matches = []
@@ -155,16 +130,22 @@ class CumulativeCompleter(object):
 
 
 class ImportCompletion(BaseCompletionType):
-    @classmethod
-    def matches(cls, cursor_offset, line, **kwargs):
+
+    def matches(self, cursor_offset, line, **kwargs):
         return importcompletion.complete(cursor_offset, line)
-    locate = staticmethod(lineparts.current_word)
-    format = staticmethod(after_last_dot)
+
+    def locate(self, current_offset, line):
+        return lineparts.current_word(current_offset, line)
+
+    def format(self, word):
+        return after_last_dot(word)
 
 class FilenameCompletion(BaseCompletionType):
-    shown_before_tab = False
-    @classmethod
-    def matches(cls, cursor_offset, line, **kwargs):
+
+    def __init__(self):
+        super(FilenameCompletion, self).__init__(False)
+
+    def matches(self, cursor_offset, line, **kwargs):
         cs = lineparts.current_string(cursor_offset, line)
         if cs is None:
             return None
@@ -180,9 +161,10 @@ class FilenameCompletion(BaseCompletionType):
             matches.append(filename)
         return matches
 
-    locate = staticmethod(lineparts.current_string)
-    @classmethod
-    def format(cls, filename):
+    def locate(self, current_offset, line):
+        return lineparts.current_string(current_offset, line)
+
+    def format(self, filename):
         filename.rstrip(os.sep).rsplit(os.sep)[-1]
         if os.sep in filename[:-1]:
             return filename[filename.rindex(os.sep, 0, -1)+1:]
@@ -190,9 +172,9 @@ class FilenameCompletion(BaseCompletionType):
             return filename
 
 class AttrCompletion(BaseCompletionType):
-    @classmethod
-    def matches(cls, cursor_offset, line, locals_, **kwargs):
-        r = cls.locate(cursor_offset, line)
+
+    def matches(self, cursor_offset, line, locals_, **kwargs):
+        r = self.locate(cursor_offset, line)
         if r is None:
             return None
         text = r[2]
@@ -217,14 +199,16 @@ class AttrCompletion(BaseCompletionType):
                        if not match.split('.')[-1].startswith('_')]
         return matches
 
-    locate = staticmethod(lineparts.current_dotted_attribute)
-    format = staticmethod(after_last_dot)
+    def locate(self, current_offset, line):
+        return lineparts.current_dotted_attribute(current_offset, line)
+
+    def format(self, word):
+        return after_last_dot(word)
 
 class DictKeyCompletion(BaseCompletionType):
-    locate = staticmethod(lineparts.current_dict_key)
-    @classmethod
-    def matches(cls, cursor_offset, line, locals_, **kwargs):
-        r = cls.locate(cursor_offset, line)
+
+    def matches(self, cursor_offset, line, locals_, **kwargs):
+        r = self.locate(cursor_offset, line)
         if r is None:
             return None
         start, end, orig = r
@@ -237,15 +221,17 @@ class DictKeyCompletion(BaseCompletionType):
             return ["{!r}]".format(k) for k in obj.keys() if repr(k).startswith(orig)]
         else:
             return []
-    @classmethod
-    def format(cls, match):
+
+    def locate(self, current_offset, line):
+        return lineparts.current_dict_key(current_offset, line)
+
+    def format(self, match):
         return match[:-1]
 
 class MagicMethodCompletion(BaseCompletionType):
-    locate = staticmethod(lineparts.current_method_definition_name)
-    @classmethod
-    def matches(cls, cursor_offset, line, current_block, **kwargs):
-        r = cls.locate(cursor_offset, line)
+
+    def matches(self, cursor_offset, line, current_block, **kwargs):
+        r = self.locate(cursor_offset, line)
         if r is None:
             return None
         if 'class' not in current_block:
@@ -253,14 +239,17 @@ class MagicMethodCompletion(BaseCompletionType):
         start, end, word = r
         return [name for name in MAGIC_METHODS if name.startswith(word)]
 
+    def locate(self, current_offset, line):
+        return lineparts.current_method_definition_name(current_offset, line)
+
 class GlobalCompletion(BaseCompletionType):
-    @classmethod
-    def matches(cls, cursor_offset, line, locals_, **kwargs):
+
+    def matches(self, cursor_offset, line, locals_, **kwargs):
         """Compute matches when text is a simple name.
         Return a list of all keywords, built-in functions and names currently
         defined in self.namespace that match.
         """
-        r = cls.locate(cursor_offset, line)
+        r = self.locate(cursor_offset, line)
         if r is None:
             return None
         start, end, text = r
@@ -279,14 +268,15 @@ class GlobalCompletion(BaseCompletionType):
         matches.sort()
         return matches
 
-    locate = staticmethod(lineparts.current_single_word)
+    def locate(self, current_offset, line):
+        return lineparts.current_single_word(current_offset, line)
 
 class ParameterNameCompletion(BaseCompletionType):
-    @classmethod
-    def matches(cls, cursor_offset, line, argspec, **kwargs):
+
+    def matches(self, cursor_offset, line, argspec, **kwargs):
         if not argspec:
             return None
-        r = cls.locate(cursor_offset, line)
+        r = self.locate(cursor_offset, line)
         if r is None:
             return None
         start, end, word = r
@@ -297,13 +287,14 @@ class ParameterNameCompletion(BaseCompletionType):
                 matches.extend(name + '=' for name in argspec[1][4]
                                if name.startswith(word))
         return matches
-    locate = staticmethod(lineparts.current_word)
+
+    def locate(self, current_offset, line):
+        return lineparts.current_word(current_offset, line)
 
 class StringLiteralAttrCompletion(BaseCompletionType):
-    locate = staticmethod(lineparts.current_string_literal_attr)
-    @classmethod
-    def matches(cls, cursor_offset, line, **kwargs):
-        r = cls.locate(cursor_offset, line)
+
+    def matches(self, cursor_offset, line, **kwargs):
+        r = self.locate(cursor_offset, line)
         if r is None:
             return None
         start, end, word = r
@@ -312,6 +303,48 @@ class StringLiteralAttrCompletion(BaseCompletionType):
         if not word.startswith('_'):
             return [match for match in matches if not match.startswith('_')]
         return matches
+
+    def locate(self, current_offset, line):
+        return lineparts.current_string_literal_attr(current_offset, line)
+
+
+def get_completer(completers, cursor_offset, line, **kwargs):
+    """Returns a list of matches and an applicable completer
+
+    If no matches available, returns a tuple of an empty list and None
+
+    kwargs (all required):
+        cursor_offset is the current cursor column
+        line is a string of the current line
+        locals_ is a dictionary of the environment
+        argspec is an inspect.ArgSpec instance for the current function where
+            the cursor is
+        current_block is the possibly multiline not-yet-evaluated block of
+            code which the current line is part of
+        complete_magic_methods is a bool of whether we ought to complete
+            double underscore methods like __len__ in method signatures
+    """
+
+    for completer in completers:
+        matches = completer.matches(cursor_offset, line, **kwargs)
+        if matches is not None:
+            return matches, (completer if matches else None)
+    return [], None
+
+BPYTHON_COMPLETER = (
+    DictKeyCompletion(),
+    StringLiteralAttrCompletion(),
+    ImportCompletion(),
+    FilenameCompletion(),
+    MagicMethodCompletion(),
+    GlobalCompletion(),
+    CumulativeCompleter((AttrCompletion(), ParameterNameCompletion()))
+)
+
+def get_completer_bpython(**kwargs):
+    """"""
+    return get_completer(BPYTHON_COMPLETER,
+                         **kwargs)
 
 
 class EvaluationError(Exception):
