@@ -8,12 +8,11 @@ from StringIO import StringIO
 import sys
 import tempfile
 
-import unittest
 try:
-    from unittest import skip
+    import unittest2 as unittest
 except ImportError:
-    def skip(f):
-        return lambda self: None
+    import unittest
+
 
 py3 = (sys.version_info[0] == 3)
 
@@ -73,7 +72,7 @@ class TestCurtsiesRepl(unittest.TestCase):
         self.repl.get_last_word()
         self.assertEqual(self.repl.current_line,'abcde3')
 
-    @skip # this is the behavior of bash - not currently implemented
+    @unittest.skip # this is the behavior of bash - not currently implemented
     def test_get_last_word_with_prev_line(self):
         self.repl.rl_history.entries=['1','2 3','4 5 6']
         self.repl._set_current_line('abcde')
@@ -251,7 +250,7 @@ class TestPredictedIndent(unittest.TestCase):
         self.assertEqual(self.repl.predicted_indent('def asdf():'), 4)
         self.assertEqual(self.repl.predicted_indent('def asdf(): return 7'), 0)
 
-    @skip
+    @unittest.skip
     def test_complex(self):
         self.assertEqual(self.repl.predicted_indent('[a,'), 1)
         self.assertEqual(self.repl.predicted_indent('reduce(asdfasdf,'), 7)
