@@ -257,5 +257,17 @@ class TestPredictedIndent(unittest.TestCase):
         self.assertEqual(self.repl.predicted_indent('reduce(asdfasdf,'), 7)
 
 
+class TestCurtsiesReevaluate(unittest.TestCase):
+    def setUp(self):
+        self.repl = create_repl()
+
+    def test_variable_is_cleared(self):
+        self.repl._current_line = 'b = 10'
+        self.repl.on_enter()
+        self.assertIn('b', self.repl.interp.locals)
+        self.repl.undo()
+        self.assertNotIn('b', self.repl.interp.locals)
+
+
 if __name__ == '__main__':
     unittest.main()
