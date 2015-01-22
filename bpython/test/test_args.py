@@ -7,7 +7,7 @@ from textwrap import dedent
 
 class TestExecArgs(unittest.TestCase):
     def test_exec_dunder_file(self):
-        with tempfile.NamedTemporaryFile(delete=False, mode="w") as f:
+        with tempfile.NamedTemporaryFile(mode="w") as f:
             f.write(dedent("""\
                 import sys
                 sys.stderr.write(__file__)
