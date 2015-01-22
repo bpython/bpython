@@ -314,6 +314,7 @@ class Repl(object):
         # to repl.pastebin
         self.prev_pastebin_content = ''
         self.prev_pastebin_url = ''
+        self.prev_removal_url = ''
         # Necessary to fix mercurial.ui.ui expecting sys.stderr to have this
         # attribute
         self.closed = False
@@ -677,8 +678,8 @@ class Repl(object):
     def do_pastebin(self, s):
         """Actually perform the upload."""
         if s == self.prev_pastebin_content:
-            self.interact.notify(_('Duplicate pastebin. Previous URL: %s') %
-                                  (self.prev_pastebin_url, ))
+            self.interact.notify(_('Duplicate pastebin. Previous URL: %s. Removal URL: %s') %
+                                  (self.prev_pastebin_url, self.prev_removal_url))
             return self.prev_pastebin_url
 
         if self.config.pastebin_helper:
@@ -716,6 +717,7 @@ class Repl(object):
         removal_url = removal_url_template.safe_substitute(removal_id=removal_id)
 
         self.prev_pastebin_url = paste_url
+        self.prev_removal_url  = removal_url
         self.interact.notify(_('Pastebin URL: %s - Removal URL: %s') %
                              (paste_url, removal_url))
 
