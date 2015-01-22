@@ -229,6 +229,7 @@ setup(
     packages = packages,
     data_files = data_files,
     package_data = {
+        'bpython': ['sample-config'],
         'bpython.translations': mo_files,
         'bpython.test': ['test.config', 'test.theme']
     },
