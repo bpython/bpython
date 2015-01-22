@@ -2,14 +2,12 @@
 
 Configuration
 =============
-You can copy the supplied sample-config to your home directory and move it to
-``$XDG_CONFIG_HOME/bpython/config`` [#f1]_. bpython tries to find
-``$XDG_CONFIG_HOME/bpython/config`` and use it as its configuration, if the
-file does not exist bpython will use its documented defaults.
+There is a ``sample-config`` file supplied in your home directory. You can rename it
+to ``config`` or copy it and make a new ``config`` file since bpython tries to
+find ``$XDG_CONFIG_HOME/bpython/config``(``$XDG_CONFIG_HOME`` defaults to ``~/.config`` if not set)
+and use it as its configuration.
 
-.. :: Footnotes
-
-.. [#f1] ``$XDG_CONFIG_HOME`` defaults to ``~/.config`` if not set.
+To edit the config file from ``bpython-curtsies``, press ``F3``.
 
 .. include:: configuration-options.rst
 
