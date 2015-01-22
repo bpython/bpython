@@ -79,3 +79,11 @@ class TestConfig(unittest.TestCase):
 
         self.assertFalse(struct.help_key)
 
+    def test_keybindings_unused(self):
+        struct = self.load_temp_config(textwrap.dedent("""
+            [keyboard]
+            help = F4
+            """))
+
+        self.assertEqual(struct.help_key, 'F4')
+
