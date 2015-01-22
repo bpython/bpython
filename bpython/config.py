@@ -74,7 +74,6 @@ def loadini(struct, configfile):
             'transpose_chars': 'C-t',
             'clear_line': 'C-u',
             'clear_screen': 'C-l',
-            'kill_line': 'C-k',
             'clear_word': 'C-w',
             'cut_to_buffer': 'C-k',
             'delete': 'C-d',
@@ -104,6 +103,10 @@ def loadini(struct, configfile):
             'list_above' : False,
             'right_arrow_completion' : True,
         }}
+
+    default_keys_to_commands = dict((value, key) for (key, value)
+                                    in defaults['keyboard'].iteritems())
+
     fill_config_with_default_values(config, defaults)
     if not config.read(config_path):
         # No config file. If the user has it in the old place then complain
@@ -113,17 +116,17 @@ def loadini(struct, configfile):
                              "%s\n" % default_config_path())
             sys.exit(1)
 
-    def get_key_no_doublebind(attr, already_used={}):
-        """Clears any other configured keybindings using this key"""
-        key = config.get('keyboard', attr)
-        if key in already_used:
-            default = defaults['keyboard'][already_used[key]]
-            if default in already_used:
-                setattr(struct, '%s_key' % already_used[key], '')
-            else:
-                setattr(struct, '%s_key' % already_used[key], default)
-        already_used[key] = attr
-        return key
+
+    def get_key_no_doublebind(command):
+        default_commands_to_keys = defaults['keyboard']
+        requested_key = config.get('keyboard', command)
+        default_command = default_keys_to_commands[requested_key]
+
+        if default_commands_to_keys[default_command] == \
+           config.get('keyboard', default_command):
+            setattr(struct, '%s_key' % default_command, '')
+
+        return requested_key
 
     struct.config_path = config_path
 
@@ -168,7 +171,6 @@ def loadini(struct, configfile):
     struct.transpose_chars_key = get_key_no_doublebind('transpose_chars')
     struct.clear_line_key = get_key_no_doublebind('clear_line')
     struct.clear_screen_key = get_key_no_doublebind('clear_screen')
-    struct.kill_line_key = get_key_no_doublebind('kill_line')
     struct.exit_key = get_key_no_doublebind('exit')
     struct.last_output_key = get_key_no_doublebind('last_output')
     struct.edit_config_key = get_key_no_doublebind('edit_config')
