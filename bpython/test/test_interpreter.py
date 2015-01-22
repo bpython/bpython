@@ -1,4 +1,7 @@
-import unittest
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 
 from bpython.curtsiesfrontend import interpreter
 from curtsies.fmtfuncs import *
@@ -10,7 +13,7 @@ class TestInterpreter(unittest.TestCase):
 
         def append_to_a(message):
             a.append(message)
-        
+
         i.write = append_to_a
         i.runsource('1.1.1.1')
 
@@ -25,7 +28,7 @@ class TestInterpreter(unittest.TestCase):
 
         def append_to_a(message):
             a.append(message)
-        
+
         i.write = append_to_a
 
         def f():

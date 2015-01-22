@@ -1,7 +1,15 @@
-import unittest
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
+
 import re
 
-from bpython.line import current_word, current_dict_key, current_dict, current_string, current_object, current_object_attribute, current_from_import_from, current_from_import_import, current_import, current_method_definition_name, current_single_word, current_string_literal_attr
+from bpython.line import current_word, current_dict_key, current_dict, \
+        current_string, current_object, current_object_attribute, \
+        current_from_import_from, current_from_import_import, current_import, \
+        current_method_definition_name, current_single_word, \
+        current_string_literal_attr
 
 
 def cursor(s):

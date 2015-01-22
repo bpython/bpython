@@ -1,9 +1,12 @@
-import unittest
 import subprocess
 import sys
 import tempfile
 from textwrap import dedent
 
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 
 class TestExecArgs(unittest.TestCase):
     def test_exec_dunder_file(self):

@@ -2,7 +2,6 @@ import collections
 from itertools import islice
 import os
 import socket
-import sys
 
 from mock import Mock, MagicMock
 
@@ -11,8 +10,7 @@ try:
 except ImportError:
     import unittest
 
-py3 = (sys.version_info[0] == 3)
-
+from bpython._py3compat import py3
 from bpython import config, repl, cli, autocomplete
 
 

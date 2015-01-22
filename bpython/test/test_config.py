@@ -1,7 +1,11 @@
 import os
-import unittest
 import tempfile
 import textwrap
+
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 
 from bpython import config
 

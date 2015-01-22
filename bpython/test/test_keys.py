@@ -1,4 +1,8 @@
-import unittest
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
+
 import bpython.keys as keys
 
 class TestCLIKeys(unittest.TestCase):

@@ -13,14 +13,12 @@ try:
 except ImportError:
     import unittest
 
-
-py3 = (sys.version_info[0] == 3)
-
 from bpython.curtsiesfrontend import repl as curtsiesrepl
 from bpython.curtsiesfrontend import interpreter
 from bpython import autocomplete
 from bpython import config
 from bpython import args
+from bpython._py3compat import py3
 
 def setup_config(conf):
     config_struct = config.Struct()

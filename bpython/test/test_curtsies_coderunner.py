@@ -1,5 +1,9 @@
-import unittest
 import sys
+
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 
 from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 

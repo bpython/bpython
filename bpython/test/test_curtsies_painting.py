@@ -5,10 +5,9 @@ import os
 from contextlib import contextmanager
 
 try:
-    from unittest import skip
+    import unittest2 as unittest
 except ImportError:
-    def skip(f):
-        return lambda self: None
+    import unittest
 
 from curtsies.formatstringarray import FormatStringTest, fsarray
 from curtsies.fmtfuncs import *
