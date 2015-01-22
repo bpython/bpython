@@ -220,7 +220,7 @@ class DictKeyCompletion(BaseCompletionType):
         except EvaluationError:
             return set()
         if obj and isinstance(obj, type({})) and obj.keys():
-            return set("{!r}".format(k) for k in obj.keys()
+            return set("{!r}]".format(k) for k in obj.keys()
                        if repr(k).startswith(orig))
         else:
             return set()
