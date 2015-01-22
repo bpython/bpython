@@ -1306,6 +1306,7 @@ class Repl(BpythonRepl):
         self.display_buffer = []
         self.highlighted_paren = None
 
+        self.process_event(bpythonevents.RunStartupFileEvent())
         self.reevaluating = True
         sys.stdin = ReevaluateFakeStdin(self.stdin, self)
         for line in old_logical_lines:
