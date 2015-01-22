@@ -120,11 +120,15 @@ def loadini(struct, configfile):
     def get_key_no_doublebind(command):
         default_commands_to_keys = defaults['keyboard']
         requested_key = config.get('keyboard', command)
-        default_command = default_keys_to_commands[requested_key]
 
-        if default_commands_to_keys[default_command] == \
-           config.get('keyboard', default_command):
-            setattr(struct, '%s_key' % default_command, '')
+        try:
+            default_command = default_keys_to_commands[requested_key]
+
+            if default_commands_to_keys[default_command] == \
+                config.get('keyboard', default_command):
+                setattr(struct, '%s_key' % default_command, '')
+        except KeyError:
+            pass
 
         return requested_key
 
