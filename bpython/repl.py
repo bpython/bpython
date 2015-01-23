@@ -23,10 +23,10 @@
 
 from __future__ import with_statement
 import code
-import codecs
 import errno
 import inspect
 import os
+import pkgutil
 import pydoc
 import requests
 import shlex
@@ -952,10 +952,8 @@ class Repl(object):
         if not (os.path.isfile(self.config.config_path)):
             if self.interact.confirm(_("Config file does not exist - create new from default? (y/N)")):
                 try:
+                    default_config = pkgutil.get_data('bpython', 'sample-config')
                     bpython_dir, script_name = os.path.split(__file__)
-                    with open(os.path.join(bpython_dir, "sample-config")) as f:
-                        default_config = f.read()
-
                     containing_dir = os.path.dirname(os.path.abspath(self.config.config_path))
                     if not os.path.exists(containing_dir):
                         os.makedirs(containing_dir)
