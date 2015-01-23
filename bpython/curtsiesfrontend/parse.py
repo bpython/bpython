@@ -33,8 +33,8 @@ def parse(s):
     while True:
         if not rest:
             break
-        d, rest = peel_off_string(rest)
-        stuff.append(d)
+        start, rest = peel_off_string(rest)
+        stuff.append(start)
     return (sum([fs_from_match(d) for d in stuff[1:]], fs_from_match(stuff[0]))
             if len(stuff) > 0
             else FmtStr())

@@ -634,7 +634,7 @@ class Repl(BpythonRepl):
             front_white = (len(self.current_line[:self.cursor_offset]) -
                 len(self.current_line[:self.cursor_offset].lstrip()))
             to_add = 4 - (front_white % self.config.tab_length)
-            for _ in range(to_add):
+            for unused in range(to_add):
                 self.add_normal_character(' ')
             return
 

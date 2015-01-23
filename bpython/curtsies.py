@@ -142,7 +142,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                     process_event(paste)
 
                 process_event(None)  # do a display before waiting for first event
-                for _ in find_iterator:
+                for unused in find_iterator:
                     e = input_generator.send(0)
                     if e is not None:
                         process_event(e)
