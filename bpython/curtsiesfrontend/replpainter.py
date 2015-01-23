@@ -172,7 +172,7 @@ def paint_infobox(rows, columns, matches, argspec, match, docstring, config, for
     r = fsarray(output_lines[:min(rows-1, len(output_lines)-1)] + output_lines[-1:])
     return r
 
-def paint_last_events(rows, columns, names):
+def paint_last_events(rows, columns, names, config):
     if not names:
         return fsarray([])
     width = min(max(len(name) for name in names), columns-2)

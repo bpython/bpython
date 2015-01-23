@@ -1,8 +1,6 @@
 """Tools for preparing code to be run in the REPL (removing blank lines, etc)"""
 import re
 
-from bpython.curtsiesfrontend.interpreter import code_finished_will_parse
-
 #TODO specifically catch IndentationErrors instead of any syntax errors
 
 def indent_empty_lines(s, compiler):

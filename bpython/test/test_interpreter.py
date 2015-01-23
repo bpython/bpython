@@ -4,7 +4,7 @@ except ImportError:
     import unittest
 
 from bpython.curtsiesfrontend import interpreter
-from curtsies.fmtfuncs import *
+from curtsies.fmtfuncs import bold, green, magenta, cyan, red, plain
 
 class TestInterpreter(unittest.TestCase):
     def test_syntaxerror(self):

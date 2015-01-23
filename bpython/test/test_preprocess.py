@@ -3,7 +3,6 @@ from functools import partial
 import difflib
 import inspect
 import re
-import unittest
 
 try:
     import unittest2 as unittest

@@ -10,7 +10,7 @@ except ImportError:
     import unittest
 
 from curtsies.formatstringarray import FormatStringTest, fsarray
-from curtsies.fmtfuncs import *
+from curtsies.fmtfuncs import cyan, bold, green, yellow, on_magenta, red
 from bpython.curtsiesfrontend.events import RefreshRequestEvent
 
 from bpython import config

@@ -1,4 +1,3 @@
-import time
 import os
 from collections import defaultdict
 
@@ -30,9 +29,7 @@ else:
             self.observer.unschedule_all()
 
         def _add_module(self, path):
-            """Add a python module to track changes to
-            
-            Can"""
+            """Add a python module to track changes"""
             path = os.path.abspath(path)
             for suff in importcompletion.SUFFIXES:
                 if path.endswith(suff):
@@ -45,7 +42,7 @@ else:
 
         def _add_module_later(self, path):
             self.modules_to_add_later.append(path)
-            
+
         def track_module(self, path):
             """
             Begins tracking this if activated, or remembers to track later.

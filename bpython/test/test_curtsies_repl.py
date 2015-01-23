@@ -1,7 +1,6 @@
 # coding: utf8
 import code
 from contextlib import contextmanager
-from functools import partial
 from mock import Mock, patch, MagicMock
 import os
 from StringIO import StringIO

@@ -11,7 +11,6 @@ sense to you.
 
 import code
 import signal
-import sys
 import greenlet
 import logging
 
