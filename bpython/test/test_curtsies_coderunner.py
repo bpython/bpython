@@ -29,8 +29,6 @@ class TestCodeRunner(unittest.TestCase):
         c.run_code()
 
     def test_exception(self):
-        orig_stdout = sys.stdout
-        orig_stderr = sys.stderr
         c = CodeRunner(request_refresh=lambda: self.orig_stdout.flush() or self.orig_stderr.flush())
         def ctrlc():
             raise KeyboardInterrupt()
