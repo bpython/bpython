@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: bpython 0.13-381\n"
+"Project-Id-Version: bpython 0.13-442\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-01-17 18:57+0100\n"
+"POT-Creation-Date: 2015-01-23 23:19+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -81,91 +81,91 @@ msgstr ""
 msgid "Error occurded while writing to file %s (%s)"
 msgstr ""
 
-#: bpython/repl.py:471
+#: bpython/repl.py:477
 msgid "Nothing to get source of"
 msgstr ""
 
-#: bpython/repl.py:476
+#: bpython/repl.py:482
 #, python-format
 msgid "Cannot get source: %s"
 msgstr ""
 
-#: bpython/repl.py:481
+#: bpython/repl.py:487
 #, python-format
 msgid "Cannot access source of %r"
 msgstr ""
 
-#: bpython/repl.py:483
+#: bpython/repl.py:489
 #, python-format
 msgid "No source code found for %s"
 msgstr ""
 
-#: bpython/repl.py:649
+#: bpython/repl.py:655
 msgid "No clipboard available."
 msgstr ""
 
-#: bpython/repl.py:656
+#: bpython/repl.py:662
 msgid "Could not copy to clipboard."
 msgstr ""
 
-#: bpython/repl.py:658
+#: bpython/repl.py:664
 msgid "Copied content to clipboard."
 msgstr ""
 
-#: bpython/repl.py:667
+#: bpython/repl.py:673
 msgid "Pastebin buffer? (y/N) "
 msgstr ""
 
-#: bpython/repl.py:668
+#: bpython/repl.py:674
 msgid "Pastebin aborted"
 msgstr ""
 
-#: bpython/repl.py:675
+#: bpython/repl.py:681
 #, python-format
-msgid "Duplicate pastebin. Previous URL: %s"
+msgid "Duplicate pastebin. Previous URL: %s. Removal URL: %s"
 msgstr ""
 
-#: bpython/repl.py:694 bpython/repl.py:721
+#: bpython/repl.py:700 bpython/repl.py:728
 msgid "Posting data to pastebin..."
 msgstr ""
 
-#: bpython/repl.py:699
+#: bpython/repl.py:705
 #, python-format
 msgid "Upload failed: %s"
 msgstr ""
 
-#: bpython/repl.py:714
+#: bpython/repl.py:721
 #, python-format
 msgid "Pastebin URL: %s - Removal URL: %s"
 msgstr ""
 
-#: bpython/repl.py:733
+#: bpython/repl.py:740
 msgid "Upload failed: Helper program not found."
 msgstr ""
 
-#: bpython/repl.py:736
+#: bpython/repl.py:743
 msgid "Upload failed: Helper program could not be run."
 msgstr ""
 
-#: bpython/repl.py:743
+#: bpython/repl.py:750
 #, python-format
 msgid "Upload failed: Helper program returned non-zero exit status %s."
 msgstr ""
 
-#: bpython/repl.py:747
+#: bpython/repl.py:754
 msgid "Upload failed: No output from helper program."
 msgstr ""
 
-#: bpython/repl.py:754
+#: bpython/repl.py:761
 msgid "Upload failed: Failed to recognize the helper program's output as an URL."
 msgstr ""
 
-#: bpython/repl.py:760
+#: bpython/repl.py:767
 #, python-format
 msgid "Pastebin URL: %s"
 msgstr ""
 
-#: bpython/repl.py:946
+#: bpython/repl.py:953
 msgid "Config file does not exist - create new from default? (y/N)"
 msgstr ""
 
@@ -203,5 +203,10 @@ msgstr ""
 #: bpython/curtsiesfrontend/repl.py:258
 #, python-format
 msgid "Press <%s> for help."
+msgstr ""
+
+#: bpython/curtsiesfrontend/repl.py:470
+#, python-format
+msgid "Executing PYTHONSTARTUP failed: %s"
 msgstr ""
 

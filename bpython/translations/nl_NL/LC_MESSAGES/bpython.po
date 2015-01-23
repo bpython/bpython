@@ -7,23 +7,21 @@ msgid ""
 msgstr ""
 "Project-Id-Version: bpython 0.9.7.1\n"
 "Report-Msgid-Bugs-To: http://github.com/bpython/bpython/issues\n"
-"POT-Creation-Date: 2015-01-17 18:57+0100\n"
-"PO-Revision-Date: 2015-01-17 22:14+0100\n"
+"POT-Creation-Date: 2015-01-23 23:19+0100\n"
+"PO-Revision-Date: 2015-01-23 23:20+0100\n"
 "Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language-Team: bpython developers\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
-"Language: nl_NL\n"
-"X-Generator: Poedit 1.6.10\n"
 
 #: bpython/args.py:57
 msgid ""
 "Usage: %prog [options] [file [args]]\n"
-"NOTE: If bpython sees an argument it does not know, execution falls back to "
-"the regular Python interpreter."
+"NOTE: If bpython sees an argument it does not know, execution falls back "
+"to the regular Python interpreter."
 msgstr ""
 
 #: bpython/args.py:67
@@ -83,100 +81,98 @@ msgstr ""
 msgid "Error occurded while writing to file %s (%s)"
 msgstr ""
 
-#: bpython/repl.py:471
+#: bpython/repl.py:477
 msgid "Nothing to get source of"
 msgstr ""
 
-#: bpython/repl.py:476
+#: bpython/repl.py:482
 #, python-format
 msgid "Cannot get source: %s"
 msgstr ""
 
-#: bpython/repl.py:481
+#: bpython/repl.py:487
 #, python-format
 msgid "Cannot access source of %r"
 msgstr ""
 
-#: bpython/repl.py:483
+#: bpython/repl.py:489
 #, python-format
 msgid "No source code found for %s"
 msgstr ""
 
-#: bpython/repl.py:649
+#: bpython/repl.py:655
 msgid "No clipboard available."
 msgstr ""
 
-#: bpython/repl.py:656
+#: bpython/repl.py:662
 msgid "Could not copy to clipboard."
 msgstr ""
 
-#: bpython/repl.py:658
+#: bpython/repl.py:664
 msgid "Copied content to clipboard."
 msgstr ""
 
-#: bpython/repl.py:667
+#: bpython/repl.py:673
 msgid "Pastebin buffer? (y/N) "
 msgstr ""
 
-#: bpython/repl.py:668
+#: bpython/repl.py:674
 msgid "Pastebin aborted"
 msgstr ""
 
-#: bpython/repl.py:675
+#: bpython/repl.py:681
 #, python-format
-msgid "Duplicate pastebin. Previous URL: %s"
+msgid "Duplicate pastebin. Previous URL: %s. Removal URL: %s"
 msgstr ""
 
-#: bpython/repl.py:694 bpython/repl.py:721
+#: bpython/repl.py:700 bpython/repl.py:728
 msgid "Posting data to pastebin..."
 msgstr ""
 
-#: bpython/repl.py:699
+#: bpython/repl.py:705
 #, python-format
 msgid "Upload failed: %s"
 msgstr ""
 
-#: bpython/repl.py:714
+#: bpython/repl.py:721
 #, python-format
 msgid "Pastebin URL: %s - Removal URL: %s"
 msgstr ""
 
-#: bpython/repl.py:733
+#: bpython/repl.py:740
 msgid "Upload failed: Helper program not found."
 msgstr ""
 
-#: bpython/repl.py:736
+#: bpython/repl.py:743
 msgid "Upload failed: Helper program could not be run."
 msgstr ""
 
-#: bpython/repl.py:743
+#: bpython/repl.py:750
 #, python-format
 msgid "Upload failed: Helper program returned non-zero exit status %s."
 msgstr ""
 
-#: bpython/repl.py:747
+#: bpython/repl.py:754
 msgid "Upload failed: No output from helper program."
 msgstr ""
 
-#: bpython/repl.py:754
-msgid ""
-"Upload failed: Failed to recognize the helper program's output as an URL."
+#: bpython/repl.py:761
+msgid "Upload failed: Failed to recognize the helper program's output as an URL."
 msgstr ""
 
-#: bpython/repl.py:760
+#: bpython/repl.py:767
 #, python-format
 msgid "Pastebin URL: %s"
 msgstr ""
 
-#: bpython/repl.py:946
+#: bpython/repl.py:953
 msgid "Config file does not exist - create new from default? (y/N)"
 msgstr ""
 
 #: bpython/urwid.py:617
 #, python-format
 msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
-msgstr ""
-" <%s> Rewind  <%s> Opslaan  <%s> Pastebin  <%s> Pager  <%s> Toon broncode"
+msgstr " <%s> Rewind  <%s> Opslaan  <%s> Pastebin  <%s> Pager  <%s> Toon broncode"
 
 #: bpython/urwid.py:1126
 msgid "Run twisted reactor."
@@ -209,32 +205,7 @@ msgstr ""
 msgid "Press <%s> for help."
 msgstr ""
 
-#~ msgid "An error occurred."
-#~ msgstr "Er is een fout opgetreden"
-
-#~ msgid "Exception details"
-#~ msgstr "Fout details"
-
-#~ msgid "Statusbar"
-#~ msgstr "Statusbalk"
-
-#~ msgid "tooltip"
-#~ msgstr "tooltip"
-
-#~ msgid "File to save to"
-#~ msgstr "Bestandsnaaam"
-
-#~ msgid "Python files"
-#~ msgstr "Python bestanden"
-
-#~ msgid "All files"
-#~ msgstr "Alle bestanden"
-
-#~ msgid "gtk-specific options"
-#~ msgstr "gtk-specifieke opties"
-
-#~ msgid "Options specific to bpython's Gtk+ front end"
-#~ msgstr "Opties specifiek voor bpythons Gtk+ front end"
-
-#~ msgid "Pastebin selection"
-#~ msgstr "Pastebin de selectie"
+#: bpython/curtsiesfrontend/repl.py:470
+#, python-format
+msgid "Executing PYTHONSTARTUP failed: %s"
+msgstr ""
