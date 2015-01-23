@@ -1281,12 +1281,12 @@ class Repl(BpythonRepl):
         self.buffer.pop()
 
         if not self.buffer:
-            self._set_cursor_offset(0, update_completion=False)
+            self._cursor_offset = 0
             self.current_line = ''
         else:
             line = self.buffer[-1]
             indent = self.predicted_indent(line)
-            self.current_line = indent * ' '
+            self._current_line = indent * ' '
             self.cursor_offset = len(self.current_line)
 
     def reevaluate(self, insert_into_history=False):
