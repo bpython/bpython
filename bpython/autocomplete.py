@@ -219,8 +219,8 @@ class DictKeyCompletion(BaseCompletionType):
             obj = safe_eval(dexpr, locals_)
         except EvaluationError:
             return set()
-        if obj and isinstance(obj, type({})) and obj.keys():
-            return set("{!r}".format(k) for k in obj.keys()
+        if isinstance(obj, dict) and obj.keys():
+            return set("{0!r}".format(k) for k in obj.keys()
                        if repr(k).startswith(orig))
         else:
             return set()
