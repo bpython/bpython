@@ -145,3 +145,33 @@ class TestFilenameCompletion(unittest.TestCase):
         self.assertEqual(self.completer.format('/hello/there/'), 'there/')
         self.assertEqual(self.completer.format('/hello/there'), 'there')
 
+class MockNumPy(object):
+    """
+        This is a mock numpy object that raises an error when there is an atempt to convert it to a boolean.
+    """
+    def __nonzero__(self):
+        raise ValueError("The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()")
+
+
+class TestDictKeyCompletion(unittest.TestCase):
+
+    def test_set_of_keys_returned_when_matches_found(self):
+        com = autocomplete.DictKeyCompletion()
+        local={'d':{"ab":1, "cd":2},}
+        com.matches(2,"d[" , local)
+        self.assertSetEqual(com.matches(2,"d[" , local),set(["'ab']","'cd']"]))
+
+    def test_empty_set_returned_when_eval_error(self):
+        com = autocomplete.DictKeyCompletion()
+        local={'e':{"ab":1, "cd":2},}
+        self.assertSetEqual(com.matches(2,"d[" , local),set())
+
+    def test_empty_set_returned_when_not_dict_type(self):
+        com = autocomplete.DictKeyCompletion()
+        local={'l':["ab", "cd"],}
+        self.assertSetEqual(com.matches(2,"l[" , local),set())
+
+    def test_obj_that_does_not_allow_conversion_to_bool(self):
+        com = autocomplete.DictKeyCompletion()
+        local={'mNumPy':MockNumPy(),}
+        self.assertSetEqual(com.matches(7,"mNumPy[" , local), set())
