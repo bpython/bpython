@@ -175,3 +175,16 @@ class TestDictKeyCompletion(unittest.TestCase):
         com = autocomplete.DictKeyCompletion()
         local={'mNumPy':MockNumPy(),}
         self.assertSetEqual(com.matches(7,"mNumPy[" , local), set())
+
+class Foo(object):
+    a = 10
+    def __init__(self):
+        self.b = 20
+    def method(self, x):
+        pass
+
+class TestAttrCompletion(unittest.TestCase):
+
+    def test_att_matches_found_on_instance(self):
+        com = autocomplete.AttrCompletion()
+        self.assertSetEqual(com.matches(2, 'a.', {'a': Foo()}), set(['a.method', 'a.a', 'a.b']))
