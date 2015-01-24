@@ -177,8 +177,8 @@ def paint_last_events(rows, columns, names, config):
         return fsarray([])
     width = min(max(len(name) for name in names), columns-2)
     output_lines = []
-    output_lines.append(config.left_top_corner+config.top_border*(width+2)+config.right_top_corner)
-    for name in names[-(rows-2):]:
+    output_lines.append(config.left_top_corner+config.top_border*(width)+config.right_top_corner)
+    for name in names[max(0, len(names)-(rows-2)):]:
         output_lines.append(config.left_border+name[:width].center(width)+config.right_border)
     output_lines.append(config.left_bottom_corner+config.bottom_border*width+config.right_bottom_corner)
     return fsarray(output_lines)

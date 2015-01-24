@@ -1154,6 +1154,12 @@ class Repl(BpythonRepl):
             else:
                 arr[statusbar_row, :] = paint.paint_statusbar(1, width, self.status_bar.current_line, self.config)
 
+        if self.presentation_mode:
+            rows = arr.height
+            columns = arr.width
+            last_key_box = paint.paint_last_events(rows, columns, [events.pp_event(x) for x in self.last_events if x], self.config)
+            arr[arr.height-last_key_box.height:arr.height, arr.width-last_key_box.width:arr.width] = last_key_box
+
         if self.config.color_scheme['background'] not in ('d', 'D'):
             for r in range(arr.height):
                 arr[r] = fmtstr(arr[r], bg=color_for_letter(self.config.color_scheme['background']))

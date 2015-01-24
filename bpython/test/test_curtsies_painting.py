@@ -93,12 +93,18 @@ class TestCurtsiesPaintingSimple(TestCurtsiesPainting):
 
     def test_formatted_docstring(self):
         actual = replpainter.formatted_docstring(
-                'Returns the results\n\n' 'Also has side effects',
-                40, config=setup_config())
+            'Returns the results\n\n' 'Also has side effects',
+            40, config=setup_config())
         expected = fsarray(['Returns the results', '', 'Also has side effects'])
         self.assertFSArraysEqualIgnoringFormatting(actual, expected)
 
-
+    def test_paint_lasts_events(self):
+        actual = replpainter.paint_last_events(4, 100, ['a', 'b', 'c'], config=setup_config())
+        expected = fsarray(["┌─┐",
+                            "│b│",
+                            "│c│",
+                            "└─┘"])
+        self.assertFSArraysEqualIgnoringFormatting(actual, expected)
 
 @contextmanager
 def output_to_repl(repl):
