@@ -13,8 +13,9 @@ from curtsies.formatstringarray import FormatStringTest, fsarray
 from curtsies.fmtfuncs import cyan, bold, green, yellow, on_magenta, red
 from bpython.curtsiesfrontend.events import RefreshRequestEvent
 
-from bpython import config
+from bpython import config, inspection
 from bpython.curtsiesfrontend.repl import Repl
+from bpython.curtsiesfrontend import replpainter
 from bpython.repl import History
 from bpython.curtsiesfrontend.repl import INCONSISTENT_HISTORY_MSG, CONTIGUITY_BROKEN_MSG
 
@@ -78,6 +79,20 @@ class TestCurtsiesPaintingSimple(TestCurtsiesPainting):
                   u'└───────────────────────┘',
                   u'Welcome to bpython! Press <F1> f']
         self.assert_paint_ignoring_formatting(screen, (0, 4))
+
+    def test_argspec(self):
+        def foo(x, y, z=10):
+            "docstring!"
+            pass
+        argspec = inspection.getargspec('foo', foo) + [1]
+        array = replpainter.formatted_argspec(argspec, 30, setup_config())
+        screen = [(bold(cyan(u'foo'))+cyan(':')+cyan(' ')+cyan('(')+cyan('x') +
+                  yellow(',')+yellow(' ')+bold(cyan('y'))+yellow(',') +
+                  yellow(' ')+cyan('z')+yellow('=')+bold(cyan('10'))+yellow(')'))]
+        print screen
+        print array
+        self.assertFSArraysEqual(fsarray(array), fsarray(screen))
+
 
 @contextmanager
 def output_to_repl(repl):
