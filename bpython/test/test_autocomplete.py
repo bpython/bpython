@@ -1,3 +1,4 @@
+from collections import namedtuple
 from bpython import autocomplete
 
 import mock
@@ -5,6 +6,12 @@ try:
     import unittest2 as unittest
 except ImportError:
     import unittest
+
+try:
+    import jedi
+    has_jedi = True
+except ImportError:
+    has_jedi = False
 
 
 class TestSafeEval(unittest.TestCase):
@@ -191,4 +198,37 @@ class TestMagicMethodCompletion(unittest.TestCase):
         block = "class Something(object)\n    def __"
         self.assertSetEqual(com.matches(10, '    def __', block), set(autocomplete.MAGIC_METHODS))
 
+Comp = namedtuple('Completion', ['name', 'complete'])
 
+class TestMultilineJediCompletion(unittest.TestCase):
+
+    @unittest.skipIf(not has_jedi, "jedi not available")
+    def test_returns_none_with_single_line(self):
+        com = autocomplete.MultilineJediCompletion()
+        self.assertEqual(com.matches(2, 'Va', 'Va', []), None)
+
+    @unittest.skipIf(not has_jedi, "jedi not available")
+    def test_returns_non_with_blank_second_line(self):
+        com = autocomplete.MultilineJediCompletion()
+        self.assertEqual(com.matches(0, '', 'class Foo():\n', ['class Foo():']), None)
+
+    def matches_from_completions(self, cursor, line, block, history, completions):
+        with mock.patch('bpython.autocomplete.jedi.Script') as Script:
+            script = Script.return_value
+            script.completions.return_value = completions
+            com = autocomplete.MultilineJediCompletion()
+            return com.matches(cursor, line, block, history)
+
+    @unittest.skipIf(not has_jedi, "jedi not available")
+    def test_completions_starting_with_different_letters(self):
+        matches = self.matches_from_completions(
+            2, ' a', 'class Foo:\n a', ['adsf'],
+            [Comp('Abc', 'bc'), Comp('Cbc', 'bc')])
+        self.assertEqual(matches, None)
+
+    @unittest.skipIf(not has_jedi, "jedi not available")
+    def test_completions_starting_with_different_cases(self):
+        matches = self.matches_from_completions(
+            2, ' a', 'class Foo:\n a', ['adsf'],
+            [Comp('Abc', 'bc'), Comp('ade', 'de')])
+        self.assertSetEqual(matches, set(['ade']))

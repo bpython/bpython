@@ -313,12 +313,10 @@ try:
     import jedi
 except ImportError:
     class MultilineJediCompletion(BaseCompletionType):
-        @classmethod
-        def matches(cls, cursor_offset, line, **kwargs):
+        def matches(self, cursor_offset, line, **kwargs):
             return None
 else:
     class JediCompletion(BaseCompletionType):
-        @classmethod
         def matches(self, cursor_offset, line, history, **kwargs):
             if not lineparts.current_word(cursor_offset, line):
                 return None
@@ -338,7 +336,7 @@ else:
                 return None # Too general - giving completions starting with multiple letters
             else:
                 # case-sensitive matches only
-                return [m for m in matches if m.startswith(first_letter)]
+                return set([m for m in matches if m.startswith(first_letter)])
 
         def locate(self, cursor_offset, line):
             start = self._orig_start
@@ -347,11 +345,10 @@ else:
 
 
     class MultilineJediCompletion(JediCompletion):
-        @classmethod
-        def matches(cls, cursor_offset, line, current_block, history, **kwargs):
+        def matches(self, cursor_offset, line, current_block, history, **kwargs):
             if '\n' in current_block:
                 assert cursor_offset <= len(line), "%r %r" % (cursor_offset, line)
-                results = JediCompletion.matches(cursor_offset, line, history)
+                results = JediCompletion.matches(self, cursor_offset, line, history)
                 return results
             else:
                 return None
