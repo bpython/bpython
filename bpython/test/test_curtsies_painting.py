@@ -101,8 +101,8 @@ class TestCurtsiesPaintingSimple(TestCurtsiesPainting):
     def test_paint_lasts_events(self):
         actual = replpainter.paint_last_events(4, 100, ['a', 'b', 'c'], config=setup_config())
         expected = fsarray(["┌─┐",
-                            "│b│",
                             "│c│",
+                            "│b│",
                             "└─┘"])
         self.assertFSArraysEqualIgnoringFormatting(actual, expected)
 
