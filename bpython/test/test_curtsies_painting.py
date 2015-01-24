@@ -89,9 +89,15 @@ class TestCurtsiesPaintingSimple(TestCurtsiesPainting):
         screen = [(bold(cyan(u'foo'))+cyan(':')+cyan(' ')+cyan('(')+cyan('x') +
                   yellow(',')+yellow(' ')+bold(cyan('y'))+yellow(',') +
                   yellow(' ')+cyan('z')+yellow('=')+bold(cyan('10'))+yellow(')'))]
-        print screen
-        print array
         self.assertFSArraysEqual(fsarray(array), fsarray(screen))
+
+    def test_formatted_docstring(self):
+        actual = replpainter.formatted_docstring(
+                'Returns the results\n\n' 'Also has side effects',
+                40, config=setup_config())
+        expected = fsarray(['Returns the results', '', 'Also has side effects'])
+        self.assertFSArraysEqualIgnoringFormatting(actual, expected)
+
 
 
 @contextmanager
