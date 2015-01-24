@@ -27,22 +27,23 @@ repl = None  # global for `from bpython.curtsies import repl`
 def main(args=None, locals_=None, banner=None):
     config, options, exec_args = bpargs.parse(args, (
         'curtsies options', None, [
-            Option('--log', '-L', action='store_true',
+            Option('--log', '-L', action='count',
                    help=_("log debug messages to bpython.log")),
             Option('--type', '-t', action='store_true',
                    help=_("enter lines of file as though interactively typed")),
             ]))
+    if options.log is None:
+        options.log = 0
+    logging_levels = [logging.ERROR, logging.INFO, logging.DEBUG]
+    level = logging_levels[min(len(logging_levels), options.log)]
+    logging.getLogger('curtsies').setLevel(level)
+    logging.getLogger('bpython').setLevel(level)
     if options.log:
         handler = logging.FileHandler(filename='bpython.log')
-        logging.getLogger('curtsies').setLevel(logging.WARNING)
         logging.getLogger('curtsies').addHandler(handler)
         logging.getLogger('curtsies').propagate = False
-        logging.getLogger('bpython').setLevel(logging.WARNING)
         logging.getLogger('bpython').addHandler(handler)
         logging.getLogger('bpython').propagate = False
-    else:
-        logging.getLogger('bpython').setLevel(logging.ERROR)
-        logging.getLogger('curtsies').setLevel(logging.ERROR)
 
     interp = None
     paste = None
