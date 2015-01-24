@@ -1,5 +1,7 @@
 language: python
 sudo: false
+notifications:
+  webhooks: http://ramacher.at:2810/7e210HhiKpMbF7L9/travisci
 
 python:
     - "2.6"
