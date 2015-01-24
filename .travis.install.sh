@@ -9,6 +9,8 @@ if [[ $RUN == nosetests ]]; then
     pip install pygments requests 'curtsies >=0.1.17,<0.2.0' greenlet
     # filewatch specific dependencies
     pip install watchdog
+    # jedi specific dependencies
+    pip install jedi
     # translation specific dependencies
     pip install babel
     # Python 2.6 specific dependencies

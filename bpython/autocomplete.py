@@ -31,8 +31,6 @@ import rlcompleter
 
 from glob import glob
 
-import jedi
-
 from bpython import inspection
 from bpython import importcompletion
 from bpython import line as lineparts
@@ -311,42 +309,52 @@ class StringLiteralAttrCompletion(BaseCompletionType):
     def locate(self, current_offset, line):
         return lineparts.current_string_literal_attr(current_offset, line)
 
-class JediCompletion(BaseCompletionType):
-    @classmethod
-    def matches(self, cursor_offset, line, history, **kwargs):
-        if not lineparts.current_word(cursor_offset, line):
+try:
+    import jedi
+except ImportError:
+    class MultilineJediCompletion(BaseCompletionType):
+        @classmethod
+        def matches(cls, cursor_offset, line, **kwargs):
             return None
-        history = '\n'.join(history) + '\n' + line
-        script = jedi.Script(history, len(history.splitlines()), cursor_offset, 'fake.py')
-        completions = script.completions()
-        if completions:
-            self._original = completions[0]
-        else:
-            self._original = None
+else:
+    class JediCompletion(BaseCompletionType):
+        @classmethod
+        def matches(self, cursor_offset, line, history, **kwargs):
+            if not lineparts.current_word(cursor_offset, line):
+                return None
+            history = '\n'.join(history) + '\n' + line
+            script = jedi.Script(history, len(history.splitlines()), cursor_offset, 'fake.py')
+            completions = script.completions()
+            if completions:
+                self._orig_start = cursor_offset - (len(completions[0].name) - len(completions[0].complete))
+            else:
+                self._orig_start = None
+                return None
 
-        matches = [c.name for c in completions]
-        if all(m.startswith('_') for m in matches):
-            return matches
-        elif any(not m.startswith(matches[0][0]) for m in matches):
-            return matches
-        else:
-            return [m for m in matches if not m.startswith('_')]
+            first_letter = line[self._orig_start:self._orig_start+1]
 
-    def locate(self, cursor_offset, line):
-        start = cursor_offset - (len(self._original.name) - len(self._original.complete))
-        end = cursor_offset
-        return start, end, line[start:end]
+            matches = [c.name for c in completions]
+            if any(not m.lower().startswith(matches[0][0].lower()) for m in matches):
+                return None # Too general - giving completions starting with multiple letters
+            else:
+                # case-sensitive matches only
+                return [m for m in matches if m.startswith(first_letter)]
+
+        def locate(self, cursor_offset, line):
+            start = self._orig_start
+            end = cursor_offset
+            return start, end, line[start:end]
 
 
-class MultilineJediCompletion(JediCompletion):
-    @classmethod
-    def matches(cls, cursor_offset, line, current_block, history, **kwargs):
-        if '\n' in current_block:
-            assert cursor_offset <= len(line), "%r %r" % (cursor_offset, line)
-            results = JediCompletion.matches(cursor_offset, line, history)
-            return results
-        else:
-            return None
+    class MultilineJediCompletion(JediCompletion):
+        @classmethod
+        def matches(cls, cursor_offset, line, current_block, history, **kwargs):
+            if '\n' in current_block:
+                assert cursor_offset <= len(line), "%r %r" % (cursor_offset, line)
+                results = JediCompletion.matches(cursor_offset, line, history)
+                return results
+            else:
+                return None
 
 
 def get_completer(completers, cursor_offset, line, **kwargs):

@@ -6,10 +6,6 @@ try:
 except ImportError:
     import unittest
 
-#TODO: Parts of autocompletion to test:
-# Test that the right matches come back from find_matches (test that priority is correct)
-# Test the various complete methods (import, filename) to see if right matches
-# Test that MatchesIterator.substitute correctly subs given a match and a completer
 
 class TestSafeEval(unittest.TestCase):
     def test_catches_syntax_error(self):
