@@ -679,7 +679,7 @@ class Repl(object):
         """Actually perform the upload."""
         if s == self.prev_pastebin_content:
             self.interact.notify(_('Duplicate pastebin. Previous URL: %s. Removal URL: %s') %
-                                  (self.prev_pastebin_url, self.prev_removal_url))
+                                  (self.prev_pastebin_url, self.prev_removal_url), 10)
             return self.prev_pastebin_url
 
         if self.config.pastebin_helper:
@@ -719,7 +719,7 @@ class Repl(object):
         self.prev_pastebin_url = paste_url
         self.prev_removal_url  = removal_url
         self.interact.notify(_('Pastebin URL: %s - Removal URL: %s') %
-                             (paste_url, removal_url))
+                             (paste_url, removal_url), 10)
 
         return paste_url
 
