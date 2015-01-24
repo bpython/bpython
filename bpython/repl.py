@@ -240,7 +240,7 @@ class Interaction(object):
     def confirm(self, s):
         raise NotImplementedError
 
-    def notify(self, s, n=10):
+    def notify(self, s, n=10, wait_for_keypress=False):
         raise NotImplementedError
 
     def file_prompt(self, s):

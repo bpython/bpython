@@ -556,7 +556,7 @@ class URWIDInteraction(repl.Interaction):
 
         self.prompt(q, callback_wrapper, single=True)
 
-    def notify(self, s, n=10):
+    def notify(self, s, n=10, wait_for_keypress=False):
         return self.statusbar.message(s, n)
 
     def prompt(self, s, callback=None, single=False):

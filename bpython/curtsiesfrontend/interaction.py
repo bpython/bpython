@@ -54,11 +54,12 @@ class StatusBar(BpythonInteraction):
     def has_focus(self):
         return self.in_prompt or self.in_confirm or self.waiting_for_refresh
 
-    def message(self, msg):
+    def message(self, msg, schedule_refresh=True):
         """Sets a temporary message"""
         self.message_start_time = time.time()
         self._message = msg
-        self.schedule_refresh(time.time() + self.message_time)
+        if schedule_refresh:
+            self.schedule_refresh(time.time() + self.message_time)
 
     def _check_for_expired_message(self):
         if self._message and time.time() > self.message_start_time + self.message_time:
@@ -128,10 +129,10 @@ class StatusBar(BpythonInteraction):
         return bool(self.current_line)
 
     # interaction interface - should be called from other greenlets
-    def notify(self, msg, n=3):
+    def notify(self, msg, n=3, wait_for_keypress=False):
         self.request_greenlet = greenlet.getcurrent()
         self.message_time = n
-        self.message(msg)
+        self.message(msg, schedule_refresh=wait_for_keypress)
         self.waiting_for_refresh = True
         self.request_refresh()
         self.main_greenlet.switch(msg)

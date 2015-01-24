@@ -321,7 +321,7 @@ class CLIInteraction(repl.Interaction):
         return reply.lower() in (_('y'), _('yes'))
 
 
-    def notify(self, s, n=10):
+    def notify(self, s, n=10, wait_for_keypress=False):
         return self.statusbar.message(s, n)
 
     def file_prompt(self, s):
