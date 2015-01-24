@@ -187,3 +187,12 @@ class TestAttrCompletion(unittest.TestCase):
     def test_att_matches_found_on_instance(self):
         com = autocomplete.AttrCompletion()
         self.assertSetEqual(com.matches(2, 'a.', {'a': Foo()}), set(['a.method', 'a.a', 'a.b']))
+
+class TestMagicMethodCompletion(unittest.TestCase):
+
+    def test_magic_methods_complete_after_double_underscores(self):
+        com = autocomplete.MagicMethodCompletion()
+        block = "class Something(object)\n    def __"
+        self.assertSetEqual(com.matches(10, '    def __', block), set(autocomplete.MAGIC_METHODS))
+
+
