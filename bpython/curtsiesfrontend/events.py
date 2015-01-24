@@ -15,11 +15,8 @@ class ReloadEvent(curtsies.events.Event):
 
 class RefreshRequestEvent(curtsies.events.Event):
     """Request to refresh REPL display ASAP"""
-    def __init__(self, who='?'):
-        self.who = who
-
     def __repr__(self):
-        return "<RefreshRequestEvent from %r for now>" % (self.who,)
+        return "<RefreshRequestEvent for now>"
 
 
 class ScheduledRefreshRequestEvent(curtsies.events.ScheduledEvent):
@@ -27,13 +24,13 @@ class ScheduledRefreshRequestEvent(curtsies.events.ScheduledEvent):
 
     Used to schedule the disappearance of status bar message that only shows
     for a few seconds"""
-    def __init__(self, when, who='?'):
-        self.who = who
+    def __init__(self, when):
         self.when = when  # time.time() + how long
 
     def __repr__(self):
-        return ("<RefreshRequestEvent from %r for %s seconds from now>" %
-                (self.who, self.when - time.time()))
+        return ("<RefreshRequestEvent for %s seconds from now>" %
+                (self.when - time.time()))
+
 
 class RunStartupFileEvent(curtsies.events.Event):
     """Request to run the startup file."""
