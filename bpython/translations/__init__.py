@@ -4,10 +4,11 @@ import os.path
 import sys
 
 from bpython import package_dir
+from bpython._py3compat import py3
 
 translator = None
 
-if sys.version_info >= (3, 0):
+if py3:
     def _(message):
         return translator.gettext(message)
 else:
