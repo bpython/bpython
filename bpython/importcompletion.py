@@ -20,36 +20,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import with_statement
-
+from bpython._py3compat import py3
 from bpython import line as lineparts
 import imp
 import os
 import sys
 import warnings
+from warnings import catch_warnings
 
 if sys.version_info[0] == 3 and sys.version_info[1] >= 3:
     import importlib.machinery
     SUFFIXES = importlib.machinery.all_suffixes()
 else:
     SUFFIXES = [suffix for suffix, mode, type in imp.get_suffixes()]
-
-try:
-    from warnings import catch_warnings
-except ImportError:
-    import contextlib
-    @contextlib.contextmanager
-    def catch_warnings():
-        """Stripped-down version of `warnings.catch_warnings()`
-        (available in Py >= 2.6)."""
-        filters = warnings.filters
-        warnings.filters = list(filters)
-        try:
-            yield
-        finally:
-            warnings.filters = filters
-
-from bpython._py3compat import py3
 
 # The cached list of all known modules
 modules = set()
