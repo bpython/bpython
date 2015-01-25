@@ -120,6 +120,15 @@ following helper program can be used to create `gists
 
 .. versionadded:: 0.12
 
+
+single_undo_time
+^^^^^^^^^^^^^^^^
+Time duration an undo must be predicted to take before prompting
+to undo multiple lines at once. Use -1 to never prompt, or 0 to always prompt.
+(default: 1.0)
+
+.. versionadded:: 0.14
+
 .. _configuration_color_scheme:
 
 color_scheme

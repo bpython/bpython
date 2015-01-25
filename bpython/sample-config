@@ -48,6 +48,11 @@
 # bpython’s behalf. If unset, bpython uploads pastes to bpaste.net. (default: )
 #pastebin_helper = gist.py
 
+# How long an undo must be expected to take before prompting for how
+# many lines should be undone. Set to -1 to never prompt, or 0 to
+# always prompt.
+# single_undo_time = 1.0
+
 [keyboard]
 
 # All key bindings are shown commented out with their default binding

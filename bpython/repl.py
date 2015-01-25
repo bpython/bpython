@@ -825,8 +825,8 @@ class Repl(object):
 
     def prompt_undo(self):
         """Returns how many lines to undo, 0 means don't undo"""
-        self.config.single_undo_time = 1
-        if self.interp.timer.estimate() < self.config.single_undo_time:
+        if (self.config.single_undo_time < 0 or
+            self.interp.timer.estimate() < self.config.single_undo_time):
             return 1
         est = self.interp.timer.estimate()
         n = self.interact.file_prompt(
