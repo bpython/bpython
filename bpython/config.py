@@ -44,7 +44,7 @@ def loadini(struct, configfile):
             'arg_spec': True,
             'auto_display_list': True,
             'color_scheme': 'default',
-            'complete_magic_methods' : True,
+            'complete_magic_methods': True,
             'autocomplete_mode': default_completion,
             'dedent_after': 1,
             'flush_output': True,
@@ -100,8 +100,8 @@ def loadini(struct, configfile):
             'trim_prompts': False,
         },
         'curtsies': {
-            'list_above' : False,
-            'right_arrow_completion' : True,
+            'list_above': False,
+            'right_arrow_completion': True,
         }}
 
     default_keys_to_commands = dict((value, key) for (key, value)
