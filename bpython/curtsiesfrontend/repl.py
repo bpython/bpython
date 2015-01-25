@@ -14,7 +14,7 @@ import time
 import unicodedata
 
 from pygments import format
-from bpython._py3compat import PythonLexer
+from bpython._py3compat import PythonLexer, cast_unicode, cast_bytes
 from pygments.formatters import TerminalFormatter
 
 import blessings
@@ -1362,6 +1362,9 @@ class Repl(BpythonRepl):
             signal.signal(signal.SIGWINCH, prev_sigwinch_handler)
 
     def pager(self, text):
+        """Runs an external pager on text
+
+        text must be a bytestring, ie not yet encoded"""
         command = get_pager_command()
         with tempfile.NamedTemporaryFile() as tmp:
             tmp.write(text)
@@ -1375,12 +1378,14 @@ class Repl(BpythonRepl):
             self.status_bar.message(str(e))
         else:
             if self.config.highlight_show_source:
-                source = format(PythonLexer().get_tokens(source),
-                                TerminalFormatter())
+                source = cast_bytes(format(PythonLexer().get_tokens(source),
+                                           TerminalFormatter()))
+            else:
+                source = cast_bytes(source)
             self.pager(source)
 
     def help_text(self):
-        return (self.version_help_text() + '\n' + self.key_help_text()).encode('utf8')
+        return cast_bytes(self.version_help_text() + '\n' + self.key_help_text())
 
     def version_help_text(self):
         return (('bpython-curtsies version %s' % bpython.__version__) + ' ' +

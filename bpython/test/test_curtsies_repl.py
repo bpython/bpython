@@ -206,7 +206,7 @@ def captured_output():
         sys.stdout, sys.stderr = old_out, old_err
 
 def create_repl(**kwargs):
-    config = setup_config({'editor':'true'})
+    config = setup_config({'editor': 'true'})
     repl = curtsiesrepl.Repl(config=config, **kwargs)
     os.environ['PAGER'] = 'true'
     repl.width = 50
@@ -264,6 +264,27 @@ class TestCurtsiesReevaluate(unittest.TestCase):
         self.repl.undo()
         self.assertNotIn('b', self.repl.interp.locals)
 
+class TestCurtsiesPagerText(unittest.TestCase):
+
+    def setUp(self):
+        self.repl = create_repl()
+        self.repl.pager = self.assert_pager_gets_bytes
+
+    def assert_pager_gets_bytes(self, text):
+        self.assertIsInstance(text, type(b''))
+
+    def test_help(self):
+        self.repl.pager(self.repl.help_text())
+
+    def test_show_source_not_formatted(self):
+        self.repl.config.highlight_show_source = False
+        self.repl.get_source_of_current_name = lambda: 'source code å∂ßƒåß∂ƒ'
+        self.repl.show_source()
+
+    def test_show_source_formatted(self):
+        self.repl.config.highlight_show_source = True
+        self.repl.get_source_of_current_name = lambda: 'source code å∂ßƒåß∂ƒ'
+        self.repl.show_source()
 
 if __name__ == '__main__':
     unittest.main()

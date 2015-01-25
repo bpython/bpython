@@ -468,7 +468,7 @@ class Repl(object):
     def get_source_of_current_name(self):
         """Return the source code of the object which is bound to the
         current name in the current input line. Throw `SourceNotFound` if the
-        source cannot be found."""
+        source cannot be found. Returns bytestring in py2, unicode in py3."""
         obj = self.current_func
         try:
             if obj is None:
