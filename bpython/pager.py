@@ -29,7 +29,7 @@ import subprocess
 import sys
 import shlex
 
-def get_pager_command(default='less -r'):
+def get_pager_command(default='less -rf'):
     command = shlex.split(os.environ.get('PAGER', default))
     return command
 
