@@ -57,12 +57,13 @@ import bpython.autocomplete as autocomplete
 class RuntimeTimer(object):
     def __init__(self):
         self.reset_timer()
+        self.time = time.monotonic if hasattr(time, 'monotonic') else time.time
 
     def __enter__(self):
-        self.start = time.time()
+        self.start = self.time()
 
     def __exit__(self, ty, val, tb):
-        self.last_command = time.time() - self.start
+        self.last_command = self.time() - self.start
         self.running_time += self.last_command
         return False
 
