@@ -1,4 +1,5 @@
 import code
+import time
 import traceback
 import sys
 from pygments.token import Generic, Token, Keyword, Name, Comment, String
@@ -6,6 +7,7 @@ from pygments.token import Error, Literal, Number, Operator, Punctuation
 from pygments.token import Whitespace
 from pygments.formatter import Formatter
 from bpython.curtsiesfrontend.parse import parse
+from bpython.repl import RuntimeTimer
 from codeop import CommandCompiler
 from pygments.lexers import get_lexer_by_name
 
@@ -77,6 +79,7 @@ class Interp(code.InteractiveInterpreter):
         # typically changed after being instantiated
         self.write = lambda stuff: sys.stderr.write(stuff)
         self.outfile = self
+        self.timer = RuntimeTimer()
 
     def showsyntaxerror(self, filename=None):
         """Display the syntax error that just occurred.
@@ -129,18 +132,18 @@ class Interp(code.InteractiveInterpreter):
         tbtext = ''.join(l)
         lexer = get_lexer_by_name("pytb", stripall=True)
 
-        self.format(tbtext,lexer)
+        self.format(tbtext, lexer)
 
     def format(self, tbtext, lexer):
         traceback_informative_formatter = BPythonFormatter(default_colors)
         traceback_code_formatter = BPythonFormatter({Token: ('d')})
-        tokens= list(lexer.get_tokens(tbtext))
+        tokens = list(lexer.get_tokens(tbtext))
 
         no_format_mode = False
         cur_line = []
         for token, text in tokens:
             if text.endswith('\n'):
-                cur_line.append((token,text))
+                cur_line.append((token, text))
                 if no_format_mode:
                     traceback_code_formatter.format(cur_line, self.outfile)
                     no_format_mode = False
@@ -149,10 +152,16 @@ class Interp(code.InteractiveInterpreter):
                 cur_line = []
             elif text == '    ' and cur_line == []:
                 no_format_mode = True
-                cur_line.append((token,text))
+                cur_line.append((token, text))
             else:
-                cur_line.append((token,text))
+                cur_line.append((token, text))
         assert cur_line == [], cur_line
+
+    def runsource(self, source, filename="<input>", symbol="single"):
+        with self.timer:
+            return code.InteractiveInterpreter.runsource(
+                self, source, filename=filename, symbol=symbol)
+
 
 
 def code_finished_will_parse(s, compiler):

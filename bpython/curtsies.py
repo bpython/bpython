@@ -82,6 +82,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
             schedule_refresh = input_generator.scheduled_event_trigger(bpythonevents.ScheduledRefreshRequestEvent)
             request_reload = input_generator.threadsafe_event_trigger(bpythonevents.ReloadEvent)
             interrupting_refresh = input_generator.threadsafe_event_trigger(lambda: None)
+            request_undo = input_generator.event_trigger(bpythonevents.UndoEvent)
 
             def on_suspend():
                 window.__exit__(None, None, None)
@@ -98,6 +99,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None, interactive=True)
                       request_refresh=request_refresh,
                       schedule_refresh=schedule_refresh,
                       request_reload=request_reload,
+                      request_undo=request_undo,
                       get_term_hw=window.get_term_hw,
                       get_cursor_vertical_diff=window.get_cursor_vertical_diff,
                       banner=banner,

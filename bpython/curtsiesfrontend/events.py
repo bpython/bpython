@@ -34,3 +34,9 @@ class ScheduledRefreshRequestEvent(curtsies.events.ScheduledEvent):
 
 class RunStartupFileEvent(curtsies.events.Event):
     """Request to run the startup file."""
+
+
+class UndoEvent(curtsies.events.Event):
+    """Request to undo."""
+    def __init__(self, n=1):
+        self.n = n

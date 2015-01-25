@@ -878,7 +878,9 @@ class CLIRepl(repl.Repl):
             return ''
 
         elif key in key_dispatch[config.undo_key]:  # C-r
-            self.undo()
+            n = self.prompt_undo()
+            if n > 0:
+                self.undo(n=n)
             return ''
 
         elif key in key_dispatch[config.search_key]:

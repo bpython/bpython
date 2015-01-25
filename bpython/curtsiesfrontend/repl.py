@@ -219,6 +219,7 @@ class Repl(BpythonRepl):
                  request_refresh=lambda: None,
                  schedule_refresh=lambda when=0: None,
                  request_reload=lambda desc: None,
+                 request_undo=lambda n=1: None,
                  get_term_hw=lambda:(50, 10),
                  get_cursor_vertical_diff=lambda: 0,
                  banner=None,
@@ -282,6 +283,7 @@ class Repl(BpythonRepl):
             else:
                 pass
         self.request_reload = smarter_request_reload
+        self.request_undo = request_undo
         self.get_term_hw = get_term_hw
         self.get_cursor_vertical_diff = get_cursor_vertical_diff
 
@@ -469,6 +471,9 @@ class Repl(BpythonRepl):
             except IOError as e:
                 self.status_bar.message(_('Executing PYTHONSTARTUP failed: %s') % (str(e)))
 
+        elif isinstance(e, bpythonevents.UndoEvent):
+            self.undo(n=e.n)
+
         elif self.stdin.has_focus:
             return self.stdin.process_event(e)
 
@@ -540,7 +545,7 @@ class Repl(BpythonRepl):
         elif e in ("<Shift-TAB>",):
             self.on_tab(back=True)
         elif e in key_dispatch[self.config.undo_key]: #ctrl-r for undo
-            self.undo()
+            self.prompt_undo()
         elif e in key_dispatch[self.config.save_key]: # ctrl-s for save
             greenlet.greenlet(self.write2file).switch()
         elif e in key_dispatch[self.config.pastebin_key]: # F8 for pastebin
@@ -1292,6 +1297,13 @@ class Repl(BpythonRepl):
             indent = self.predicted_indent(line)
             self._current_line = indent * ' '
             self.cursor_offset = len(self.current_line)
+
+    def prompt_undo(self):
+        def prompt_for_undo():
+            n = BpythonRepl.prompt_undo(self)
+            if n > 0:
+                self.request_undo(n=n)
+        greenlet.greenlet(prompt_for_undo).switch()
 
     def reevaluate(self, insert_into_history=False):
         """bpython.Repl.undo calls this"""
