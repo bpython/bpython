@@ -673,14 +673,16 @@ class Repl(BpythonRepl):
     def up_one_line(self):
         self.rl_history.enter(self.current_line)
         self._set_current_line(tabs_to_spaces(self.rl_history.back(False,
-            search=self.config.curtsies_right_arrow_completion)),
+                search=self.config.curtsies_right_arrow_completion)),
+            update_completion=False,
             reset_rl_history=False)
         self._set_cursor_offset(len(self.current_line), reset_rl_history=False)
 
     def down_one_line(self):
         self.rl_history.enter(self.current_line)
         self._set_current_line(tabs_to_spaces(self.rl_history.forward(False,
-            search=self.config.curtsies_right_arrow_completion)),
+                search=self.config.curtsies_right_arrow_completion)),
+            update_completion=False,
             reset_rl_history=False)
         self._set_cursor_offset(len(self.current_line), reset_rl_history=False)
 
@@ -838,10 +840,10 @@ class Repl(BpythonRepl):
         self.saved_predicted_parse_error = not code_will_parse
         if c:
             logger.debug('finished - buffer cleared')
+            self.cursor_offset = 0
             self.display_lines.extend(self.display_buffer_lines)
             self.display_buffer = []
             self.buffer = []
-            self.cursor_offset = 0
 
         self.coderunner.load_code(code_to_run)
         self.run_code_and_maybe_finish()
