@@ -1283,10 +1283,8 @@ class Repl(BpythonRepl):
             self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
 
     def take_back_buffer_line(self):
-        self.display_buffer.pop()
-        self.buffer.pop()
-
-        if not self.buffer:
+        assert len(self.buffer) > 0
+        if len(self.buffer) == 1:
             self._cursor_offset = 0
             self.current_line = ''
         else:
@@ -1294,6 +1292,8 @@ class Repl(BpythonRepl):
             indent = self.predicted_indent(line)
             self._current_line = indent * ' '
             self.cursor_offset = len(self.current_line)
+        self.display_buffer.pop()
+        self.buffer.pop()
 
     def reevaluate(self, insert_into_history=False):
         """bpython.Repl.undo calls this"""
