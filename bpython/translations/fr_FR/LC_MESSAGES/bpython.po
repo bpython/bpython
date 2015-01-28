@@ -21,6 +21,9 @@ msgid ""
 "NOTE: If bpython sees an argument it does not know, execution falls back "
 "to the regular Python interpreter."
 msgstr ""
+"Utilisation: %prog [options] [fichier [arguments]]\n"
+"NOTE: Si bpython ne reconnaît pas un des arguments fournis, "
+"l'interpréteur Python classique sera lancé"
 
 #: bpython/args.py:67
 msgid "Use CONFIG instead of default config file."
