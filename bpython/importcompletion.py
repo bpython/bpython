@@ -21,12 +21,15 @@
 # THE SOFTWARE.
 
 from bpython._py3compat import py3
-from bpython import line as lineparts
+from bpython.line import current_word, current_import, \
+    current_from_import_from, current_from_import_import
+
 import imp
 import os
 import sys
 import warnings
 from warnings import catch_warnings
+from itertools import ifilter
 
 if sys.version_info[0] == 3 and sys.version_info[1] >= 3:
     import importlib.machinery
@@ -61,6 +64,7 @@ def module_matches(cw, prefix=''):
     else:
         return set(matches)
 
+
 def attr_matches(cw, prefix='', only_modules=False):
     """Attributes to replace name with"""
     full = '%s.%s' % (prefix, cw) if prefix else cw
@@ -79,12 +83,14 @@ def attr_matches(cw, prefix='', only_modules=False):
     if module_part:
         matches = ('%s.%s' % (module_part, m) for m in matches)
 
-    return set(filter(lambda x: x is not None,
-                      (try_decode_module(match, 'ascii') for match in matches)))
+    generator = (try_decode_module(match, 'ascii') for match in matches)
+    return set(ifilter(lambda x: x is not None, generator))
+
 
 def module_attr_matches(name):
     """Only attributes which are modules to replace name with"""
     return attr_matches(name, prefix='', only_modules=True)
+
 
 def complete(cursor_offset, line):
     """Construct a full list of possibly completions for imports."""
@@ -92,18 +98,17 @@ def complete(cursor_offset, line):
     if 'from' not in tokens and 'import' not in tokens:
         return None
 
-    result = lineparts.current_word(cursor_offset, line)
+    result = current_word(cursor_offset, line)
     if result is None:
         return None
 
-    from_import_from = lineparts.current_from_import_from(cursor_offset, line)
+    from_import_from = current_from_import_from(cursor_offset, line)
     if from_import_from is not None:
-        from_import_import = lineparts.current_from_import_import(cursor_offset,
-                                                                  line)
-        if from_import_import is not None:
+        import_import = current_from_import_import(cursor_offset, line)
+        if import_import is not None:
             # `from a import <b|>` completion
-            matches = module_matches(from_import_import[2], from_import_from[2])
-            matches.update(attr_matches(from_import_import[2],
+            matches = module_matches(import_import[2], from_import_from[2])
+            matches.update(attr_matches(import_import[2],
                                         from_import_from[2]))
         else:
             # `from <a|>` completion
@@ -111,14 +116,15 @@ def complete(cursor_offset, line):
             matches.update(module_matches(from_import_from[2]))
         return matches
 
-    current_import = lineparts.current_import(cursor_offset, line)
-    if current_import is not None:
+    cur_import = current_import(cursor_offset, line)
+    if cur_import is not None:
         # `import <a|>` completion
-        matches = module_matches(current_import[2])
-        matches.update(module_attr_matches(current_import[2]))
+        matches = module_matches(cur_import[2])
+        matches.update(module_attr_matches(cur_import[2]))
         return matches
     else:
         return None
+
 
 def find_modules(path):
     """Find all modules (and packages) for a given directory."""

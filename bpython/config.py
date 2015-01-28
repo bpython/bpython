@@ -10,18 +10,22 @@ from bpython.autocomplete import SIMPLE as default_completion
 
 import bpython.autocomplete
 
+
 class Struct(object):
     """Simple class for instantiating objects we can add arbitrary attributes
     to and use for various arbitrary things."""
+
 
 def get_config_home():
     """Returns the base directory for bpython's configuration files."""
     xdg_config_home = os.environ.get('XDG_CONFIG_HOME', '~/.config')
     return os.path.join(xdg_config_home, 'bpython')
 
+
 def default_config_path():
     """Returns bpython's default configuration file path."""
     return os.path.join(get_config_home(), 'config')
+
 
 def fill_config_with_default_values(config, default_values):
     for section in default_values.iterkeys():
@@ -117,7 +121,6 @@ def loadini(struct, configfile):
                              "%s\n" % default_config_path())
             sys.exit(1)
 
-
     def get_key_no_doublebind(command):
         default_commands_to_keys = defaults['keyboard']
         requested_key = config.get('keyboard', command)
@@ -126,7 +129,7 @@ def loadini(struct, configfile):
             default_command = default_keys_to_commands[requested_key]
 
             if default_commands_to_keys[default_command] == \
-                config.get('keyboard', default_command):
+                    config.get('keyboard', default_command):
                 setattr(struct, '%s_key' % default_command, '')
         except KeyError:
             pass
@@ -194,7 +197,7 @@ def loadini(struct, configfile):
     struct.cli_suggestion_width = config.getfloat('cli',
                                                   'suggestion_width')
     struct.cli_trim_prompts = config.getboolean('cli',
-                                                  'trim_prompts')
+                                                'trim_prompts')
 
     struct.complete_magic_methods = config.getboolean('general',
                                                       'complete_magic_methods')
@@ -202,29 +205,29 @@ def loadini(struct, configfile):
     struct.save_append_py = config.getboolean('general', 'save_append_py')
 
     struct.curtsies_list_above = config.getboolean('curtsies', 'list_above')
-    struct.curtsies_right_arrow_completion = config.getboolean('curtsies',
-                                                               'right_arrow_completion')
+    struct.curtsies_right_arrow_completion = \
+        config.getboolean('curtsies', 'right_arrow_completion')
 
     color_scheme_name = config.get('general', 'color_scheme')
 
     default_colors = {
-            'keyword': 'y',
-            'name': 'c',
-            'comment': 'b',
-            'string': 'm',
-            'error': 'r',
-            'number': 'G',
-            'operator': 'Y',
-            'punctuation': 'y',
-            'token': 'C',
-            'background': 'd',
-            'output': 'w',
-            'main': 'c',
-            'paren': 'R',
-            'prompt': 'c',
-            'prompt_more': 'g',
-            'right_arrow_suggestion': 'K',
-        }
+        'keyword': 'y',
+        'name': 'c',
+        'comment': 'b',
+        'string': 'm',
+        'error': 'r',
+        'number': 'G',
+        'operator': 'Y',
+        'punctuation': 'y',
+        'token': 'C',
+        'background': 'd',
+        'output': 'w',
+        'main': 'c',
+        'paren': 'R',
+        'prompt': 'c',
+        'prompt_more': 'g',
+        'right_arrow_suggestion': 'K',
+    }
 
     if color_scheme_name == 'default':
         struct.color_scheme = default_colors
@@ -238,7 +241,7 @@ def loadini(struct, configfile):
             load_theme(struct, path, struct.color_scheme, default_colors)
         except EnvironmentError:
             sys.stderr.write("Could not load theme '%s'.\n" %
-                                                         (color_scheme_name, ))
+                             (color_scheme_name, ))
             sys.exit(1)
 
     # checks for valid key configuration this part still sucks
