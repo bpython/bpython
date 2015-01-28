@@ -35,7 +35,7 @@ except ImportError:
 
 # version handling
 version_file = 'bpython/_version.py'
-version = 'unkown'
+version = 'unknown'
 
 try:
     # get version from git describe
