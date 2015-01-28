@@ -233,7 +233,7 @@ class History(object):
 
                     self.entries = entries
         except EnvironmentError as err:
-            raise RuntimeError(_('Error occurded while writing to file %s (%s)')
+            raise RuntimeError(_('Error occured while writing to file %s (%s)')
                                % (filename, err.strerror))
         else:
             if len(self.entries) == 0:
