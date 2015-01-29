@@ -273,7 +273,7 @@ def is_callable(obj):
 
 
 def get_encoding(obj):
-    for line in inspect.getsourcelines(obj)[0][:2]:
+    for line in inspect.findsource(obj)[0][:2]:
         m = re.search(r'coding[:=]\s*([-\w.]+)', line)
         if m:
             return m.group(1)
