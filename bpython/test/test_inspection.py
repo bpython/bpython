@@ -1,9 +1,25 @@
+# -*- coding: utf-8 -*-
+
 try:
     import unittest2 as unittest
 except ImportError:
     import unittest
 
 from bpython import inspection
+from bpython.test.fodder import encoding_ascii
+from bpython.test.fodder import encoding_latin1
+from bpython.test.fodder import encoding_utf8
+
+foo_ascii_only = u'''def foo():
+    """Test"""
+    pass
+'''
+
+foo_non_ascii = u'''def foo():
+    """Test äöü"""
+    pass
+'''
+
 
 class TestInspection(unittest.TestCase):
     def test_is_callable(self):
@@ -61,11 +77,30 @@ class TestInspection(unittest.TestCase):
         self.assertEqual(repr(defaults[0]), "23")
         self.assertEqual(repr(defaults[1]), "'yay'")
 
-    def test_get_encoding(self):
-        self.assertEqual(inspection.get_encoding(inspection), 'ascii')
-        from bpython.test import test_curtsies_painting
-        self.assertEqual(inspection.get_encoding(test_curtsies_painting), 'utf8')
+    def test_get_encoding_ascii(self):
+        self.assertEqual(inspection.get_encoding(encoding_ascii), 'ascii')
+        self.assertEqual(inspection.get_encoding(encoding_ascii.foo), 'ascii')
 
+    def test_get_encoding_latin1(self):
+        self.assertEqual(inspection.get_encoding(encoding_latin1), 'latin1')
+        self.assertEqual(inspection.get_encoding(encoding_latin1.foo),
+                         'latin1')
+
+    def test_get_encoding_utf8(self):
+        self.assertEqual(inspection.get_encoding(encoding_utf8), 'utf-8')
+        self.assertEqual(inspection.get_encoding(encoding_utf8.foo), 'utf-8')
+
+    def test_get_source_ascii(self):
+        self.assertEqual(inspection.get_source_unicode(encoding_ascii.foo),
+                         foo_ascii_only)
+
+    def test_get_source_utf8(self):
+        self.assertEqual(inspection.get_source_unicode(encoding_utf8.foo),
+                         foo_non_ascii)
+
+    def test_get_source_latin1(self):
+        self.assertEqual(inspection.get_source_unicode(encoding_latin1.foo),
+                         foo_non_ascii)
 
 if __name__ == '__main__':
     unittest.main()
