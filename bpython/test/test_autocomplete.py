@@ -86,18 +86,18 @@ class TestCumulativeCompleter(unittest.TestCase):
     def test_one_empty_completer_returns_empty(self):
         a = self.completer([])
         cumulative = autocomplete.CumulativeCompleter([a])
-        self.assertEqual(cumulative.matches(3, 'abc', 1, 1, 1, 1, 1), [])
+        self.assertEqual(cumulative.matches(3, 'abc'), set())
 
     def test_one_none_completer_returns_empty(self):
         a = self.completer(None)
         cumulative = autocomplete.CumulativeCompleter([a])
-        self.assertEqual(cumulative.matches(3, 'abc', 1, 1, 1, 1, 1), [])
+        self.assertEqual(cumulative.matches(3, 'abc'), set())
 
     def test_two_completers_get_both(self):
         a = self.completer(['a'])
         b = self.completer(['b'])
         cumulative = autocomplete.CumulativeCompleter([a, b])
-        self.assertEqual(cumulative.matches(3, 'abc', 1, 1, 1, 1, 1), (['a', 'b']))
+        self.assertEqual(cumulative.matches(3, 'abc'), set(['a', 'b']))
 
 
 class TestFilenameCompletion(unittest.TestCase):
@@ -161,22 +161,23 @@ class TestDictKeyCompletion(unittest.TestCase):
     def test_set_of_keys_returned_when_matches_found(self):
         com = autocomplete.DictKeyCompletion()
         local = {'d': {"ab": 1, "cd": 2}}
-        self.assertSetEqual(com.matches(2, "d[", local), set(["'ab']", "'cd']"]))
+        self.assertSetEqual(com.matches(2, "d[", locals_=local),
+                            set(["'ab']", "'cd']"]))
 
     def test_empty_set_returned_when_eval_error(self):
         com = autocomplete.DictKeyCompletion()
         local = {'e': {"ab": 1, "cd": 2}}
-        self.assertSetEqual(com.matches(2, "d[", local), set())
+        self.assertSetEqual(com.matches(2, "d[", locals_=local), set())
 
     def test_empty_set_returned_when_not_dict_type(self):
         com = autocomplete.DictKeyCompletion()
         local = {'l': ["ab", "cd"]}
-        self.assertSetEqual(com.matches(2, "l[", local),set())
+        self.assertSetEqual(com.matches(2, "l[", locals_=local),set())
 
     def test_obj_that_does_not_allow_conversion_to_bool(self):
         com = autocomplete.DictKeyCompletion()
         local = {'mNumPy': MockNumPy()}
-        self.assertSetEqual(com.matches(7, "mNumPy[", local), set())
+        self.assertSetEqual(com.matches(7, "mNumPy[", locals_=local), set())
 
 class Foo(object):
     a = 10
@@ -189,14 +190,16 @@ class TestAttrCompletion(unittest.TestCase):
 
     def test_att_matches_found_on_instance(self):
         com = autocomplete.AttrCompletion()
-        self.assertSetEqual(com.matches(2, 'a.', {'a': Foo()}), set(['a.method', 'a.a', 'a.b']))
+        self.assertSetEqual(com.matches(2, 'a.', locals_={'a': Foo()}),
+                            set(['a.method', 'a.a', 'a.b']))
 
 class TestMagicMethodCompletion(unittest.TestCase):
 
     def test_magic_methods_complete_after_double_underscores(self):
         com = autocomplete.MagicMethodCompletion()
         block = "class Something(object)\n    def __"
-        self.assertSetEqual(com.matches(10, '    def __', block), set(autocomplete.MAGIC_METHODS))
+        self.assertSetEqual(com.matches(10, '    def __', current_block=block),
+                            set(autocomplete.MAGIC_METHODS))
 
 Comp = namedtuple('Completion', ['name', 'complete'])
 
@@ -205,19 +208,23 @@ class TestMultilineJediCompletion(unittest.TestCase):
     @unittest.skipIf(not has_jedi, "jedi not available")
     def test_returns_none_with_single_line(self):
         com = autocomplete.MultilineJediCompletion()
-        self.assertEqual(com.matches(2, 'Va', 'Va', []), None)
+        self.assertEqual(com.matches(2, 'Va', current_block='Va', history=[]),
+                         None)
 
     @unittest.skipIf(not has_jedi, "jedi not available")
     def test_returns_non_with_blank_second_line(self):
         com = autocomplete.MultilineJediCompletion()
-        self.assertEqual(com.matches(0, '', 'class Foo():\n', ['class Foo():']), None)
+        self.assertEqual(com.matches(0, '', current_block='class Foo():\n',
+                                     history=['class Foo():']), None)
 
-    def matches_from_completions(self, cursor, line, block, history, completions):
+    def matches_from_completions(self, cursor, line, block, history,
+                                 completions):
         with mock.patch('bpython.autocomplete.jedi.Script') as Script:
             script = Script.return_value
             script.completions.return_value = completions
             com = autocomplete.MultilineJediCompletion()
-            return com.matches(cursor, line, block, history)
+            return com.matches(cursor, line, current_block=block,
+                               history=history)
 
     @unittest.skipIf(not has_jedi, "jedi not available")
     def test_completions_starting_with_different_letters(self):
