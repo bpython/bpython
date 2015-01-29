@@ -466,9 +466,10 @@ class Repl(object):
         return False
 
     def get_source_of_current_name(self):
-        """Return the source code of the object which is bound to the
+        """Return the unicode source code of the object which is bound to the
         current name in the current input line. Throw `SourceNotFound` if the
-        source cannot be found. Returns bytestring in py2, unicode in py3."""
+        source cannot be found."""
+
         obj = self.current_func
         try:
             if obj is None:
@@ -477,7 +478,7 @@ class Repl(object):
                     raise SourceNotFound(_("Nothing to get source of"))
                 if inspection.is_eval_safe_name(line):
                     obj = self.get_object(line)
-            return inspect.getsource(obj)
+            return inspection.get_source_unicode(obj)
         except (AttributeError, NameError) as e:
             msg = _("Cannot get source: %s") % (str(e), )
         except IOError as e:

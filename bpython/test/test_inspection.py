@@ -61,5 +61,11 @@ class TestInspection(unittest.TestCase):
         self.assertEqual(repr(defaults[0]), "23")
         self.assertEqual(repr(defaults[1]), "'yay'")
 
+    def test_get_encoding(self):
+        self.assertEqual(inspection.get_encoding(inspection), 'ascii')
+        from bpython.test import test_curtsies_painting
+        self.assertEqual(inspection.get_encoding(test_curtsies_painting), 'utf8')
+
+
 if __name__ == '__main__':
     unittest.main()

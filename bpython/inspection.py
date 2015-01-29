@@ -270,3 +270,18 @@ def is_callable(obj):
         return isinstance(obj, collections.Callable)
     else:
         return callable(obj)
+
+
+def get_encoding(obj):
+    for line in inspect.getsourcelines(obj)[0][:2]:
+        m = re.search(r'coding[:=]\s*([-\w.]+)', line)
+        if m:
+            return m.group(1)
+    return 'ascii'
+
+
+def get_source_unicode(obj):
+    """Returns a decoded source of object"""
+    if py3:
+        return inspect.getsource(obj)
+    return inspect.getsource(obj).decode(get_encoding(obj))
