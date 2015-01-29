@@ -1286,6 +1286,7 @@ class Repl(BpythonRepl):
             self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
 
     def take_back_buffer_line(self):
+        self.history = self.history[:-1]
         self.display_buffer.pop()
         self.buffer.pop()
 
@@ -1299,10 +1300,16 @@ class Repl(BpythonRepl):
             self.cursor_offset = len(self.current_line)
 
     def prompt_undo(self):
+        if self.buffer:
+            return self.take_back_buffer_line()
+
+        self.reevaluate()
+
         def prompt_for_undo():
             n = BpythonRepl.prompt_undo(self)
             if n > 0:
                 self.request_undo(n=n)
+
         greenlet.greenlet(prompt_for_undo).switch()
 
     def reevaluate(self, insert_into_history=False):

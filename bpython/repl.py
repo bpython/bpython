@@ -868,11 +868,7 @@ class Repl(object):
         entries = list(self.rl_history.entries)
 
         self.history = self.history[:-n]
-        if (n == 1 and self.buffer and
-            hasattr(self, 'take_back_buffer_line')):
-            self.take_back_buffer_line()
-        else:
-            self.reevaluate()
+        self.reevaluate()
 
         self.rl_history.entries = entries
 
