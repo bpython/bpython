@@ -3,17 +3,32 @@
 from __future__ import with_statement
 import os
 import sys
+import locale
 from ConfigParser import ConfigParser
 from itertools import chain
 from bpython.keys import cli_key_dispatch as key_dispatch
 from bpython.autocomplete import SIMPLE as default_completion
-
 import bpython.autocomplete
 
 
 class Struct(object):
     """Simple class for instantiating objects we can add arbitrary attributes
     to and use for various arbitrary things."""
+
+
+def getpreferredencoding():
+    """Get the user's preferred encoding."""
+    return locale.getpreferredencoding() or sys.getdefaultencoding()
+
+
+def supports_box_chars():
+    """Check if the encoding suppors Unicode box characters."""
+    try:
+        for c in (u'│', u'│', u'─', u'─', u'└', u'┘', u'┌', u'┐'):
+            c.encode(getpreferredencoding())
+        return True
+    except UnicodeEncodeError:
+        return False
 
 
 def get_config_home():
@@ -256,7 +271,7 @@ def loadini(struct, configfile):
         struct.autocomplete_mode = default_completion
 
     # set box drawing characters
-    if config.getboolean('general', 'unicode_box'):
+    if config.getboolean('general', 'unicode_box') and supports_box_chars():
         struct.left_border = u'│'
         struct.right_border = u'│'
         struct.top_border = u'─'

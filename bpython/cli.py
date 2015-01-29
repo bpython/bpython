@@ -72,7 +72,7 @@ from bpython.formatter import BPythonFormatter
 from bpython import importcompletion
 
 # This for config
-from bpython.config import Struct
+from bpython.config import Struct, getpreferredencoding
 
 # This for keys
 from bpython.keys import cli_key_dispatch as key_dispatch
@@ -97,9 +97,6 @@ colors = None
 DO_RESIZE = False
 # ---
 
-
-def getpreferredencoding():
-    return locale.getpreferredencoding() or sys.getdefaultencoding()
 
 def calculate_screen_lines(tokens, width, cursor=0):
     """Given a stream of tokens and a screen width plus an optional
