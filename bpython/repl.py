@@ -34,6 +34,7 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import time
 import traceback
 import unicodedata
 from itertools import takewhile
@@ -53,6 +54,26 @@ from bpython.history import History
 import bpython.autocomplete as autocomplete
 
 
+class RuntimeTimer(object):
+    def __init__(self):
+        self.reset_timer()
+        self.time = time.monotonic if hasattr(time, 'monotonic') else time.time
+
+    def __enter__(self):
+        self.start = self.time()
+
+    def __exit__(self, ty, val, tb):
+        self.last_command = self.time() - self.start
+        self.running_time += self.last_command
+        return False
+
+    def reset_timer(self):
+        self.running_time = 0.0
+        self.last_command = 0.0
+
+    def estimate(self):
+        return self.running_time - self.last_command
+
 class Interpreter(code.InteractiveInterpreter):
 
     def __init__(self, locals=None, encoding=None):
@@ -68,16 +89,28 @@ class Interpreter(code.InteractiveInterpreter):
         self.syntaxerror_callback = None
         # Unfortunately code.InteractiveInterpreter is a classic class, so no super()
         code.InteractiveInterpreter.__init__(self, locals)
+        self.timer = RuntimeTimer()
 
-    if not py3:
+    def reset_running_time(self):
+        self.running_time = 0
+
+    if py3:
+
+        def runsource(self, source, filename="<input>", symbol="single"):
+            with self.timer:
+                return code.InteractiveInterpreter.runsource(self, source,
+                                                             filename, symbol)
+
+    else:
 
         def runsource(self, source, filename='<input>', symbol='single',
                       encode=True):
-            if encode:
-                source = '# coding: %s\n%s' % (self.encoding,
-                                               source.encode(self.encoding))
-            return code.InteractiveInterpreter.runsource(self, source,
-                                                         filename, symbol)
+            with self.timer:
+                if encode:
+                    source = '# coding: %s\n%s' % (self.encoding,
+                                                   source.encode(self.encoding))
+                return code.InteractiveInterpreter.runsource(self, source,
+                                                             filename, symbol)
 
     def showsyntaxerror(self, filename=None):
         """Override the regular handler, the code's copied and pasted from
@@ -792,13 +825,43 @@ class Repl(object):
         except RuntimeError as e:
             self.interact.notify(str(e))
 
+    def prompt_undo(self):
+        """Returns how many lines to undo, 0 means don't undo"""
+        if (self.config.single_undo_time < 0 or
+            self.interp.timer.estimate() < self.config.single_undo_time):
+            return 1
+        est = self.interp.timer.estimate()
+        n = self.interact.file_prompt(
+            _("Undo how many lines? (Undo will take up to ~%.1f seconds) [1]")
+            % (est,))
+        try:
+            if n == '':
+                n = '1'
+            n = int(n)
+        except ValueError:
+            self.interact.notify(_('Undo canceled'), .1)
+            return 0
+        else:
+            if n == 0:
+                self.interact.notify(_('Undo canceled'), .1)
+                return 0
+            if n == 1:
+                self.interact.notify(_('Undoing 1 line... (est. %.1f seconds)')
+                                     % (est,), .1)
+            else:
+                self.interact.notify(_('Undoing %d lines... (est. %.1f seconds)')
+                                     % (n, est), .1)
+            return n
+
     def undo(self, n=1):
-        """Go back in the undo history n steps and call reeavluate()
+        """Go back in the undo history n steps and call reevaluate()
         Note that in the program this is called "Rewind" because I
         want it to be clear that this is by no means a true undo
         implementation, it is merely a convenience bonus."""
         if not self.history:
             return None
+
+        self.interp.timer.reset_timer()
 
         if len(self.history) < n:
             n = len(self.history)
@@ -806,11 +869,7 @@ class Repl(object):
         entries = list(self.rl_history.entries)
 
         self.history = self.history[:-n]
-        if (n == 1 and self.buffer and
-            hasattr(self, 'take_back_buffer_line')):
-            self.take_back_buffer_line()
-        else:
-            self.reevaluate()
+        self.reevaluate()
 
         self.rl_history.entries = entries
 

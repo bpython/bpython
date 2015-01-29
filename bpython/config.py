@@ -53,6 +53,7 @@ def loadini(struct, configfile):
             'hist_length': 100,
             'hist_duplicates': True,
             'paste_time': 0.02,
+            'single_undo_time': 1.0,
             'syntax': True,
             'tab_length': 4,
             'pastebin_confirm': True,
@@ -141,6 +142,7 @@ def loadini(struct, configfile):
     struct.syntax = config.getboolean('general', 'syntax')
     struct.arg_spec = config.getboolean('general', 'arg_spec')
     struct.paste_time = config.getfloat('general', 'paste_time')
+    struct.single_undo_time = config.getfloat('general', 'single_undo_time')
     struct.highlight_show_source = config.getboolean('general',
                                                      'highlight_show_source')
     struct.hist_file = config.get('general', 'hist_file')

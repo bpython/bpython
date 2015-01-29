@@ -74,11 +74,14 @@ class StatusBar(BpythonInteraction):
         elif isinstance(e, events.PasteEvent):
             for ee in e.events:
                 self.add_normal_character(ee if len(ee) == 1 else ee[-1]) #strip control seq
+        elif e in ['<ESC>'] or isinstance(e, events.SigIntEvent):
+            self.request_greenlet.switch(False)
+            self.escape()
         elif e in edit_keys:
             self.cursor_offset_in_line, self._current_line = edit_keys[e](self.cursor_offset_in_line, self._current_line)
-        elif e == "<Ctrl-c>":
+        elif e == "<Ctrl-c>":  #TODO can this be removed?
             raise KeyboardInterrupt()
-        elif e == "<Ctrl-d>":
+        elif e == "<Ctrl-d>":  #TODO this isn't a very intuitive behavior
             raise SystemExit()
         elif self.in_prompt and e in ("\n", "\r", "<Ctrl-j>", "Ctrl-m>"):
             line = self._current_line
@@ -89,9 +92,6 @@ class StatusBar(BpythonInteraction):
                 self.request_greenlet.switch(True)
             else:
                 self.request_greenlet.switch(False)
-            self.escape()
-        elif e in ['<ESC>']:
-            self.request_greenlet.switch(False)
             self.escape()
         else: # add normal character
             self.add_normal_character(e)
