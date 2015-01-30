@@ -347,6 +347,7 @@ except ImportError:
             return None
 else:
     class JediCompletion(BaseCompletionType):
+
         def matches(self, cursor_offset, line, **kwargs):
             if 'history' not in kwargs:
                 return None
@@ -355,9 +356,13 @@ else:
             if not lineparts.current_word(cursor_offset, line):
                 return None
             history = '\n'.join(history) + '\n' + line
-            script = jedi.Script(history, len(history.splitlines()),
-                                 cursor_offset, 'fake.py')
-            completions = script.completions()
+            try:
+                script = jedi.Script(history, len(history.splitlines()),
+                                     cursor_offset, 'fake.py')
+                completions = script.completions()
+            except jedi.NotFoundError:
+                self._orig_start = None
+                return None
             if completions:
                 diff = len(completions[0].name) - len(completions[0].complete)
                 self._orig_start = cursor_offset - diff
@@ -380,6 +385,7 @@ else:
             start = self._orig_start
             end = cursor_offset
             return start, end, line[start:end]
+
 
     class MultilineJediCompletion(JediCompletion):
         def matches(self, cursor_offset, line, **kwargs):
