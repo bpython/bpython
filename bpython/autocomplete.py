@@ -26,7 +26,6 @@ import __main__
 import abc
 import keyword
 import os
-import re
 import rlcompleter
 
 from glob import glob
@@ -461,16 +460,12 @@ def safe_eval(expr, namespace):
         raise EvaluationError
 
 
-attr_matches_re = None
+attr_matches_re = lineparts.LazyReCompile(r"(\w+(\.\w+)*)\.(\w*)")
 
 
 def attr_matches(text, namespace):
     """Taken from rlcompleter.py and bent to my will.
     """
-
-    global attr_matches_re
-    if attr_matches_re is None:
-        attr_matches_re = re.compile(r"(\w+(\.\w+)*)\.(\w*)")
 
     # Gna, Py 2.6's rlcompleter searches for __call__ inside the
     # instance instead of the type, so we monkeypatch to prevent
