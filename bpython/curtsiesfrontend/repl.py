@@ -1299,12 +1299,11 @@ class Repl(BpythonRepl):
             self.cursor_offset = len(self.current_line)
         self.display_buffer.pop()
         self.buffer.pop()
+        self.history.pop()
 
     def prompt_undo(self):
         if self.buffer:
             return self.take_back_buffer_line()
-
-        self.reevaluate()
 
         def prompt_for_undo():
             n = BpythonRepl.prompt_undo(self)
@@ -1334,7 +1333,7 @@ class Repl(BpythonRepl):
         self.reevaluating = True
         sys.stdin = ReevaluateFakeStdin(self.stdin, self)
         for line in old_logical_lines:
-            self.current_line = line
+            self._current_line = line
             self.on_enter(insert_into_history=insert_into_history)
             while self.fake_refresh_requested:
                 self.fake_refresh_requested = False
@@ -1352,7 +1351,7 @@ class Repl(BpythonRepl):
             self.inconsistent_history = True
         logger.debug('after rewind, self.inconsistent_history is %r', self.inconsistent_history)
 
-        self.cursor_offset = 0
+        self._cursor_offset = 0
         self.current_line = ''
 
     def getstdout(self):
