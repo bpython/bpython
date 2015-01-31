@@ -1,7 +1,8 @@
 """Extracting and changing portions of the current line
 
-All functions take cursor offset from the beginning of the line and the line of python code,
-and return None, or a tuple of the start index, end index, and the word"""
+All functions take cursor offset from the beginning of the line and the line of
+Python code, and return None, or a tuple of the start index, end index, and the
+word."""
 
 import re
 from itertools import chain
@@ -55,6 +56,7 @@ def current_word(cursor_offset, line):
 
 current_dict_key_re = LazyReCompile(r'''[\w_][\w0-9._]*\[([\w0-9._(), '"]*)''')
 
+
 def current_dict_key(cursor_offset, line):
     """If in dictionary completion, return the current key"""
     matches = current_dict_key_re.finditer(line)
@@ -94,6 +96,7 @@ def current_string(cursor_offset, line):
 
 current_object_re = LazyReCompile(r'([\w_][\w0-9_]*)[.]')
 
+
 def current_object(cursor_offset, line):
     """If in attribute completion, the object on which attribute should be looked up"""
     match = current_word(cursor_offset, line)
@@ -113,6 +116,7 @@ def current_object(cursor_offset, line):
 
 current_object_attribute_re = LazyReCompile(r'([\w_][\w0-9_]*)[.]?')
 
+
 def current_object_attribute(cursor_offset, line):
     """If in attribute completion, the attribute being completed"""
     match = current_word(cursor_offset, line)
@@ -127,6 +131,7 @@ def current_object_attribute(cursor_offset, line):
 
 
 current_from_import_from_re = LazyReCompile(r'from ([\w0-9_.]*)(?:\s+import\s+([\w0-9_]+[,]?\s*)+)*')
+
 
 def current_from_import_from(cursor_offset, line):
     """If in from import completion, the word after from
@@ -149,6 +154,7 @@ def current_from_import_from(cursor_offset, line):
 current_from_import_import_re_1 = LazyReCompile(r'from\s([\w0-9_.]*)\s+import')
 current_from_import_import_re_2 = LazyReCompile(r'([\w0-9_]+)')
 current_from_import_import_re_3 = LazyReCompile(r'[,][ ]([\w0-9_]*)')
+
 
 def current_from_import_import(cursor_offset, line):
     """If in from import completion, the word after import being completed
@@ -174,6 +180,7 @@ current_import_re_1 = LazyReCompile(r'import')
 current_import_re_2 = LazyReCompile(r'([\w0-9_.]+)')
 current_import_re_3 = LazyReCompile(r'[,][ ]([\w0-9_.]*)')
 
+
 def current_import(cursor_offset, line):
     #TODO allow for multiple as's
     baseline = current_import_re_1.search(line)
@@ -192,6 +199,7 @@ def current_import(cursor_offset, line):
 
 current_method_definition_name_re = LazyReCompile("def\s+([a-zA-Z_][\w]*)")
 
+
 def current_method_definition_name(cursor_offset, line):
     """The name of a method being defined"""
     matches = current_method_definition_name_re.finditer(line)
@@ -203,11 +211,12 @@ def current_method_definition_name(cursor_offset, line):
 
 current_single_word_re = LazyReCompile(r"(?<![.])\b([a-zA-Z_][\w]*)")
 
+
 def current_single_word(cursor_offset, line):
     """the un-dotted word just before or under the cursor"""
     matches = current_single_word_re.finditer(line)
     for m in matches:
-        if (m.start(1) <= cursor_offset and m.end(1) >= cursor_offset):
+        if m.start(1) <= cursor_offset and m.end(1) >= cursor_offset:
             return m.start(1), m.end(1), m.group(1)
     return None
 
@@ -215,7 +224,8 @@ def current_single_word(cursor_offset, line):
 def current_dotted_attribute(cursor_offset, line):
     """The dotted attribute-object pair before the cursor"""
     match = current_word(cursor_offset, line)
-    if match is None: return None
+    if match is None:
+        return None
     start, end, word = match
     if '.' in word[1:]:
         return start, end, word
@@ -225,10 +235,11 @@ current_string_literal_attr_re = LazyReCompile(
     "('''" +
     r'''|"""|'|")((?:(?=([^"'\\]+|\\.|(?!\1)["']))\3)*)\1[.]([a-zA-Z_]?[\w]*)''')
 
+
 def current_string_literal_attr(cursor_offset, line):
     """The attribute following a string literal"""
     matches = current_string_literal_attr_re.finditer(line)
     for m in matches:
-        if (m.start(4) <= cursor_offset and m.end(4) >= cursor_offset):
+        if m.start(4) <= cursor_offset and m.end(4) >= cursor_offset:
             return m.start(4), m.end(4), m.group(4)
     return None
