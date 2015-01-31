@@ -17,6 +17,17 @@ Dependencies
 * babel (optional, for internationalization)
 * watchdog (optional, for monitoring imported modules for changes)
 
+If you are using Python 2 on Mac OS X, the following dependencies are required
+as well:
+
+* pyOpenSSL
+* ndg-httpsclien
+* pyasn1
+
+If you have problems installing cffi which is needed by pyOpenSSL,
+please take a look at https://cffi.readthedocs.org/en/release-0.8/#macos-x.
+
+
 bpython-urwid
 -------------
 ``bpython-urwid`` requires the following additional packages:
