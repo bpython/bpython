@@ -6,27 +6,25 @@ msgid ""
 msgstr ""
 "Project-Id-Version: bpython 0.13-442\n"
 "Report-Msgid-Bugs-To: http://github.com/bpython/bpython/issues\n"
-"POT-Creation-Date: 2015-02-01 23:02+0100\n"
-"PO-Revision-Date: 2015-02-01 23:03+0100\n"
+"POT-Creation-Date: 2015-02-02 00:30+0100\n"
+"PO-Revision-Date: 2015-02-02 00:31+0100\n"
 "Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language-Team: bpython developers\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
-"Language: fr_FR\n"
-"X-Generator: Poedit 1.6.10\n"
 
 #: bpython/args.py:57
 msgid ""
 "Usage: %prog [options] [file [args]]\n"
-"NOTE: If bpython sees an argument it does not know, execution falls back to "
-"the regular Python interpreter."
+"NOTE: If bpython sees an argument it does not know, execution falls back "
+"to the regular Python interpreter."
 msgstr ""
 "Utilisation: %prog [options] [fichier [arguments]]\n"
-"NOTE: Si bpython ne reconnaît pas un des arguments fournis, l'interpréteur "
-"Python classique sera lancé"
+"NOTE: Si bpython ne reconnaît pas un des arguments fournis, "
+"l'interpréteur Python classique sera lancé"
 
 #: bpython/args.py:67
 msgid "Use CONFIG instead of default config file."
@@ -35,7 +33,8 @@ msgstr "Utiliser CONFIG à la place du fichier de configuration par défaut."
 #: bpython/args.py:69
 msgid "Drop to bpython shell after running file instead of exiting."
 msgstr ""
-"Aller dans le shell bpython après l'exécution du fichier au lieu de quitter."
+"Aller dans le shell bpython après l'exécution du fichier au lieu de "
+"quitter."
 
 #: bpython/args.py:72
 msgid "Don't flush the output to stdout."
@@ -126,7 +125,7 @@ msgstr ""
 msgid "append"
 msgstr ""
 
-#: bpython/repl.py:685 bpython/repl.py:1028
+#: bpython/repl.py:685 bpython/repl.py:1027
 #, python-format
 msgid "Error writing file '%s': %s"
 msgstr "Une erreur s'est produite pendant l'écriture du fichier '%s': %s"
@@ -195,11 +194,10 @@ msgid "Upload failed: No output from helper program."
 msgstr "Echec de l'upload: pas de sortie du programme externe."
 
 #: bpython/repl.py:800
-msgid ""
-"Upload failed: Failed to recognize the helper program's output as an URL."
+msgid "Upload failed: Failed to recognize the helper program's output as an URL."
 msgstr ""
-"Echec de l'upload: la sortie du programme externe ne correspond pas à une "
-"URL."
+"Echec de l'upload: la sortie du programme externe ne correspond pas à une"
+" URL."
 
 #: bpython/repl.py:806
 #, python-format
@@ -217,24 +215,20 @@ msgstr ""
 
 #: bpython/repl.py:853
 #, python-format
-msgid "Undoing 1 line... (est. %.1f seconds)"
-msgstr ""
+msgid "Undoing %d line... (est. %.1f seconds)"
+msgid_plural "Undoing %d lines... (est. %.1f seconds)"
+msgstr[0] ""
+msgstr[1] ""
 
-#: bpython/repl.py:856
-#, python-format
-msgid "Undoing %d lines... (est. %.1f seconds)"
-msgstr ""
-
-#: bpython/repl.py:1018
+#: bpython/repl.py:1017
 msgid "Config file does not exist - create new from default? (y/N)"
-msgstr ""
-"Le fichier de configuration n'existe pas - en créér un par défaut? (o/N)"
+msgstr "Le fichier de configuration n'existe pas - en créér un par défaut? (o/N)"
 
-#: bpython/repl.py:1035
+#: bpython/repl.py:1034
 msgid "bpython config file edited. Restart bpython for changes to take effect."
 msgstr ""
 
-#: bpython/repl.py:1038
+#: bpython/repl.py:1037
 msgid "Error editing config file."
 msgstr ""
 
@@ -242,8 +236,8 @@ msgstr ""
 #, python-format
 msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
 msgstr ""
-"  <%s> Rebobiner  <%s> Sauvegarder  <%s> Pastebin  <%s> Pager  <%s> Montrer "
-"Source "
+"  <%s> Rebobiner  <%s> Sauvegarder  <%s> Pastebin  <%s> Pager  <%s> "
+"Montrer Source "
 
 #: bpython/urwid.py:1126
 msgid "Run twisted reactor."
@@ -251,8 +245,7 @@ msgstr "Lancer le reactor twisted."
 
 #: bpython/urwid.py:1128
 msgid "Select specific reactor (see --help-reactors). Implies --twisted."
-msgstr ""
-"Choisir un reactor spécifique (voir --help-reactors). Nécessite --twisted."
+msgstr "Choisir un reactor spécifique (voir --help-reactors). Nécessite --twisted."
 
 #: bpython/urwid.py:1131
 msgid "List available reactors for -r."
@@ -263,8 +256,8 @@ msgid ""
 "twistd plugin to run (use twistd for a list). Use \"--\" to pass further "
 "options to the plugin."
 msgstr ""
-"plugin twistd à lancer (utiliser twistd pour une list). Utiliser \"--\" pour "
-"donner plus d'options au plugin."
+"plugin twistd à lancer (utiliser twistd pour une list). Utiliser \"--\" "
+"pour donner plus d'options au plugin."
 
 #: bpython/urwid.py:1136
 msgid "Port to run an eval server on (forces Twisted)."

@@ -48,7 +48,7 @@ from pygments.token import Token
 from bpython import inspection
 from bpython._py3compat import PythonLexer, py3
 from bpython.formatter import Parenthesis
-from bpython.translations import _
+from bpython.translations import _, ngettext
 from bpython.clipboard import get_clipboard, CopyFailed
 from bpython.history import History
 import bpython.autocomplete as autocomplete
@@ -666,7 +666,6 @@ class Repl(object):
         if os.path.exists(fn):
             mode = self.interact.file_prompt(_('%s already exists. Do you '
                                                'want to (c)ancel, '
-                                               'wantch to (c)ancel, '
                                                ' (o)verwrite or '
                                                '(a)ppend? ') % (fn, ))
             if mode in ('o', 'overwrite', _('overwrite')):
@@ -850,12 +849,10 @@ class Repl(object):
             if n == 0:
                 self.interact.notify(_('Undo canceled'), .1)
                 return 0
-            if n == 1:
-                self.interact.notify(_('Undoing 1 line... (est. %.1f seconds)')
-                                     % (est,), .1)
             else:
-                self.interact.notify(_('Undoing %d lines... (est. %.1f seconds)')
-                                     % (n, est), .1)
+                message = ngettext('Undoing %d line... (est. %.1f seconds)',
+                                   'Undoing %d lines... (est. %.1f seconds)', n)
+                self.interact.notify(message % (n, est), .1)
             return n
 
     def undo(self, n=1):
@@ -994,7 +991,8 @@ class Repl(object):
         It prevents autoindentation from occuring after a traceback."""
 
     def send_to_external_editor(self, text, filename=None):
-        """Returns modified text from an editor, or the oriignal text if editor exited with non-zero"""
+        """Returns modified text from an editor, or the oriignal text if editor
+        exited with non-zero"""
         editor_args = shlex.split(self.config.editor)
         with tempfile.NamedTemporaryFile(suffix='.py') as temp:
             temp.write(text.encode(getpreferredencoding()))

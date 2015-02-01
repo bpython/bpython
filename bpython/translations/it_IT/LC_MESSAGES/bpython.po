@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: bpython 0.9.7\n"
 "Report-Msgid-Bugs-To: http://github.com/bpython/bpython/issues\n"
-"POT-Creation-Date: 2015-02-01 23:02+0100\n"
-"PO-Revision-Date: 2015-02-01 23:04+0100\n"
+"POT-Creation-Date: 2015-02-02 00:30+0100\n"
+"PO-Revision-Date: 2015-02-02 00:31+0100\n"
 "Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language-Team: Michele Orrù\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
@@ -121,7 +121,7 @@ msgstr ""
 msgid "append"
 msgstr ""
 
-#: bpython/repl.py:685 bpython/repl.py:1028
+#: bpython/repl.py:685 bpython/repl.py:1027
 #, python-format
 msgid "Error writing file '%s': %s"
 msgstr ""
@@ -207,23 +207,20 @@ msgstr ""
 
 #: bpython/repl.py:853
 #, python-format
-msgid "Undoing 1 line... (est. %.1f seconds)"
-msgstr ""
+msgid "Undoing %d line... (est. %.1f seconds)"
+msgid_plural "Undoing %d lines... (est. %.1f seconds)"
+msgstr[0] ""
+msgstr[1] ""
 
-#: bpython/repl.py:856
-#, python-format
-msgid "Undoing %d lines... (est. %.1f seconds)"
-msgstr ""
-
-#: bpython/repl.py:1018
+#: bpython/repl.py:1017
 msgid "Config file does not exist - create new from default? (y/N)"
 msgstr ""
 
-#: bpython/repl.py:1035
+#: bpython/repl.py:1034
 msgid "bpython config file edited. Restart bpython for changes to take effect."
 msgstr ""
 
-#: bpython/repl.py:1038
+#: bpython/repl.py:1037
 msgid "Error editing config file."
 msgstr ""
 

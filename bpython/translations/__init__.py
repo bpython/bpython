@@ -11,10 +11,15 @@ translator = None
 if py3:
     def _(message):
         return translator.gettext(message)
+
+    def ngettext(singular, plural, n):
+        return translator.ngettext(singular, plural, n)
 else:
     def _(message):
         return translator.ugettext(message)
 
+    def ngettext(singular, plural, n):
+        return translator.ungettext(singular, plural, n)
 
 def init(locale_dir=None, languages=None):
     try:
