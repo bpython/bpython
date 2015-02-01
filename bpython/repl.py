@@ -245,12 +245,14 @@ class MatchesIterator(object):
         """Called to reset the match index and update the word being replaced
 
         Should only be called if there's a target to update - otherwise, call clear"""
+
+        if matches is None:
+            raise ValueError("Matches may not be None.")
+
         self.orig_cursor_offset = cursor_offset
         self.orig_line = current_line
-        assert matches is not None
         self.matches = matches
         self.completer = completer
-        #assert self.completer.locate(self.orig_cursor_offset, self.orig_line) is not None, (self.completer.locate, self.orig_cursor_offset, self.orig_line)
         self.index = -1
         self.start, self.end, self.current_word = self.completer.locate(self.orig_cursor_offset, self.orig_line)
 
