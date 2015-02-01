@@ -6,24 +6,27 @@ msgid ""
 msgstr ""
 "Project-Id-Version: bpython 0.13-442\n"
 "Report-Msgid-Bugs-To: http://github.com/bpython/bpython/issues\n"
-"POT-Creation-Date: 2015-01-23 23:19+0100\n"
-"Last-Translator: Tarek Ziadé <tarek@ziade.org>\n"
+"POT-Creation-Date: 2015-02-01 23:02+0100\n"
+"PO-Revision-Date: 2015-02-01 23:03+0100\n"
+"Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language-Team: bpython developers\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
+"Language: fr_FR\n"
+"X-Generator: Poedit 1.6.10\n"
 
 #: bpython/args.py:57
 msgid ""
 "Usage: %prog [options] [file [args]]\n"
-"NOTE: If bpython sees an argument it does not know, execution falls back "
-"to the regular Python interpreter."
+"NOTE: If bpython sees an argument it does not know, execution falls back to "
+"the regular Python interpreter."
 msgstr ""
 "Utilisation: %prog [options] [fichier [arguments]]\n"
-"NOTE: Si bpython ne reconnaît pas un des arguments fournis, "
-"l'interpréteur Python classique sera lancé"
+"NOTE: Si bpython ne reconnaît pas un des arguments fournis, l'interpréteur "
+"Python classique sera lancé"
 
 #: bpython/args.py:67
 msgid "Use CONFIG instead of default config file."
@@ -31,7 +34,8 @@ msgstr "Utiliser CONFIG à la place du fichier de configuration par défaut."
 
 #: bpython/args.py:69
 msgid "Drop to bpython shell after running file instead of exiting."
-msgstr "Aller dans le shell bpython après l'exécution du fichier au lieu de quitter."
+msgstr ""
+"Aller dans le shell bpython après l'exécution du fichier au lieu de quitter."
 
 #: bpython/args.py:72
 msgid "Don't flush the output to stdout."
@@ -41,31 +45,31 @@ msgstr "Ne pas purger la sortie vers stdout."
 msgid "Print version and exit."
 msgstr "Afficher la version et quitter."
 
-#: bpython/cli.py:321 bpython/urwid.py:555
+#: bpython/cli.py:318 bpython/urwid.py:555
 msgid "y"
 msgstr "o"
 
-#: bpython/cli.py:321 bpython/urwid.py:555
+#: bpython/cli.py:318 bpython/urwid.py:555
 msgid "yes"
 msgstr "oui"
 
-#: bpython/cli.py:1696
+#: bpython/cli.py:1695
 msgid "Rewind"
 msgstr "Rembobiner"
 
-#: bpython/cli.py:1697
+#: bpython/cli.py:1696
 msgid "Save"
 msgstr "Sauvegarder"
 
-#: bpython/cli.py:1698
+#: bpython/cli.py:1697
 msgid "Pastebin"
 msgstr ""
 
-#: bpython/cli.py:1699
+#: bpython/cli.py:1698
 msgid "Pager"
 msgstr ""
 
-#: bpython/cli.py:1700
+#: bpython/cli.py:1699
 msgid "Show Source"
 msgstr "Montrer le code source"
 
@@ -77,103 +81,169 @@ msgstr "logger les messages de debug dans bpython.log"
 msgid "enter lines of file as though interactively typed"
 msgstr "saisir les lignes du fichier interactivement"
 
-#: bpython/history.py:236
+#: bpython/history.py:216
 #, python-format
 msgid "Error occurred while writing to file %s (%s)"
 msgstr "Une erreur s'est produite pendant l'écriture du fichier %s (%s)"
 
-#: bpython/repl.py:477
+#: bpython/repl.py:513
 msgid "Nothing to get source of"
 msgstr ""
 
-#: bpython/repl.py:482
+#: bpython/repl.py:518
 #, python-format
 msgid "Cannot get source: %s"
 msgstr "Impossible de récupérer le source: %s"
 
-#: bpython/repl.py:487
+#: bpython/repl.py:523
 #, python-format
 msgid "Cannot access source of %r"
 msgstr "Impossible d'accéder au source de %r"
 
-#: bpython/repl.py:489
+#: bpython/repl.py:525
 #, python-format
 msgid "No source code found for %s"
 msgstr "Pas de code source trouvé pour %s"
 
-#: bpython/repl.py:655
+#: bpython/repl.py:652
+msgid "Save to file (Esc to cancel): "
+msgstr ""
+
+#: bpython/repl.py:654 bpython/repl.py:657 bpython/repl.py:676
+msgid "Save cancelled."
+msgstr ""
+
+#: bpython/repl.py:667
+#, python-format
+msgid "%s already exists. Do you want to (c)ancel,  (o)verwrite or (a)ppend? "
+msgstr ""
+
+#: bpython/repl.py:671
+msgid "overwrite"
+msgstr ""
+
+#: bpython/repl.py:673
+msgid "append"
+msgstr ""
+
+#: bpython/repl.py:685 bpython/repl.py:1028
+#, python-format
+msgid "Error writing file '%s': %s"
+msgstr "Une erreur s'est produite pendant l'écriture du fichier '%s': %s"
+
+#: bpython/repl.py:688
+#, python-format
+msgid "Saved to %s."
+msgstr ""
+
+#: bpython/repl.py:694
 msgid "No clipboard available."
 msgstr "Pas de presse-papier disponible."
 
-#: bpython/repl.py:662
+#: bpython/repl.py:701
 msgid "Could not copy to clipboard."
 msgstr "Impossible de copier vers le presse-papier."
 
-#: bpython/repl.py:664
+#: bpython/repl.py:703
 msgid "Copied content to clipboard."
 msgstr "Contenu copié vers le presse-papier."
 
-#: bpython/repl.py:673
+#: bpython/repl.py:712
 msgid "Pastebin buffer? (y/N) "
 msgstr "Tampon Pastebin ? (o/N) "
 
-#: bpython/repl.py:674
-msgid "Pastebin aborted"
-msgstr "Pastebin abandonné"
+#: bpython/repl.py:713
+msgid "Pastebin aborted."
+msgstr "Pastebin abandonné."
 
-#: bpython/repl.py:681
+#: bpython/repl.py:720
 #, python-format
 msgid "Duplicate pastebin. Previous URL: %s. Removal URL: %s"
 msgstr "Pastebin dupliqué. URL précédente: %s. URL de suppression: %s"
 
-#: bpython/repl.py:700 bpython/repl.py:728
+#: bpython/repl.py:739 bpython/repl.py:767
 msgid "Posting data to pastebin..."
 msgstr "Envoi des donnés à pastebin..."
 
-#: bpython/repl.py:705
+#: bpython/repl.py:744
 #, python-format
 msgid "Upload failed: %s"
 msgstr "Echec du téléchargement: %s"
 
-#: bpython/repl.py:721
+#: bpython/repl.py:760
 #, python-format
 msgid "Pastebin URL: %s - Removal URL: %s"
 msgstr "URL Pastebin: %s - URL de suppression: %s"
 
-#: bpython/repl.py:740
+#: bpython/repl.py:779
 msgid "Upload failed: Helper program not found."
 msgstr "Echec de l'upload: programme externe non trouvé."
 
-#: bpython/repl.py:743
+#: bpython/repl.py:782
 msgid "Upload failed: Helper program could not be run."
 msgstr "Echec de l'upload: impossible de lancer le programme externe."
 
-#: bpython/repl.py:750
+#: bpython/repl.py:789
 #, python-format
 msgid "Upload failed: Helper program returned non-zero exit status %s."
-msgstr "Echec de l'upload: le programme externe a renvoyé un statut de sortie différent de zéro %s."
+msgstr ""
+"Echec de l'upload: le programme externe a renvoyé un statut de sortie "
+"différent de zéro %s."
 
-#: bpython/repl.py:754
+#: bpython/repl.py:793
 msgid "Upload failed: No output from helper program."
 msgstr "Echec de l'upload: pas de sortie du programme externe."
 
-#: bpython/repl.py:761
-msgid "Upload failed: Failed to recognize the helper program's output as an URL."
-msgstr "Echec de l'upload: la sortie du programme externe ne correspond pas à une URL."
+#: bpython/repl.py:800
+msgid ""
+"Upload failed: Failed to recognize the helper program's output as an URL."
+msgstr ""
+"Echec de l'upload: la sortie du programme externe ne correspond pas à une "
+"URL."
 
-#: bpython/repl.py:767
+#: bpython/repl.py:806
 #, python-format
 msgid "Pastebin URL: %s"
 msgstr "URL Pastebin: %s"
 
-#: bpython/repl.py:953
+#: bpython/repl.py:839
+#, python-format
+msgid "Undo how many lines? (Undo will take up to ~%.1f seconds) [1]"
+msgstr ""
+
+#: bpython/repl.py:846 bpython/repl.py:850
+msgid "Undo canceled"
+msgstr ""
+
+#: bpython/repl.py:853
+#, python-format
+msgid "Undoing 1 line... (est. %.1f seconds)"
+msgstr ""
+
+#: bpython/repl.py:856
+#, python-format
+msgid "Undoing %d lines... (est. %.1f seconds)"
+msgstr ""
+
+#: bpython/repl.py:1018
 msgid "Config file does not exist - create new from default? (y/N)"
-msgstr "Le fichier de configuration n'existe pas - en créér un par défaut? (o/N)"
+msgstr ""
+"Le fichier de configuration n'existe pas - en créér un par défaut? (o/N)"
+
+#: bpython/repl.py:1035
+msgid "bpython config file edited. Restart bpython for changes to take effect."
+msgstr ""
+
+#: bpython/repl.py:1038
+msgid "Error editing config file."
+msgstr ""
 
 #: bpython/urwid.py:617
 #, python-format
 msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
-msgstr "  <%s> Rebobiner  <%s> Sauvegarder  <%s> Pastebin  <%s> Pager  <%s> Montrer Source "
+msgstr ""
+"  <%s> Rebobiner  <%s> Sauvegarder  <%s> Pastebin  <%s> Pager  <%s> Montrer "
+"Source "
 
 #: bpython/urwid.py:1126
 msgid "Run twisted reactor."
@@ -181,7 +251,8 @@ msgstr "Lancer le reactor twisted."
 
 #: bpython/urwid.py:1128
 msgid "Select specific reactor (see --help-reactors). Implies --twisted."
-msgstr "Choisir un reactor spécifique (voir --help-reactors). Nécessite --twisted."
+msgstr ""
+"Choisir un reactor spécifique (voir --help-reactors). Nécessite --twisted."
 
 #: bpython/urwid.py:1131
 msgid "List available reactors for -r."
@@ -192,23 +263,23 @@ msgid ""
 "twistd plugin to run (use twistd for a list). Use \"--\" to pass further "
 "options to the plugin."
 msgstr ""
-"plugin twistd à lancer (utiliser twistd pour une list). Utiliser \"--\" pour donner "
-"plus d'options au plugin."
+"plugin twistd à lancer (utiliser twistd pour une list). Utiliser \"--\" pour "
+"donner plus d'options au plugin."
 
 #: bpython/urwid.py:1136
 msgid "Port to run an eval server on (forces Twisted)."
 msgstr "Port pour lancer un server eval (force Twisted)."
 
-#: bpython/curtsiesfrontend/repl.py:258
+#: bpython/curtsiesfrontend/repl.py:259
 msgid "Welcome to bpython!"
 msgstr "Bienvenue dans bpython!"
 
-#: bpython/curtsiesfrontend/repl.py:258
+#: bpython/curtsiesfrontend/repl.py:259
 #, python-format
 msgid "Press <%s> for help."
 msgstr "Appuyer sur <%s> pour de l'aide."
 
-#: bpython/curtsiesfrontend/repl.py:470
+#: bpython/curtsiesfrontend/repl.py:472
 #, python-format
 msgid "Executing PYTHONSTARTUP failed: %s"
 msgstr "L'exécution de PYTHONSTARTUP a échoué: %s"

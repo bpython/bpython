@@ -649,12 +649,12 @@ class Repl(object):
         buffer to disk."""
 
         try:
-            fn = self.interact.file_prompt('Save to file (Esc to cancel): ')
+            fn = self.interact.file_prompt(_('Save to file (Esc to cancel): '))
             if not fn:
-                self.interact.notify("Save cancelled.")
+                self.interact.notify(_('Save cancelled.'))
                 return
         except ValueError:
-            self.interact.notify("Save cancelled.")
+            self.interact.notify(_('Save cancelled.'))
             return
 
         if fn.startswith('~'):
@@ -664,15 +664,17 @@ class Repl(object):
 
         mode = 'w'
         if os.path.exists(fn):
-            mode = self.interact.file_prompt('%s already exists. Do you want '
-                                             'to (c)ancel, (o)verwrite or '
-                                             '(a)ppend? ' % (fn, ))
-            if mode in ('o', 'overwrite'):
+            mode = self.interact.file_prompt(_('%s already exists. Do you '
+                                               'want to (c)ancel, '
+                                               'wantch to (c)ancel, '
+                                               ' (o)verwrite or '
+                                               '(a)ppend? ') % (fn, ))
+            if mode in ('o', 'overwrite', _('overwrite')):
                 mode = 'w'
-            elif mode in ('a', 'append'):
+            elif mode in ('a', 'append', _('append')):
                 mode = 'a'
             else:
-                self.interact.notify('Save cancelled.')
+                self.interact.notify(_('Save cancelled.'))
                 return
 
         s = self.formatforfile(self.getstdout())
@@ -680,10 +682,11 @@ class Repl(object):
         try:
             with open(fn, mode) as f:
                 f.write(s)
-        except IOError:
-            self.interact.notify("Disk write error for file '%s'." % (fn, ))
+        except IOError as e:
+            self.interact.notify(_("Error writing file '%s': %s") % (fn,
+                                                                     str(e)))
         else:
-            self.interact.notify('Saved to %s.' % (fn, ))
+            self.interact.notify(_('Saved to %s.') % (fn, ))
 
     def copy2clipboard(self):
         """Copy current content to clipboard."""
@@ -708,7 +711,7 @@ class Repl(object):
 
         if (self.config.pastebin_confirm and
             not self.interact.confirm(_("Pastebin buffer? (y/N) "))):
-            self.interact.notify(_("Pastebin aborted"))
+            self.interact.notify(_("Pastebin aborted."))
             return
         return self.do_pastebin(s)
 
@@ -1023,15 +1026,17 @@ class Repl(object):
                     with open(self.config.config_path, 'w') as f:
                         f.write(default_config)
                 except (IOError, OSError) as e:
-                    self.interact.notify('error creating file: %r' % e)
+                    self.interact.notify(_("Error writing file '%s': %s") % \
+                                         (self.config.config.path, str(e)))
                     return False
             else:
                 return False
 
         if self.open_in_external_editor(self.config.config_path):
-            self.interact.notify('bpython config file edited. Restart bpython for changes to take effect.')
+            self.interact.notify(_('bpython config file edited. Restart '
+                                   'bpython for changes to take effect.'))
         else:
-            self.interact.notify('error editing config file')
+            self.interact.notify(_('Error editing config file.'))
 
 
 def next_indentation(line, tab_length):

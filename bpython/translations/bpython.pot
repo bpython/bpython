@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: bpython 0.13-442\n"
+"Project-Id-Version: bpython 0.13-492\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-01-23 23:19+0100\n"
+"POT-Creation-Date: 2015-02-01 23:02+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,31 +40,31 @@ msgstr ""
 msgid "Print version and exit."
 msgstr ""
 
-#: bpython/cli.py:321 bpython/urwid.py:555
+#: bpython/cli.py:318 bpython/urwid.py:555
 msgid "y"
 msgstr ""
 
-#: bpython/cli.py:321 bpython/urwid.py:555
+#: bpython/cli.py:318 bpython/urwid.py:555
 msgid "yes"
 msgstr ""
 
-#: bpython/cli.py:1696
+#: bpython/cli.py:1695
 msgid "Rewind"
 msgstr ""
 
-#: bpython/cli.py:1697
+#: bpython/cli.py:1696
 msgid "Save"
 msgstr ""
 
-#: bpython/cli.py:1698
+#: bpython/cli.py:1697
 msgid "Pastebin"
 msgstr ""
 
-#: bpython/cli.py:1699
+#: bpython/cli.py:1698
 msgid "Pager"
 msgstr ""
 
-#: bpython/cli.py:1700
+#: bpython/cli.py:1699
 msgid "Show Source"
 msgstr ""
 
@@ -76,97 +76,155 @@ msgstr ""
 msgid "enter lines of file as though interactively typed"
 msgstr ""
 
-#: bpython/history.py:236
+#: bpython/history.py:216
 #, python-format
 msgid "Error occurred while writing to file %s (%s)"
 msgstr ""
 
-#: bpython/repl.py:477
+#: bpython/repl.py:513
 msgid "Nothing to get source of"
 msgstr ""
 
-#: bpython/repl.py:482
+#: bpython/repl.py:518
 #, python-format
 msgid "Cannot get source: %s"
 msgstr ""
 
-#: bpython/repl.py:487
+#: bpython/repl.py:523
 #, python-format
 msgid "Cannot access source of %r"
 msgstr ""
 
-#: bpython/repl.py:489
+#: bpython/repl.py:525
 #, python-format
 msgid "No source code found for %s"
 msgstr ""
 
-#: bpython/repl.py:655
-msgid "No clipboard available."
+#: bpython/repl.py:652
+msgid "Save to file (Esc to cancel): "
 msgstr ""
 
-#: bpython/repl.py:662
-msgid "Could not copy to clipboard."
+#: bpython/repl.py:654 bpython/repl.py:657 bpython/repl.py:676
+msgid "Save cancelled."
 msgstr ""
 
-#: bpython/repl.py:664
-msgid "Copied content to clipboard."
+#: bpython/repl.py:667
+#, python-format
+msgid "%s already exists. Do you want to (c)ancel,  (o)verwrite or (a)ppend? "
+msgstr ""
+
+#: bpython/repl.py:671
+msgid "overwrite"
 msgstr ""
 
 #: bpython/repl.py:673
+msgid "append"
+msgstr ""
+
+#: bpython/repl.py:685 bpython/repl.py:1028
+#, python-format
+msgid "Error writing file '%s': %s"
+msgstr ""
+
+#: bpython/repl.py:688
+#, python-format
+msgid "Saved to %s."
+msgstr ""
+
+#: bpython/repl.py:694
+msgid "No clipboard available."
+msgstr ""
+
+#: bpython/repl.py:701
+msgid "Could not copy to clipboard."
+msgstr ""
+
+#: bpython/repl.py:703
+msgid "Copied content to clipboard."
+msgstr ""
+
+#: bpython/repl.py:712
 msgid "Pastebin buffer? (y/N) "
 msgstr ""
 
-#: bpython/repl.py:674
-msgid "Pastebin aborted"
+#: bpython/repl.py:713
+msgid "Pastebin aborted."
 msgstr ""
 
-#: bpython/repl.py:681
+#: bpython/repl.py:720
 #, python-format
 msgid "Duplicate pastebin. Previous URL: %s. Removal URL: %s"
 msgstr ""
 
-#: bpython/repl.py:700 bpython/repl.py:728
+#: bpython/repl.py:739 bpython/repl.py:767
 msgid "Posting data to pastebin..."
 msgstr ""
 
-#: bpython/repl.py:705
+#: bpython/repl.py:744
 #, python-format
 msgid "Upload failed: %s"
 msgstr ""
 
-#: bpython/repl.py:721
+#: bpython/repl.py:760
 #, python-format
 msgid "Pastebin URL: %s - Removal URL: %s"
 msgstr ""
 
-#: bpython/repl.py:740
+#: bpython/repl.py:779
 msgid "Upload failed: Helper program not found."
 msgstr ""
 
-#: bpython/repl.py:743
+#: bpython/repl.py:782
 msgid "Upload failed: Helper program could not be run."
 msgstr ""
 
-#: bpython/repl.py:750
+#: bpython/repl.py:789
 #, python-format
 msgid "Upload failed: Helper program returned non-zero exit status %s."
 msgstr ""
 
-#: bpython/repl.py:754
+#: bpython/repl.py:793
 msgid "Upload failed: No output from helper program."
 msgstr ""
 
-#: bpython/repl.py:761
+#: bpython/repl.py:800
 msgid "Upload failed: Failed to recognize the helper program's output as an URL."
 msgstr ""
 
-#: bpython/repl.py:767
+#: bpython/repl.py:806
 #, python-format
 msgid "Pastebin URL: %s"
 msgstr ""
 
-#: bpython/repl.py:953
+#: bpython/repl.py:839
+#, python-format
+msgid "Undo how many lines? (Undo will take up to ~%.1f seconds) [1]"
+msgstr ""
+
+#: bpython/repl.py:846 bpython/repl.py:850
+msgid "Undo canceled"
+msgstr ""
+
+#: bpython/repl.py:853
+#, python-format
+msgid "Undoing 1 line... (est. %.1f seconds)"
+msgstr ""
+
+#: bpython/repl.py:856
+#, python-format
+msgid "Undoing %d lines... (est. %.1f seconds)"
+msgstr ""
+
+#: bpython/repl.py:1018
 msgid "Config file does not exist - create new from default? (y/N)"
+msgstr ""
+
+#: bpython/repl.py:1035
+msgid "bpython config file edited. Restart bpython for changes to take effect."
+msgstr ""
+
+#: bpython/repl.py:1038
+msgid "Error editing config file."
 msgstr ""
 
 #: bpython/urwid.py:617
@@ -196,16 +254,16 @@ msgstr ""
 msgid "Port to run an eval server on (forces Twisted)."
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:258
+#: bpython/curtsiesfrontend/repl.py:259
 msgid "Welcome to bpython!"
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:258
+#: bpython/curtsiesfrontend/repl.py:259
 #, python-format
 msgid "Press <%s> for help."
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:470
+#: bpython/curtsiesfrontend/repl.py:472
 #, python-format
 msgid "Executing PYTHONSTARTUP failed: %s"
 msgstr ""
