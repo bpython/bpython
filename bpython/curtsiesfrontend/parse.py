@@ -11,7 +11,7 @@ from functools import partial
 
 import re
 
-cnames = dict(list(zip('krgybmcwd', colors + ('default',))))
+cnames = dict(zip('krgybmcwd', colors + ('default',)))
 
 def func_for_letter(l, default='k'):
     """Returns FmtStr constructor for a bpython-style color code"""
@@ -35,7 +35,7 @@ def parse(s):
             break
         start, rest = peel_off_string(rest)
         stuff.append(start)
-    return (sum([fs_from_match(d) for d in stuff[1:]], fs_from_match(stuff[0]))
+    return (sum((fs_from_match(d) for d in stuff[1:]), fs_from_match(stuff[0]))
             if len(stuff) > 0
             else FmtStr())
 
