@@ -34,6 +34,7 @@ from bpython import inspection
 from bpython import importcompletion
 from bpython import line as lineparts
 from bpython._py3compat import py3
+from bpython.lazyre import LazyReCompile
 
 
 # Autocomplete modes
@@ -460,7 +461,7 @@ def safe_eval(expr, namespace):
         raise EvaluationError
 
 
-attr_matches_re = lineparts.LazyReCompile(r"(\w+(\.\w+)*)\.(\w*)")
+attr_matches_re = LazyReCompile(r"(\w+(\.\w+)*)\.(\w*)")
 
 
 def attr_matches(text, namespace):

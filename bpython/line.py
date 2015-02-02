@@ -4,35 +4,8 @@ All functions take cursor offset from the beginning of the line and the line of
 Python code, and return None, or a tuple of the start index, end index, and the
 word."""
 
-import re
 from itertools import chain
-
-
-class LazyReCompile(object):
-
-    def __init__(self, regex, flags=0):
-        self.regex = regex
-        self.flags = flags
-        self.compiled = None
-
-    def compile_regex(method):
-        def _impl(self, *args, **kwargs):
-            if self.compiled is None:
-                self.compiled = re.compile(self.regex, self.flags)
-            return method(self, *args, **kwargs)
-        return _impl
-
-    @compile_regex
-    def finditer(self, *args, **kwargs):
-        return self.compiled.finditer(*args, **kwargs)
-
-    @compile_regex
-    def search(self, *args, **kwargs):
-        return self.compiled.search(*args, **kwargs)
-
-    @compile_regex
-    def match(self, *args, **kwargs):
-        return self.compiled.match(*args, **kwargs)
+from bpython.lazyre import LazyReCompile
 
 
 current_word_re = LazyReCompile(r'[\w_][\w0-9._]*[(]?')

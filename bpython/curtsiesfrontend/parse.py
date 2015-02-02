@@ -1,5 +1,5 @@
 
-from bpython.line import LazyReCompile
+from bpython.lazyre import LazyReCompile
 from bpython.formatter import BPythonFormatter
 from bpython._py3compat import PythonLexer
 from bpython.config import Struct, loadini, default_config_path
