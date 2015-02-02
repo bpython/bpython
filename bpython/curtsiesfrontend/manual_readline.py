@@ -4,7 +4,7 @@ just the ones that fit the model of transforming the current line
 and the cursor location
 based on http://www.bigsmoke.us/readline/shortcuts"""
 
-import re
+from bpython.lazyre import LazyReCompile
 import inspect
 
 INDENT = 4
@@ -73,6 +73,7 @@ class AbstractEdits(object):
         elif key in self.cut_buffer_edits: del self.cut_buffer_edits[key]
         else: raise KeyError("key %r not mapped" % (key,))
 
+
 class UnconfiguredEdits(AbstractEdits):
     """Maps key to edit functions, and bins them by what parameters they take.
 
@@ -114,6 +115,7 @@ class UnconfiguredEdits(AbstractEdits):
                 return func
             return add_to_config
 
+
 class ConfiguredEdits(AbstractEdits):
     def __init__(self, simple_edits, cut_buffer_edits, awaiting_config, config, key_dispatch):
         self.simple_edits = dict(simple_edits)
@@ -127,6 +129,7 @@ class ConfiguredEdits(AbstractEdits):
 
     def add(self, key, func):
         raise NotImplementedError("Config already set on this mapping")
+
 
 edit_keys = UnconfiguredEdits()
 
@@ -161,19 +164,21 @@ def beginning_of_line(cursor_offset, line):
 def end_of_line(cursor_offset, line):
     return len(line), line
 
+
+forward_word_re = LazyReCompile(r"\S\s")
+
+
 @edit_keys.on('<Esc+f>')
 @edit_keys.on('<Ctrl-RIGHT>')
 @edit_keys.on('<Esc+RIGHT>')
 def forward_word(cursor_offset, line):
-    patt = r"\S\s"
-    match = re.search(patt, line[cursor_offset:]+' ')
+    match = forward_word_re.search(line[cursor_offset:]+' ')
     delta = match.end() - 1 if match else 0
     return (cursor_offset + delta, line)
 
 def last_word_pos(string):
     """returns the start index of the last word of given string"""
-    patt = r'\S\s'
-    match = re.search(patt, string[::-1])
+    match = forward_word_re.search(string[::-1])
     index = match and len(string) - match.end() + 1
     return index or 0
 
@@ -204,20 +209,29 @@ def backspace(cursor_offset, line):
 def delete_from_cursor_back(cursor_offset, line):
     return 0, line[cursor_offset:]
 
+
+delete_rest_of_word_re = LazyReCompile(r'\w\b')
+
+
 @edit_keys.on('<Esc+d>') # option-d
 @kills_ahead
 def delete_rest_of_word(cursor_offset, line):
-    m = re.search(r'\w\b', line[cursor_offset:])
+    m = delete_rest_of_word_re.search(line[cursor_offset:])
     if not m:
         return cursor_offset, line, ''
     return (cursor_offset, line[:cursor_offset] + line[m.start()+cursor_offset+1:],
             line[cursor_offset:m.start()+cursor_offset+1])
 
+
+delete_word_to_cursor_re = LazyReCompile(r'\s\S')
+
+
 @edit_keys.on(config='clear_word_key')
 @kills_behind
 def delete_word_to_cursor(cursor_offset, line):
-    matches = list(re.finditer(r'\s\S', line[:cursor_offset]))
-    start = matches[-1].start()+1 if matches else 0
+    start = 0
+    for match in delete_word_to_cursor_re.finditer(line[:cursor_offset]):
+        start = match.start() + 1
     return start, line[:start] + line[cursor_offset:], line[start:cursor_offset]
 
 @edit_keys.on('<Esc+y>')
@@ -259,6 +273,10 @@ def delete_from_cursor_forward(cursor_offset, line):
 def titlecase_next_word(cursor_offset, line):
     return cursor_offset, line #TODO Not implemented
 
+
+delete_word_from_cursor_back_re = LazyReCompile(r'\b\w')
+
+
 @edit_keys.on('<Esc+BACKSPACE>')
 @edit_keys.on('<Meta-BACKSPACE>')
 @kills_behind
@@ -266,9 +284,11 @@ def delete_word_from_cursor_back(cursor_offset, line):
     """Whatever my option-delete does in bash on my mac"""
     if not line:
         return cursor_offset, line, ''
-    starts = [m.start() for m in list(re.finditer(r'\b\w', line)) if m.start() < cursor_offset]
-    if starts:
-        return starts[-1], line[:starts[-1]] + line[cursor_offset:], line[starts[-1]:cursor_offset]
-    return cursor_offset, line, ''
-
-
+    start = None
+    for match in delete_word_from_cursor_back_re.finditer(line):
+        if match.start() < cursor_offset:
+            start = match.start()
+    if start is not None:
+        return start, line[:start] + line[cursor_offset:], line[start:cursor_offset]
+    else:
+        return cursor_offset, line, ''
