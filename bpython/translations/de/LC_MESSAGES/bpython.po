@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: bpython mercurial\n"
 "Report-Msgid-Bugs-To: http://github.com/bpython/bpython/issues\n"
-"POT-Creation-Date: 2015-02-02 00:30+0100\n"
+"POT-Creation-Date: 2015-02-02 17:34+0100\n"
 "PO-Revision-Date: 2015-02-02 00:31+0100\n"
 "Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language-Team: de <LL@li.org>\n"
@@ -181,8 +181,8 @@ msgstr ""
 "werden."
 
 #: bpython/repl.py:789
-#, python-format
-msgid "Upload failed: Helper program returned non-zero exit status %s."
+#, fuzzy, python-format
+msgid "Upload failed: Helper program returned non-zero exit status %d."
 msgstr "Hochladen ist fehlgeschlagen: Hilfsprogramm beendete mit Status %s."
 
 #: bpython/repl.py:793
@@ -272,3 +272,26 @@ msgstr "Drücke <%s> für Hilfe."
 #, python-format
 msgid "Executing PYTHONSTARTUP failed: %s"
 msgstr "Fehler beim Ausführen von PYTHONSTARTUP: %s"
+
+#: bpython/curtsiesfrontend/repl.py:489
+#, python-format
+msgid "Reloaded at %s because %s modified."
+msgstr ""
+
+#: bpython/curtsiesfrontend/repl.py:745
+#, python-format
+msgid "Reloaded at %s by user."
+msgstr ""
+
+#: bpython/curtsiesfrontend/repl.py:751
+msgid "Auto-reloading deactivated."
+msgstr ""
+
+#: bpython/curtsiesfrontend/repl.py:756
+msgid "Auto-reloading active, watching for file changes..."
+msgstr ""
+
+#: bpython/curtsiesfrontend/repl.py:761
+msgid "Auto-reloading not available because watchdog not installed."
+msgstr ""
+

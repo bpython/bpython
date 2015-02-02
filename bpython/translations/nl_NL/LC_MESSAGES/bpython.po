@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: bpython 0.9.7.1\n"
 "Report-Msgid-Bugs-To: http://github.com/bpython/bpython/issues\n"
-"POT-Creation-Date: 2015-02-02 00:30+0100\n"
-"PO-Revision-Date: 2015-02-02 00:31+0100\n"
+"POT-Creation-Date: 2015-02-02 17:34+0100\n"
+"PO-Revision-Date: 2015-02-02 00:34+0100\n"
 "Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language-Team: bpython developers\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
@@ -180,7 +180,7 @@ msgstr ""
 
 #: bpython/repl.py:789
 #, python-format
-msgid "Upload failed: Helper program returned non-zero exit status %s."
+msgid "Upload failed: Helper program returned non-zero exit status %d."
 msgstr ""
 
 #: bpython/repl.py:793
@@ -264,3 +264,26 @@ msgstr ""
 #, python-format
 msgid "Executing PYTHONSTARTUP failed: %s"
 msgstr ""
+
+#: bpython/curtsiesfrontend/repl.py:489
+#, python-format
+msgid "Reloaded at %s because %s modified."
+msgstr ""
+
+#: bpython/curtsiesfrontend/repl.py:745
+#, python-format
+msgid "Reloaded at %s by user."
+msgstr ""
+
+#: bpython/curtsiesfrontend/repl.py:751
+msgid "Auto-reloading deactivated."
+msgstr ""
+
+#: bpython/curtsiesfrontend/repl.py:756
+msgid "Auto-reloading active, watching for file changes..."
+msgstr ""
+
+#: bpython/curtsiesfrontend/repl.py:761
+msgid "Auto-reloading not available because watchdog not installed."
+msgstr ""
+

@@ -786,7 +786,7 @@ class Repl(object):
         if helper.returncode != 0:
             self.interact.notify(_('Upload failed: '
                                    'Helper program returned non-zero exit '
-                                   'status %s.' % (helper.returncode, )))
+                                   'status %d.' % (helper.returncode, )))
             return
 
         if not paste_url:

@@ -485,10 +485,13 @@ class Repl(BpythonRepl):
         elif isinstance(e, bpythonevents.ReloadEvent):
             if self.watching_files:
                 self.clear_modules_and_reevaluate()
-                self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' because ' + ' & '.join(e.files_modified) + ' modified')
+                self.status_bar.message(
+                    _('Reloaded at %s because %s modified.') % (
+                        time.strftime('%X'),
+                        ' & '.join(e.files_modified)))
 
         else:
-            raise ValueError("don't know how to handle this event type: %r" % e)
+            raise ValueError("Don't know how to handle event type: %r" % e)
 
     def process_key_event(self, e):
         # To find the curtsies name for a keypress, try python -m curtsies.events
@@ -739,22 +742,24 @@ class Repl(BpythonRepl):
                 del sys.modules[modname]
         self.reevaluate(insert_into_history=True)
         self.cursor_offset, self.current_line = cursor, line
-        self.status_bar.message('Reloaded at ' + time.strftime('%H:%M:%S') + ' by user')
+        self.status_bar.message(_('Reloaded at %s by user.') % \
+                                (time.strftime('%X'), ))
 
     def toggle_file_watch(self):
         if self.watcher:
             if self.watching_files:
-                msg = "Auto-reloading deactivated"
+                msg = _("Auto-reloading deactivated.")
                 self.status_bar.message(msg)
                 self.watcher.deactivate()
                 self.watching_files = False
             else:
-                msg = "Auto-reloading active, watching for file changes..."
+                msg = _("Auto-reloading active, watching for file changes...")
                 self.status_bar.message(msg)
                 self.watching_files = True
                 self.watcher.activate()
         else:
-            self.status_bar.message('Autoreloading not available because watchdog not installed')
+            self.status_bar.message(_('Auto-reloading not available because '
+                                      'watchdog not installed.'))
 
     ## Handler Helpers
     def add_normal_character(self, char):
