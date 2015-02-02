@@ -1,4 +1,5 @@
 
+from bpython.line import LazyReCompile
 from bpython.formatter import BPythonFormatter
 from bpython._py3compat import PythonLexer
 from bpython.config import Struct, loadini, default_config_path
@@ -62,17 +63,21 @@ def fs_from_match(d):
         atts['bold'] = True
     return fmtstr(d['string'], **atts)
 
+
+peel_off_string_re = LazyReCompile(
+    r"""(?P<colormarker>\x01
+            (?P<fg>[krgybmcwdKRGYBMCWD]?)
+            (?P<bg>[krgybmcwdKRGYBMCWDI]?)?)
+        (?P<bold>\x02?)
+        \x03
+        (?P<string>[^\x04]*)
+        \x04
+        (?P<rest>.*)
+        """, re.VERBOSE | re.DOTALL)
+
+
 def peel_off_string(s):
-    p = r"""(?P<colormarker>\x01
-                (?P<fg>[krgybmcwdKRGYBMCWD]?)
-                (?P<bg>[krgybmcwdKRGYBMCWDI]?)?)
-            (?P<bold>\x02?)
-            \x03
-            (?P<string>[^\x04]*)
-            \x04
-            (?P<rest>.*)
-            """
-    m = re.match(p, s, re.VERBOSE | re.DOTALL)
+    m = peel_off_string_re.match(s)
     assert m, repr(s)
     d = m.groupdict()
     rest = d['rest']

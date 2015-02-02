@@ -10,14 +10,15 @@ from itertools import chain
 
 class LazyReCompile(object):
 
-    def __init__(self, regex):
+    def __init__(self, regex, flags=0):
         self.regex = regex
+        self.flags = flags
         self.compiled = None
 
     def compile_regex(method):
         def _impl(self, *args, **kwargs):
             if self.compiled is None:
-                self.compiled = re.compile(self.regex)
+                self.compiled = re.compile(self.regex, self.flags)
             return method(self, *args, **kwargs)
         return _impl
 
