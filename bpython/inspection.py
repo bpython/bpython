@@ -26,12 +26,12 @@ import collections
 import inspect
 import keyword
 import pydoc
-import re
 import types
 
 from pygments.token import Token
 
 from bpython._py3compat import PythonLexer, py3
+from bpython.lazyre import LazyReCompile
 
 try:
     collections.Callable
@@ -45,7 +45,7 @@ except AttributeError:
     has_instance_type = False
 
 if not py3:
-    _name = re.compile(r'[a-zA-Z_]\w*$')
+    _name = LazyReCompile(r'[a-zA-Z_]\w*$')
 
 
 class AttrCleaner(object):
@@ -175,14 +175,16 @@ def fixlongargs(f, argspec):
     argspec[3] = values
 
 
+getpydocspec_re = LazyReCompile(r'([a-zA-Z_][a-zA-Z0-9_]*?)\((.*?)\)')
+
+
 def getpydocspec(f, func):
     try:
         argspec = pydoc.getdoc(f)
     except NameError:
         return None
 
-    rx = re.compile(r'([a-zA-Z_][a-zA-Z0-9_]*?)\((.*?)\)')
-    s = rx.search(argspec)
+    s = getpydocspec_re.search(argspec)
     if s is None:
         return None
 
@@ -272,9 +274,12 @@ def is_callable(obj):
         return callable(obj)
 
 
+get_encoding_re = LazyReCompile(r'coding[:=]\s*([-\w.]+)')
+
+
 def get_encoding(obj):
     for line in inspect.findsource(obj)[0][:2]:
-        m = re.search(r'coding[:=]\s*([-\w.]+)', line)
+        m = get_encoding_re.search(line)
         if m:
             return m.group(1)
     return 'ascii'
