@@ -19,7 +19,7 @@ def func_for_letter(l, default='k'):
         l = default
     elif l == 'D':
         l = default.upper()
-    return partial(fmtstr, fg=cnames[l.lower()], bold=(l.lower() != l))
+    return partial(fmtstr, fg=cnames[l.lower()], bold=l.isupper())
 
 def color_for_letter(l, default='k'):
     if l == 'd':
@@ -44,7 +44,7 @@ def fs_from_match(d):
     if d['fg']:
 
         # this isn't according to spec as I understand it
-        if d['fg'] != d['fg'].lower():
+        if d['fg'].isupper():
             d['bold'] = True
         #TODO figure out why boldness isn't based on presence of \x02
 
