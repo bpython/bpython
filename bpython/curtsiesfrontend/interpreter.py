@@ -1,5 +1,4 @@
 import code
-import time
 import traceback
 import sys
 from pygments.token import Generic, Token, Keyword, Name, Comment, String

@@ -14,7 +14,7 @@ import time
 import unicodedata
 
 from pygments import format
-from bpython._py3compat import PythonLexer, cast_unicode, cast_bytes
+from bpython._py3compat import PythonLexer, cast_bytes
 from pygments.formatters import TerminalFormatter
 
 import blessings

@@ -1,13 +1,9 @@
 
 from bpython.lazyre import LazyReCompile
-from bpython.formatter import BPythonFormatter
-from bpython._py3compat import PythonLexer
-from bpython.config import Struct, loadini, default_config_path
 
 from curtsies.termformatconstants import FG_COLORS, BG_COLORS, colors
 from curtsies.formatstring import fmtstr, FmtStr
 
-from pygments import format
 from functools import partial
 
 import re
