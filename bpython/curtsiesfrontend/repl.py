@@ -1415,7 +1415,7 @@ class Repl(BpythonRepl):
         return (('bpython-curtsies version %s' % bpython.__version__) + ' ' +
                 ('using curtsies version %s' % curtsies.__version__) + '\n' +
                 HELP_MESSAGE.format(config_file_location=default_config_path(),
-                                    example_config_url='https://raw.githubusercontent.com/bpython/bpython/master/sample-config',
+                                    example_config_url='https://raw.githubusercontent.com/bpython/bpython/master/bpython/sample-config',
                                     config=self.config)
                )
 
