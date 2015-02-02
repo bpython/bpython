@@ -142,12 +142,12 @@ class CodeRunner(object):
             raise SystemExitFromCodeGreenlet()
 
     def sigint_handler(self, *args):
-        """SIGINT handler to use while code is running or request being fufilled"""
+        """SIGINT handler to use while code is running or request being fulfilled"""
         if greenlet.getcurrent() is self.code_greenlet:
             logger.debug('sigint while running user code!')
             raise KeyboardInterrupt()
         else:
-            logger.debug('sigint while fufilling code request sigint handler running!')
+            logger.debug('sigint while fulfilling code request sigint handler running!')
             self.sigint_happened_in_main_greenlet = True
 
     def _blocking_run_code(self):
