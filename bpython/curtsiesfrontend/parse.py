@@ -78,8 +78,3 @@ def peel_off_string(s):
     rest = d['rest']
     del d['rest']
     return d, rest
-
-def string_to_fmtstr(x):
-    config = Struct()
-    loadini(config, default_config_path())
-    return parse(format(PythonLexer().get_tokens(x), BPythonFormatter(config.color_scheme)))
