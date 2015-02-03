@@ -907,7 +907,7 @@ class Repl(BpythonRepl):
     def clear_current_block(self, remove_from_history=True):
         self.display_buffer = []
         if remove_from_history:
-            for _ in self.buffer:
+            for unused in self.buffer:
                 self.history.pop()
         self.buffer = []
         self.cursor_offset = 0
@@ -1489,7 +1489,8 @@ def simple_repl():
         r.width = 50
         r.height = 10
         while True:
-            [_ for _ in importcompletion.find_iterator]
+            while not importcompletion.find_coroutine():
+                pass
             r.dumb_print_output()
             r.dumb_input(refreshes)
 
