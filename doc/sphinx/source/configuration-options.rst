@@ -54,8 +54,8 @@ by the ID of the new paste (default: https://bpaste.net/show/$paste_id/).
 
 pastebin_removal_url
 ^^^^^^^^^^^^^^^^^^^^
-The url under which a paste can be removed. ``$removal_id`` will be replaced
-by the removal ID of the paste (default: https://bpaste.net/remova/$removal_id/).
+The url under which a paste can be removed. ``$removal_id`` will be replaced by
+the removal ID of the paste (default: https://bpaste.net/remova/$removal_id/).
 
 .. versionadded:: 0.14
 
@@ -309,17 +309,6 @@ trim_prompts
 Default: False
 
 Trims lines starting with '>>> ' when set to True.
-
-GTK
----
-This refers to the ``[gtk]`` section in your `$XDG_CONFIG_HOME/bpython/config`
-file.
-
-font
-^^^^
-Default: Monospace 10
-
-The font to be used by the GTK version.
 
 curtsies
 --------
