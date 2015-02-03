@@ -166,8 +166,8 @@ def paint_infobox(rows, columns, matches, argspec, match, docstring, config, for
                             config.top_border * (width + 2) +
                             config.right_top_corner)
     bottom_line = border_color(config.left_bottom_corner +
-                                config.bottom_border * (width + 2) +
-                                config.right_bottom_corner)
+                               config.bottom_border * (width + 2) +
+                               config.right_bottom_corner)
 
     output_lines = [top_line] + map(add_border, lines) + [bottom_line]
     r = fsarray(output_lines[:min(rows-1, len(output_lines)-1)] + output_lines[-1:])
