@@ -907,7 +907,8 @@ class Repl(BpythonRepl):
     def clear_current_block(self, remove_from_history=True):
         self.display_buffer = []
         if remove_from_history:
-            [self.history.pop() for _ in self.buffer]
+            for _ in self.buffer:
+                self.history.pop()
         self.buffer = []
         self.cursor_offset = 0
         self.saved_indent = 0
@@ -923,7 +924,9 @@ class Repl(BpythonRepl):
         self.current_stdouterr_line += lines[0]
         if len(lines) > 1:
             self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width, blank_line=True))
-            self.display_lines.extend(sum([paint.display_linize(line, self.width, blank_line=True) for line in lines[1:-1]], []))
+            self.display_lines.extend(sum((paint.display_linize(line, self.width,
+                                                                blank_line=True)
+                                           for line in lines[1:-1]), []))
             self.current_stdouterr_line = lines[-1]
         logger.debug('display_lines: %r', self.display_lines)
 
@@ -931,7 +934,9 @@ class Repl(BpythonRepl):
         lines = error.split('\n')
         if lines[-1]:
             self.current_stdouterr_line += lines[-1]
-        self.display_lines.extend(sum([paint.display_linize(line, self.width, blank_line=True) for line in lines[:-1]], []))
+        self.display_lines.extend(sum((paint.display_linize(line, self.width,
+                                                            blank_line=True) for
+                                       line in lines[:-1]), []))
 
     def send_to_stdin(self, line):
         if line.endswith('\n'):
@@ -1017,8 +1022,11 @@ class Repl(BpythonRepl):
 
     @property
     def current_suggestion(self):
-        matches = [e for e in self.rl_history.entries if e.startswith(self.current_line) and self.current_line]
-        return matches[-1][len(self.current_line):] if matches else ''
+        if self.current_line:
+            for entry in reversed(self.rl_history.entries):
+                if entry.startswith(self.current_line):
+                    return entry[len(self.current_line):]
+        return ''
 
     @property
     def current_output_line(self):
@@ -1349,8 +1357,8 @@ class Repl(BpythonRepl):
         num_lines_onscreen = len(self.lines_for_display) - max(0, self.scroll_offset)
         display_lines_offscreen = self.display_lines[:len(self.display_lines) - num_lines_onscreen]
         old_display_lines_offscreen = old_display_lines[:len(self.display_lines) - num_lines_onscreen]
-        logger.debug('old_display_lines_offscreen %s', '|'.join([str(x) for x in old_display_lines_offscreen]))
-        logger.debug('    display_lines_offscreen %s', '|'.join([str(x) for x in display_lines_offscreen]))
+        logger.debug('old_display_lines_offscreen %s', '|'.join(str(x) for x in old_display_lines_offscreen))
+        logger.debug('    display_lines_offscreen %s', '|'.join(str(x) for x in display_lines_offscreen))
         if old_display_lines_offscreen[:len(display_lines_offscreen)] != display_lines_offscreen and not self.history_already_messed_up:
             #self.scroll_offset = self.scroll_offset + (len(old_display_lines)-len(self.display_lines))
             self.inconsistent_history = True
@@ -1361,8 +1369,8 @@ class Repl(BpythonRepl):
 
     def getstdout(self):
         lines = self.lines_for_display + [self.current_line_formatted]
-        s = '\n'.join([x.s if isinstance(x, FmtStr) else x for x in lines]
-                     ) if lines else ''
+        s = '\n'.join(x.s if isinstance(x, FmtStr) else x for x in lines) \
+            if lines else ''
         return s
 
     def focus_on_subprocess(self, args):
