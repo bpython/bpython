@@ -21,12 +21,6 @@ equivalent file.
 Where the `~/python/bpython`-path is the path to where your bpython source code
 resides.
 
-.. note::
-
-    If you want to create the alias for Python 3.X, make sure to run `python3.X
-    setup.py build` first and point `PYTHONPATH` to the build location (usually
-    `build/lib`).
-
 You can of course add multiple aliases, so you can run bpython with 2.6, 2.7
 and the 3 series.
 
