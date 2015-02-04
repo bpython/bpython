@@ -85,7 +85,7 @@ class BPythonFormatter(Formatter):
 
     def __init__(self, color_scheme, **options):
         self.f_strings = {}
-        for k, v in theme_map.iteritems():
+        for k, v in theme_map.items():
             self.f_strings[k] = '\x01%s' % (color_scheme[v],)
             if k is Parenthesis:
                 # FIXME: Find a way to make this the inverse of the current

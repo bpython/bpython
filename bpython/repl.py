@@ -948,7 +948,7 @@ class Repl(object):
                     else:
                         stack.append((line, len(line_tokens) - 1,
                                       line_tokens, value))
-                elif value in parens.itervalues():
+                elif value in parens.values():
                     saved_stack = list(stack)
                     try:
                         while True:

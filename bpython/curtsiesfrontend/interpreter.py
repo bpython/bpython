@@ -45,7 +45,7 @@ class BPythonFormatter(Formatter):
 
     def __init__(self, color_scheme, **options):
         self.f_strings = {}
-        for k, v in color_scheme.iteritems():
+        for k, v in color_scheme.items():
             self.f_strings[k] = '\x01%s' % (v,)
         Formatter.__init__(self, **options)
 
