@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import contextlib
 import errno
 import functools
@@ -50,8 +51,8 @@ from bpython.curtsiesfrontend.interpreter import Interp, code_finished_will_pars
 
 #TODO other autocomplete modes (also fix in other bpython implementations)
 
-
 from curtsies.configfile_keynames import keymap as key_dispatch
+
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +78,10 @@ You can customize which pastebin helper to use and which external editor to use.
 See {example_config_url} for an example config file.
 Press {config.edit_config_key} to edit this config file.
 """
+
+if py3:
+    unicode = str
+
 
 class FakeStdin(object):
     """Stdin object user code references so sys.stdin.read() asked user for interactive input"""
