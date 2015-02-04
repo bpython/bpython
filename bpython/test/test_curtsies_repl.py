@@ -2,12 +2,12 @@
 from __future__ import unicode_literals
 
 import code
-from contextlib import contextmanager
-from mock import Mock, patch, MagicMock
 import os
-from StringIO import StringIO
 import sys
 import tempfile
+from contextlib import contextmanager
+from mock import Mock, patch, MagicMock
+from six.moves import StringIO
 
 try:
     import unittest2 as unittest
