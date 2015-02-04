@@ -1453,7 +1453,7 @@ class CLIRepl(repl.Repl):
         # 4. swap current word for a match list item
         elif self.matches_iter.matches:
             current_match = back and self.matches_iter.previous() \
-                                  or self.matches_iter.next()
+                                  or next(self.matches_iter)
             try:
                 self.show_list(self.matches_iter.matches, topline=self.argspec,
                                formatter=self.matches_iter.completer.format,

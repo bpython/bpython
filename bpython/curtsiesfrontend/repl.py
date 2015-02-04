@@ -668,7 +668,7 @@ class Repl(BpythonRepl):
 
         elif self.matches_iter.matches:
             self.current_match = back and self.matches_iter.previous() \
-                                  or self.matches_iter.next()
+                                  or next(self.matches_iter)
             self._cursor_offset, self._current_line = self.matches_iter.cur_line()
             # using _current_line so we don't trigger a completion reset
             self.list_win_visible = True

@@ -1107,7 +1107,7 @@ class URWIDRepl(repl.Repl):
                 if back:
                     self.matches_iter.previous()
                 else:
-                    self.matches_iter.next()
+                    next(self.matches_iter)
                 cursor, text = self.matches_iter.cur_line()
                 self.edit.set_edit_text(text)
                 self.edit.edit_pos = cursor

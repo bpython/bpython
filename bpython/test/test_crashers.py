@@ -59,7 +59,7 @@ class CrashersTest(object):
                 self.data = ""
                 self.delayed_call = None
                 self.states = iter(self.STATES)
-                self.state = self.states.next()
+                self.state = next(self.states)
 
             def outReceived(self, data):
                 self.data += data
@@ -74,7 +74,7 @@ class CrashersTest(object):
                     if index >= 0:
                         self.data = self.data[index + 4:]
                         self.transport.write(input)
-                        self.state = self.states.next()
+                        self.state = next(self.states)
                 else:
                     self.transport.closeStdin()
                     if self.transport.pid is not None:
