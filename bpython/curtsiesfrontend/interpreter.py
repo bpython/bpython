@@ -1,15 +1,17 @@
 import code
 import traceback
 import sys
+from codeop import CommandCompiler
+from six import iteritems
+
 from pygments.token import Generic, Token, Keyword, Name, Comment, String
 from pygments.token import Error, Literal, Number, Operator, Punctuation
 from pygments.token import Whitespace
 from pygments.formatter import Formatter
-from bpython.curtsiesfrontend.parse import parse
-from bpython.repl import RuntimeTimer
-from codeop import CommandCompiler
 from pygments.lexers import get_lexer_by_name
 
+from bpython.curtsiesfrontend.parse import parse
+from bpython.repl import RuntimeTimer
 
 default_colors = {
         Generic.Error:'R',
@@ -45,7 +47,7 @@ class BPythonFormatter(Formatter):
 
     def __init__(self, color_scheme, **options):
         self.f_strings = {}
-        for k, v in color_scheme.iteritems():
+        for k, v in iteritems(color_scheme):
             self.f_strings[k] = '\x01%s' % (v,)
         Formatter.__init__(self, **options)
 

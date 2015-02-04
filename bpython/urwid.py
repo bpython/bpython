@@ -43,6 +43,7 @@ import signal
 from types import ModuleType
 from optparse import Option
 from six.moves import range
+from six import iteritems
 
 from pygments.token import Token
 
@@ -1151,7 +1152,7 @@ def main(args=None, locals_=None, banner=None):
     palette = [
         (name, COLORMAP[color.lower()], 'default',
          'bold' if color.isupper() else 'default')
-        for name, color in config.color_scheme.iteritems()]
+        for name, color in iteritems(config.color_scheme)]
     palette.extend([
             ('bold ' + name, color + ',bold', background, monochrome)
             for name, color, background, monochrome in palette])

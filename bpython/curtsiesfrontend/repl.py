@@ -723,7 +723,7 @@ class Repl(BpythonRepl):
 
     def send_session_to_external_editor(self, filename=None):
         for_editor = u'### current bpython session - file will be reevaluated, ### lines will not be run\n'
-        for_editor += '\n'.join(line[len(self.ps1):] if line.startswith(self.ps1) else
+        for_editor += u'\n'.join(line[len(self.ps1):] if line.startswith(self.ps1) else
                                 (line[len(self.ps2):] if line.startswith(self.ps2) else
                                 '### '+line)
                                 for line in self.getstdout().split('\n'))

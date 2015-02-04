@@ -5,6 +5,8 @@ import os
 import sys
 import locale
 from itertools import chain
+from six import iterkeys, iteritems
+
 from bpython.keys import cli_key_dispatch as key_dispatch
 from bpython.autocomplete import SIMPLE as default_completion
 import bpython.autocomplete
@@ -48,11 +50,11 @@ def default_config_path():
 
 
 def fill_config_with_default_values(config, default_values):
-    for section in default_values.iterkeys():
+    for section in iterkeys(default_values):
         if not config.has_section(section):
             config.add_section(section)
 
-        for (opt, val) in default_values[section].iteritems():
+        for (opt, val) in iteritems(default_values[section]):
             if not config.has_option(section, opt):
                 config.set(section, opt, str(val))
 
@@ -130,7 +132,7 @@ def loadini(struct, configfile):
         }}
 
     default_keys_to_commands = dict((value, key) for (key, value)
-                                    in defaults['keyboard'].iteritems())
+                                    in iteritems(defaults['keyboard']))
 
     fill_config_with_default_values(config, defaults)
     if not config.read(config_path):
@@ -307,6 +309,6 @@ def load_theme(struct, path, colors, default_colors):
             colors[k] = theme.get('interface', k)
 
     # Check against default theme to see if all values are defined
-    for k, v in default_colors.iteritems():
+    for k, v in iteritems(default_colors):
         if k not in colors:
             colors[k] = v

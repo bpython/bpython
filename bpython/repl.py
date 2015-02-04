@@ -40,6 +40,7 @@ import unicodedata
 from itertools import takewhile
 from locale import getpreferredencoding
 from string import Template
+from six import itervalues
 
 from pygments.token import Token
 
@@ -958,7 +959,7 @@ class Repl(object):
                     else:
                         stack.append((line, len(line_tokens) - 1,
                                       line_tokens, value))
-                elif value in parens.itervalues():
+                elif value in itervalues(parens):
                     saved_stack = list(stack)
                     try:
                         while True:
