@@ -40,8 +40,6 @@ import unicodedata
 from itertools import takewhile
 from locale import getpreferredencoding
 from string import Template
-from urllib import quote as urlquote
-from urlparse import urlparse, urljoin
 
 from pygments.token import Token
 
@@ -52,6 +50,15 @@ from bpython.translations import _, ngettext
 from bpython.clipboard import get_clipboard, CopyFailed
 from bpython.history import History
 import bpython.autocomplete as autocomplete
+
+
+try:
+    from urllib.parse import quote as urlquote
+    from urllib.parse import urljoin
+    from urllib.parse import urlparse
+except ImportError:
+    from urllib import quote as urlquote
+    from urlparse import urlparse, urljoin
 
 
 class RuntimeTimer(object):
