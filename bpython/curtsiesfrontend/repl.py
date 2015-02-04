@@ -29,7 +29,6 @@ from bpython.repl import Repl as BpythonRepl, SourceNotFound
 from bpython.config import Struct, loadini, default_config_path
 from bpython.formatter import BPythonFormatter
 from bpython import autocomplete, importcompletion
-from bpython import translations; translations.init()
 from bpython.translations import _
 from bpython._py3compat import py3
 from bpython.pager import get_pager_command

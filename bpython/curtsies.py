@@ -13,6 +13,7 @@ import curtsies.events
 from bpython.curtsiesfrontend.repl import Repl
 from bpython.curtsiesfrontend.coderunner import SystemExitFromCodeGreenlet
 from bpython import args as bpargs
+from bpython import translations
 from bpython.translations import _
 from bpython.importcompletion import find_iterator
 from bpython.curtsiesfrontend import events as bpythonevents
@@ -25,6 +26,8 @@ repl = None  # global for `from bpython.curtsies import repl`
 
 
 def main(args=None, locals_=None, banner=None):
+    translations.init()
+
     config, options, exec_args = bpargs.parse(args, (
         'curtsies options', None, [
             Option('--log', '-L', action='count',
