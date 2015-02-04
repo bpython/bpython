@@ -1151,7 +1151,7 @@ def main(args=None, locals_=None, banner=None):
     palette = [
         (name, COLORMAP[color.lower()], 'default',
          'bold' if color.isupper() else 'default')
-        for name, color in config.color_scheme.items()]
+        for name, color in config.color_scheme.iteritems()]
     palette.extend([
             ('bold ' + name, color + ',bold', background, monochrome)
             for name, color, background, monochrome in palette])
