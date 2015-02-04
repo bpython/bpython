@@ -122,6 +122,7 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
     def send_refreshes(self):
         while self.refresh_requests:
             self.repl.process_event(self.refresh_requests.pop())
+            _, _ = self.repl.paint()
 
     def enter(self, line=None):
         """Enter a line of text, avoiding autocompletion windows
@@ -504,3 +505,26 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
         screen = fsarray([cyan(u">>> ")+yellow('('),
                          green(u"... ")+yellow(')')+bold(cyan(" "))])
         self.assert_paint(screen, (1, 6))
+
+    def send_key(self, key):
+        self.repl.process_event(u'<SPACE>' if key == ' ' else key)
+        self.repl.paint() # has some side effects we need to be wary of
+
+    def test_472(self):
+        [self.send_key(c) for c in "(1, 2, 3)"]
+        with output_to_repl(self.repl):
+            self.send_key('\n')
+            self.send_refreshes()
+            self.send_key('<UP>')
+            self.repl.paint()
+            [self.send_key('<LEFT>') for _ in range(4)]
+            self.send_key('<BACKSPACE>')
+            self.send_key('4')
+            self.repl.on_enter()
+            self.send_refreshes()
+        screen = [">>> (1, 2, 3)",
+                  '(1, 2, 3)',
+                  '>>> (1, 4, 3)',
+                  '(1, 4, 3)',
+                  '>>> ']
+        self.assert_paint_ignoring_formatting(screen, (4, 4))
