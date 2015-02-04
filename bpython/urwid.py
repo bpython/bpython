@@ -934,7 +934,7 @@ class URWIDRepl(repl.Repl):
         # Pretty blindly adapted from bpython.cli
         try:
             return repl.Repl.push(self, s, insert_into_history)
-        except SystemExit, e:
+        except SystemExit as e:
             self.exit_value = e.args
             raise urwid.ExitMainLoop()
         except KeyboardInterrupt:
