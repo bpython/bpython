@@ -1101,7 +1101,7 @@ def token_is(token_type):
 def token_is_any_of(token_types):
     """Return a callable object that returns whether a token is any of the
     given types `token_types`."""
-    is_token_types = map(token_is, token_types)
+    is_token_types = tuple(map(token_is, token_types))
 
     def token_is_any_of(token):
         return any(check(token) for check in is_token_types)
