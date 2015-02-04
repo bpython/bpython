@@ -6,15 +6,11 @@ import sys
 import locale
 from itertools import chain
 from six import iterkeys, iteritems
+from six.moves.configparser import ConfigParser
 
 from bpython.keys import cli_key_dispatch as key_dispatch
 from bpython.autocomplete import SIMPLE as default_completion
 import bpython.autocomplete
-
-try:
-    from configparser import ConfigParser
-except ImportError:
-    from ConfigParser import ConfigParser
 
 
 class Struct(object):
