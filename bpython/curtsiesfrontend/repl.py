@@ -1489,7 +1489,7 @@ def simple_repl():
         r.width = 50
         r.height = 10
         while True:
-            while not importcompletion.find_coroutine():
+            while importcompletion.find_coroutine():
                 pass
             r.dumb_print_output()
             r.dumb_input(refreshes)
