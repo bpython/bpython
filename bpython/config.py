@@ -48,11 +48,11 @@ def default_config_path():
 
 
 def fill_config_with_default_values(config, default_values):
-    for section in default_values:
+    for section in default_values.iterkeys():
         if not config.has_section(section):
             config.add_section(section)
 
-        for (opt, val) in default_values[section].items():
+        for (opt, val) in default_values[section].iteritems():
             if not config.has_option(section, opt):
                 config.set(section, opt, str(val))
 
@@ -130,7 +130,7 @@ def loadini(struct, configfile):
         }}
 
     default_keys_to_commands = dict((value, key) for (key, value)
-                                    in defaults['keyboard'].items())
+                                    in defaults['keyboard'].iteritems())
 
     fill_config_with_default_values(config, defaults)
     if not config.read(config_path):
@@ -307,6 +307,6 @@ def load_theme(struct, path, colors, default_colors):
             colors[k] = theme.get('interface', k)
 
     # Check against default theme to see if all values are defined
-    for k, v in default_colors.items():
+    for k, v in default_colors.iteritems():
         if k not in colors:
             colors[k] = v
