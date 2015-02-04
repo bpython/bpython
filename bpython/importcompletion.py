@@ -198,7 +198,7 @@ def find_coroutine():
         return None
 
     try:
-        find_iterator.next()
+        next(find_iterator)
     except StopIteration:
         fully_loaded = True
 
