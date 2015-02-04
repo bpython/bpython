@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import itertools
 
 from curtsies import fsarray, fmtstr
 from curtsies.formatstring import linesplit
@@ -169,7 +170,8 @@ def paint_infobox(rows, columns, matches, argspec, match, docstring, config, for
                                config.bottom_border * (width + 2) +
                                config.right_bottom_corner)
 
-    output_lines = [top_line] + map(add_border, lines) + [bottom_line]
+    output_lines = list(itertools.chain((top_line, ), map(add_border, lines),
+                                        (bottom_line, )))
     r = fsarray(output_lines[:min(rows-1, len(output_lines)-1)] + output_lines[-1:])
     return r
 
