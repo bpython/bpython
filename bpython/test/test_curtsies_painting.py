@@ -18,13 +18,14 @@ from bpython.curtsiesfrontend.repl import Repl
 from bpython.curtsiesfrontend import replpainter
 from bpython.repl import History
 from bpython.curtsiesfrontend.repl import INCONSISTENT_HISTORY_MSG, CONTIGUITY_BROKEN_MSG
+from bpython.test import FixLanguageTestCase as TestCase
 
 def setup_config():
     config_struct = config.Struct()
     config.loadini(config_struct, os.devnull)
     return config_struct
 
-class TestCurtsiesPainting(FormatStringTest):
+class TestCurtsiesPainting(FormatStringTest, TestCase):
     def setUp(self):
         self.repl = Repl(config=setup_config())
         self.repl.rl_history = History() # clear history

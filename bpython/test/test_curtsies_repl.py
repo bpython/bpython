@@ -18,6 +18,7 @@ from bpython import autocomplete
 from bpython import config
 from bpython import args
 from bpython._py3compat import py3
+from bpython.test import FixLanguageTestCase as TestCase
 
 def setup_config(conf):
     config_struct = config.Struct()
@@ -29,7 +30,7 @@ def setup_config(conf):
     return config_struct
 
 
-class TestCurtsiesRepl(unittest.TestCase):
+class TestCurtsiesRepl(TestCase):
 
     def setUp(self):
         self.repl = create_repl()
@@ -88,7 +89,7 @@ def mock_next(obj, return_value):
     else:
         obj.next.return_value = return_value
 
-class TestCurtsiesReplTab(unittest.TestCase):
+class TestCurtsiesReplTab(TestCase):
 
     def setUp(self):
         self.repl = create_repl()
@@ -153,7 +154,7 @@ class TestCurtsiesReplTab(unittest.TestCase):
         self.repl.matches_iter.substitute_cseq.assert_called_once_with()
 
 
-class TestCurtsiesReplFilenameCompletion(unittest.TestCase):
+class TestCurtsiesReplFilenameCompletion(TestCase):
     def setUp(self):
         self.repl = create_repl()
 
@@ -213,7 +214,7 @@ def create_repl(**kwargs):
     repl.height = 20
     return repl
 
-class TestFutureImports(unittest.TestCase):
+class TestFutureImports(TestCase):
 
     def test_repl(self):
         repl = create_repl()
@@ -236,7 +237,7 @@ class TestFutureImports(unittest.TestCase):
 
         self.assertEqual(out.getvalue(), '0.5\n0.5\n')
 
-class TestPredictedIndent(unittest.TestCase):
+class TestPredictedIndent(TestCase):
     def setUp(self):
         self.repl = create_repl()
 
@@ -253,7 +254,7 @@ class TestPredictedIndent(unittest.TestCase):
         self.assertEqual(self.repl.predicted_indent('reduce(asdfasdf,'), 7)
 
 
-class TestCurtsiesReevaluate(unittest.TestCase):
+class TestCurtsiesReevaluate(TestCase):
     def setUp(self):
         self.repl = create_repl()
 
@@ -264,7 +265,7 @@ class TestCurtsiesReevaluate(unittest.TestCase):
         self.repl.undo()
         self.assertNotIn('b', self.repl.interp.locals)
 
-class TestCurtsiesPagerText(unittest.TestCase):
+class TestCurtsiesPagerText(TestCase):
 
     def setUp(self):
         self.repl = create_repl()
