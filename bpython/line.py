@@ -97,7 +97,7 @@ def current_object_attribute(cursor_offset, line):
     if match is None: return None
     start, end, word = match
     matches = current_object_attribute_re.finditer(word)
-    matches.next()
+    next(matches)
     for m in matches:
         if m.start(1) + start <= cursor_offset and m.end(1) + start >= cursor_offset:
             return m.start(1) + start, m.end(1) + start, m.group(1)
