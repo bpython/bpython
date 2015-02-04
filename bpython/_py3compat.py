@@ -35,7 +35,6 @@
 """
 
 import sys
-import locale
 
 py3 = (sys.version_info[0] == 3)
 

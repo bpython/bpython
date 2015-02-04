@@ -4,11 +4,6 @@ import sys
 import os
 from contextlib import contextmanager
 
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
-
 from curtsies.formatstringarray import FormatStringTest, fsarray
 from curtsies.fmtfuncs import cyan, bold, green, yellow, on_magenta, red
 from bpython.curtsiesfrontend.events import RefreshRequestEvent
@@ -20,10 +15,12 @@ from bpython.repl import History
 from bpython.curtsiesfrontend.repl import INCONSISTENT_HISTORY_MSG, CONTIGUITY_BROKEN_MSG
 from bpython.test import FixLanguageTestCase as TestCase
 
+
 def setup_config():
     config_struct = config.Struct()
     config.loadini(config_struct, os.devnull)
     return config_struct
+
 
 class TestCurtsiesPainting(FormatStringTest, TestCase):
     def setUp(self):
@@ -42,10 +39,12 @@ class TestCurtsiesPainting(FormatStringTest, TestCase):
         if cursor_row_col is not None:
             self.assertEqual(cursor_pos, cursor_row_col)
 
+
 class TestCurtsiesPaintingTest(TestCurtsiesPainting):
 
     def test_history_is_cleared(self):
         self.assertEqual(self.repl.rl_history.entries, [''])
+
 
 class TestCurtsiesPaintingSimple(TestCurtsiesPainting):
 
@@ -122,6 +121,7 @@ class TestCurtsiesPaintingSimple(TestCurtsiesPainting):
 
         self.assertFSArraysEqualIgnoringFormatting(actual, expected)
 
+
 @contextmanager
 def output_to_repl(repl):
     old_out, old_err = sys.stdout, sys.stderr
@@ -130,6 +130,7 @@ def output_to_repl(repl):
         yield
     finally:
         sys.stdout, sys.stderr = old_out, old_err
+
 
 class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
     def refresh(self):

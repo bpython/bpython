@@ -58,7 +58,6 @@ if platform.system() != 'Windows':
 import unicodedata
 import errno
 
-import locale
 from types import ModuleType
 from six.moves import range
 
