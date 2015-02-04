@@ -29,7 +29,11 @@ import os
 import sys
 import warnings
 from warnings import catch_warnings
-from itertools import ifilter
+
+if py3:
+    ifilter = filter
+else:
+    from itertools import ifilter
 
 if sys.version_info[0] == 3 and sys.version_info[1] >= 3:
     import importlib.machinery
