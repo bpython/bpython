@@ -1,4 +1,6 @@
 # coding: utf8
+from __future__ import unicode_literals
+
 import code
 from contextlib import contextmanager
 from mock import Mock, patch, MagicMock
@@ -53,13 +55,14 @@ class TestCurtsiesRepl(TestCase):
         self.assertTrue(self.cfwp('\n'.join(self.repl.buffer)), (True, True))
 
     def test_external_communication(self):
-        self.assertEqual(type(self.repl.help_text()), type(b''))
         self.repl.send_current_block_to_external_editor()
         self.repl.send_session_to_external_editor()
 
+    @unittest.skipIf(not all(map(config.can_encode, 'å∂ßƒ')),
+                     'Charset can not encode characters')
     def test_external_communication_encoding(self):
         with captured_output():
-            self.repl.display_lines.append(u'>>> "åß∂ƒ"')
+            self.repl.display_lines.append('>>> "åß∂ƒ"')
             self.repl.send_session_to_external_editor()
 
     def test_get_last_word(self):
@@ -269,19 +272,23 @@ class TestCurtsiesPagerText(TestCase):
 
     def setUp(self):
         self.repl = create_repl()
-        self.repl.pager = self.assert_pager_gets_bytes
+        self.repl.pager = self.assert_pager_gets_unicode
 
-    def assert_pager_gets_bytes(self, text):
-        self.assertIsInstance(text, type(b''))
+    def assert_pager_gets_unicode(self, text):
+        self.assertIsInstance(text, type(''))
 
     def test_help(self):
         self.repl.pager(self.repl.help_text())
 
+    @unittest.skipIf(not all(map(config.can_encode, 'å∂ßƒ')),
+                     'Charset can not encode characters')
     def test_show_source_not_formatted(self):
         self.repl.config.highlight_show_source = False
         self.repl.get_source_of_current_name = lambda: 'source code å∂ßƒåß∂ƒ'
         self.repl.show_source()
 
+    @unittest.skipIf(not all(map(config.can_encode, 'å∂ßƒ')),
+                     'Charset can not encode characters')
     def test_show_source_formatted(self):
         self.repl.config.highlight_show_source = True
         self.repl.get_source_of_current_name = lambda: 'source code å∂ßƒåß∂ƒ'

@@ -74,11 +74,18 @@ class TestCurtsiesPaintingSimple(TestCurtsiesPainting):
         self.repl.height, self.repl.width = (5, 32)
         self.repl.current_line = 'se'
         self.cursor_offset = 2
-        screen = [u'>>> se',
-                  u'┌───────────────────────┐',
-                  u'│ set(     setattr(     │',
-                  u'└───────────────────────┘',
-                  u'Welcome to bpython! Press <F1> f']
+        if config.supports_box_chars():
+            screen = [u'>>> se',
+                      u'┌───────────────────────┐',
+                      u'│ set(     setattr(     │',
+                      u'└───────────────────────┘',
+                      u'Welcome to bpython! Press <F1> f']
+        else:
+            screen = [u'>>> se',
+                      u'+-----------------------+',
+                      u'| set(     setattr(     |',
+                      u'+-----------------------+',
+                      u'Welcome to bpython! Press <F1> f']
         self.assert_paint_ignoring_formatting(screen, (0, 4))
 
     def test_argspec(self):
@@ -100,11 +107,19 @@ class TestCurtsiesPaintingSimple(TestCurtsiesPainting):
         self.assertFSArraysEqualIgnoringFormatting(actual, expected)
 
     def test_paint_lasts_events(self):
-        actual = replpainter.paint_last_events(4, 100, ['a', 'b', 'c'], config=setup_config())
-        expected = fsarray(["┌─┐",
-                            "│c│",
-                            "│b│",
-                            "└─┘"])
+        actual = replpainter.paint_last_events(4, 100, ['a', 'b', 'c'],
+                                               config=setup_config())
+        if config.supports_box_chars():
+            expected = fsarray(["┌─┐",
+                                "│c│",
+                                "│b│",
+                                "└─┘"])
+        else:
+            expected = fsarray(["+-+",
+                                "|c|",
+                                "|b|",
+                                "+-+"])
+
         self.assertFSArraysEqualIgnoringFormatting(actual, expected)
 
 @contextmanager
