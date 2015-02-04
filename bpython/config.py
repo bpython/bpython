@@ -21,15 +21,16 @@ def getpreferredencoding():
     return locale.getpreferredencoding() or sys.getdefaultencoding()
 
 
-def supports_box_chars():
-    """Check if the encoding suppors Unicode box characters."""
+def can_encode(c):
     try:
-        for c in (u'│', u'│', u'─', u'─', u'└', u'┘', u'┌', u'┐'):
-            c.encode(getpreferredencoding())
+        c.encode(getpreferredencoding())
         return True
     except UnicodeEncodeError:
         return False
 
+def supports_box_chars():
+    """Check if the encoding suppors Unicode box characters."""
+    return all(map( can_encode, u'│─└┘┌┐'))
 
 def get_config_home():
     """Returns the base directory for bpython's configuration files."""
