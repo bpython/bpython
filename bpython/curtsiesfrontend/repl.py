@@ -14,7 +14,7 @@ import time
 import unicodedata
 
 from pygments import format
-from bpython._py3compat import PythonLexer, cast_bytes
+from bpython._py3compat import PythonLexer
 from pygments.formatters import TerminalFormatter
 
 import blessings
@@ -26,7 +26,8 @@ from curtsies import events
 
 import bpython
 from bpython.repl import Repl as BpythonRepl, SourceNotFound
-from bpython.config import Struct, loadini, default_config_path
+from bpython.config import Struct, loadini, default_config_path, \
+        getpreferredencoding
 from bpython.formatter import BPythonFormatter
 from bpython import autocomplete, importcompletion
 from bpython.translations import _
@@ -1395,10 +1396,10 @@ class Repl(BpythonRepl):
     def pager(self, text):
         """Runs an external pager on text
 
-        text must be a bytestring, ie not yet encoded"""
+        text must be a unicode"""
         command = get_pager_command()
         with tempfile.NamedTemporaryFile() as tmp:
-            tmp.write(text)
+            tmp.write(text.encode(getpreferredencoding()))
             tmp.flush()
             self.focus_on_subprocess(command + [tmp.name])
 
@@ -1409,14 +1410,12 @@ class Repl(BpythonRepl):
             self.status_bar.message(str(e))
         else:
             if self.config.highlight_show_source:
-                source = cast_bytes(format(PythonLexer().get_tokens(source),
-                                           TerminalFormatter()))
-            else:
-                source = cast_bytes(source)
+                source = format(PythonLexer().get_tokens(source),
+                                TerminalFormatter())
             self.pager(source)
 
     def help_text(self):
-        return cast_bytes(self.version_help_text() + '\n' + self.key_help_text())
+        return self.version_help_text() + '\n' + self.key_help_text()
 
     def version_help_text(self):
         return (('bpython-curtsies version %s' % bpython.__version__) + ' ' +
