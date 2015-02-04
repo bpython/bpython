@@ -30,11 +30,6 @@ import sys
 import warnings
 from warnings import catch_warnings
 
-if py3:
-    ifilter = filter
-else:
-    from itertools import ifilter
-
 if sys.version_info[0] == 3 and sys.version_info[1] >= 3:
     import importlib.machinery
     SUFFIXES = importlib.machinery.all_suffixes()
@@ -88,7 +83,7 @@ def attr_matches(cw, prefix='', only_modules=False):
         matches = ('%s.%s' % (module_part, m) for m in matches)
 
     generator = (try_decode_module(match, 'ascii') for match in matches)
-    return set(ifilter(lambda x: x is not None, generator))
+    return set(filter(lambda x: x is not None, generator))
 
 
 def module_attr_matches(name):

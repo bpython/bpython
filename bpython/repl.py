@@ -200,7 +200,7 @@ class MatchesIterator(object):
         return self.index != -1
 
     def __bool__(self):
-        return self.__nonzero__()
+        return self.index != -1
 
     @property
     def candidate_selected(self):
@@ -215,12 +215,16 @@ class MatchesIterator(object):
             raise ValueError('No current match.')
         return self.matches[self.index]
 
-    def __next__(self):
+    def _next_impl(self):
+        """Keep this around until we drop 2to3."""
         self.index = (self.index + 1) % len(self.matches)
         return self.matches[self.index]
 
     def next(self):
-        return self.__next__()
+        return self._next_impl()
+
+    def __next__(self):
+        return self._next_impl()
 
     def previous(self):
         if self.index <= 0:
