@@ -169,7 +169,8 @@ install_requires = [
     'pygments',
     'requests',
     'curtsies >=0.1.17, <0.2.0',
-    'greenlet'
+    'greenlet',
+    'six'
 ]
 
 extras_require = {
