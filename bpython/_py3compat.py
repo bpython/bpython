@@ -43,15 +43,3 @@ if py3:
     from pygments.lexers import Python3Lexer as PythonLexer
 else:
     from pygments.lexers import PythonLexer
-
-
-def cast_unicode(s, encoding=locale.getpreferredencoding()):
-    if isinstance(s, bytes):
-        return s.decode(encoding)
-    return s
-
-
-def cast_bytes(s, encoding=locale.getpreferredencoding()):
-    if not isinstance(s, bytes):
-        return s.encode(encoding)
-    return s
