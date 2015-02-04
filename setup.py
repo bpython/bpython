@@ -237,8 +237,7 @@ setup(
     },
     entry_points = entry_points,
     cmdclass = cmdclass,
-    test_suite = 'bpython.test',
-    use_2to3 = True
+    test_suite = 'bpython.test'
 )
 
 # vim: fileencoding=utf-8 sw=4 ts=4 sts=4 ai et sta
