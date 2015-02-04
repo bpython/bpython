@@ -4,11 +4,15 @@ from __future__ import with_statement
 import os
 import sys
 import locale
-from ConfigParser import ConfigParser
 from itertools import chain
 from bpython.keys import cli_key_dispatch as key_dispatch
 from bpython.autocomplete import SIMPLE as default_completion
 import bpython.autocomplete
+
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import ConfigParser
 
 
 class Struct(object):
