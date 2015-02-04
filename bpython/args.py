@@ -2,7 +2,7 @@
 Module to handle command line argument parsing, for all front-ends.
 """
 
-from __future__ import with_statement
+from __future__ import with_statement, print_function
 import os
 import sys
 import code
@@ -86,10 +86,10 @@ def parse(args, extras=None, ignore_stdin=False):
         os.execv(sys.executable, [sys.executable] + args)
 
     if options.version:
-        print 'bpython version', __version__,
-        print 'on top of Python', sys.version.split()[0]
-        print ('(C) 2008-2014 Bob Farrell, Andreas Stuehrk et al. '
-               'See AUTHORS for detail.')
+        print('bpython version', __version__, eof="")
+        print('on top of Python', sys.version.split()[0])
+        print('(C) 2008-2015 Bob Farrell, Andreas Stuehrk et al. '
+              'See AUTHORS for detail.')
         raise SystemExit
 
     if not ignore_stdin and not (sys.stdin.isatty() and sys.stdout.isatty()):

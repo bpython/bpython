@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
 
 import pdb
 import bpython
@@ -46,10 +47,10 @@ class BPdb(pdb.Pdb):
 
 
     def help_Bpython(self):
-        print "B(python)"
-        print
-        print ("Invoke the bpython interpreter for this stack frame. To exit "
-               "bpython and return to a standard pdb press Ctrl-d")
+        print("B(python)")
+        print("")
+        print("Invoke the bpython interpreter for this stack frame. To exit "
+              "bpython and return to a standard pdb press Ctrl-d")
 
 
     ### shortcuts

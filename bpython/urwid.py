@@ -33,7 +33,7 @@ This is still *VERY* rough.
 """
 
 
-from __future__ import absolute_import, with_statement, division
+from __future__ import absolute_import, with_statement, division, print_function
 
 import sys
 import os
@@ -144,7 +144,7 @@ if urwid.VERSION < (1, 0, 0) and hasattr(urwid, 'TwistedEventLoop'):
                     # This is the same as in urwid.
                     # We are obviously not supposed to ever hit this.
                     import sys
-                    print sys.exc_info()
+                    print(sys.exc_info())
                     self._exc_info = sys.exc_info()
                     self.reactor.crash()
             return wrapper
@@ -1141,7 +1141,7 @@ def main(args=None, locals_=None, banner=None):
             from twisted.application import reactors
             # Stolen from twisted.application.app (twistd).
             for r in reactors.getReactorTypes():
-                print '    %-4s\t%s' % (r.shortName, r.description)
+                print('    %-4s\t%s' % (r.shortName, r.description))
         except ImportError:
             sys.stderr.write('No reactors are available. Please install '
                 'twisted for reactor support.\n')

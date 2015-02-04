@@ -21,6 +21,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 import os
 import sys
 import traceback
@@ -65,16 +67,16 @@ def main():
                       help='Print version and exit.')
     options, args = parser.parse_args(sys.argv)
     if options.version:
-        print 'bpdb on top of bpython version', __version__,
-        print 'on top of Python', sys.version.split()[0]
-        print ('(C) 2008-2013 Bob Farrell, Andreas Stuehrk et al. '
-               'See AUTHORS for detail.')
+        print('bpdb on top of bpython version', __version__, end="")
+        print('on top of Python', sys.version.split()[0])
+        print('(C) 2008-2013 Bob Farrell, Andreas Stuehrk et al. '
+              'See AUTHORS for detail.')
         return 0
 
     # The following code is baed on Python's pdb.py.
     mainpyfile = args[1]
     if not os.path.exists(mainpyfile):
-        print 'Error:', mainpyfile, 'does not exist'
+        print('Error:', mainpyfile, 'does not exist')
         return 1
 
     # Hide bpdb from argument list.
@@ -89,20 +91,20 @@ def main():
             pdb._runscript(mainpyfile)
             if pdb._user_requested_quit:
                 break
-            print "The program finished and will be restarted"
+            print("The program finished and will be restarted")
         except Restart:
-            print "Restarting", mainpyfile, "with arguments:"
-            print "\t" + " ".join(sys.argv[1:])
+            print("Restarting", mainpyfile, "with arguments:")
+            print("\t" + " ".join(sys.argv[1:]))
         except SystemExit:
             # In most cases SystemExit does not warrant a post-mortem session.
-            print "The program exited via sys.exit(). Exit status: ",
-            print sys.exc_info()[1]
+            print("The program exited via sys.exit(). Exit status: ",)
+            print(sys.exc_info()[1])
         except:
             traceback.print_exc()
-            print "Uncaught exception. Entering post mortem debugging"
-            print "Running 'cont' or 'step' will restart the program"
+            print("Uncaught exception. Entering post mortem debugging")
+            print("Running 'cont' or 'step' will restart the program")
             t = sys.exc_info()[2]
             pdb.interaction(None, t)
-            print "Post mortem debugger finished. The " + mainpyfile + \
-                  " will be restarted"
+            print("Post mortem debugger finished. The " + mainpyfile + \
+                  " will be restarted")
 
