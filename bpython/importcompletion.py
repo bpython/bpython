@@ -29,6 +29,7 @@ import os
 import sys
 import warnings
 from warnings import catch_warnings
+from six.moves import filter
 
 if sys.version_info[0] == 3 and sys.version_info[1] >= 3:
     import importlib.machinery
