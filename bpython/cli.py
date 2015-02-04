@@ -60,6 +60,7 @@ import errno
 
 import locale
 from types import ModuleType
+from six.moves import range
 
 # These are used for syntax highlighting
 from pygments import format

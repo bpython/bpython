@@ -42,6 +42,7 @@ import locale
 import signal
 from types import ModuleType
 from optparse import Option
+from six.moves import range
 
 from pygments.token import Token
 

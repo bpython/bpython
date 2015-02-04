@@ -22,6 +22,7 @@
 #
 
 import string
+from six.moves import range
 
 
 class KeyMap:
@@ -45,6 +46,7 @@ class KeyMap:
 
     def __setitem__(self, key, value):
         self.map[key] = value
+
 
 cli_key_dispatch = KeyMap(tuple())
 urwid_key_dispatch = KeyMap('')

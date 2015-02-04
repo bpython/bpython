@@ -26,6 +26,7 @@ import abc
 import keyword
 import os
 import rlcompleter
+from six.moves import range, builtins
 
 from glob import glob
 
@@ -34,11 +35,6 @@ from bpython import importcompletion
 from bpython import line as lineparts
 from bpython._py3compat import py3
 from bpython.lazyre import LazyReCompile
-
-try:
-    import builtins
-except ImportError:
-    import __builtin__ as builtins
 
 
 # Autocomplete modes

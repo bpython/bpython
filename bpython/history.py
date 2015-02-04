@@ -24,6 +24,7 @@
 import codecs
 import os
 from itertools import islice
+from six.moves import range
 
 from bpython.translations import _
 from bpython.filelock import FileLock

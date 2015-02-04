@@ -2,6 +2,7 @@
 
 import logging
 import itertools
+from six.moves import range
 
 from curtsies import fsarray, fmtstr
 from curtsies.formatstring import linesplit
