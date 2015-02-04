@@ -5,6 +5,7 @@ import code
 from contextlib import contextmanager
 from mock import Mock, patch, MagicMock
 import os
+from StringIO import StringIO
 import sys
 import tempfile
 
@@ -12,11 +13,6 @@ try:
     import unittest2 as unittest
 except ImportError:
     import unittest
-
-try:
-    from io import BytesIO
-except ImportError:
-    from StringIO import StringIO as BytesIO
 
 from bpython.curtsiesfrontend import repl as curtsiesrepl
 from bpython.curtsiesfrontend import interpreter
@@ -205,7 +201,7 @@ class TestCurtsiesReplFilenameCompletion(TestCase):
 
 @contextmanager # from http://stackoverflow.com/a/17981937/398212 - thanks @rkennedy
 def captured_output():
-    new_out, new_err = BytesIO(), BytesIO()
+    new_out, new_err = StringIO(), StringIO()
     old_out, old_err = sys.stdout, sys.stderr
     try:
         sys.stdout, sys.stderr = new_out, new_err
