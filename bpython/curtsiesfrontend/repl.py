@@ -79,6 +79,7 @@ See {example_config_url} for an example config file.
 Press {config.edit_config_key} to edit this config file.
 """
 
+# This is needed for is_nop and should be removed once is_nop is fixed.
 if py3:
     unicode = str
 
