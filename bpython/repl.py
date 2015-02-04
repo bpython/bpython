@@ -199,6 +199,9 @@ class MatchesIterator(object):
         """MatchesIterator is False when word hasn't been replaced yet"""
         return self.index != -1
 
+    def __bool__(self):
+        return self.__nonzero__()
+
     @property
     def candidate_selected(self):
         """True when word selected/replaced, False when word hasn't been replaced yet"""
@@ -212,9 +215,12 @@ class MatchesIterator(object):
             raise ValueError('No current match.')
         return self.matches[self.index]
 
-    def next(self):
+    def __next__(self):
         self.index = (self.index + 1) % len(self.matches)
         return self.matches[self.index]
+
+    def next(self):
+        return self.__next__()
 
     def previous(self):
         if self.index <= 0:
