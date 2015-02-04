@@ -21,7 +21,6 @@
 # THE SOFTWARE.
 #
 
-import __builtin__
 import __main__
 import abc
 import keyword
@@ -35,6 +34,11 @@ from bpython import importcompletion
 from bpython import line as lineparts
 from bpython._py3compat import py3
 from bpython.lazyre import LazyReCompile
+
+try:
+    import builtins
+except ImportError:
+    import __builtin__ as builtins
 
 
 # Autocomplete modes
@@ -286,7 +290,7 @@ class GlobalCompletion(BaseCompletionType):
         for word in keyword.kwlist:
             if method_match(word, n, text):
                 matches.add(word)
-        for nspace in [__builtin__.__dict__, locals_]:
+        for nspace in [builtins.__dict__, locals_]:
             for word, val in nspace.items():
                 if method_match(word, len(text), text) and word != "__builtins__":
                     matches.add(_callable_postfix(val, word))
