@@ -25,7 +25,7 @@ class TestManualReadline(unittest.TestCase):
         self.assertEquals(expected, result)
 
     def test_left_arrow_at_non_zero(self):
-        for i in xrange(1, len(self._line)):
+        for i in range(1, len(self._line)):
             expected = (i-1, self._line)
             result = left_arrow(i, self._line)
             self.assertEqual(expected, result)
@@ -37,20 +37,20 @@ class TestManualReadline(unittest.TestCase):
         self.assertEquals(expected, result)
 
     def test_right_arrow_at_non_end(self):
-        for i in xrange(len(self._line) - 1):
+        for i in range(len(self._line) - 1):
             expected = (i + 1, self._line)
             result = right_arrow(i, self._line)
             self.assertEquals(expected, result)
 
     def test_beginning_of_line(self):
         expected = (0, self._line)
-        for i in xrange(len(self._line)):
+        for i in range(len(self._line)):
             result = beginning_of_line(i, self._line)
             self.assertEquals(expected, result)
 
     def test_end_of_line(self):
         expected = (len(self._line), self._line)
-        for i in xrange(len(self._line)):
+        for i in range(len(self._line)):
             result = end_of_line(i, self._line)
             self.assertEquals(expected, result)
 

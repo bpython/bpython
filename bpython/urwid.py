@@ -893,7 +893,7 @@ class URWIDRepl(repl.Repl):
         self.scr.refresh()
 
         if self.buffer:
-            for unused in xrange(indent):
+            for unused in range(indent):
                 self.tab()
 
         self.evaluating = False

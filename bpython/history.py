@@ -127,7 +127,7 @@ class History(object):
     def find_match_forward(self, search_term, include_current=False):
         add = 0 if include_current else 1
         end = max(0, self.index - (1 - add))
-        for idx in xrange(end):
+        for idx in range(end):
             val = self.entries_by_index[end - 1 - idx]
             if val.startswith(search_term):
                 return idx + (0 if include_current else 1)
@@ -136,7 +136,7 @@ class History(object):
     def find_partial_match_forward(self, search_term, include_current=False):
         add = 0 if include_current else 1
         end = max(0, self.index - (1 - add))
-        for idx in xrange(end):
+        for idx in range(end):
             val = self.entries_by_index[end - 1 - idx]
             if search_term in val:
                 return idx + add

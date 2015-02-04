@@ -444,7 +444,7 @@ class CLIRepl(repl.Repl):
         # curses does not handle this on its own. Sad.
         height, width = self.scr.getmaxyx()
         max_y = min(self.iy + (self.ix + len(self.s)) // width + 1, height)
-        for y in xrange(self.iy + 1, max_y):
+        for y in range(self.iy + 1, max_y):
             self.scr.move(y, 0)
             self.scr.clrtoeol()
 
@@ -660,7 +660,7 @@ class CLIRepl(repl.Repl):
         self.iy, self.ix = self.scr.getyx()
 
         if not self.paste_mode:
-            for _ in xrange(self.next_indentation()):
+            for _ in range(self.next_indentation()):
                 self.p_key('\t')
 
         self.cpos = 0
@@ -1156,7 +1156,7 @@ class CLIRepl(repl.Repl):
 
         real_lineno = self.iy
         height, width = self.scr.getmaxyx()
-        for i in xrange(lineno, len(self.buffer)):
+        for i in range(lineno, len(self.buffer)):
             string = self.buffer[i]
             # 4 = length of prompt
             length = len(string.encode(getpreferredencoding())) + 4
@@ -1223,7 +1223,7 @@ class CLIRepl(repl.Repl):
         self.scr.refresh()
 
         if self.buffer:
-            for _ in xrange(indent):
+            for _ in range(indent):
                 self.tab()
 
         self.evaluating = False
@@ -1517,7 +1517,7 @@ class CLIRepl(repl.Repl):
         self.scr.refresh()
 
         if self.buffer:
-            for _ in xrange(indent):
+            for _ in range(indent):
                 self.tab()
 
         self.print_line(self.s)
