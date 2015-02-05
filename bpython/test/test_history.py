@@ -3,6 +3,8 @@ try:
 except ImportError:
     import unittest
 
+from six.moves import range
+
 from bpython.history import History
 
 
