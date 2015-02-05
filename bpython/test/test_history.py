@@ -5,6 +5,7 @@ except ImportError:
 
 from bpython.history import History
 
+
 class TestHistory(unittest.TestCase):
     def setUp(self):
         self.history = History('#%d' % x for x in range(1000))
@@ -73,7 +74,6 @@ class TestHistory(unittest.TestCase):
         self.assertEqual(self.history.back(), '#509')
         self.assertEqual(self.history.back(), '#508')
         self.assertEqual(self.history.forward(), '#509')
-
 
     def test_reset(self):
         self.history.enter('#lastnumber!')

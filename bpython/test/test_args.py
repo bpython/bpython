@@ -8,6 +8,7 @@ try:
 except ImportError:
     import unittest
 
+
 class TestExecArgs(unittest.TestCase):
     def test_exec_dunder_file(self):
         with tempfile.NamedTemporaryFile(mode="w") as f:

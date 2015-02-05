@@ -25,8 +25,10 @@ import os
 import platform
 from locale import getpreferredencoding
 
+
 class CopyFailed(Exception):
     pass
+
 
 class XClipboard(object):
     """Manage clipboard with xclip."""
@@ -38,6 +40,7 @@ class XClipboard(object):
         if process.returncode != 0:
             raise CopyFailed()
 
+
 class OSXClipboard(object):
     """Manage clipboard with pbcopy."""
 
@@ -47,12 +50,14 @@ class OSXClipboard(object):
         if process.returncode != 0:
             raise CopyFailed()
 
+
 def command_exists(command):
     process = subprocess.Popen(['which', command], stderr=subprocess.STDOUT,
                                stdout=subprocess.PIPE)
     process.communicate()
 
     return process.returncode == 0
+
 
 def get_clipboard():
     """Get best clipboard handling implemention for current system."""

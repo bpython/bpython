@@ -98,6 +98,7 @@ class AttrCleaner(object):
             setattr(type_, '__getattr__', __getattr__)
         # /Dark magic
 
+
 class _Repr(object):
     """
     Helper for `fixlongargs()`: Returns the given value in `__repr__()`.
@@ -110,6 +111,7 @@ class _Repr(object):
         return self.value
 
     __str__ = __repr__
+
 
 def parsekeywordpairs(signature):
     tokens = PythonLexer().get_tokens(signature)

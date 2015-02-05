@@ -66,7 +66,7 @@ if version == 'unknown':
 
 with open(version_file, 'w') as vf:
     vf.write('# Auto-generated file, do not edit!\n')
-    vf.write('__version__=\'%s\'\n' % (version, ))
+    vf.write('__version__ = \'%s\'\n' % (version, ))
 
 class install(_install):
     """Force install to run build target."""

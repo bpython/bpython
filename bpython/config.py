@@ -30,14 +30,17 @@ def can_encode(c):
     except UnicodeEncodeError:
         return False
 
+
 def supports_box_chars():
     """Check if the encoding suppors Unicode box characters."""
     return all(map(can_encode, u'│─└┘┌┐'))
+
 
 def get_config_home():
     """Returns the base directory for bpython's configuration files."""
     xdg_config_home = os.environ.get('XDG_CONFIG_HOME', '~/.config')
     return os.path.join(xdg_config_home, 'bpython')
+
 
 def default_config_path():
     """Returns bpython's default configuration file path."""

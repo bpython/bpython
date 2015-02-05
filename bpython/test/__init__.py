@@ -10,6 +10,7 @@ from mock import MagicMock, Mock
 from bpython.translations import init
 from bpython._py3compat import py3
 
+
 class FixLanguageTestCase(unittest.TestCase):
 
     @classmethod

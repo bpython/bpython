@@ -11,6 +11,7 @@ from bpython import config
 
 TEST_THEME_PATH = os.path.join(os.path.dirname(__file__), "test.theme")
 
+
 class TestConfig(unittest.TestCase):
     def load_temp_config(self, content, struct=None):
         """Write config to a temporary file and load it."""
@@ -35,7 +36,8 @@ class TestConfig(unittest.TestCase):
 
         defaults = {"name": "c"}
         expected.update(defaults)
-        config.load_theme(struct, TEST_THEME_PATH, struct.color_scheme, defaults)
+        config.load_theme(struct, TEST_THEME_PATH, struct.color_scheme,
+                          defaults)
         self.assertEquals(struct.color_scheme, expected)
 
     def test_keybindings_default_contains_no_duplicates(self):
@@ -90,4 +92,3 @@ class TestConfig(unittest.TestCase):
             """))
 
         self.assertEqual(struct.help_key, 'F4')
-

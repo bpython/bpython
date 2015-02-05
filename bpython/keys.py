@@ -54,7 +54,7 @@ urwid_key_dispatch = KeyMap('')
 # fill dispatch with letters
 for c in string.ascii_lowercase:
     cli_key_dispatch['C-%s' % c] = (chr(string.ascii_lowercase.index(c) + 1),
-                                '^%s' % c.upper())
+                                    '^%s' % c.upper())
 
 for c in string.ascii_lowercase:
     urwid_key_dispatch['C-%s' % c] = 'ctrl %s' % c
