@@ -208,16 +208,13 @@ class MatchesIterator(object):
             raise ValueError('No current match.')
         return self.matches[self.index]
 
-    def _next_impl(self):
+    def next(self):
+        return self.__next__()
+
+    def __next__(self):
         """Keep this around until we drop 2to3."""
         self.index = (self.index + 1) % len(self.matches)
         return self.matches[self.index]
-
-    def next(self):
-        return self._next_impl()
-
-    def __next__(self):
-        return self._next_impl()
 
     def previous(self):
         if self.index <= 0:
