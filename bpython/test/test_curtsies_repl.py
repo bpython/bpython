@@ -6,7 +6,7 @@ import os
 import sys
 import tempfile
 from contextlib import contextmanager
-from mock import Mock, patch, MagicMock
+from mock import Mock, patch
 from six.moves import StringIO
 
 try:
@@ -20,7 +20,8 @@ from bpython import autocomplete
 from bpython import config
 from bpython import args
 from bpython._py3compat import py3
-from bpython.test import FixLanguageTestCase as TestCase
+from bpython.test import FixLanguageTestCase as TestCase, MagicIterMock
+
 
 def setup_config(conf):
     config_struct = config.Struct()
@@ -86,6 +87,7 @@ class TestCurtsiesRepl(TestCase):
         self.repl.up_one_line()
         self.assertEqual(self.repl.current_line,'2 3')
 
+
 def mock_next(obj, return_value):
     if py3:
         obj.__next__.return_value = return_value
@@ -96,7 +98,7 @@ class TestCurtsiesReplTab(TestCase):
 
     def setUp(self):
         self.repl = create_repl()
-        self.repl.matches_iter = MagicMock()
+        self.repl.matches_iter = MagicIterMock()
         def add_matches(*args, **kwargs):
             self.repl.matches_iter.matches = ['aaa', 'aab', 'aac']
         self.repl.complete = Mock(side_effect=add_matches,

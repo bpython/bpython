@@ -3,7 +3,7 @@ from itertools import islice
 import os
 import socket
 
-from mock import Mock, MagicMock
+from mock import Mock
 
 try:
     import unittest2 as unittest
@@ -12,6 +12,7 @@ except ImportError:
 
 from bpython._py3compat import py3
 from bpython import config, repl, cli, autocomplete
+from bpython.test import MagicIterMock
 
 
 def setup_config(conf):
@@ -373,7 +374,7 @@ class TestCliReplTab(unittest.TestCase):
 
     # 3 Types of tab complete
     def test_simple_tab_complete(self):
-        self.repl.matches_iter = MagicMock()
+        self.repl.matches_iter = MagicIterMock()
         if py3:
             self.repl.matches_iter.__bool__.return_value = False
         else:
