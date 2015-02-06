@@ -933,10 +933,12 @@ class Repl(object):
         - reads self.cpos to see what parens should be highlighted
         - reads self.buffer to see what came before the passed in line
         - sets self.highlighted_paren to (buffer_lineno, tokens_for_that_line)
-          for buffer line that should replace that line to unhighlight it
+          for buffer line that should replace that line to unhighlight it,
+          or None if no paren is currently highlighted
         - calls reprint_line with a buffer's line's tokens and the buffer
-          lineno that has changed iff that line is the not the current line
+          lineno that has changed if line other than the current line changes
         """
+        highlighted_paren = None
 
         source = '\n'.join(self.buffer + [s])
         cursor = len(source) - self.cpos
@@ -1007,16 +1009,17 @@ class Repl(object):
                             line_tokens[-1] = (Parenthesis, value)
                         (lineno, i, tokens, opening) = opening
                         if lineno == len(self.buffer):
-                            self.highlighted_paren = (lineno, saved_tokens)
+                            highlighted_paren = (lineno, saved_tokens)
                             line_tokens[i] = (Parenthesis, opening)
                         else:
-                            self.highlighted_paren = (lineno, list(tokens))
+                            highlighted_paren = (lineno, list(tokens))
                             # We need to redraw a line
                             tokens[i] = (Parenthesis, opening)
                             self.reprint_line(lineno, tokens)
                         search_for_paren = False
                 elif under_cursor:
                     search_for_paren = False
+        self.highlighted_paren = highlighted_paren
         if line != len(self.buffer):
             return list()
         return line_tokens
