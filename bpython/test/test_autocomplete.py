@@ -1,7 +1,5 @@
 from collections import namedtuple
-from bpython import autocomplete
 
-import mock
 try:
     import unittest2 as unittest
 except ImportError:
@@ -12,6 +10,9 @@ try:
     has_jedi = True
 except ImportError:
     has_jedi = False
+
+from bpython import autocomplete
+from bpython.test import mock
 
 
 class TestSafeEval(unittest.TestCase):

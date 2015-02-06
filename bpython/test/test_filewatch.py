@@ -1,4 +1,3 @@
-import mock
 import os
 
 try:
@@ -13,6 +12,7 @@ try:
 except ImportError:
     has_watchdog = False
 
+from bpython.test import mock
 
 @unittest.skipIf(not has_watchdog, "watchdog not available")
 class TestModuleChangeEventHandler(unittest.TestCase):

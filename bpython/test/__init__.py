@@ -5,7 +5,10 @@ try:
 except ImportError:
     import unittest
 
-from mock import MagicMock, Mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from bpython.translations import init
 from bpython._py3compat import py3
@@ -18,9 +21,9 @@ class FixLanguageTestCase(unittest.TestCase):
         init(languages=['en'])
 
 
-class MagicIterMock(MagicMock):
+class MagicIterMock(mock.MagicMock):
 
     if py3:
-        __next__ = Mock(return_value=None)
+        __next__ = mock.Mock(return_value=None)
     else:
-        next = Mock(return_value=None)
+        next = mock.Mock(return_value=None)

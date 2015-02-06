@@ -4,8 +4,6 @@ import os
 import socket
 from six.moves import range
 
-from mock import Mock
-
 try:
     import unittest2 as unittest
 except ImportError:
@@ -13,7 +11,7 @@ except ImportError:
 
 from bpython._py3compat import py3
 from bpython import config, repl, cli, autocomplete
-from bpython.test import MagicIterMock
+from bpython.test import MagicIterMock, mock
 
 
 def setup_config(conf):
@@ -99,7 +97,7 @@ class TestMatchesIterator(unittest.TestCase):
         self.assertEqual(list(slice), self.matches)
 
         newmatches = ['string', 'str', 'set']
-        completer = Mock()
+        completer = mock.Mock()
         completer.locate.return_value = (0, 1, 's')
         self.matches_iterator.update(1, 's', newmatches, completer)
 
@@ -108,7 +106,7 @@ class TestMatchesIterator(unittest.TestCase):
         self.assertEqual(list(newslice), newmatches)
 
     def test_cur_line(self):
-        completer = Mock()
+        completer = mock.Mock()
         completer.locate.return_value = (
             0,
             self.matches_iterator.orig_cursor_offset,
@@ -363,7 +361,7 @@ class TestCliRepl(unittest.TestCase):
         self.assertFalse(self.repl.atbol())
 
     def test_addstr(self):
-        self.repl.complete = Mock(True)
+        self.repl.complete = mock.Mock(True)
 
         self.repl.s = "foo"
         self.repl.addstr("bar")
@@ -386,11 +384,11 @@ class TestCliReplTab(unittest.TestCase):
             self.repl.matches_iter.__bool__.return_value = False
         else:
             self.repl.matches_iter.__nonzero__.return_value = False
-        self.repl.complete = Mock()
-        self.repl.print_line = Mock()
+        self.repl.complete = mock.Mock()
+        self.repl.print_line = mock.Mock()
         self.repl.matches_iter.is_cseq.return_value = False
-        self.repl.show_list = Mock()
-        self.repl.argspec = Mock()
+        self.repl.show_list = mock.Mock()
+        self.repl.argspec = mock.Mock()
         self.repl.matches_iter.cur_line.return_value = (None, "foobar")
 
         self.repl.s = "foo"
@@ -420,22 +418,22 @@ class TestCliReplTab(unittest.TestCase):
         """make sure pressing the tab key will
            still in some cases add a tab"""
         self.repl.s = ""
-        self.repl.config = Mock()
+        self.repl.config = mock.Mock()
         self.repl.config.tab_length = 4
-        self.repl.complete = Mock()
-        self.repl.print_line = Mock()
+        self.repl.complete = mock.Mock()
+        self.repl.print_line = mock.Mock()
         self.repl.tab()
         self.assertEqual(self.repl.s, "    ")
 
     def test_back_parameter(self):
-        self.repl.matches_iter = Mock()
+        self.repl.matches_iter = mock.Mock()
         self.repl.matches_iter.matches = True
         self.repl.matches_iter.previous.return_value = "previtem"
         self.repl.matches_iter.is_cseq.return_value = False
-        self.repl.show_list = Mock()
-        self.repl.argspec = Mock()
+        self.repl.show_list = mock.Mock()
+        self.repl.argspec = mock.Mock()
         self.repl.matches_iter.cur_line.return_value = (None, "previtem")
-        self.repl.print_line = Mock()
+        self.repl.print_line = mock.Mock()
         self.repl.s = "foo"
         self.repl.cpos = 0
         self.repl.tab(back=True)
@@ -465,10 +463,10 @@ class TestCliReplTab(unittest.TestCase):
     def test_simple_expand(self):
         self.repl.s = "f"
         self.cpos = 0
-        self.repl.matches_iter = Mock()
+        self.repl.matches_iter = mock.Mock()
         self.repl.matches_iter.is_cseq.return_value = True
         self.repl.matches_iter.substitute_cseq.return_value = (3, "foo")
-        self.repl.print_line = Mock()
+        self.repl.print_line = mock.Mock()
         self.repl.tab()
         self.assertEqual(self.repl.s, "foo")
 

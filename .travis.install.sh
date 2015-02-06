@@ -17,10 +17,12 @@ if [[ $RUN == nosetests ]]; then
     if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then
       pip install unittest2
     fi
-    # dependencies for crasher tests
     case $TRAVIS_PYTHON_VERSION in
       2*)
+        # dependencies for crasher tests
         pip install Twisted urwid
+        # test specific dependencies
+        pip install mock
         ;;
     esac
     # build and install
