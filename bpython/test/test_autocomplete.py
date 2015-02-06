@@ -223,15 +223,14 @@ class TestMagicMethodCompletion(unittest.TestCase):
 Comp = namedtuple('Completion', ['name', 'complete'])
 
 
+@unittest.skipUnless(has_jedi, "jedi required")
 class TestMultilineJediCompletion(unittest.TestCase):
 
-    @unittest.skipIf(not has_jedi, "jedi not available")
     def test_returns_none_with_single_line(self):
         com = autocomplete.MultilineJediCompletion()
         self.assertEqual(com.matches(2, 'Va', current_block='Va', history=[]),
                          None)
 
-    @unittest.skipIf(not has_jedi, "jedi not available")
     def test_returns_non_with_blank_second_line(self):
         com = autocomplete.MultilineJediCompletion()
         self.assertEqual(com.matches(0, '', current_block='class Foo():\n',
@@ -246,14 +245,12 @@ class TestMultilineJediCompletion(unittest.TestCase):
             return com.matches(cursor, line, current_block=block,
                                history=history)
 
-    @unittest.skipIf(not has_jedi, "jedi not available")
     def test_completions_starting_with_different_letters(self):
         matches = self.matches_from_completions(
             2, ' a', 'class Foo:\n a', ['adsf'],
             [Comp('Abc', 'bc'), Comp('Cbc', 'bc')])
         self.assertEqual(matches, None)
 
-    @unittest.skipIf(not has_jedi, "jedi not available")
     def test_completions_starting_with_different_cases(self):
         matches = self.matches_from_completions(
             2, ' a', 'class Foo:\n a', ['adsf'],
