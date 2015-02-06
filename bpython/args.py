@@ -24,7 +24,8 @@ class RaisingOptionParser(OptionParser):
 
 def version_banner():
     return 'bpython version %s on top of Python %s %s' % (
-            __version__, sys.version.split()[0], sys.executable)
+        __version__, sys.version.split()[0], sys.executable)
+
 
 def parse(args, extras=None, ignore_stdin=False):
     """Receive an argument list - if None, use sys.argv - parse all args and
@@ -37,11 +38,12 @@ def parse(args, extras=None, ignore_stdin=False):
 
     e.g.:
 
-    parse(['-i', '-m', 'foo.py'],
-          ('Front end-specific options',
-          'A full description of what these options are for',
-          [optparse.Option('-f', action='store_true', dest='f', help='Explode'),
-           optparse.Option('-l', action='store_true', dest='l', help='Love')]))
+    parse(
+        ['-i', '-m', 'foo.py'],
+        ('Front end-specific options',
+        'A full description of what these options are for',
+        [optparse.Option('-f', action='store_true', dest='f', help='Explode'),
+        optparse.Option('-l', action='store_true', dest='l', help='Love')]))
 
 
     Return a tuple of (config, options, exec_args) wherein "config" is the
@@ -55,9 +57,9 @@ def parse(args, extras=None, ignore_stdin=False):
 
     parser = RaisingOptionParser(
         usage=_('Usage: %prog [options] [file [args]]\n'
-        'NOTE: If bpython sees an argument it does '
-        'not know, execution falls back to the '
-        'regular Python interpreter.'))
+                'NOTE: If bpython sees an argument it does '
+                'not know, execution falls back to the '
+                'regular Python interpreter.'))
     # This is not sufficient if bpython gains its own -m support
     # (instead of falling back to Python itself for that).
     # That's probably fixable though, for example by having that
@@ -67,7 +69,7 @@ def parse(args, extras=None, ignore_stdin=False):
                       help=_('Use CONFIG instead of default config file.'))
     parser.add_option('--interactive', '-i', action='store_true',
                       help=_('Drop to bpython shell after running file '
-                           'instead of exiting.'))
+                             'instead of exiting.'))
     parser.add_option('--quiet', '-q', action='store_true',
                       help=_("Don't flush the output to stdout."))
     parser.add_option('--version', '-V', action='store_true',
@@ -101,6 +103,7 @@ def parse(args, extras=None, ignore_stdin=False):
     loadini(config, options.config)
 
     return config, options, args
+
 
 def exec_code(interpreter, args):
     """

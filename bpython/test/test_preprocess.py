@@ -24,9 +24,11 @@ def get_fodder_source(test_name):
                      for module in [original, processed]]
 
     if not orig:
-        raise ValueError("Can't locate test %s in original fodder file" % (test_name,))
+        raise ValueError("Can't locate test %s in original fodder file" %
+                         (test_name,))
     if not xformed:
-        raise ValueError("Can't locate test %s in processed fodder file" % (test_name,))
+        raise ValueError("Can't locate test %s in processed fodder file" %
+                         (test_name,))
     return orig.group(1), xformed.group(1)
 
 
@@ -78,11 +80,13 @@ class TestPreprocessing(unittest.TestCase):
     def test_blank_lines_in_for_loop(self):
         self.assertIndented('blank_lines_in_for_loop')
 
-    @skip("More advanced technique required: need to try compiling and backtracking")
+    @skip("More advanced technique required: need to try compiling and "
+          "backtracking")
     def test_blank_line_in_try_catch(self):
         self.assertIndented('blank_line_in_try_catch')
 
-    @skip("More advanced technique required: need to try compiling and backtracking")
+    @skip("More advanced technique required: need to try compiling and "
+          "backtracking")
     def test_blank_line_in_try_catch_else(self):
         self.assertIndented('blank_line_in_try_catch_else')
 

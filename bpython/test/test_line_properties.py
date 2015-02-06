@@ -6,10 +6,10 @@ except ImportError:
 import re
 
 from bpython.line import current_word, current_dict_key, current_dict, \
-        current_string, current_object, current_object_attribute, \
-        current_from_import_from, current_from_import_import, current_import, \
-        current_method_definition_name, current_single_word, \
-        current_string_literal_attr
+    current_string, current_object, current_object_attribute, \
+    current_from_import_from, current_from_import_import, current_import, \
+    current_method_definition_name, current_single_word, \
+    current_string_literal_attr
 
 
 def cursor(s):
@@ -18,12 +18,13 @@ def cursor(s):
     line = s[:cursor_offset] + s[cursor_offset+1:]
     return cursor_offset, line
 
+
 def decode(s):
     """'a<bd|c>d' -> ((3, 'abcd'), (1, 3, 'bdc'))"""
 
     if not s.count('|') == 1:
         raise ValueError('match helper needs | to occur once')
-    if not ((s.count('<') == s.count('>') == 1 or s.count('<') == s.count('>') == 0)):
+    if s.count('<') != s.count('>') or not s.count('<') in (0, 1):
         raise ValueError('match helper needs <, and > to occur just once')
     matches = list(re.finditer(r'[<>|]', s))
     assert len(matches) in [1, 3], [m.group() for m in matches]
@@ -31,15 +32,17 @@ def decode(s):
     for i, m in enumerate(matches):
         d[m.group(0)] = m.start() - i
         s = s[:m.start() - i] + s[m.end() - i:]
-    assert len(d) in [1,3], 'need all the parts just once! %r' % d
+    assert len(d) in [1, 3], 'need all the parts just once! %r' % d
 
     if '<' in d:
         return (d['|'], s), (d['<'], d['>'], s[d['<']:d['>']])
     else:
         return (d['|'], s), None
 
+
 def line_with_cursor(cursor_offset, line):
     return line[:cursor_offset] + '|' + line[cursor_offset:]
+
 
 def encode(cursor_offset, line, result):
     """encode(3, 'abdcd', (1, 3, 'bdc')) -> a<bd|c>d'
@@ -76,7 +79,12 @@ class LineTestCase(unittest.TestCase):
         (cursor_offset, line), match = decode(s)
         result = self.func(cursor_offset, line)
 
-        self.assertEqual(result, match, "%s(%r) result\n%r (%r) doesn't match expected\n%r (%r)" % (self.func.__name__, line_with_cursor(cursor_offset, line), encode(cursor_offset, line, result), result, s, match))
+        self.assertEqual(
+            result, match,
+            "%s(%r) result\n%r (%r) doesn't match expected\n%r (%r)" % (
+                self.func.__name__, line_with_cursor(cursor_offset, line),
+                encode(cursor_offset, line, result), result, s, match))
+
 
 class TestHelpers(LineTestCase):
     def test_I(self):
@@ -98,6 +106,7 @@ class TestHelpers(LineTestCase):
             return (0, 2, 'ab')
         self.func = dumb_func
         self.assertAccess('<a|b>d')
+
 
 class TestCurrentWord(LineTestCase):
     def setUp(self):
@@ -128,9 +137,11 @@ class TestCurrentWord(LineTestCase):
         self.assertAccess('<foo(|>')
         # documenting current behavior - TODO is this intended?
 
+
 class TestCurrentDictKey(LineTestCase):
     def setUp(self):
         self.func = current_dict_key
+
     def test_simple(self):
         self.assertAccess('asdf|')
         self.assertAccess('asdf|')
@@ -143,12 +154,14 @@ class TestCurrentDictKey(LineTestCase):
         self.assertAccess('asdf[<(1,>|]')
         self.assertAccess('asdf[<(1, >|]')
         self.assertAccess('asdf[<(1, 2)>|]')
-        #TODO self.assertAccess('d[d[<12|>')
+        # TODO self.assertAccess('d[d[<12|>')
         self.assertAccess("d[<'a>|")
+
 
 class TestCurrentDict(LineTestCase):
     def setUp(self):
         self.func = current_dict
+
     def test_simple(self):
         self.assertAccess('asdf|')
         self.assertAccess('asdf|')
@@ -157,9 +170,11 @@ class TestCurrentDict(LineTestCase):
         self.assertAccess('<object.dict>[abc|')
         self.assertAccess('asdf|')
 
+
 class TestCurrentString(LineTestCase):
     def setUp(self):
         self.func = current_string
+
     def test_closed(self):
         self.assertAccess('"<as|df>"')
         self.assertAccess('"<asdf|>"')
@@ -169,6 +184,7 @@ class TestCurrentString(LineTestCase):
         self.assertAccess("'''<asdf|>'''")
         self.assertAccess('"""<asdf|>"""')
         self.assertAccess('asdf.afd("a") + "<asdf|>"')
+
     def test_open(self):
         self.assertAccess('"<as|df>')
         self.assertAccess('"<asdf|>')
@@ -179,9 +195,11 @@ class TestCurrentString(LineTestCase):
         self.assertAccess('"""<asdf|>')
         self.assertAccess('asdf.afd("a") + "<asdf|>')
 
+
 class TestCurrentObject(LineTestCase):
     def setUp(self):
         self.func = current_object
+
     def test_simple(self):
         self.assertAccess('<Object>.attr1|')
         self.assertAccess('<Object>.|')
@@ -194,9 +212,11 @@ class TestCurrentObject(LineTestCase):
         self.assertAccess('stuff[asd|fg]')
         self.assertAccess('stuff[asdf[asd|fg]')
 
+
 class TestCurrentAttribute(LineTestCase):
     def setUp(self):
         self.func = current_object_attribute
+
     def test_simple(self):
         self.assertAccess('Object.<attr1|>')
         self.assertAccess('Object.attr1.<attr2|>')
@@ -207,9 +227,11 @@ class TestCurrentAttribute(LineTestCase):
         self.assertAccess('Object.attr1.<|attr2>')
         self.assertAccess('Object.<attr1|>.attr2')
 
+
 class TestCurrentFromImportFrom(LineTestCase):
     def setUp(self):
         self.func = current_from_import_from
+
     def test_simple(self):
         self.assertAccess('from <sys|> import path')
         self.assertAccess('from <sys> import path|')
@@ -222,9 +244,11 @@ class TestCurrentFromImportFrom(LineTestCase):
         self.assertAccess('if True: from <sys.path> import sep|')
         self.assertAccess('from <os.p|>')
 
+
 class TestCurrentFromImportImport(LineTestCase):
     def setUp(self):
         self.func = current_from_import_import
+
     def test_simple(self):
         self.assertAccess('from sys import <path|>')
         self.assertAccess('from sys import <p|ath>')
@@ -233,11 +257,14 @@ class TestCurrentFromImportImport(LineTestCase):
         self.assertAccess('from s|ys import path')
         self.assertAccess('from |sys import path')
         self.assertAccess('from xml.dom import <N|ode>')
-        self.assertAccess('from xml.dom import Node.as|d') # because syntax error
+        # because syntax error
+        self.assertAccess('from xml.dom import Node.as|d')
+
 
 class TestCurrentImport(LineTestCase):
     def setUp(self):
         self.func = current_import
+
     def test_simple(self):
         self.assertAccess('import <path|>')
         self.assertAccess('import <p|ath>')
@@ -249,13 +276,16 @@ class TestCurrentImport(LineTestCase):
         self.assertAccess('if True: import <xml.do|m.minidom>')
         self.assertAccess('if True: import <xml.do|m.minidom> as something')
 
+
 class TestMethodDefinitionName(LineTestCase):
     def setUp(self):
         self.func = current_method_definition_name
+
     def test_simple(self):
         self.assertAccess('def <foo|>')
         self.assertAccess('    def bar(x, y)|:')
         self.assertAccess('    def <bar|>(x, y)')
+
 
 class TestSingleWord(LineTestCase):
     def setUp(self):
@@ -266,9 +296,11 @@ class TestSingleWord(LineTestCase):
         self.assertAccess('.foo|')
         self.assertAccess(' <foo|>')
 
+
 class TestCurrentStringLiteral(LineTestCase):
     def setUp(self):
         self.func = current_string_literal_attr
+
     def test_simple(self):
         self.assertAccess('"hey".<a|>')
         self.assertAccess('"hey"|')
@@ -276,6 +308,7 @@ class TestCurrentStringLiteral(LineTestCase):
         self.assertAccess('"hey".<a|b>')
         self.assertAccess('"hey".asdf d|')
         self.assertAccess('"hey".<|>')
+
 
 if __name__ == '__main__':
     unittest.main()

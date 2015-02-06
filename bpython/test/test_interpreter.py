@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 try:
     import unittest2 as unittest
 except ImportError:
@@ -5,6 +7,7 @@ except ImportError:
 
 from bpython.curtsiesfrontend import interpreter
 from curtsies.fmtfuncs import bold, green, magenta, cyan, red, plain
+
 
 class TestInterpreter(unittest.TestCase):
     def test_syntaxerror(self):
@@ -17,7 +20,9 @@ class TestInterpreter(unittest.TestCase):
         i.write = append_to_a
         i.runsource('1.1.1.1')
 
-        expected = ''+u''+u'  File '+green(u'"<input>"')+u', line '+bold(magenta(u'1'))+u'\n'+u'    '+u'1.1'+u'.'+u'1.1'+u'\n'+u'    '+u'    '+u'^'+u'\n'+bold(red(u'SyntaxError'))+u': '+cyan(u'invalid syntax')+u'\n'
+        expected = '  File ' + green('"<input>"') + ', line ' + \
+            bold(magenta('1')) + '\n    1.1.1.1\n        ^\n' + \
+            bold(red('SyntaxError')) + ': ' + cyan('invalid syntax') + '\n'
 
         self.assertEquals(str(plain('').join(a)), str(expected))
         self.assertEquals(plain('').join(a), expected)
@@ -39,8 +44,10 @@ class TestInterpreter(unittest.TestCase):
 
         i.runsource('g()')
 
-        expected = u'Traceback (most recent call last):\n'+''+u'  File '+green(u'"<input>"')+u', line '+bold (magenta(u'1'))+u', in '+cyan(u'<module>')+u'\n'+''+bold(red(u'NameError'))+u': '+cyan(u"name 'g' is not defined")+u'\n'
+        expected = 'Traceback (most recent call last):\n  File ' + \
+            green('"<input>"') + ', line ' + bold(magenta('1')) + ', in ' + \
+            cyan('<module>') + '\n' + bold(red('NameError')) + ': ' + \
+            cyan("name 'g' is not defined") + '\n'
 
         self.assertEquals(str(plain('').join(a)), str(expected))
         self.assertEquals(plain('').join(a), expected)
-

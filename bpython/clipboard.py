@@ -65,7 +65,8 @@ def get_clipboard():
     if platform.system() == 'Darwin':
         if command_exists('pbcopy'):
             return OSXClipboard()
-    if platform.system() in ('Linux', 'FreeBSD', 'OpenBSD') and os.getenv('DISPLAY') is not None:
+    if (platform.system() in ('Linux', 'FreeBSD', 'OpenBSD') and
+            os.getenv('DISPLAY') is not None):
         if command_exists('xclip'):
             return XClipboard()
 

@@ -13,6 +13,7 @@ try:
 except ImportError:
     has_watchdog = False
 
+
 @unittest.skipIf(not has_watchdog, "watchdog not available")
 class TestModuleChangeEventHandler(unittest.TestCase):
 
@@ -32,4 +33,3 @@ class TestModuleChangeEventHandler(unittest.TestCase):
         self.module.activated = True
         with self.assertRaises(ValueError):
             self.module.activate()
-

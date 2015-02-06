@@ -12,7 +12,8 @@ from bpython import config, inspection
 from bpython.curtsiesfrontend.repl import Repl
 from bpython.curtsiesfrontend import replpainter
 from bpython.repl import History
-from bpython.curtsiesfrontend.repl import INCONSISTENT_HISTORY_MSG, CONTIGUITY_BROKEN_MSG
+from bpython.curtsiesfrontend.repl import INCONSISTENT_HISTORY_MSG, \
+    CONTIGUITY_BROKEN_MSG
 from bpython.test import FixLanguageTestCase as TestCase
 
 
@@ -25,7 +26,8 @@ def setup_config():
 class TestCurtsiesPainting(FormatStringTest, TestCase):
     def setUp(self):
         self.repl = Repl(config=setup_config())
-        self.repl.rl_history = History() # clear history
+        # clear history
+        self.repl.rl_history = History()
         self.repl.height, self.repl.width = (5, 10)
 
     def assert_paint(self, screen, cursor_row_col):
@@ -54,8 +56,9 @@ class TestCurtsiesPaintingSimple(TestCurtsiesPainting):
 
     def test_enter_text(self):
         [self.repl.add_normal_character(c) for c in '1 + 1']
-        screen = fsarray([cyan('>>> ') + bold(green('1')+cyan(' ')+
-                          yellow('+') + cyan(' ') + green('1')), cyan('Welcome to')])
+        screen = fsarray([cyan('>>> ') + bold(green('1') + cyan(' ') +
+                          yellow('+') + cyan(' ') + green('1')),
+                          cyan('Welcome to')])
         self.assert_paint(screen, (0, 9))
 
     def test_run_line(self):
@@ -93,16 +96,18 @@ class TestCurtsiesPaintingSimple(TestCurtsiesPainting):
             pass
         argspec = inspection.getargspec('foo', foo) + [1]
         array = replpainter.formatted_argspec(argspec, 30, setup_config())
-        screen = [(bold(cyan(u'foo'))+cyan(':')+cyan(' ')+cyan('(')+cyan('x') +
-                  yellow(',')+yellow(' ')+bold(cyan('y'))+yellow(',') +
-                  yellow(' ')+cyan('z')+yellow('=')+bold(cyan('10'))+yellow(')'))]
+        screen = [bold(cyan(u'foo')) + cyan(':') + cyan(' ') + cyan('(') +
+                  cyan('x') + yellow(',') + yellow(' ') + bold(cyan('y')) +
+                  yellow(',') + yellow(' ') + cyan('z') + yellow('=') +
+                  bold(cyan('10')) + yellow(')')]
         self.assertFSArraysEqual(fsarray(array), fsarray(screen))
 
     def test_formatted_docstring(self):
         actual = replpainter.formatted_docstring(
             'Returns the results\n\n' 'Also has side effects',
             40, config=setup_config())
-        expected = fsarray(['Returns the results', '', 'Also has side effects'])
+        expected = fsarray(['Returns the results', '',
+                            'Also has side effects'])
         self.assertFSArraysEqualIgnoringFormatting(actual, expected)
 
     def test_paint_lasts_events(self):
@@ -161,8 +166,10 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
 
     def setUp(self):
         self.refresh_requests = []
-        self.repl = Repl(banner='', config=setup_config(), request_refresh=self.refresh)
-        self.repl.rl_history = History() # clear history
+        self.repl = Repl(banner='', config=setup_config(),
+                         request_refresh=self.refresh)
+        # clear history
+        self.repl.rl_history = History()
         self.repl.height, self.repl.width = (5, 32)
 
     def test_rewind(self):
@@ -206,7 +213,7 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
                   u'',
                   u'',
                   u'',
-                  u' '] #TODO why is that there? Necessary?
+                  u' ']  # TODO why is that there? Necessary?
         self.assert_paint_ignoring_formatting(screen, (1, 4))
         screen = [u'>>> ']
         self.assert_paint_ignoring_formatting(screen, (0, 4))
@@ -286,7 +293,9 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
         self.undo()
         screen = [INCONSISTENT_HISTORY_MSG[:self.repl.width],
                   u'6',
-                  u'>>> 1 + 1', # everything will jump down a line - that's perfectly reasonable
+                  # everything will jump down a line - that's perfectly
+                  # reasonable
+                  u'>>> 1 + 1',
                   u'2',
                   u'>>> ',
                   u' ']
@@ -392,9 +401,11 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
         sys.a = 6
         self.undo()
         screen = [u'5',
-                  u'>>> 1 + 1', # everything will jump down a line - that's perfectly reasonable
+                  # everything will jump down a line - that's perfectly
+                  # reasonable
+                  u'>>> 1 + 1',
                   u'2',
-                  u'>>> ',]
+                  u'>>> ']
         self.assert_paint_ignoring_formatting(screen, (3, 4))
 
     def test_rewind_barely_consistent(self):
@@ -417,7 +428,6 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
                   u'4',
                   u'>>> ']
         self.assert_paint_ignoring_formatting(screen, (2, 4))
-
 
     def test_clear_screen(self):
         self.enter("1 + 1")
@@ -474,7 +484,8 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
         self.assert_paint_ignoring_formatting(screen, (3, 4))
 
     def test_cursor_stays_at_bottom_of_screen(self):
-        """infobox showing up during intermediate render was causing this to fail, #371"""
+        """infobox showing up during intermediate render was causing this to
+        fail, #371"""
         self.repl.width = 50
         self.repl.current_line = "__import__('random').__name__"
         with output_to_repl(self.repl):
@@ -525,7 +536,7 @@ class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
 
     def send_key(self, key):
         self.repl.process_event(u'<SPACE>' if key == ' ' else key)
-        self.repl.paint() # has some side effects we need to be wary of
+        self.repl.paint()  # has some side effects we need to be wary of
 
     def test_472(self):
         [self.send_key(c) for c in "(1, 2, 3)"]

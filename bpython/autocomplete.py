@@ -288,7 +288,8 @@ class GlobalCompletion(BaseCompletionType):
                 matches.add(word)
         for nspace in [builtins.__dict__, locals_]:
             for word, val in nspace.items():
-                if method_match(word, len(text), text) and word != "__builtins__":
+                if (method_match(word, len(text), text) and
+                        word != "__builtins__"):
                     matches.add(_callable_postfix(val, word))
         return matches
 
@@ -373,7 +374,8 @@ else:
             first_letter = line[self._orig_start:self._orig_start+1]
 
             matches = [c.name for c in completions]
-            if any(not m.lower().startswith(matches[0][0].lower()) for m in matches):
+            if any(not m.lower().startswith(matches[0][0].lower())
+                   for m in matches):
                 # Too general - giving completions starting with multiple
                 # letters
                 return None
@@ -385,7 +387,6 @@ else:
             start = self._orig_start
             end = cursor_offset
             return start, end, line[start:end]
-
 
     class MultilineJediCompletion(JediCompletion):
         def matches(self, cursor_offset, line, **kwargs):

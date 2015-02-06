@@ -35,9 +35,11 @@ except ImportError:
 
 TEST_CONFIG = os.path.join(os.path.dirname(__file__), "test.config")
 
+
 def set_win_size(fd, rows, columns):
     s = struct.pack('HHHH', rows, columns, 0, 0)
     fcntl.ioctl(fd, termios.TIOCSWINSZ, s)
+
 
 class CrashersTest(object):
     backend = "cli"
@@ -88,9 +90,10 @@ class CrashersTest(object):
 
         (master, slave) = pty.openpty()
         set_win_size(slave, 25, 80)
-        reactor.spawnProcess(Protocol(), sys.executable,
-            (sys.executable, "-m", "bpython." + self.backend,
-             "--config",  TEST_CONFIG),
+        reactor.spawnProcess(
+            Protocol(), sys.executable,
+            (sys.executable, "-m", "bpython." + self.backend, "--config",
+             TEST_CONFIG),
             env=dict(TERM="vt100", LANG=os.environ.get("LANG", "")),
             usePTY=(master, slave, os.ttyname(slave)))
         return result
@@ -119,14 +122,17 @@ class CrashersTest(object):
     def check_no_traceback(self, data):
         self.assertNotIn("Traceback", data)
 
+
 @unittest.skipIf(reactor is None, "twisted is not available")
 class CursesCrashersTest(TrialTestCase, CrashersTest):
     backend = "cli"
+
 
 @unittest.skipIf(not have_urwid, "urwid is not available")
 @unittest.skipIf(reactor is None, "twisted is not available")
 class UrwidCrashersTest(TrialTestCase, CrashersTest):
     backend = "urwid"
+
 
 if __name__ == "__main__":
     unittest.main()

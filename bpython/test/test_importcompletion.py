@@ -10,18 +10,19 @@ class TestSimpleComplete(unittest.TestCase):
 
     def setUp(self):
         self.original_modules = importcompletion.modules
-        importcompletion.modules = ['zzabc', 'zzabd', 'zzefg', 'zzabc.e', 'zzabc.f']
+        importcompletion.modules = ['zzabc', 'zzabd', 'zzefg', 'zzabc.e',
+                                    'zzabc.f']
 
     def tearDown(self):
         importcompletion.modules = self.original_modules
 
     def test_simple_completion(self):
-        self.assertEqual(sorted(importcompletion.complete(10, 'import zza')),
-                         ['zzabc', 'zzabd'])
+        self.assertSetEqual(importcompletion.complete(10, 'import zza'),
+                            set(['zzabc', 'zzabd']))
 
     def test_package_completion(self):
-        self.assertEqual(sorted(importcompletion.complete(13, 'import zzabc.')),
-                         ['zzabc.e', 'zzabc.f', ])
+        self.assertSetEqual(importcompletion.complete(13, 'import zzabc.'),
+                            set(['zzabc.e', 'zzabc.f']))
 
 
 class TestRealComplete(unittest.TestCase):
@@ -38,14 +39,14 @@ class TestRealComplete(unittest.TestCase):
         importcompletion.modules = set()
 
     def test_from_attribute(self):
-        self.assertEqual(sorted(importcompletion.complete(19, 'from sys import arg')),
-                         ['argv'])
+        self.assertSetEqual(
+            importcompletion.complete(19, 'from sys import arg'),
+            set(['argv']))
 
     def test_from_attr_module(self):
-        self.assertEqual(sorted(importcompletion.complete(9, 'from os.p')),
-                         ['os.path'])
+        self.assertSetEqual(importcompletion.complete(9, 'from os.p'),
+                            set(['os.path']))
 
     def test_from_package(self):
-        self.assertEqual(sorted(importcompletion.complete(17, 'from xml import d')),
-                         ['dom'])
-
+        self.assertSetEqual(importcompletion.complete(17, 'from xml import d'),
+                            set(['dom']))

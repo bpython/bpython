@@ -56,7 +56,6 @@ class TestManualReadline(unittest.TestCase):
 
     def test_forward_word(self):
         line = "going from here to_here"
-               #012345678901234567890123
         start_pos = 11
         next_word_pos = 15
         expected = (next_word_pos, line)
@@ -70,7 +69,6 @@ class TestManualReadline(unittest.TestCase):
 
     def test_forward_word_tabs(self):
         line = "going from here      to_here"
-               #01234567890123456789012345678
         start_pos = 11
         next_word_pos = 15
         expected = (next_word_pos, line)
@@ -84,7 +82,6 @@ class TestManualReadline(unittest.TestCase):
 
     def test_forward_word_end(self):
         line = "going from here to_here"
-               #012345678901234567890123
         start_pos = 16
         next_word_pos = 23
         expected = (next_word_pos, line)
@@ -103,7 +100,6 @@ class TestManualReadline(unittest.TestCase):
 
     def test_forward_word_empty(self):
         line = ""
-               #0
         start_pos = 0
         next_word_pos = 0
         expected = (next_word_pos, line)
@@ -154,25 +150,28 @@ class TestManualReadline(unittest.TestCase):
         self.assertEquals(delete_from_cursor_forward(0, ''), (0, '', ''))
 
     def test_delete_rest_of_word(self):
-        self.try_stages_kill(['z|s;df asdf d s;a;a',
-                         'z|;df asdf d s;a;a',
-                         'z| asdf d s;a;a',
-                         'z| d s;a;a',
-                         'z| s;a;a',
-                         'z|;a;a',
-                         'z|;a',
-                         'z|',
-                         'z|'], delete_rest_of_word)
+        self.try_stages_kill([
+            'z|s;df asdf d s;a;a',
+            'z|;df asdf d s;a;a',
+            'z| asdf d s;a;a',
+            'z| d s;a;a',
+            'z| s;a;a',
+            'z|;a;a',
+            'z|;a',
+            'z|',
+            'z|'],
+            delete_rest_of_word)
 
     def test_delete_word_to_cursor(self):
         self.try_stages_kill([
-                        '  a;d sdf ;a;s;d; fjksald|a',
-                        '  a;d sdf ;a;s;d; |a',
-                        '  a;d sdf |a',
-                        '  a;d |a',
-                        '  |a',
-                        '|a',
-                        '|a'], delete_word_to_cursor)
+            '  a;d sdf ;a;s;d; fjksald|a',
+            '  a;d sdf ;a;s;d; |a',
+            '  a;d sdf |a',
+            '  a;d |a',
+            '  |a',
+            '|a',
+            '|a'],
+            delete_word_to_cursor)
 
     def test_yank_prev_killed_text(self):
         pass
@@ -185,7 +184,8 @@ class TestManualReadline(unittest.TestCase):
             raise ValueError("Need to use '|' to specify cursor")
 
         stages = [(s.index('|'), s.replace('|', '')) for s in strings]
-        for (initial_pos, initial), (final_pos, final) in zip(stages[:-1], stages[1:]):
+        for (initial_pos, initial), (final_pos, final) in zip(stages[:-1],
+                                                              stages[1:]):
             self.assertEquals(func(initial_pos, initial), (final_pos, final))
 
     def try_stages_kill(self, strings, func):
@@ -193,9 +193,10 @@ class TestManualReadline(unittest.TestCase):
             raise ValueError("Need to use '|' to specify cursor")
 
         stages = [(s.index('|'), s.replace('|', '')) for s in strings]
-        for (initial_pos, initial), (final_pos, final) in zip(stages[:-1], stages[1:]):
-            self.assertEquals(func(initial_pos, initial)[:-1], (final_pos, final))
-
+        for (initial_pos, initial), (final_pos, final) in zip(stages[:-1],
+                                                              stages[1:]):
+            self.assertEquals(func(initial_pos, initial)[:-1],
+                              (final_pos, final))
 
     def test_transpose_character_before_cursor(self):
         self.try_stages(["as|df asdf",
@@ -213,16 +214,18 @@ class TestManualReadline(unittest.TestCase):
 
     def test_delete_word_from_cursor_back(self):
         self.try_stages_kill([
-                   "asd;fljk asd;lfjas;dlkfj asdlk jasdf;ljk|",
-                   "asd;fljk asd;lfjas;dlkfj asdlk jasdf;|",
-                   "asd;fljk asd;lfjas;dlkfj asdlk |",
-                   "asd;fljk asd;lfjas;dlkfj |",
-                   "asd;fljk asd;lfjas;|",
-                   "asd;fljk asd;|",
-                   "asd;fljk |",
-                   "asd;|",
-                   "|",
-                   "|"], delete_word_from_cursor_back)
+            "asd;fljk asd;lfjas;dlkfj asdlk jasdf;ljk|",
+            "asd;fljk asd;lfjas;dlkfj asdlk jasdf;|",
+            "asd;fljk asd;lfjas;dlkfj asdlk |",
+            "asd;fljk asd;lfjas;dlkfj |",
+            "asd;fljk asd;lfjas;|",
+            "asd;fljk asd;|",
+            "asd;fljk |",
+            "asd;|",
+            "|",
+            "|"],
+            delete_word_from_cursor_back)
+
 
 class TestEdits(unittest.TestCase):
 
@@ -256,7 +259,10 @@ class TestEdits(unittest.TestCase):
         g = lambda cursor_offset, line: ('hey', 3)
         self.edits.add_config_attr('att', f)
         self.assertNotIn('att', self.edits)
-        class config: att = 'c'
+
+        class config(object):
+            att = 'c'
+
         key_dispatch = {'c': 'c'}
         configured_edits = self.edits.mapping_with_config(config, key_dispatch)
         self.assertTrue(configured_edits.__contains__, 'c')
@@ -265,7 +271,8 @@ class TestEdits(unittest.TestCase):
                           configured_edits.add_config_attr, 'att2', g)
         self.assertRaises(NotImplementedError,
                           configured_edits.add, 'd', g)
-        self.assertEqual(configured_edits.call('c', cursor_offset=5, line='asfd'),
+        self.assertEqual(configured_edits.call('c', cursor_offset=5,
+                                               line='asfd'),
                          ('hi', 2))
 
 

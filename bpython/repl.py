@@ -74,6 +74,7 @@ class RuntimeTimer(object):
     def estimate(self):
         return self.running_time - self.last_command
 
+
 class Interpreter(code.InteractiveInterpreter):
 
     def __init__(self, locals=None, encoding=None):
@@ -87,7 +88,8 @@ class Interpreter(code.InteractiveInterpreter):
 
         self.encoding = encoding or sys.getdefaultencoding()
         self.syntaxerror_callback = None
-        # Unfortunately code.InteractiveInterpreter is a classic class, so no super()
+        # Unfortunately code.InteractiveInterpreter is a classic class, so no
+        # super()
         code.InteractiveInterpreter.__init__(self, locals)
         self.timer = RuntimeTimer()
 
@@ -107,8 +109,8 @@ class Interpreter(code.InteractiveInterpreter):
                       encode=True):
             with self.timer:
                 if encode:
-                    source = '# coding: %s\n%s' % (self.encoding,
-                                                   source.encode(self.encoding))
+                    source = '# coding: %s\n%s' % (
+                        self.encoding, source.encode(self.encoding))
                 return code.InteractiveInterpreter.runsource(self, source,
                                                              filename, symbol)
 
@@ -151,9 +153,9 @@ class Interpreter(code.InteractiveInterpreter):
             del tblist[:1]
             # Set the right lineno (encoding header adds an extra line)
             if not py3:
-                for i, (filename, lineno, module, something) in enumerate(tblist):
-                    if filename == '<input>':
-                        tblist[i] = (filename, lineno - 1, module, something)
+                for i, (fname, lineno, module, something) in enumerate(tblist):
+                    if fname == '<input>':
+                        tblist[i] = (fname, lineno - 1, module, something)
 
             l = traceback.format_list(tblist)
             if l:
@@ -181,12 +183,18 @@ class MatchesIterator(object):
     `update`ed to set what matches will be iterated over."""
 
     def __init__(self):
-        self.current_word = ''           # word being replaced in the original line of text
-        self.matches = None              # possible replacements for current_word
-        self.index = -1                  # which word is currently replacing the current word
-        self.orig_cursor_offset = None   # cursor position in the original line
-        self.orig_line = None            # original line (before match replacements)
-        self.completer = None            # class describing the current type of completion
+        # word being replaced in the original line of text
+        self.current_word = ''
+        # possible replacements for current_word
+        self.matches = None
+        # which word is currently replacing the current word
+        self.index = -1
+        # cursor position in the original line
+        self.orig_cursor_offset = None
+        # original line (before match replacements)
+        self.orig_line = None
+        # class describing the current type of completion
+        self.completer = None
 
     def __nonzero__(self):
         """MatchesIterator is False when word hasn't been replaced yet"""
@@ -197,7 +205,8 @@ class MatchesIterator(object):
 
     @property
     def candidate_selected(self):
-        """True when word selected/replaced, False when word hasn't been replaced yet"""
+        """True when word selected/replaced, False when word hasn't been
+        replaced yet"""
         return bool(self)
 
     def __iter__(self):
@@ -224,26 +233,31 @@ class MatchesIterator(object):
         return self.matches[self.index]
 
     def cur_line(self):
-        """Returns a cursor offset and line with the current substitution made"""
+        """Returns a cursor offset and line with the current substitution
+        made"""
         return self.substitute(self.current())
 
     def substitute(self, match):
         """Returns a cursor offset and line with match substituted in"""
-        start, end, word = self.completer.locate(self.orig_cursor_offset, self.orig_line)
-        result = start + len(match), self.orig_line[:start] + match + self.orig_line[end:]
-        return result
+        start, end, word = self.completer.locate(self.orig_cursor_offset,
+                                                 self.orig_line)
+        return (start + len(match),
+                self.orig_line[:start] + match + self.orig_line[end:])
 
     def is_cseq(self):
-        return bool(os.path.commonprefix(self.matches)[len(self.current_word):])
+        return bool(
+            os.path.commonprefix(self.matches)[len(self.current_word):])
 
     def substitute_cseq(self):
-        """Returns a new line by substituting a common sequence in, and update matches"""
+        """Returns a new line by substituting a common sequence in, and update
+        matches"""
         cseq = os.path.commonprefix(self.matches)
         new_cursor_offset, new_line = self.substitute(cseq)
         if len(self.matches) == 1:
             self.clear()
         else:
-            self.update(new_cursor_offset, new_line, self.matches, self.completer)
+            self.update(new_cursor_offset, new_line, self.matches,
+                        self.completer)
             if len(self.matches) == 1:
                 self.clear()
         return new_cursor_offset, new_line
@@ -251,7 +265,8 @@ class MatchesIterator(object):
     def update(self, cursor_offset, current_line, matches, completer):
         """Called to reset the match index and update the word being replaced
 
-        Should only be called if there's a target to update - otherwise, call clear"""
+        Should only be called if there's a target to update - otherwise, call
+        clear"""
 
         if matches is None:
             raise ValueError("Matches may not be None.")
@@ -261,7 +276,8 @@ class MatchesIterator(object):
         self.matches = matches
         self.completer = completer
         self.index = -1
-        self.start, self.end, self.current_word = self.completer.locate(self.orig_cursor_offset, self.orig_line)
+        self.start, self.end, self.current_word = self.completer.locate(
+            self.orig_cursor_offset, self.orig_line)
 
     def clear(self):
         self.matches = []
@@ -271,6 +287,7 @@ class MatchesIterator(object):
         self.start = None
         self.end = None
         self.index = -1
+
 
 class Interaction(object):
     def __init__(self, config, statusbar=None):
@@ -395,7 +412,8 @@ class Repl(object):
                 if py3:
                     self.interp.runsource(f.read(), filename, 'exec')
                 else:
-                    self.interp.runsource(f.read(), filename, 'exec', encode=False)
+                    self.interp.runsource(f.read(), filename, 'exec',
+                                          encode=False)
 
     def current_string(self, concatenate=False):
         """If the line ends in a string get it, otherwise return ''"""
@@ -449,7 +467,7 @@ class Repl(object):
         stack = [['', 0, '']]
         try:
             for (token, value) in PythonLexer().get_tokens(
-                self.current_line):
+                    self.current_line):
                 if token is Token.Punctuation:
                     if value in '([{':
                         stack.append(['', 0, value])
@@ -548,7 +566,8 @@ class Repl(object):
                     self.docstring = None
 
     # What complete() does:
-    # Should we show the completion box? (are there matches, or is there a docstring to show?)
+    # Should we show the completion box? (are there matches, or is there a
+    # docstring to show?)
     #   Some completions should always be shown, other only if tab=True
     # set the current docstring to the "current function's" docstring
     # Populate the matches_iter object with new matches from the current state
@@ -579,7 +598,8 @@ class Repl(object):
             current_block='\n'.join(self.buffer + [self.current_line]),
             complete_magic_methods=self.config.complete_magic_methods,
             history=self.history)
-        #TODO implement completer.shown_before_tab == False (filenames shouldn't fill screen)
+        # TODO implement completer.shown_before_tab == False (filenames
+        # shouldn't fill screen)
 
         if len(matches) == 0:
             self.matches_iter.clear()
@@ -589,9 +609,12 @@ class Repl(object):
                                  self.current_line, matches, completer)
 
         if len(matches) == 1:
-            if tab: # if this complete is being run for a tab key press, substitute common sequence
-                self._cursor_offset, self._current_line = self.matches_iter.substitute_cseq()
-                return Repl.complete(self) # again for 
+            if tab:
+                # if this complete is being run for a tab key press, substitute
+                # common sequence
+                self._cursor_offset, self._current_line = \
+                    self.matches_iter.substitute_cseq()
+                return Repl.complete(self)  # again for
             elif self.matches_iter.current_word == matches[0]:
                 self.matches_iter.clear()
                 return False
@@ -716,7 +739,7 @@ class Repl(object):
             s = self.getstdout()
 
         if (self.config.pastebin_confirm and
-            not self.interact.confirm(_("Pastebin buffer? (y/N) "))):
+                not self.interact.confirm(_("Pastebin buffer? (y/N) "))):
             self.interact.notify(_("Pastebin aborted."))
             return
         return self.do_pastebin(s)
@@ -724,8 +747,10 @@ class Repl(object):
     def do_pastebin(self, s):
         """Actually perform the upload."""
         if s == self.prev_pastebin_content:
-            self.interact.notify(_('Duplicate pastebin. Previous URL: %s. Removal URL: %s') %
-                                  (self.prev_pastebin_url, self.prev_removal_url), 10)
+            self.interact.notify(_('Duplicate pastebin. Previous URL: %s. '
+                                   'Removal URL: %s') %
+                                  (self.prev_pastebin_url,
+                                   self.prev_removal_url), 10)
             return self.prev_pastebin_url
 
         if self.config.pastebin_helper:
@@ -748,8 +773,8 @@ class Repl(object):
             response = requests.post(url, data=payload, verify=True)
             response.raise_for_status()
         except requests.exceptions.RequestException as exc:
-          self.interact.notify(_('Upload failed: %s') % (str(exc), ))
-          return
+            self.interact.notify(_('Upload failed: %s') % (str(exc), ))
+            return
 
         self.prev_pastebin_content = s
         data = response.json()
@@ -760,10 +785,11 @@ class Repl(object):
 
         removal_url_template = Template(self.config.pastebin_removal_url)
         removal_id = urlquote(data['removal_id'])
-        removal_url = removal_url_template.safe_substitute(removal_id=removal_id)
+        removal_url = removal_url_template.safe_substitute(
+            removal_id=removal_id)
 
         self.prev_pastebin_url = paste_url
-        self.prev_removal_url  = removal_url
+        self.prev_removal_url = removal_url
         self.interact.notify(_('Pastebin URL: %s - Removal URL: %s') %
                              (paste_url, removal_url), 10)
 
@@ -803,7 +829,8 @@ class Repl(object):
         else:
             parsed_url = urlparse(paste_url)
             if (not parsed_url.scheme
-                or any(unicodedata.category(c) == 'Cc' for c in paste_url)):
+                    or any(unicodedata.category(c) == 'Cc'
+                           for c in paste_url)):
                 self.interact.notify(_("Upload failed: "
                                        "Failed to recognize the helper "
                                        "program's output as an URL."))
@@ -839,7 +866,7 @@ class Repl(object):
     def prompt_undo(self):
         """Returns how many lines to undo, 0 means don't undo"""
         if (self.config.single_undo_time < 0 or
-            self.interp.timer.estimate() < self.config.single_undo_time):
+                self.interp.timer.estimate() < self.config.single_undo_time):
             return 1
         est = self.interp.timer.estimate()
         n = self.interact.file_prompt(
@@ -858,7 +885,8 @@ class Repl(object):
                 return 0
             else:
                 message = ngettext('Undoing %d line... (est. %.1f seconds)',
-                                   'Undoing %d lines... (est. %.1f seconds)', n)
+                                   'Undoing %d lines... (est. %.1f seconds)',
+                                   n)
                 self.interact.notify(message % (n, est), .1)
             return n
 
@@ -904,10 +932,10 @@ class Repl(object):
         with side effects/impurities:
         - reads self.cpos to see what parens should be highlighted
         - reads self.buffer to see what came before the passed in line
-        - sets self.highlighted_paren to (buffer_lineno, tokens_for_that_line) for buffer line
-            that should replace that line to unhighlight it
-        - calls reprint_line with a buffer's line's tokens and the buffer lineno that has changed
-            iff that line is the not the current line
+        - sets self.highlighted_paren to (buffer_lineno, tokens_for_that_line)
+          for buffer line that should replace that line to unhighlight it
+        - calls reprint_line with a buffer's line's tokens and the buffer
+          lineno that has changed iff that line is the not the current line
         """
 
         source = '\n'.join(self.buffer + [s])
@@ -1021,17 +1049,20 @@ class Repl(object):
 
     def edit_config(self):
         if not (os.path.isfile(self.config.config_path)):
-            if self.interact.confirm(_("Config file does not exist - create new from default? (y/N)")):
+            if self.interact.confirm(_("Config file does not exist - create "
+                                       "new from default? (y/N)")):
                 try:
-                    default_config = pkgutil.get_data('bpython', 'sample-config')
+                    default_config = pkgutil.get_data('bpython',
+                                                      'sample-config')
                     bpython_dir, script_name = os.path.split(__file__)
-                    containing_dir = os.path.dirname(os.path.abspath(self.config.config_path))
+                    containing_dir = os.path.dirname(
+                        os.path.abspath(self.config.config_path))
                     if not os.path.exists(containing_dir):
                         os.makedirs(containing_dir)
                     with open(self.config.config_path, 'w') as f:
                         f.write(default_config)
                 except (IOError, OSError) as e:
-                    self.interact.notify(_("Error writing file '%s': %s") % \
+                    self.interact.notify(_("Error writing file '%s': %s") %
                                          (self.config.config.path, str(e)))
                     return False
             else:
@@ -1104,6 +1135,7 @@ def token_is_any_of(token_types):
         return any(check(token) for check in is_token_types)
 
     return token_is_any_of
+
 
 def extract_exit_value(args):
     """Given the arguments passed to `SystemExit`, return the value that

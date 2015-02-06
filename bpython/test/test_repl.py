@@ -2,6 +2,7 @@ import collections
 from itertools import islice
 import os
 import socket
+from six.moves import range
 
 from mock import Mock
 
@@ -22,6 +23,7 @@ def setup_config(conf):
         config_struct.autocomplete_mode = conf['autocomplete_mode']
     return config_struct
 
+
 class FakeHistory(repl.History):
 
     def __init__(self):
@@ -30,17 +32,20 @@ class FakeHistory(repl.History):
     def reset(self):
         pass
 
+
 class FakeRepl(repl.Repl):
     def __init__(self, conf={}):
         repl.Repl.__init__(self, repl.Interpreter(), setup_config(conf))
         self.current_line = ""
         self.cursor_offset = 0
 
+
 class FakeCliRepl(cli.CLIRepl, FakeRepl):
     def __init__(self):
         self.s = ''
         self.cpos = 0
         self.rl_history = FakeHistory()
+
 
 class TestMatchesIterator(unittest.TestCase):
 
@@ -104,9 +109,10 @@ class TestMatchesIterator(unittest.TestCase):
 
     def test_cur_line(self):
         completer = Mock()
-        completer.locate.return_value = (0,
-                self.matches_iterator.orig_cursor_offset,
-                self.matches_iterator.orig_line)
+        completer.locate.return_value = (
+            0,
+            self.matches_iterator.orig_cursor_offset,
+            self.matches_iterator.orig_line)
         self.matches_iterator.completer = completer
 
         self.assertRaises(ValueError, self.matches_iterator.cur_line)
@@ -196,7 +202,8 @@ class TestGetSource(unittest.TestCase):
 
     def assert_get_source_error_for_current_function(self, func, msg):
         self.repl.current_func = func
-        self.assertRaises(repl.SourceNotFound, self.repl.get_source_of_current_name)
+        self.assertRaises(repl.SourceNotFound,
+                          self.repl.get_source_of_current_name)
         try:
             self.repl.get_source_of_current_name()
         except repl.SourceNotFound as e:
@@ -205,26 +212,27 @@ class TestGetSource(unittest.TestCase):
     def test_current_function(self):
         self.set_input_line('INPUTLINE')
         self.repl.current_func = collections.MutableSet.add
-        self.assertIn("Add an element.", self.repl.get_source_of_current_name())
+        self.assertIn("Add an element.",
+                      self.repl.get_source_of_current_name())
 
         self.assert_get_source_error_for_current_function(
-                collections.defaultdict.copy, "No source code found for INPUTLINE")
+            collections.defaultdict.copy, "No source code found for INPUTLINE")
 
         self.assert_get_source_error_for_current_function(
-                collections.defaultdict, "could not find class definition")
+            collections.defaultdict, "could not find class definition")
 
         self.assert_get_source_error_for_current_function(
-                [], "No source code found for INPUTLINE")
+            [], "No source code found for INPUTLINE")
 
         self.assert_get_source_error_for_current_function(
-                list.pop, "No source code found for INPUTLINE")
+            list.pop, "No source code found for INPUTLINE")
 
     def test_current_line(self):
         self.repl.interp.locals['a'] = socket.socket
         self.set_input_line('a')
         self.assertIn('dup(self)', self.repl.get_source_of_current_name())
 
-#TODO add tests for various failures without using current function
+# TODO add tests for various failures without using current function
 
 
 class TestRepl(unittest.TestCase):
@@ -239,7 +247,8 @@ class TestRepl(unittest.TestCase):
 
     def test_current_string(self):
         self.setInputLine('a = "2"')
-        self.repl.cpos = 0 #TODO factor cpos out of repl.Repl
+        # TODO factor cpos out of repl.Repl
+        self.repl.cpos = 0
         self.assertEqual(self.repl.current_string(), '"2"')
 
         self.setInputLine('a = "2" + 2')
@@ -259,7 +268,8 @@ class TestRepl(unittest.TestCase):
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
         self.assertEqual(self.repl.matches_iter.matches,
-            ['def', 'del', 'delattr(', 'dict(', 'dir(', 'divmod('])
+                         ['def', 'del', 'delattr(', 'dict(', 'dir(',
+                          'divmod('])
 
     @unittest.skip("disabled while non-simple completion is disabled")
     def test_substring_global_complete(self):
@@ -267,9 +277,9 @@ class TestRepl(unittest.TestCase):
         self.setInputLine("time")
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.completer,'matches'))
+        self.assertTrue(hasattr(self.repl.completer, 'matches'))
         self.assertEqual(self.repl.completer.matches,
-            ['RuntimeError(', 'RuntimeWarning('])
+                         ['RuntimeError(', 'RuntimeWarning('])
 
     @unittest.skip("disabled while non-simple completion is disabled")
     def test_fuzzy_global_complete(self):
@@ -277,9 +287,9 @@ class TestRepl(unittest.TestCase):
         self.setInputLine("doc")
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.completer,'matches'))
+        self.assertTrue(hasattr(self.repl.completer, 'matches'))
         self.assertEqual(self.repl.completer.matches,
-            ['UnboundLocalError(', '__doc__'])
+                         ['UnboundLocalError(', '__doc__'])
 
     # 2. Attribute tests
     def test_simple_attribute_complete(self):
@@ -291,9 +301,8 @@ class TestRepl(unittest.TestCase):
             self.repl.push(line)
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.matches_iter,'matches'))
-        self.assertEqual(self.repl.matches_iter.matches,
-            ['Foo.bar'])
+        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
+        self.assertEqual(self.repl.matches_iter.matches, ['Foo.bar'])
 
     @unittest.skip("disabled while non-simple completion is disabled")
     def test_substring_attribute_complete(self):
@@ -305,9 +314,8 @@ class TestRepl(unittest.TestCase):
             self.repl.push(line)
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.completer,'matches'))
-        self.assertEqual(self.repl.completer.matches,
-            ['Foo.baz'])
+        self.assertTrue(hasattr(self.repl.completer, 'matches'))
+        self.assertEqual(self.repl.completer.matches, ['Foo.baz'])
 
     @unittest.skip("disabled while non-simple completion is disabled")
     def test_fuzzy_attribute_complete(self):
@@ -319,9 +327,8 @@ class TestRepl(unittest.TestCase):
             self.repl.push(line)
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.completer,'matches'))
-        self.assertEqual(self.repl.completer.matches,
-            ['Foo.bar'])
+        self.assertTrue(hasattr(self.repl.completer, 'matches'))
+        self.assertEqual(self.repl.completer.matches, ['Foo.bar'])
 
     # 3. Edge Cases
     def test_updating_namespace_complete(self):
@@ -330,15 +337,14 @@ class TestRepl(unittest.TestCase):
         self.repl.push("foobar = 2")
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.matches_iter,'matches'))
-        self.assertEqual(self.repl.matches_iter.matches,
-            ['foobar'])
+        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
+        self.assertEqual(self.repl.matches_iter.matches, ['foobar'])
 
     def test_file_should_not_appear_in_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
         self.setInputLine("_")
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.matches_iter,'matches'))
+        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
         self.assertNotIn('__file__', self.repl.matches_iter.matches)
 
 
@@ -366,6 +372,7 @@ class TestCliRepl(unittest.TestCase):
         self.repl.cpos = 3
         self.repl.addstr('buzz')
         self.assertEqual(self.repl.s, "foobuzzbar")
+
 
 class TestCliReplTab(unittest.TestCase):
 

@@ -21,6 +21,7 @@ else:
     def ngettext(singular, plural, n):
         return translator.ungettext(singular, plural, n)
 
+
 def init(locale_dir=None, languages=None):
     try:
         locale.setlocale(locale.LC_ALL, '')
@@ -37,4 +38,3 @@ def init(locale_dir=None, languages=None):
 
     translator = gettext.translation('bpython', locale_dir, languages,
                                      fallback=True)
-

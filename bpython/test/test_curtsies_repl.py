@@ -28,7 +28,7 @@ def setup_config(conf):
     config.loadini(config_struct, os.devnull)
     for key, value in conf.items():
         if not hasattr(config_struct, key):
-            raise ValueError("%r is not a valid config attribute" % (key,))
+            raise ValueError("%r is not a valid config attribute" % (key, ))
         setattr(config_struct, key, value)
     return config_struct
 
@@ -39,7 +39,8 @@ class TestCurtsiesRepl(TestCase):
         self.repl = create_repl()
 
     def cfwp(self, source):
-        return interpreter.code_finished_will_parse(source, self.repl.interp.compile)
+        return interpreter.code_finished_will_parse(source,
+                                                    self.repl.interp.compile)
 
     def test_code_finished_will_parse(self):
         self.repl.buffer = ['1 + 1']
@@ -67,25 +68,26 @@ class TestCurtsiesRepl(TestCase):
             self.repl.send_session_to_external_editor()
 
     def test_get_last_word(self):
-        self.repl.rl_history.entries=['1','2 3','4 5 6']
+        self.repl.rl_history.entries = ['1', '2 3', '4 5 6']
         self.repl._set_current_line('abcde')
         self.repl.get_last_word()
-        self.assertEqual(self.repl.current_line,'abcde6')
+        self.assertEqual(self.repl.current_line, 'abcde6')
         self.repl.get_last_word()
-        self.assertEqual(self.repl.current_line,'abcde3')
+        self.assertEqual(self.repl.current_line, 'abcde3')
 
-    @unittest.skip # this is the behavior of bash - not currently implemented
+    # this is the behavior of bash - not currently implemented
+    @unittest.skip
     def test_get_last_word_with_prev_line(self):
-        self.repl.rl_history.entries=['1','2 3','4 5 6']
+        self.repl.rl_history.entries = ['1', '2 3', '4 5 6']
         self.repl._set_current_line('abcde')
         self.repl.up_one_line()
-        self.assertEqual(self.repl.current_line,'4 5 6')
+        self.assertEqual(self.repl.current_line, '4 5 6')
         self.repl.get_last_word()
-        self.assertEqual(self.repl.current_line,'4 5 63')
+        self.assertEqual(self.repl.current_line, '4 5 63')
         self.repl.get_last_word()
-        self.assertEqual(self.repl.current_line,'4 5 64')
+        self.assertEqual(self.repl.current_line, '4 5 64')
         self.repl.up_one_line()
-        self.assertEqual(self.repl.current_line,'2 3')
+        self.assertEqual(self.repl.current_line, '2 3')
 
 
 def mock_next(obj, return_value):
@@ -94,13 +96,16 @@ def mock_next(obj, return_value):
     else:
         obj.next.return_value = return_value
 
+
 class TestCurtsiesReplTab(TestCase):
 
     def setUp(self):
         self.repl = create_repl()
         self.repl.matches_iter = MagicIterMock()
+
         def add_matches(*args, **kwargs):
             self.repl.matches_iter.matches = ['aaa', 'aab', 'aac']
+
         self.repl.complete = Mock(side_effect=add_matches,
                                   return_value=True)
 
@@ -163,7 +168,7 @@ class TestCurtsiesReplFilenameCompletion(TestCase):
     def setUp(self):
         self.repl = create_repl()
 
-    def test_list_win_visible_and_match_selected_on_tab_when_multiple_options(self):
+    def test_list_win_visible_match_selected_on_tab_multiple_options(self):
         self.repl._current_line = " './'"
         self.repl._cursor_offset = 2
         with patch('bpython.autocomplete.get_completer_bpython') as mock:
@@ -201,7 +206,8 @@ class TestCurtsiesReplFilenameCompletion(TestCase):
         self.assertEqual(self.repl.list_win_visible, False)
 
 
-@contextmanager # from http://stackoverflow.com/a/17981937/398212 - thanks @rkennedy
+# from http://stackoverflow.com/a/17981937/398212 - thanks @rkennedy
+@contextmanager
 def captured_output():
     new_out, new_err = StringIO(), StringIO()
     old_out, old_err = sys.stdout, sys.stderr
@@ -211,6 +217,7 @@ def captured_output():
     finally:
         sys.stdout, sys.stderr = old_out, old_err
 
+
 def create_repl(**kwargs):
     config = setup_config({'editor': 'true'})
     repl = curtsiesrepl.Repl(config=config, **kwargs)
@@ -218,6 +225,7 @@ def create_repl(**kwargs):
     repl.width = 50
     repl.height = 20
     return repl
+
 
 class TestFutureImports(TestCase):
 
@@ -242,6 +250,7 @@ class TestFutureImports(TestCase):
 
         self.assertEqual(out.getvalue(), '0.5\n0.5\n')
 
+
 class TestPredictedIndent(TestCase):
     def setUp(self):
         self.repl = create_repl()
@@ -255,8 +264,8 @@ class TestPredictedIndent(TestCase):
 
     @unittest.skip
     def test_complex(self):
-        self.assertEqual(self.repl.predicted_indent('[a,'), 1)
-        self.assertEqual(self.repl.predicted_indent('reduce(asdfasdf,'), 7)
+        self.assertEqual(self.repl.predicted_indent('[a, '), 1)
+        self.assertEqual(self.repl.predicted_indent('reduce(asdfasdf, '), 7)
 
 
 class TestCurtsiesReevaluate(TestCase):
@@ -269,6 +278,7 @@ class TestCurtsiesReevaluate(TestCase):
         self.assertIn('b', self.repl.interp.locals)
         self.repl.undo()
         self.assertNotIn('b', self.repl.interp.locals)
+
 
 class TestCurtsiesPagerText(TestCase):
 
@@ -295,6 +305,7 @@ class TestCurtsiesPagerText(TestCase):
         self.repl.config.highlight_show_source = True
         self.repl.get_source_of_current_name = lambda: 'source code å∂ßƒåß∂ƒ'
         self.repl.show_source()
+
 
 if __name__ == '__main__':
     unittest.main()

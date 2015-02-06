@@ -7,6 +7,7 @@ except ImportError:
 
 from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 
+
 class TestCodeRunner(unittest.TestCase):
 
     def setUp(self):
@@ -18,7 +19,8 @@ class TestCodeRunner(unittest.TestCase):
         sys.stderr = self.orig_stderr
 
     def test_simple(self):
-        c = CodeRunner(request_refresh=lambda: self.orig_stdout.flush() or self.orig_stderr.flush())
+        c = CodeRunner(request_refresh=lambda: self.orig_stdout.flush() or
+                       self.orig_stderr.flush())
         stdout = FakeOutput(c, lambda *args, **kwargs: None)
         stderr = FakeOutput(c, lambda *args, **kwargs: None)
         sys.stdout = stdout
@@ -29,9 +31,12 @@ class TestCodeRunner(unittest.TestCase):
         c.run_code()
 
     def test_exception(self):
-        c = CodeRunner(request_refresh=lambda: self.orig_stdout.flush() or self.orig_stderr.flush())
+        c = CodeRunner(request_refresh=lambda: self.orig_stdout.flush() or
+                       self.orig_stderr.flush())
+
         def ctrlc():
             raise KeyboardInterrupt()
+
         stdout = FakeOutput(c, lambda x: ctrlc())
         stderr = FakeOutput(c, lambda *args, **kwargs: None)
         sys.stdout = stdout

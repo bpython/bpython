@@ -35,23 +35,28 @@ class TestFormatters(unittest.TestCase):
     def test_attribute(self):
         self.assertEqual(autocomplete.after_last_dot('abc.edf'), 'edf')
 
+
 def completer(matches):
     mock_completer = autocomplete.BaseCompletionType()
     mock_completer.matches = mock.Mock(return_value=matches)
     return mock_completer
 
+
 class TestGetCompleter(unittest.TestCase):
 
     def test_no_completers(self):
-        self.assertTupleEqual(autocomplete.get_completer([], 0, ''), ([], None))
+        self.assertTupleEqual(autocomplete.get_completer([], 0, ''),
+                              ([], None))
 
     def test_one_completer_without_matches_returns_empty_list_and_none(self):
         a = completer([])
-        self.assertTupleEqual(autocomplete.get_completer([a], 0, ''), ([], None))
+        self.assertTupleEqual(autocomplete.get_completer([a], 0, ''),
+                              ([], None))
 
     def test_one_completer_returns_matches_and_completer(self):
         a = completer(['a'])
-        self.assertTupleEqual(autocomplete.get_completer([a], 0, ''), (['a'], a))
+        self.assertTupleEqual(autocomplete.get_completer([a], 0, ''),
+                              (['a'], a))
 
     def test_two_completers_with_matches_returns_first_matches(self):
         a = completer(['a'])
@@ -71,6 +76,7 @@ class TestGetCompleter(unittest.TestCase):
         a = completer(None)
         b = completer(['a'])
         self.assertEqual(autocomplete.get_completer([a, b], 0, ''), (['a'], b))
+
 
 class TestCumulativeCompleter(unittest.TestCase):
 
@@ -119,7 +125,8 @@ class TestFilenameCompletion(unittest.TestCase):
     def test_match_returns_empty_list_when_no_files(self):
         self.assertEqual(self.completer.matches(2, '"a'), set())
 
-    @mock.patch('bpython.autocomplete.glob', new=lambda text: ['abcde', 'aaaaa'])
+    @mock.patch('bpython.autocomplete.glob',
+                new=lambda text: ['abcde', 'aaaaa'])
     @mock.patch('os.path.expanduser', new=lambda text: text)
     @mock.patch('os.path.isdir', new=lambda text: False)
     @mock.patch('os.path.sep', new='/')
@@ -127,7 +134,8 @@ class TestFilenameCompletion(unittest.TestCase):
         self.assertEqual(sorted(self.completer.matches(2, '"x')),
                          ['aaaaa', 'abcde'])
 
-    @mock.patch('bpython.autocomplete.glob', new=lambda text: ['abcde', 'aaaaa'])
+    @mock.patch('bpython.autocomplete.glob',
+                new=lambda text: ['abcde', 'aaaaa'])
     @mock.patch('os.path.expanduser', new=lambda text: text)
     @mock.patch('os.path.isdir', new=lambda text: True)
     @mock.patch('os.path.sep', new='/')
@@ -135,8 +143,10 @@ class TestFilenameCompletion(unittest.TestCase):
         self.assertEqual(sorted(self.completer.matches(2, '"x')),
                          ['aaaaa/', 'abcde/'])
 
-    @mock.patch('bpython.autocomplete.glob', new=lambda text: ['/expand/ed/abcde', '/expand/ed/aaaaa'])
-    @mock.patch('os.path.expanduser', new=lambda text: text.replace('~', '/expand/ed'))
+    @mock.patch('bpython.autocomplete.glob',
+                new=lambda text: ['/expand/ed/abcde', '/expand/ed/aaaaa'])
+    @mock.patch('os.path.expanduser',
+                new=lambda text: text.replace('~', '/expand/ed'))
     @mock.patch('os.path.isdir', new=lambda text: False)
     @mock.patch('os.path.sep', new='/')
     def test_tilde_stays_pretty(self):
@@ -148,12 +158,14 @@ class TestFilenameCompletion(unittest.TestCase):
         self.assertEqual(self.completer.format('/hello/there/'), 'there/')
         self.assertEqual(self.completer.format('/hello/there'), 'there')
 
+
 class MockNumPy(object):
-    """
-        This is a mock numpy object that raises an error when there is an atempt to convert it to a boolean.
-    """
+    """This is a mock numpy object that raises an error when there is an atempt
+    to convert it to a boolean."""
+
     def __nonzero__(self):
-        raise ValueError("The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()")
+        raise ValueError("The truth value of an array with more than one "
+                         "element is ambiguous. Use a.any() or a.all()")
 
 
 class TestDictKeyCompletion(unittest.TestCase):
@@ -172,19 +184,23 @@ class TestDictKeyCompletion(unittest.TestCase):
     def test_empty_set_returned_when_not_dict_type(self):
         com = autocomplete.DictKeyCompletion()
         local = {'l': ["ab", "cd"]}
-        self.assertSetEqual(com.matches(2, "l[", locals_=local),set())
+        self.assertSetEqual(com.matches(2, "l[", locals_=local), set())
 
     def test_obj_that_does_not_allow_conversion_to_bool(self):
         com = autocomplete.DictKeyCompletion()
         local = {'mNumPy': MockNumPy()}
         self.assertSetEqual(com.matches(7, "mNumPy[", locals_=local), set())
 
+
 class Foo(object):
     a = 10
+
     def __init__(self):
         self.b = 20
+
     def method(self, x):
         pass
+
 
 class TestAttrCompletion(unittest.TestCase):
 
@@ -192,6 +208,7 @@ class TestAttrCompletion(unittest.TestCase):
         com = autocomplete.AttrCompletion()
         self.assertSetEqual(com.matches(2, 'a.', locals_={'a': Foo()}),
                             set(['a.method', 'a.a', 'a.b']))
+
 
 class TestMagicMethodCompletion(unittest.TestCase):
 
@@ -201,7 +218,9 @@ class TestMagicMethodCompletion(unittest.TestCase):
         self.assertSetEqual(com.matches(10, '    def __', current_block=block),
                             set(autocomplete.MAGIC_METHODS))
 
+
 Comp = namedtuple('Completion', ['name', 'complete'])
+
 
 class TestMultilineJediCompletion(unittest.TestCase):
 
