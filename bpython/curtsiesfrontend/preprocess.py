@@ -1,8 +1,9 @@
-"""Tools for preparing code to be run in the REPL (removing blank lines, etc)"""
+"""Tools for preparing code to be run in the REPL (removing blank lines,
+etc)"""
 
 from bpython.lazyre import LazyReCompile
 
-#TODO specifically catch IndentationErrors instead of any syntax errors
+# TODO specifically catch IndentationErrors instead of any syntax errors
 
 
 indent_empty_lines_re = LazyReCompile(r'\s*')
@@ -19,7 +20,8 @@ def indent_empty_lines(s, compiler):
         lines.pop()
     result_lines = []
 
-    for p_line, line, n_line in zip([''] + lines[:-1], lines, lines[1:] + ['']):
+    for p_line, line, n_line in zip([''] + lines[:-1], lines,
+                                    lines[1:] + ['']):
         if len(line) == 0:
             p_indent = indent_empty_lines_re.match(p_line).group()
             n_indent = indent_empty_lines_re.match(n_line).group()
@@ -28,4 +30,3 @@ def indent_empty_lines(s, compiler):
             result_lines.append(line)
 
     return '\n'.join(result_lines) + ('\n' if ends_with_newline else '')
-

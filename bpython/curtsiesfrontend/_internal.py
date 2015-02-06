@@ -24,6 +24,7 @@ import pydoc
 
 import bpython._internal
 
+
 class _Helper(bpython._internal._Helper):
 
     def __init__(self, repl=None):

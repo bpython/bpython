@@ -14,33 +14,33 @@ from bpython.curtsiesfrontend.parse import parse
 from bpython.repl import RuntimeTimer
 
 default_colors = {
-        Generic.Error:'R',
-        Keyword:'d',
-        Name:'c',
-        Name.Builtin:'g',
-        Comment:'b',
-        String:'m',
-        Error:'r',
-        Literal:'d',
-        Number:'M',
-        Number.Integer:'d',
-        Operator:'d',
-        Punctuation:'d',
-        Token:'d',
-        Whitespace:'d',
-        Token.Punctuation.Parenthesis:'R',
-        Name.Function:'d',
-        Name.Class:'d',
-    }
+    Generic.Error: 'R',
+    Keyword: 'd',
+    Name: 'c',
+    Name.Builtin: 'g',
+    Comment: 'b',
+    String: 'm',
+    Error: 'r',
+    Literal: 'd',
+    Number: 'M',
+    Number.Integer: 'd',
+    Operator: 'd',
+    Punctuation: 'd',
+    Token: 'd',
+    Whitespace: 'd',
+    Token.Punctuation.Parenthesis: 'R',
+    Name.Function: 'd',
+    Name.Class: 'd'
+}
+
 
 class BPythonFormatter(Formatter):
-    """This is subclassed from the custom formatter for bpython.
-    Its format() method receives the tokensource
-    and outfile params passed to it from the
-    Pygments highlight() method and slops
-    them into the appropriate format string
-    as defined above, then writes to the outfile
-    object the final formatted string. This does not write real strings. It writes format string (FmtStr) objects.
+    """This is subclassed from the custom formatter for bpython.  Its format()
+    method receives the tokensource and outfile params passed to it from the
+    Pygments highlight() method and slops them into the appropriate format
+    string as defined above, then writes to the outfile object the final
+    formatted string. This does not write real strings. It writes format string
+    (FmtStr) objects.
 
     See the Pygments source for more info; it's pretty
     straightforward."""
@@ -60,6 +60,7 @@ class BPythonFormatter(Formatter):
             o += "%s\x03%s\x04" % (self.f_strings[token], text)
         outfile.write(parse(o.rstrip()))
 
+
 class Interp(code.InteractiveInterpreter):
     def __init__(self, locals=None):
         """Constructor.
@@ -69,8 +70,8 @@ class Interp(code.InteractiveInterpreter):
         dictionary with key "__name__" set to "__console__" and key
         "__doc__" set to None.
 
-        We include an argument for the outfile to pass to the formatter for it to write to.
-
+        We include an argument for the outfile to pass to the formatter for it
+        to write to.
         """
         if locals is None:
             locals = {"__name__": "__console__", "__doc__": None}
@@ -111,7 +112,7 @@ class Interp(code.InteractiveInterpreter):
         l = traceback.format_exception_only(type, value)
         tbtext = ''.join(l)
         lexer = get_lexer_by_name("pytb")
-        self.format(tbtext,lexer)
+        self.format(tbtext, lexer)
 
     def showtraceback(self):
         """Display the exception that just occurred.
@@ -149,7 +150,8 @@ class Interp(code.InteractiveInterpreter):
                     traceback_code_formatter.format(cur_line, self.outfile)
                     no_format_mode = False
                 else:
-                    traceback_informative_formatter.format(cur_line, self.outfile)
+                    traceback_informative_formatter.format(cur_line,
+                                                           self.outfile)
                 cur_line = []
             elif text == '    ' and cur_line == []:
                 no_format_mode = True
@@ -164,9 +166,9 @@ class Interp(code.InteractiveInterpreter):
                 self, source, filename=filename, symbol=symbol)
 
 
-
 def code_finished_will_parse(s, compiler):
-    """Returns a tuple of whether the buffer could be complete and whether it will parse
+    """Returns a tuple of whether the buffer could be complete and whether it
+    will parse
 
     True, True means code block is finished and no predicted parse error
     True, False means code block is finished because a parse error is predicted

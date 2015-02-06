@@ -47,7 +47,8 @@ from bpython.curtsiesfrontend import events as bpythonevents
 from bpython.curtsiesfrontend.parse import parse as bpythonparse
 from bpython.curtsiesfrontend.parse import func_for_letter, color_for_letter
 from bpython.curtsiesfrontend.preprocess import indent_empty_lines
-from bpython.curtsiesfrontend.interpreter import Interp, code_finished_will_parse
+from bpython.curtsiesfrontend.interpreter import Interp, \
+    code_finished_will_parse
 
 #TODO other autocomplete modes (also fix in other bpython implementations)
 
@@ -108,7 +109,8 @@ class FakeStdin(object):
                 if ee not in self.rl_char_sequences:
                     self.add_input_character(ee)
         elif e in self.rl_char_sequences:
-            self.cursor_offset, self.current_line = self.rl_char_sequences[e](self.cursor_offset, self.current_line)
+            self.cursor_offset, self.current_line = self.rl_char_sequences[e](
+                self.cursor_offset, self.current_line)
         elif isinstance(e, events.SigIntEvent):
             self.coderunner.sigint_happened_in_main_greenlet = True
             self.has_focus = False
@@ -136,7 +138,7 @@ class FakeStdin(object):
             self.current_line = ''
             self.cursor_offset = 0
             self.repl.run_code_and_maybe_finish(for_code=line+'\n')
-        else: # add normal character
+        else:  # add normal character
             self.add_input_character(e)
 
         if self.current_line.endswith(("\n", "\r")):
@@ -188,7 +190,8 @@ class FakeStdin(object):
     #TODO write a read() method
 
 class ReevaluateFakeStdin(object):
-    """Stdin mock used during reevaluation (undo) so raw_inputs don't have to be reentered"""
+    """Stdin mock used during reevaluation (undo) so raw_inputs don't have to
+    be reentered"""
     def __init__(self, fakestdin, repl):
         self.fakestdin = fakestdin
         self.repl = repl
@@ -205,19 +208,20 @@ class Repl(BpythonRepl):
     """Python Repl
 
     Reacts to events like
-     -terminal dimensions and change events
-     -keystrokes
+     - terminal dimensions and change events
+     - keystrokes
     Behavior altered by
-     -number of scroll downs that were necessary to render array after each display
-     -initial cursor position
+     - number of scroll downs that were necessary to render array after each
+       display
+     - initial cursor position
     outputs:
-     -2D array to be rendered
+     - 2D array to be rendered
 
-    Repl is mostly view-independent state of Repl - but self.width and self.height
-    are important for figuring out how to wrap lines for example.
-    Usually self.width and self.height should be set by receiving a window resize event,
-    not manually set to anything - as long as the first event received is a window
-    resize event, this works fine.
+    Repl is mostly view-independent state of Repl - but self.width and
+    self.height are important for figuring out how to wrap lines for example.
+    Usually self.width and self.height should be set by receiving a window
+    resize event, not manually set to anything - as long as the first event
+    received is a window resize event, this works fine.
     """
 
     ## initialization, cleanup
@@ -240,12 +244,12 @@ class Repl(BpythonRepl):
         locals_ is a mapping of locals to pass into the interpreter
         config is a bpython config.Struct with config attributes
         request_refresh is a function that will be called when the Repl
-            wants to refresh the display, but wants control returned to it afterwards
-            Takes as a kwarg when= which is when to fire
-        get_term_hw is a function that returns the current width and height
-            of the terminal
-        get_cursor_vertical_diff is a function that returns how the cursor moved
-            due to a window size change
+            wants to refresh the display, but wants control returned to it
+            afterwards Takes as a kwarg when= which is when to fire
+        get_term_hw is a function that returns the current width and height of
+            the terminal
+        get_cursor_vertical_diff is a function that returns how the cursor
+            moved due to a window size change
         banner is a string to display briefly in the status bar
         interp is an interpreter to use
         """
@@ -256,18 +260,21 @@ class Repl(BpythonRepl):
             config = Struct()
             loadini(config, default_config_path())
 
-        self.weak_rewind = bool(locals_ or interp) # If creating a new interpreter on undo
-                                                   # would be unsafe because initial
-                                                   # state was passed in
+        # If creating a new interpreter on undo would be unsafe because initial
+        # state was passed in
+        self.weak_rewind = bool(locals_ or interp)
+
         if interp is None:
             interp = Interp(locals=locals_)
             interp.writetb = self.send_to_stderr
         if banner is None:
             if config.help_key:
-                banner = _('Welcome to bpython!') + ' ' + (_('Press <%s> for help.') % config.help_key)
+                banner = ' '.join((_('Welcome to bpython!'),
+                                   _('Press <%s> for help.') % config.help_key))
             else:
                 banner = None
-        config.autocomplete_mode = autocomplete.SIMPLE # only one implemented currently
+        # only one implemented currently
+        config.autocomplete_mode = autocomplete.SIMPLE
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 1
 
@@ -301,7 +308,8 @@ class Repl(BpythonRepl):
         self.edit_keys = edit_keys.mapping_with_config(config, key_dispatch)
         logger.debug("starting parent init")
         super(Repl, self).__init__(interp, config)
-        #TODO bring together all interactive stuff - including current directory in path?
+        # TODO bring together all interactive stuff - including current
+        # directory in path?
         self.formatter = BPythonFormatter(config.color_scheme)
         self.interact = self.status_bar # overwriting what bpython.Repl put there
                                         # interact is called to interact with the status bar,
@@ -366,11 +374,13 @@ class Repl(BpythonRepl):
 
         self.orig_import = __builtins__['__import__']
         if self.watcher:
-            old_module_locations = {} # for reading modules if they fail to load
+            # for reading modules if they fail to load
+            old_module_locations = {}
             @functools.wraps(self.orig_import)
             def new_import(name, globals={}, locals={}, fromlist=[], level=-1):
                 try:
-                    m = self.orig_import(name, globals=globals, locals=locals, fromlist=fromlist, level=level)
+                    m = self.orig_import(name, globals=globals, locals=locals,
+                                         fromlist=fromlist, level=level)
                 except:
                     if name in old_module_locations:
                         loc = old_module_locations[name]
@@ -398,8 +408,10 @@ class Repl(BpythonRepl):
         self.height, self.width = self.get_term_hw()
         cursor_dy = self.get_cursor_vertical_diff()
         self.scroll_offset -= cursor_dy
-        logger.info('sigwinch! Changed from %r to %r', (old_rows, old_columns), (self.height, self.width))
-        logger.info('decreasing scroll offset by %d to %d', cursor_dy, self.scroll_offset)
+        logger.info('sigwinch! Changed from %r to %r', (old_rows, old_columns),
+                    (self.height, self.width))
+        logger.info('decreasing scroll offset by %d to %d', cursor_dy,
+                    self.scroll_offset)
 
     def sigtstp_handler(self, signum, frame):
         self.scroll_offset = len(self.lines_for_display)
@@ -431,7 +443,8 @@ class Repl(BpythonRepl):
     def process_control_event(self, e):
 
         if isinstance(e, bpythonevents.ScheduledRefreshRequestEvent):
-            pass  # This is a scheduled refresh - it's really just a refresh (so nop)
+            # This is a scheduled refresh - it's really just a refresh (so nop)
+            pass
 
         elif isinstance(e, bpythonevents.RefreshRequestEvent):
             logger.info('received ASAP refresh request event')
@@ -450,7 +463,8 @@ class Repl(BpythonRepl):
             if ctrl_char is not None:
                 return self.process_event(ctrl_char)
             simple_events = just_simple_events(e.events)
-            source = indent_empty_lines(''.join(simple_events), self.interp.compile)
+            source = indent_empty_lines(''.join(simple_events),
+                                        self.interp.compile)
 
             with self.in_paste_mode():
                 for ee in source:
@@ -489,12 +503,14 @@ class Repl(BpythonRepl):
             raise ValueError("Don't know how to handle event type: %r" % e)
 
     def process_key_event(self, e):
-        # To find the curtsies name for a keypress, try python -m curtsies.events
+        # To find the curtsies name for a keypress, try
+        # python -m curtsies.events
         if self.status_bar.has_focus: return self.status_bar.process_event(e)
         if self.stdin.has_focus:      return self.stdin.process_event(e)
 
-        if (e in ("<RIGHT>", '<Ctrl-f>') and self.config.curtsies_right_arrow_completion
-                and self.cursor_offset == len(self.current_line)):
+        if (e in ("<RIGHT>", '<Ctrl-f>') and
+                self.config.curtsies_right_arrow_completion and
+                self.cursor_offset == len(self.current_line)):
             self.current_line += self.current_suggestion
             self.cursor_offset = len(self.current_line)
 
@@ -554,7 +570,7 @@ class Repl(BpythonRepl):
             self.send_session_to_external_editor()
         elif e in key_dispatch[self.config.edit_config_key]:
             greenlet.greenlet(self.edit_config).switch()
-        #TODO add PAD keys hack as in bpython.cli
+        # TODO add PAD keys hack as in bpython.cli
         elif e in key_dispatch[self.config.edit_current_block_key]:
             self.send_current_block_to_external_editor()
         elif e in ["<ESC>"]: #ESC
@@ -601,7 +617,8 @@ class Repl(BpythonRepl):
 
     def readline_kill(self, e):
         func = self.edit_keys[e]
-        self.cursor_offset, self.current_line, cut = func(self.cursor_offset, self.current_line)
+        self.cursor_offset, self.current_line, cut = func(self.cursor_offset,
+                                                          self.current_line)
         if self.last_events[-2] == e: # consecutive kill commands are cumulative
             if func.kills == 'ahead': self.cut_buffer += cut
             elif func.kills == 'behind': self.cut_buffer = cut + self.cut_buffer
@@ -1421,7 +1438,8 @@ class Repl(BpythonRepl):
                )
 
     def key_help_text(self):
-        NOT_IMPLEMENTED = ['suspend', 'cut to buffer', 'search', 'last output', 'yank from buffer', 'cut to buffer']
+        NOT_IMPLEMENTED = ('suspend', 'cut to buffer', 'search', 'last output',
+                           'yank from buffer', 'cut to buffer')
         pairs = []
         pairs.append(['complete history suggestion', 'right arrow at end of line'])
         pairs.append(['previous match with current line', 'up arrow'])
@@ -1445,16 +1463,19 @@ def tabs_to_spaces(line):
     return line.replace('\t', '    ')
 
 def compress_paste_event(paste_event):
-    """If all events in a paste event are identical and not simple characters, returns one of them
+    """If all events in a paste event are identical and not simple characters,
+    returns one of them
 
-    Useful for when the UI is running so slowly that repeated keypresses end up in a paste event.
-    If we value not getting delayed and assume the user is holding down a key to produce such frequent
-    key events, it makes sense to drop some of the events.
+    Useful for when the UI is running so slowly that repeated keypresses end up
+    in a paste event.  If we value not getting delayed and assume the user is
+    holding down a key to produce such frequent key events, it makes sense to
+    drop some of the events.
     """
     if not all(paste_event.events[0] == e for e in paste_event.events):
         return None
     event = paste_event.events[0]
-    if len(event) > 1:# basically "is there a special curtsies names for this key?"
+    # basically "is there a special curtsies names for this key?"
+    if len(event) > 1:
         return event
     else:
         return None
@@ -1462,7 +1483,8 @@ def compress_paste_event(paste_event):
 def just_simple_events(event_list):
     simple_events = []
     for e in event_list:
-        if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>", u"\n", u"\r"): # '\n' necessary for pastes
+        # '\n' necessary for pastes
+        if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>", u"\n", u"\r"):
             simple_events.append(u'\n')
         elif isinstance(e, events.Event):
             pass # ignore events
@@ -1473,7 +1495,7 @@ def just_simple_events(event_list):
     return simple_events
 
 
-#TODO this needs some work to function again and be useful for embedding
+# TODO this needs some work to function again and be useful for embedding
 def simple_repl():
     refreshes = []
     def request_refresh():
@@ -1486,6 +1508,7 @@ def simple_repl():
                 pass
             r.dumb_print_output()
             r.dumb_input(refreshes)
+
 
 if __name__ == '__main__':
     simple_repl()

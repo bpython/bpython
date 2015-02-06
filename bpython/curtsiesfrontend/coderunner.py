@@ -1,12 +1,13 @@
-"""For running Python code that could interrupt itself at any time
-in order to, for example, ask for a read on stdin, or a write on stdout
+"""For running Python code that could interrupt itself at any time in order to,
+for example, ask for a read on stdin, or a write on stdout
 
-The CodeRunner spawns a greenlet to run code in, and that code can suspend
-its own execution to ask the main greenlet to refresh the display or get information.
+The CodeRunner spawns a greenlet to run code in, and that code can suspend its
+own execution to ask the main greenlet to refresh the display or get
+information.
 
-Greenlets are basically threads that can explicitly switch control to each other.
-You can replace the word "greenlet" with "thread" in these docs if that makes more
-sense to you.
+Greenlets are basically threads that can explicitly switch control to each
+other.  You can replace the word "greenlet" with "thread" in these docs if that
+makes more sense to you.
 """
 
 import code
@@ -16,30 +17,39 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class SigintHappened(object):
     """If this class is returned, a SIGINT happened while the main greenlet"""
 
+
 class SystemExitFromCodeGreenlet(SystemExit):
-    """If this class is returned, a SystemExit happened while in the code greenlet"""
+    """If this class is returned, a SystemExit happened while in the code
+    greenlet"""
 
 
 class RequestFromCodeGreenlet(object):
     """Message from the code greenlet"""
 
+
 class Wait(RequestFromCodeGreenlet):
     """Running code would like the main loop to run for a bit"""
+
 
 class Refresh(RequestFromCodeGreenlet):
     """Running code would like the main loop to refresh the display"""
 
+
 class Done(RequestFromCodeGreenlet):
     """Running code is done running"""
+
 
 class Unfinished(RequestFromCodeGreenlet):
     """Source code wasn't executed because it wasn't fully formed"""
 
+
 class SystemExitRequest(RequestFromCodeGreenlet):
     """Running code raised a SystemExit"""
+
 
 class CodeRunner(object):
     """Runs user code in an interpreter.
@@ -67,31 +77,35 @@ class CodeRunner(object):
     just passes whatever is passed in to run_code(for_code) to the
     code greenlet
     """
-    def __init__(self, interp=None, request_refresh=lambda:None):
+    def __init__(self, interp=None, request_refresh=lambda: None):
         """
         interp is an interpreter object to use. By default a new one is
         created.
 
-        request_refresh is a function that will be called each time
-        the running code asks for a refresh - to, for example, update the screen.
+        request_refresh is a function that will be called each time the running
+        code asks for a refresh - to, for example, update the screen.
         """
         self.interp = interp or code.InteractiveInterpreter()
         self.source = None
         self.main_greenlet = greenlet.getcurrent()
         self.code_greenlet = None
         self.request_refresh = request_refresh
-        self.code_is_waiting = False # waiting for response from main thread
-        self.sigint_happened_in_main_greenlet = False # sigint happened while in main thread
+        # waiting for response from main thread
+        self.code_is_waiting = False
+        # sigint happened while in main thread
+        self.sigint_happened_in_main_greenlet = False
         self.orig_sigint_handler = None
 
     @property
     def running(self):
-        """Returns greenlet if code has been loaded greenlet has been started"""
+        """Returns greenlet if code has been loaded greenlet has been
+        started"""
         return self.source and self.code_greenlet
 
     def load_code(self, source):
         """Prep code to be run"""
-        assert self.source is None, "you shouldn't load code when some is already running"
+        assert self.source is None, "you shouldn't load code when some is " \
+            "already running"
         self.source = source
         self.code_greenlet = None
 
@@ -126,7 +140,8 @@ class CodeRunner(object):
 
         logger.debug('request received from code was %r', request)
         if not issubclass(request, RequestFromCodeGreenlet):
-            raise ValueError("Not a valid value from code greenlet: %r" % request)
+            raise ValueError("Not a valid value from code greenlet: %r" %
+                             request)
         if request in [Wait, Refresh]:
             self.code_is_waiting = True
             if request == Refresh:
@@ -142,12 +157,14 @@ class CodeRunner(object):
             raise SystemExitFromCodeGreenlet()
 
     def sigint_handler(self, *args):
-        """SIGINT handler to use while code is running or request being fulfilled"""
+        """SIGINT handler to use while code is running or request being
+        fulfilled"""
         if greenlet.getcurrent() is self.code_greenlet:
             logger.debug('sigint while running user code!')
             raise KeyboardInterrupt()
         else:
-            logger.debug('sigint while fulfilling code request sigint handler running!')
+            logger.debug('sigint while fulfilling code request sigint handler '
+                         'running!')
             self.sigint_happened_in_main_greenlet = True
 
     def _blocking_run_code(self):
@@ -170,18 +187,22 @@ class CodeRunner(object):
             raise KeyboardInterrupt()
         return value
 
+
 class FakeOutput(object):
     def __init__(self, coderunner, on_write):
         self.coderunner = coderunner
         self.on_write = on_write
+
     def write(self, *args, **kwargs):
         self.on_write(*args, **kwargs)
         return self.coderunner.request_from_main_greenlet(force_refresh=True)
+
     def writelines(self, l):
         for s in l:
             self.write(s)
+
     def flush(self):
         pass
+
     def isatty(self):
         return True
-

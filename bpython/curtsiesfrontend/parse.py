@@ -10,6 +10,7 @@ import re
 
 cnames = dict(zip('krgybmcwd', colors + ('default',)))
 
+
 def func_for_letter(l, default='k'):
     """Returns FmtStr constructor for a bpython-style color code"""
     if l == 'd':
@@ -18,10 +19,12 @@ def func_for_letter(l, default='k'):
         l = default.upper()
     return partial(fmtstr, fg=cnames[l.lower()], bold=l.isupper())
 
+
 def color_for_letter(l, default='k'):
     if l == 'd':
         l = default
     return cnames[l.lower()]
+
 
 def parse(s):
     """Returns a FmtStr object from a bpython-formatted colored string"""
@@ -36,6 +39,7 @@ def parse(s):
             if len(stuff) > 0
             else FmtStr())
 
+
 def fs_from_match(d):
     atts = {}
     if d['fg']:
@@ -43,14 +47,16 @@ def fs_from_match(d):
         # this isn't according to spec as I understand it
         if d['fg'].isupper():
             d['bold'] = True
-        #TODO figure out why boldness isn't based on presence of \x02
+        # TODO figure out why boldness isn't based on presence of \x02
 
         color = cnames[d['fg'].lower()]
         if color != 'default':
             atts['fg'] = FG_COLORS[color]
     if d['bg']:
         if d['bg'] == 'I':
-            color = colors[(colors.index(color) + (len(colors) // 2)) % len(colors)] # hack for finding the "inverse"
+            # hack for finding the "inverse"
+            color = colors[(colors.index(color) + (len(colors) // 2)) %
+                           len(colors)]
         else:
             color = cnames[d['bg'].lower()]
         if color != 'default':

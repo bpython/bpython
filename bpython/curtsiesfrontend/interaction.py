@@ -6,14 +6,17 @@ from bpython.repl import Interaction as BpythonInteraction
 from bpython.curtsiesfrontend.events import RefreshRequestEvent
 from bpython.curtsiesfrontend.manual_readline import edit_keys
 
+
 class StatusBar(BpythonInteraction):
     """StatusBar and Interaction for Repl
 
     Passing of control back and forth between calls that use interact api
-    (notify, confirm, file_prompt) like bpython.Repl.write2file and events
-    on the main thread happens via those calls and self.wait_for_request_or_notify.
+    (notify, confirm, file_prompt) like bpython.Repl.write2file and events on
+    the main thread happens via those calls and
+    self.wait_for_request_or_notify.
 
-    Calling one of these three is required for the main thread to regain control!
+    Calling one of these three is required for the main thread to regain
+    control!
 
     This is probably a terrible idea, and better would be rewriting this
     functionality in a evented or callback style, but trying to integrate
@@ -62,7 +65,8 @@ class StatusBar(BpythonInteraction):
             self.schedule_refresh(time.time() + self.message_time)
 
     def _check_for_expired_message(self):
-        if self._message and time.time() > self.message_start_time + self.message_time:
+        if (self._message and
+                time.time() > self.message_start_time + self.message_time):
             self._message = ''
 
     def process_event(self, e):
@@ -73,15 +77,17 @@ class StatusBar(BpythonInteraction):
             self.request_greenlet.switch()
         elif isinstance(e, events.PasteEvent):
             for ee in e.events:
-                self.add_normal_character(ee if len(ee) == 1 else ee[-1]) #strip control seq
+                # strip control seq
+                self.add_normal_character(ee if len(ee) == 1 else ee[-1])
         elif e in ['<ESC>'] or isinstance(e, events.SigIntEvent):
             self.request_greenlet.switch(False)
             self.escape()
         elif e in edit_keys:
-            self.cursor_offset_in_line, self._current_line = edit_keys[e](self.cursor_offset_in_line, self._current_line)
-        elif e == "<Ctrl-c>":  #TODO can this be removed?
+            self.cursor_offset_in_line, self._current_line = edit_keys[e](
+                self.cursor_offset_in_line, self._current_line)
+        elif e == "<Ctrl-c>":  # TODO can this be removed?
             raise KeyboardInterrupt()
-        elif e == "<Ctrl-d>":  #TODO this isn't a very intuitive behavior
+        elif e == "<Ctrl-d>":  # TODO this isn't a very intuitive behavior
             raise SystemExit()
         elif self.in_prompt and e in ("\n", "\r", "<Ctrl-j>", "Ctrl-m>"):
             line = self._current_line
@@ -93,15 +99,17 @@ class StatusBar(BpythonInteraction):
             else:
                 self.request_greenlet.switch(False)
             self.escape()
-        else: # add normal character
+        else:  # add normal character
             self.add_normal_character(e)
 
     def add_normal_character(self, e):
-        if e == '<SPACE>': e = ' '
-        if len(e) > 1: return
+        if e == '<SPACE>':
+            e = ' '
+        if len(e) > 1:
+            return
         self._current_line = (self._current_line[:self.cursor_offset_in_line] +
-                             e +
-                             self._current_line[self.cursor_offset_in_line:])
+                              e +
+                              self._current_line[self.cursor_offset_in_line:])
         self.cursor_offset_in_line += 1
 
     def escape(self):
@@ -137,7 +145,8 @@ class StatusBar(BpythonInteraction):
         self.request_refresh()
         self.main_greenlet.switch(msg)
 
-    # below Really ought to be called from greenlets other than main because they block
+    # below Really ought to be called from greenlets other than main because
+    # they block
     def confirm(self, q):
         """Expected to return True or False, given question prompt q"""
         self.request_greenlet = greenlet.getcurrent()

@@ -76,7 +76,3 @@ else:
             paths = [path + '.py' for path in self.dirs[dirpath]]
             if event.src_path in paths:
                 self.on_change(files_modified=[event.src_path])
-
-if __name__ == '__main__':
-    pass
-

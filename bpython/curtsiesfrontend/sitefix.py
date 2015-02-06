@@ -1,7 +1,7 @@
-""""""
 import sys
 
 from bpython._py3compat import py3
+
 
 def resetquit(builtins):
     """Redefine builtins 'quit' and 'exit' not so close stdin
@@ -11,6 +11,7 @@ def resetquit(builtins):
         raise SystemExit(code)
     __call__.__name__ = 'FakeQuitCall'
     builtins.quit.__class__.__call__ = __call__
+
 
 def monkeypatch_quit():
     if 'site' in sys.modules:
