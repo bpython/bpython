@@ -27,6 +27,7 @@ import keyword
 import os
 import rlcompleter
 from six.moves import range, builtins
+from six import string_types
 
 from glob import glob
 
@@ -312,7 +313,7 @@ class ParameterNameCompletion(BaseCompletionType):
         start, end, word = r
         if argspec:
             matches = set(name + '=' for name in argspec[1][0]
-                          if isinstance(name, basestring) and
+                          if isinstance(name, string_types) and
                           name.startswith(word))
             if py3:
                 matches.update(name + '=' for name in argspec[1][4]

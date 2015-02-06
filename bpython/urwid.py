@@ -43,7 +43,7 @@ import signal
 from types import ModuleType
 from optparse import Option
 from six.moves import range
-from six import iteritems
+from six import iteritems, string_types
 
 from pygments.token import Token
 
@@ -285,7 +285,7 @@ def decoding_input_filter(keys, raw):
     encoding = locale.getpreferredencoding()
     converted_keys = list()
     for key in keys:
-        if isinstance(key, basestring):
+        if isinstance(key, string_types):
             converted_keys.append(key.decode(encoding))
         else:
             converted_keys.append(key)
