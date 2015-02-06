@@ -221,7 +221,6 @@ class MatchesIterator(object):
         return self.__next__()
 
     def __next__(self):
-        """Keep this around until we drop 2to3."""
         self.index = (self.index + 1) % len(self.matches)
         return self.matches[self.index]
 
