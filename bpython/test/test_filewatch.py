@@ -14,7 +14,7 @@ except ImportError:
 
 from bpython.test import mock
 
-@unittest.skipIf(not has_watchdog, "watchdog not available")
+@unittest.skipUnless(has_watchdog, "watchdog required")
 class TestModuleChangeEventHandler(unittest.TestCase):
 
     def setUp(self):

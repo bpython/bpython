@@ -59,8 +59,8 @@ class TestCurtsiesRepl(TestCase):
         self.repl.send_current_block_to_external_editor()
         self.repl.send_session_to_external_editor()
 
-    @unittest.skipIf(not all(map(config.can_encode, 'å∂ßƒ')),
-                     'Charset can not encode characters')
+    @unittest.skipUnless(all(map(config.can_encode, 'å∂ßƒ')),
+                         'Charset can not encode characters')
     def test_external_communication_encoding(self):
         with captured_output():
             self.repl.display_lines.append('>>> "åß∂ƒ"')
@@ -291,15 +291,15 @@ class TestCurtsiesPagerText(TestCase):
     def test_help(self):
         self.repl.pager(self.repl.help_text())
 
-    @unittest.skipIf(not all(map(config.can_encode, 'å∂ßƒ')),
-                     'Charset can not encode characters')
+    @unittest.skipUnless(all(map(config.can_encode, 'å∂ßƒ')),
+                         'Charset can not encode characters')
     def test_show_source_not_formatted(self):
         self.repl.config.highlight_show_source = False
         self.repl.get_source_of_current_name = lambda: 'source code å∂ßƒåß∂ƒ'
         self.repl.show_source()
 
-    @unittest.skipIf(not all(map(config.can_encode, 'å∂ßƒ')),
-                     'Charset can not encode characters')
+    @unittest.skipUnless(all(map(config.can_encode, 'å∂ßƒ')),
+                         'Charset can not encode characters')
     def test_show_source_formatted(self):
         self.repl.config.highlight_show_source = True
         self.repl.get_source_of_current_name = lambda: 'source code å∂ßƒåß∂ƒ'

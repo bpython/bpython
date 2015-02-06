@@ -128,7 +128,7 @@ class CursesCrashersTest(TrialTestCase, CrashersTest):
     backend = "cli"
 
 
-@unittest.skipIf(not have_urwid, "urwid is not available")
+@unittest.skipUnless(have_urwid, "urwid is required")
 @unittest.skipIf(reactor is None, "twisted is not available")
 class UrwidCrashersTest(TrialTestCase, CrashersTest):
     backend = "urwid"
