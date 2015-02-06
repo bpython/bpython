@@ -1915,7 +1915,12 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
             return (exit_value, clirepl.getstdout())
     else:
         sys.path.insert(0, '')
-        clirepl.startup()
+        try:
+            clirepl.startup()
+        except OSError as e:
+            # Handle this with a proper error message.
+            if e.errno != errno.ENOENT:
+                raise
 
     if banner is not None:
         clirepl.write(banner)

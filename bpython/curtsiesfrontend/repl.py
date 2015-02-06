@@ -409,20 +409,6 @@ class Repl(BpythonRepl):
         self.after_suspend()
         self.__enter__()
 
-    def run_startup(self):
-        """
-        Execute PYTHONSTARTUP file if it exits. Call this after front
-        end-specific initialisation.
-        """
-        filename = os.environ.get('PYTHONSTARTUP')
-        if filename:
-            with open(filename, 'r') as f:
-                if py3:
-                    #TODO runsource has a new signature in PY3
-                    self.interp.runsource(f.read(), filename, 'exec')
-                else:
-                    self.interp.runsource(f.read(), filename, 'exec')
-
     def clean_up_current_line_for_exit(self):
         """Called when trying to exit to prep for final paint"""
         logger.debug('unhighlighting paren for exit')
@@ -475,9 +461,10 @@ class Repl(BpythonRepl):
 
         elif isinstance(e, bpythonevents.RunStartupFileEvent):
             try:
-                self.run_startup()
+                self.startup()
             except IOError as e:
-                self.status_bar.message(_('Executing PYTHONSTARTUP failed: %s') % (str(e)))
+                self.status_bar.message(
+                  _('Executing PYTHONSTARTUP failed: %s') % (str(e)))
 
         elif isinstance(e, bpythonevents.UndoEvent):
             self.undo(n=e.n)

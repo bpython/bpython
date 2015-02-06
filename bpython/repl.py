@@ -19,7 +19,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
 
 from __future__ import with_statement
 import code
@@ -406,7 +405,7 @@ class Repl(object):
         end-specific initialisation.
         """
         filename = os.environ.get('PYTHONSTARTUP')
-        if filename and os.path.isfile(filename):
+        if filename:
             with open(filename, 'r') as f:
                 if py3:
                     self.interp.runsource(f.read(), filename, 'exec')
