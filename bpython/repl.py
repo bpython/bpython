@@ -108,8 +108,8 @@ class Interpreter(code.InteractiveInterpreter):
                       encode=True):
             with self.timer:
                 if encode:
-                    source = '# coding: %s\n%s' % (
-                        self.encoding, source.encode(self.encoding))
+                    source = u'# coding: %s\n%s' % (self.encoding, source)
+                    source = source.encode(self.encoding)
                 return code.InteractiveInterpreter.runsource(self, source,
                                                              filename, symbol)
 
