@@ -1,10 +1,11 @@
-# coding: utf8
+# coding: utf-8
 from __future__ import unicode_literals
 
 import code
 import os
 import sys
 import tempfile
+import io
 from contextlib import contextmanager
 from six.moves import StringIO
 
@@ -313,13 +314,31 @@ class TestCurtsiesStartup(TestCase):
 
     def setUp(self):
         self.repl = create_repl()
-        os.environ['PYTHONSTARTUP'] = 'file'
+        self.startupfile = tempfile.NamedTemporaryFile()
+        self.startupfile.__enter__()
+        os.environ['PYTHONSTARTUP'] = self.startupfile.name
 
     def tearDown(self):
+        self.startupfile.__exit__(None, None, None)
         del os.environ['PYTHONSTARTUP']
 
-    @mock.patch(builtin_target(open), mock.mock_open(read_data='a = 1\n'))
-    def test_startup_event(self):
+    def write_startup_file(self, encoding, write_encoding=True):
+        with io.open(self.startupfile.name, mode='wt',
+                     encoding=encoding) as f:
+            if write_encoding:
+                f.write('# coding: ')
+                f.write(encoding)
+                f.write('\n')
+                f.write('from __future__ import unicode_literals\n')
+                f.write('a = "äöü"\n')
+
+    def test_startup_event_utf8(self):
+        self.write_startup_file('utf-8')
+        self.repl.process_event(bpythonevents.RunStartupFileEvent())
+        self.assertIn('a', self.repl.interp.locals)
+
+    def test_startup_event_utf8(self):
+        self.write_startup_file('latin-1')
         self.repl.process_event(bpythonevents.RunStartupFileEvent())
         self.assertIn('a', self.repl.interp.locals)
 
