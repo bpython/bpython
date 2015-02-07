@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from __future__ import unicode_literals
 
 try:
@@ -57,40 +59,36 @@ class TestInterpreter(unittest.TestCase):
 
     @unittest.skipIf(py3, "runsource() accepts only unicode in Python 3")
     def test_runsource_bytes(self):
-        i = interpreter.Interp()
-        i.encoding = 'latin-1'
+        i = interpreter.Interp(encoding='latin-1')
 
-        i.runsource(b"a = b'\xfe'")
+        i.runsource("a = b'\xfe'".encode('latin-1'), encode=False)
         self.assertIsInstance(i.locals['a'], str)
         self.assertEqual(i.locals['a'], b"\xfe")
 
-        i.runsource(b"b = u'\xfe'")
+        i.runsource("b = u'\xfe'".encode('latin-1'), encode=False)
         self.assertIsInstance(i.locals['b'], unicode)
-        self.assertEqual(i.locals['b'], u"\xfe")
+        self.assertEqual(i.locals['b'], "\xfe")
 
     @unittest.skipUnless(py3, "Only a syntax error in Python 3")
     @mock.patch.object(interpreter.Interp, 'showsyntaxerror')
     def test_runsource_bytes_over_128_syntax_error(self):
-        i = interpreter.Interp()
-        i.encoding = 'latin-1'
+        i = interpreter.Interp(encoding='latin-1')
 
-        i.runsource(u"a = b'\xfe'")
+        i.runsource("a = b'\xfe'", encode=True)
         i.showsyntaxerror.assert_called_with()
 
-    @unittest.skip("Is the goal of encoding to get this to work?")
-    @unittest.skipIf(py3, "bytes 128-255 only permitted in Py 2")
+    @unittest.skipIf(py3, "encode is Python 2 only")
     def test_runsource_bytes_over_128_syntax_error(self):
-        i = interpreter.Interp()
-        i.encoding = 'latin-1'
+        i = interpreter.Interp(encoding='latin-1')
 
-        i.runsource(u"a = b'\xfe'")
+        i.runsource("a = b'\xfe'", encode=True)
         self.assertIsInstance(i.locals['a'], type(b''))
         self.assertEqual(i.locals['a'], b"\xfe")
 
+    @unittest.skipIf(py3, "encode is Python 2 only")
     def test_runsource_unicode(self):
-        i = interpreter.Interp()
-        i.encoding = 'latin-1'
+        i = interpreter.Interp(encoding='latin-1')
 
-        i.runsource(u"a = u'\xfe'")
+        i.runsource("a = u'\xfe'", encode=True)
         self.assertIsInstance(i.locals['a'], type(u''))
         self.assertEqual(i.locals['a'], u"\xfe")
