@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import os
+
 try:
     import unittest2 as unittest
 except ImportError:
@@ -101,6 +103,21 @@ class TestInspection(unittest.TestCase):
     def test_get_source_latin1(self):
         self.assertEqual(inspection.get_source_unicode(encoding_latin1.foo),
                          foo_non_ascii)
+
+    def test_get_source_file(self):
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            'fodder')
+
+        encoding = inspection.get_encoding_file(
+            os.path.join(path, 'encoding_ascii.py'))
+        self.assertEqual(encoding, 'ascii')
+        encoding = inspection.get_encoding_file(
+            os.path.join(path, 'encoding_latin1.py'))
+        self.assertEqual(encoding, 'latin1')
+        encoding = inspection.get_encoding_file(
+            os.path.join(path, 'encoding_utf8.py'))
+        self.assertEqual(encoding, 'utf-8')
+
 
 if __name__ == '__main__':
     unittest.main()
