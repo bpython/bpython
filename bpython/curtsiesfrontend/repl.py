@@ -252,13 +252,20 @@ class Repl(BpythonRepl):
         config is a bpython config.Struct with config attributes
         request_refresh is a function that will be called when the Repl
             wants to refresh the display, but wants control returned to it
-            afterwards Takes as a kwarg when= which is when to fire
+            afterwards
+        schedule_refresh is the same, but takes as a kwarg when= of when to
+            fire. Scheduled refreshes interrupt waiting for keyboard input
+        request_reload is like request_refresh, but for a different event
+        request_undo is like reload, but for a different event
         get_term_hw is a function that returns the current width and height of
             the terminal
         get_cursor_vertical_diff is a function that returns how the cursor
             moved due to a window size change
         banner is a string to display briefly in the status bar
-        interp is an interpreter to use
+        interp is an interpreter instance to use
+        original terminal state, useful for shelling out with normal terminal
+        on_suspend will be called on sigtstp
+        after_suspend will be called when process foregrounded after suspend
         """
 
         logger.debug("starting init")
@@ -287,18 +294,21 @@ class Repl(BpythonRepl):
 
         self.reevaluating = False
         self.fake_refresh_requested = False
+
         def smarter_request_refresh():
             if self.reevaluating or self.paste_mode:
                 self.fake_refresh_requested = True
             else:
                 request_refresh()
         self.request_refresh = smarter_request_refresh
+
         def smarter_schedule_refresh(when='now'):
             if self.reevaluating or self.paste_mode:
                 self.fake_refresh_requested = True
             else:
                 schedule_refresh(when=when)
         self.schedule_refresh = smarter_schedule_refresh
+
         def smarter_request_reload(files_modified=()):
             if self.watching_files:
                 request_reload(files_modified=files_modified)
@@ -315,27 +325,40 @@ class Repl(BpythonRepl):
         self.edit_keys = edit_keys.mapping_with_config(config, key_dispatch)
         logger.debug("starting parent init")
         super(Repl, self).__init__(interp, config)
-        # TODO bring together all interactive stuff - including current
-        # directory in path?
+
         self.formatter = BPythonFormatter(config.color_scheme)
-        self.interact = self.status_bar # overwriting what bpython.Repl put there
-                                        # interact is called to interact with the status bar,
-                                        # so we're just using the same object
-        self._current_line = '' # line currently being edited, without ps1 (usually '>>> ')
-        self.current_stdouterr_line = '' # current line of output - stdout and stdin go here
-        self.display_lines = [] # lines separated whenever logical line
-                                # length goes over what the terminal width
-                                # was at the time of original output
-        self.history = [] # this is every line that's been executed;
-                          # it gets smaller on rewind
-        self.display_buffer = [] # formatted version of lines in the buffer
-                                 # kept around so we can unhighlight parens
-                                 # using self.reprint_line as called by
-                                 # bpython.Repl
-        self.scroll_offset = 0 # how many times display has been scrolled down
-                               # because there wasn't room to display everything
-        self._cursor_offset = 0 # from the left, 0 means first char
-        self.orig_tcattrs = orig_tcattrs # useful for shelling out with normal terminal
+
+        # overwriting what bpython.Repl put there
+        # interact is called to interact with the status bar,
+        # so we're just using the same object
+        self.interact = self.status_bar
+
+        # line currently being edited, without ps1 (usually '>>> ')
+        self._current_line = ''
+
+        # current line of output - stdout and stdin go here
+        self.current_stdouterr_line = ''
+
+        # lines separated whenever logical line
+        # length goes over what the terminal width
+        # was at the time of original output
+        self.display_lines = []
+
+        # this is every line that's been executed; it gets smaller on rewind
+        self.history = []
+
+        # formatted version of lines in the buffer kept around so we can
+        # unhighlight parens using self.reprint_line as called by bpython.Repl
+        self.display_buffer = []
+
+        # how many times display has been scrolled down
+        # because there wasn't room to display everything
+        self.scroll_offset = 0
+
+        # from the left, 0 means first char
+        self._cursor_offset = 0
+
+        self.orig_tcattrs = orig_tcattrs
         self.on_suspend = on_suspend
         self.after_suspend = after_suspend
 
@@ -344,18 +367,31 @@ class Repl(BpythonRepl):
         self.stderr = FakeOutput(self.coderunner, self.send_to_stderr)
         self.stdin = FakeStdin(self.coderunner, self, self.edit_keys)
 
-        self.request_paint_to_clear_screen = False # next paint should clear screen
-        self.inconsistent_history = False # offscreen command yields different result from history
-        self.history_already_messed_up = False  # history error message displayed
-        self.last_events = [None] * 50 # some commands act differently based on the prev event
-                                       # this list doesn't include instances of event.Event,
-                                       # only keypress-type events (no refresh screen events etc.)
-        self.presentation_mode = False # displays prev events in a column on the right hand side
-        self.paste_mode = False        # currently processing a paste event
-        self.current_match = None      # currently tab-selected autocompletion suggestion
-        self.list_win_visible = False  # whether the infobox (suggestions, docstring) is visible
-        self.watching_files = False    # auto reloading turned on
-        self.incremental_search_mode = None       # 'reverse_incremental_search' and 'incremental_search'
+        # next paint should clear screen
+        self.request_paint_to_clear_screen = False
+
+        # offscreen command yields results different from scrollback bufffer
+        self.inconsistent_history = False
+
+        # history error message has already been displayed
+        self.history_already_messed_up = False
+
+        # some commands act differently based on the prev event
+        # this list doesn't include instances of event.Event,
+        # only keypress-type events (no refresh screen events etc.)
+        self.last_events = [None] * 50
+
+        # displays prev events in a column on the right hand side
+        self.presentation_mode = False
+
+        self.paste_mode = False
+        self.current_match = None
+        self.list_win_visible = False
+        self.watching_files = False    # whether auto reloading active
+
+        # 'reverse_incremental_search', 'incremental_search' or None
+        self.incremental_search_mode = None
+
         self.incremental_search_target = ''
 
         self.original_modules = sys.modules.keys()
@@ -436,7 +472,7 @@ class Repl(BpythonRepl):
         self.cursor_offset = -1
         self.unhighlight_paren()
 
-    ## Event handling
+    # Event handling
     def process_event(self, e):
         """Returns True if shutting down, otherwise returns None.
         Mostly mutates state of Repl object"""
@@ -514,8 +550,10 @@ class Repl(BpythonRepl):
     def process_key_event(self, e):
         # To find the curtsies name for a keypress, try
         # python -m curtsies.events
-        if self.status_bar.has_focus: return self.status_bar.process_event(e)
-        if self.stdin.has_focus:      return self.stdin.process_event(e)
+        if self.status_bar.has_focus:
+            return self.status_bar.process_event(e)
+        if self.stdin.has_focus:
+            return self.stdin.process_event(e)
 
         if (e in ("<RIGHT>", '<Ctrl-f>') and
                 self.config.curtsies_right_arrow_completion and
@@ -536,15 +574,16 @@ class Repl(BpythonRepl):
         elif e in ("<Esc+s>",):
             self.incremental_search()
         elif (e in ("<BACKSPACE>",) + key_dispatch[self.config.backspace_key]
-                   and self.incremental_search_mode):
+              and self.incremental_search_mode):
             self.add_to_incremental_search(self, backspace=True)
         elif e in self.edit_keys.cut_buffer_edits:
             self.readline_kill(e)
         elif e in self.edit_keys.simple_edits:
-            self.cursor_offset, self.current_line = self.edit_keys.call(e,
-                    cursor_offset=self.cursor_offset,
-                    line=self.current_line,
-                    cut_buffer=self.cut_buffer)
+            self.cursor_offset, self.current_line = self.edit_keys.call(
+                e,
+                cursor_offset=self.cursor_offset,
+                line=self.current_line,
+                cut_buffer=self.cut_buffer)
         elif e in key_dispatch[self.config.cut_to_buffer_key]:
             self.cut_to_buffer()
         elif e in key_dispatch[self.config.reimport_key]:
@@ -563,15 +602,15 @@ class Repl(BpythonRepl):
             raise SystemExit()
         elif e in ("\n", "\r", "<PADENTER>", "<Ctrl-j>", "<Ctrl-m>"):
             self.on_enter()
-        elif e == '<TAB>': # tab
+        elif e == '<TAB>':  # tab
             self.on_tab()
         elif e in ("<Shift-TAB>",):
             self.on_tab(back=True)
-        elif e in key_dispatch[self.config.undo_key]: #ctrl-r for undo
+        elif e in key_dispatch[self.config.undo_key]:  # ctrl-r for undo
             self.prompt_undo()
-        elif e in key_dispatch[self.config.save_key]: # ctrl-s for save
+        elif e in key_dispatch[self.config.save_key]:  # ctrl-s for save
             greenlet.greenlet(self.write2file).switch()
-        elif e in key_dispatch[self.config.pastebin_key]: # F8 for pastebin
+        elif e in key_dispatch[self.config.pastebin_key]:  # F8 for pastebin
             greenlet.greenlet(self.pastebin).switch()
         elif e in key_dispatch[self.config.copy_clipboard_key]:
             greenlet.greenlet(self.copy2clipboard).switch()
@@ -582,7 +621,7 @@ class Repl(BpythonRepl):
         # TODO add PAD keys hack as in bpython.cli
         elif e in key_dispatch[self.config.edit_current_block_key]:
             self.send_current_block_to_external_editor()
-        elif e in ["<ESC>"]: #ESC
+        elif e in ["<ESC>"]:  #ESC
             self.incremental_search_mode = None
         elif e in ["<SPACE>"]:
             self.add_normal_character(' ')
@@ -599,26 +638,31 @@ class Repl(BpythonRepl):
         line = self.current_line
         self._set_current_line(line[:len(line)-len(previous_word)] + word,
                                reset_rl_history=False)
-        self._set_cursor_offset(self.cursor_offset-len(previous_word) + len(word),
-                                reset_rl_history=False)
+        self._set_cursor_offset(
+                self.cursor_offset-len(previous_word) + len(word),
+                reset_rl_history=False)
 
     def incremental_search(self, reverse=False, include_current=False):
-        if self.incremental_search_mode == None:
+        if self.incremental_search_mode is None:
             self.rl_history.enter(self.current_line)
             self.incremental_search_target = ''
         else:
             if self.incremental_search_target:
-                line = (self.rl_history.back(False, search=True,
-                                            target=self.incremental_search_target,
-                                            include_current=include_current)
-                        if reverse else
-                        self.rl_history.forward(False, search=True,
-                                                target=self.incremental_search_target,
-                                                include_current=include_current))
+                line = (self.rl_history.back(
+                    False, search=True,
+                    target=self.incremental_search_target,
+                    include_current=include_current)
+                    if reverse else
+                    self.rl_history.forward(
+                        False, search=True,
+                        target=self.incremental_search_target,
+                        include_current=include_current))
                 self._set_current_line(line,
-                                       reset_rl_history=False, clear_special_mode=False)
+                                       reset_rl_history=False,
+                                       clear_special_mode=False)
                 self._set_cursor_offset(len(self.current_line),
-                                        reset_rl_history=False, clear_special_mode=False)
+                                        reset_rl_history=False,
+                                        clear_special_mode=False)
         if reverse:
             self.incremental_search_mode = 'reverse_incremental_search'
         else:
@@ -628,15 +672,19 @@ class Repl(BpythonRepl):
         func = self.edit_keys[e]
         self.cursor_offset, self.current_line, cut = func(self.cursor_offset,
                                                           self.current_line)
-        if self.last_events[-2] == e: # consecutive kill commands are cumulative
-            if func.kills == 'ahead': self.cut_buffer += cut
-            elif func.kills == 'behind': self.cut_buffer = cut + self.cut_buffer
-            else: raise ValueError("cut had value other than 'ahead' or 'behind'")
+        if self.last_events[-2] == e:  # consecutive kill commands accumulative
+            if func.kills == 'ahead':
+                self.cut_buffer += cut
+            elif func.kills == 'behind':
+                self.cut_buffer = cut + self.cut_buffer
+            else:
+                raise ValueError("cut value other than 'ahead' or 'behind'")
         else:
             self.cut_buffer = cut
 
     def on_enter(self, insert_into_history=True):
-        self._set_cursor_offset(-1, update_completion=False) # so the cursor isn't touching a paren
+        # so the cursor isn't touching a paren TODO: necessary?
+        self._set_cursor_offset(-1, update_completion=False)
 
         self.history.append(self.current_line)
         self.push(self.current_line, insert_into_history=insert_into_history)
@@ -647,26 +695,23 @@ class Repl(BpythonRepl):
 
         Does one of the following:
         1) add space to move up to the next %4==0 column
-        2) complete the current word with characters common to all completions and
+        2) complete the current word with characters common to all completions
         3) select the first or last match
         4) select the next or previous match if already have a match
         """
 
         def only_whitespace_left_of_cursor():
-            """returns true if all characters on current line before cursor are whitespace"""
+            """returns true if all characters before cursor are whitespace"""
             return not self.current_line[:self.cursor_offset].strip()
 
-        logger.debug('self.matches_iter.matches: %r', self.matches_iter.matches)
+        logger.debug('self.matches_iter.matches:%r', self.matches_iter.matches)
         if only_whitespace_left_of_cursor():
-            front_white = (len(self.current_line[:self.cursor_offset]) -
-                len(self.current_line[:self.cursor_offset].lstrip()))
-            to_add = 4 - (front_white % self.config.tab_length)
+            front_ws = (len(self.current_line[:self.cursor_offset]) -
+                        len(self.current_line[:self.cursor_offset].lstrip()))
+            to_add = 4 - (front_ws % self.config.tab_length)
             for unused in range(to_add):
                 self.add_normal_character(' ')
             return
-
-        #if not self.matches_iter.candidate_selected:
-        #    self.list_win_visible = self.complete(tab=True)
 
         # run complete() if we don't already have matches
         if len(self.matches_iter.matches) == 0:
@@ -680,8 +725,8 @@ class Repl(BpythonRepl):
                 self.list_win_visible = self.complete()
 
         elif self.matches_iter.matches:
-            self.current_match = back and self.matches_iter.previous() \
-                                  or next(self.matches_iter)
+            self.current_match = (back and self.matches_iter.previous()
+                                  or next(self.matches_iter))
             self._cursor_offset, self._current_line = self.matches_iter.cur_line()
             # using _current_line so we don't trigger a completion reset
             self.list_win_visible = True
@@ -690,7 +735,8 @@ class Repl(BpythonRepl):
         if self.current_line == '':
             raise SystemExit()
         else:
-            self.current_line = self.current_line[:self.cursor_offset] + self.current_line[self.cursor_offset+1:]
+            self.current_line = (self.current_line[:self.cursor_offset] +
+                                 self.current_line[self.cursor_offset+1:])
 
     def cut_to_buffer(self):
         self.cut_buffer = self.current_line[self.cursor_offset:]
@@ -701,28 +747,31 @@ class Repl(BpythonRepl):
 
     def up_one_line(self):
         self.rl_history.enter(self.current_line)
-        self._set_current_line(tabs_to_spaces(self.rl_history.back(False,
-                search=self.config.curtsies_right_arrow_completion)),
+        self._set_current_line(tabs_to_spaces(self.rl_history.back(
+            False,
+            search=self.config.curtsies_right_arrow_completion)),
             update_completion=False,
             reset_rl_history=False)
         self._set_cursor_offset(len(self.current_line), reset_rl_history=False)
 
     def down_one_line(self):
         self.rl_history.enter(self.current_line)
-        self._set_current_line(tabs_to_spaces(self.rl_history.forward(False,
-                search=self.config.curtsies_right_arrow_completion)),
+        self._set_current_line(tabs_to_spaces(self.rl_history.forward(
+            False,
+            search=self.config.curtsies_right_arrow_completion)),
             update_completion=False,
             reset_rl_history=False)
         self._set_cursor_offset(len(self.current_line), reset_rl_history=False)
 
     def process_simple_keypress(self, e):
-        if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>", u"\n", u"\r"): # '\n' necessary for pastes
+        # '\n' needed for pastes
+        if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>", u"\n", u"\r"):
             self.on_enter()
             while self.fake_refresh_requested:
                 self.fake_refresh_requested = False
                 self.process_event(bpythonevents.RefreshRequestEvent())
         elif isinstance(e, events.Event):
-            pass # ignore events
+            pass  # ignore events
         elif e == '<SPACE>':
             self.add_normal_character(' ')
         else:
@@ -759,14 +808,15 @@ class Repl(BpythonRepl):
         self.cursor_offset = len(self.current_line)
 
     def clear_modules_and_reevaluate(self):
-        if self.watcher: self.watcher.reset()
+        if self.watcher:
+            self.watcher.reset()
         cursor, line = self.cursor_offset, self.current_line
         for modname in sys.modules.keys():
             if modname not in self.original_modules:
                 del sys.modules[modname]
         self.reevaluate(insert_into_history=True)
         self.cursor_offset, self.current_line = cursor, line
-        self.status_bar.message(_('Reloaded at %s by user.') % \
+        self.status_bar.message(_('Reloaded at %s by user.') %
                                 (time.strftime('%X'), ))
 
     def toggle_file_watch(self):
@@ -785,7 +835,7 @@ class Repl(BpythonRepl):
             self.status_bar.message(_('Auto-reloading not available because '
                                       'watchdog not installed.'))
 
-    ## Handler Helpers
+    # Handler Helpers
     def add_normal_character(self, char):
         if len(char) > 1 or is_nop(char):
             return
@@ -795,11 +845,12 @@ class Repl(BpythonRepl):
             self._set_current_line((self.current_line[:self.cursor_offset] +
                                     char +
                                     self.current_line[self.cursor_offset:]),
-                                    update_completion=False,
-                                    reset_rl_history=False,
-                                    clear_special_mode=False)
+                                   update_completion=False,
+                                   reset_rl_history=False,
+                                   clear_special_mode=False)
             self.cursor_offset += 1
-        if self.config.cli_trim_prompts and self.current_line.startswith(self.ps1):
+        if (self.config.cli_trim_prompts and
+                self.current_line.startswith(self.ps1)):
             self.current_line = self.current_line[4:]
             self.cursor_offset = max(0, self.cursor_offset - 4)
 
@@ -823,14 +874,14 @@ class Repl(BpythonRepl):
 
     def update_completion(self, tab=False):
         """Update visible docstring and matches, and possibly hide/show completion box"""
-        #Update autocomplete info; self.matches_iter and self.argspec
-        #Should be called whenever the completion box might need to appear / dissapear
-        #when current line or cursor offset changes, unless via selecting a match
+        # Update autocomplete info; self.matches_iter and self.argspec
+        # Should be called whenever the completion box might need to appear / dissapear
+        # when current line or cursor offset changes, unless via selecting a match
         self.current_match = None
         self.list_win_visible = BpythonRepl.complete(self, tab)
 
     def predicted_indent(self, line):
-        #TODO get rid of this! It's repeated code! Combine with Repl.
+        # TODO get rid of this! It's repeated code! Combine with Repl.
         logger.debug('line is %r', line)
         indent = len(re.match(r'[ ]*', line).group())
         if line.endswith(':'):
@@ -852,7 +903,6 @@ class Repl(BpythonRepl):
         else:
             self.saved_indent = self.predicted_indent(line)
 
-        #current line not added to display buffer if quitting #TODO I don't understand this comment
         if self.config.syntax:
             display_line = bpythonparse(format(self.tokenize(line), self.formatter))
             # careful: self.tokenize requires that the line not be in self.buffer yet!
@@ -904,7 +954,7 @@ class Repl(BpythonRepl):
             self.cursor_offset = len(self.current_line)
 
     def keyboard_interrupt(self):
-        #TODO factor out the common cleanup from running a line
+        # TODO factor out the common cleanup from running a line
         self.cursor_offset = -1
         self.unhighlight_paren()
         self.display_lines.extend(self.display_buffer_lines)
@@ -959,21 +1009,15 @@ class Repl(BpythonRepl):
         if lines[-1]:
             self.current_stdouterr_line += lines[-1]
         self.display_lines.extend(sum((paint.display_linize(line, self.width,
-                                                            blank_line=True) for
-                                       line in lines[:-1]), []))
+                                                            blank_line=True)
+                                       for line in lines[:-1]), []))
 
     def send_to_stdin(self, line):
         if line.endswith('\n'):
             self.display_lines.extend(paint.display_linize(self.current_output_line, self.width))
             self.current_output_line = ''
-        #self.display_lines = self.display_lines[:len(self.display_lines) - self.stdin.old_num_lines]
-        #lines = paint.display_linize(line, self.width)
-        #self.stdin.old_num_lines = len(lines)
-        #self.display_lines.extend(paint.display_linize(line, self.width))
-        pass
 
-
-    ## formatting, output
+    # formatting, output
     @property
     def done(self):
         """Whether the last block is complete - which prompt to use, ps1 or ps2"""
@@ -1009,8 +1053,8 @@ class Repl(BpythonRepl):
         lines = []
         for display_line in self.display_buffer:
             display_line = (func_for_letter(self.config.color_scheme['prompt_more'])(self.ps2)
-                           if lines else
-                           func_for_letter(self.config.color_scheme['prompt'])(self.ps1)) + display_line
+                            if lines else
+                            func_for_letter(self.config.color_scheme['prompt'])(self.ps1)) + display_line
             for line in paint.display_linize(display_line, self.width):
                 lines.append(line)
         return lines
@@ -1252,7 +1296,8 @@ class Repl(BpythonRepl):
             elif c in '\\':
                 c = ''
             elif c in '|':
-                def r(): raise Exception('errors in other threads should look like this')
+                def r():
+                    raise Exception('errors in other threads should look like this')
                 t = threading.Thread(target=r)
                 t.daemon = True
                 t.start()
@@ -1272,7 +1317,8 @@ class Repl(BpythonRepl):
     def _get_current_line(self):
         return self._current_line
 
-    def _set_current_line(self, line, update_completion=True, reset_rl_history=True, clear_special_mode=True):
+    def _set_current_line(self, line, update_completion=True,
+                          reset_rl_history=True, clear_special_mode=True):
         if self._current_line == line:
             return
         self._current_line = line
@@ -1289,7 +1335,8 @@ class Repl(BpythonRepl):
     def _get_cursor_offset(self):
         return self._cursor_offset
 
-    def _set_cursor_offset(self, offset, update_completion=True, reset_rl_history=False, clear_special_mode=True):
+    def _set_cursor_offset(self, offset, update_completion=True,
+                           reset_rl_history=False, clear_special_mode=True):
         if self._cursor_offset == offset:
             return
         if reset_rl_history:
@@ -1351,7 +1398,8 @@ class Repl(BpythonRepl):
 
     def reevaluate(self, insert_into_history=False):
         """bpython.Repl.undo calls this"""
-        if self.watcher: self.watcher.reset()
+        if self.watcher:
+            self.watcher.reset()
         old_logical_lines = self.history
         old_display_lines = self.display_lines
         self.history = []
@@ -1446,8 +1494,7 @@ class Repl(BpythonRepl):
                 ('using curtsies version %s' % curtsies.__version__) + '\n' +
                 HELP_MESSAGE.format(config_file_location=default_config_path(),
                                     example_config_url='https://raw.githubusercontent.com/bpython/bpython/master/bpython/sample-config',
-                                    config=self.config)
-               )
+                                    config=self.config))
 
     def key_help_text(self):
         NOT_IMPLEMENTED = ('suspend', 'cut to buffer', 'search', 'last output',
@@ -1468,11 +1515,14 @@ class Repl(BpythonRepl):
         max_func = max(len(func) for func, key in pairs)
         return '\n'.join('%s : %s' % (func.rjust(max_func), key) for func, key in pairs)
 
+
 def is_nop(char):
     return unicodedata.category(unicode(char)) == 'Cc'
 
+
 def tabs_to_spaces(line):
     return line.replace('\t', '    ')
+
 
 def compress_paste_event(paste_event):
     """If all events in a paste event are identical and not simple characters,
@@ -1492,6 +1542,7 @@ def compress_paste_event(paste_event):
     else:
         return None
 
+
 def just_simple_events(event_list):
     simple_events = []
     for e in event_list:
@@ -1499,7 +1550,7 @@ def just_simple_events(event_list):
         if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>", u"\n", u"\r"):
             simple_events.append(u'\n')
         elif isinstance(e, events.Event):
-            pass # ignore events
+            pass  # ignore events
         elif e == '<SPACE>':
             simple_events.append(' ')
         else:
@@ -1510,6 +1561,7 @@ def just_simple_events(event_list):
 # TODO this needs some work to function again and be useful for embedding
 def simple_repl():
     refreshes = []
+
     def request_refresh():
         refreshes.append(1)
     with Repl(request_refresh=request_refresh) as r:
