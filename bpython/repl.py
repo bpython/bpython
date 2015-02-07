@@ -96,23 +96,19 @@ class Interpreter(code.InteractiveInterpreter):
     def reset_running_time(self):
         self.running_time = 0
 
-    if py3:
+    def runsource(self, source, filename='<input>', symbol='single',
+                  encode=True):
+        """Execute Python code.
 
-        def runsource(self, source, filename="<input>", symbol="single"):
-            with self.timer:
-                return code.InteractiveInterpreter.runsource(self, source,
-                                                             filename, symbol)
-
-    else:
-
-        def runsource(self, source, filename='<input>', symbol='single',
-                      encode=True):
-            with self.timer:
-                if encode:
-                    source = u'# coding: %s\n%s' % (self.encoding, source)
-                    source = source.encode(self.encoding)
-                return code.InteractiveInterpreter.runsource(self, source,
-                                                             filename, symbol)
+        source, filename and symbol are passed on to
+        code.InteractiveInterpreter.runsource. If encode is True, the source
+        will be encoded. On Python 3.X, encode will be ignored."""
+        if not py3 and encode:
+            source = u'# coding: %s\n%s' % (self.encoding, source)
+            source = source.encode(self.encoding)
+        with self.timer:
+            return code.InteractiveInterpreter.runsource(self, source,
+                                                         filename, symbol)
 
     def showsyntaxerror(self, filename=None):
         """Override the regular handler, the code's copied and pasted from
@@ -409,7 +405,11 @@ class Repl(object):
         if filename:
             encoding = inspection.get_encoding_file(filename)
             with io.open(filename, 'rt', encoding=encoding) as f:
-                self.interp.runsource(f.read(), filename, 'exec')
+                source = f.read()
+                if not py3:
+                    # Python 2.6 and early 2.7.X need bytes.
+                    source = source.encode(encoding)
+                self.interp.runsource(source, filename, 'exec', encode=False)
 
     def current_string(self, concatenate=False):
         """If the line ends in a string get it, otherwise return ''"""
