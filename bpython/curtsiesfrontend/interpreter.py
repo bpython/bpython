@@ -11,7 +11,7 @@ from pygments.formatter import Formatter
 from pygments.lexers import get_lexer_by_name
 
 from bpython.curtsiesfrontend.parse import parse
-from bpython.repl import RuntimeTimer
+from bpython.repl import Interpreter as ReplInterpreter
 
 default_colors = {
     Generic.Error: 'R',
@@ -61,7 +61,7 @@ class BPythonFormatter(Formatter):
         outfile.write(parse(o.rstrip()))
 
 
-class Interp(code.InteractiveInterpreter):
+class Interp(ReplInterpreter):
     def __init__(self, locals=None):
         """Constructor.
 
@@ -75,13 +75,13 @@ class Interp(code.InteractiveInterpreter):
         """
         if locals is None:
             locals = {"__name__": "__console__", "__doc__": None}
+        ReplInterpreter.__init__(self, locals)
         self.locals = locals
         self.compile = CommandCompiler()
 
         # typically changed after being instantiated
         self.write = lambda stuff: sys.stderr.write(stuff)
         self.outfile = self
-        self.timer = RuntimeTimer()
 
     def showsyntaxerror(self, filename=None):
         """Display the syntax error that just occurred.
@@ -160,11 +160,12 @@ class Interp(code.InteractiveInterpreter):
                 cur_line.append((token, text))
         assert cur_line == [], cur_line
 
-    def runsource(self, source, filename="<input>", symbol="single"):
+    def runsource(self, source, filename="<input>", symbol="single",
+                  encode=None):
+        # TODO: encode does nothing
         with self.timer:
             return code.InteractiveInterpreter.runsource(
-                self, source, filename=filename, symbol=symbol)
-
+                self, source, filename, symbol)
 
 def code_finished_will_parse(s, compiler):
     """Returns a tuple of whether the buffer could be complete and whether it
