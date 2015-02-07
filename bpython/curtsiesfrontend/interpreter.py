@@ -64,7 +64,7 @@ class BPythonFormatter(Formatter):
 
 
 class Interp(ReplInterpreter):
-    def __init__(self, locals=None):
+    def __init__(self, locals=None, encoding=None):
         """Constructor.
 
         The optional 'locals' argument specifies the dictionary in
@@ -77,7 +77,9 @@ class Interp(ReplInterpreter):
         """
         if locals is None:
             locals = {"__name__": "__console__", "__doc__": None}
-        ReplInterpreter.__init__(self, locals, getpreferredencoding())
+        if encoding is None:
+            encoding = getpreferredencoding()
+        ReplInterpreter.__init__(self, locals, encoding)
 
         self.locals = locals
         self.compile = CommandCompiler()
