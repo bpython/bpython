@@ -266,7 +266,7 @@ class Repl(BpythonRepl):
 
         if interp is None:
             interp = Interp(locals=locals_)
-            interp.writetb = self.send_to_stderr
+            interp.write = self.send_to_stderr
         if banner is None:
             if config.help_key:
                 banner = ' '.join((_('Welcome to bpython!'),
@@ -1347,7 +1347,7 @@ class Repl(BpythonRepl):
 
         if not self.weak_rewind:
             self.interp = self.interp.__class__()
-            self.interp.writetb = self.send_to_stderr
+            self.interp.write = self.send_to_stderr
             self.coderunner.interp = self.interp
 
         self.buffer = []

@@ -77,7 +77,8 @@ class TestInterpreter(unittest.TestCase):
         i.runsource(u"a = b'\xfe'")
         i.showsyntaxerror.assert_called_with()
 
-    @unittest.skipIf(py3, "only ASCII allowed in bytestrings in Python 3")
+    @unittest.skip("Is the goal of encoding to get this to work?")
+    @unittest.skipIf(py3, "bytes 128-255 only permitted in Py 2")
     def test_runsource_bytes_over_128_syntax_error(self):
         i = interpreter.Interp()
         i.encoding = 'latin-1'

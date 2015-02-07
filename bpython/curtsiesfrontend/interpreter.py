@@ -12,6 +12,8 @@ from pygments.lexers import get_lexer_by_name
 
 from bpython.curtsiesfrontend.parse import parse
 from bpython.repl import Interpreter as ReplInterpreter
+from bpython.config import getpreferredencoding
+from bpython._py3compat import py3
 
 default_colors = {
     Generic.Error: 'R',
@@ -75,7 +77,8 @@ class Interp(ReplInterpreter):
         """
         if locals is None:
             locals = {"__name__": "__console__", "__doc__": None}
-        ReplInterpreter.__init__(self, locals)
+        ReplInterpreter.__init__(self, locals, getpreferredencoding())
+
         self.locals = locals
         self.compile = CommandCompiler()
 
@@ -83,58 +86,21 @@ class Interp(ReplInterpreter):
         self.write = lambda stuff: sys.stderr.write(stuff)
         self.outfile = self
 
-    def showsyntaxerror(self, filename=None):
-        """Display the syntax error that just occurred.
-
-        This doesn't display a stack trace because there isn't one.
-
-        If a filename is given, it is stuffed in the exception instead
-        of what was there before (because Python's parser always uses
-        "<string>" when reading from a string).
-
-        The output is written by self.write(), below.
-
-        """
-        type, value, sys.last_traceback = sys.exc_info()
-        sys.last_type = type
-        sys.last_value = value
-        if filename and type is SyntaxError:
-            # Work hard to stuff the correct filename in the exception
-            try:
-                msg, (dummy_filename, lineno, offset, line) = value
-            except:
-                # Not the format we expect; leave it alone
-                pass
-            else:
-                # Stuff in the right filename
-                value = SyntaxError(msg, (filename, lineno, offset, line))
-                sys.last_value = value
-        l = traceback.format_exception_only(type, value)
-        tbtext = ''.join(l)
+    def writetb(self, lines):
+        tbtext = ''.join(lines)
         lexer = get_lexer_by_name("pytb")
         self.format(tbtext, lexer)
+        # TODO for tracebacks get_lexer_by_name("pytb", stripall=True)
 
-    def showtraceback(self):
-        """Display the exception that just occurred.
-
-        We remove the first stack item because it is our own code.
-
-
-        """
-        type, value, tb = sys.exc_info()
-        sys.last_type = type
-        sys.last_value = value
-        sys.last_traceback = tb
-        tblist = traceback.extract_tb(tb)
-        del tblist[:1]
-        l = traceback.format_list(tblist)
-        if l:
-            l.insert(0, "Traceback (most recent call last):\n")
-        l[len(l):] = traceback.format_exception_only(type, value)
-        tbtext = ''.join(l)
-        lexer = get_lexer_by_name("pytb", stripall=True)
-
-        self.format(tbtext, lexer)
+    if not py3:
+        def runsource(self, source, filename="<input>", symbol="single",
+                      encode=True):
+            # TODO: write a test for and implement encoding
+            with self.timer:
+                if encode:
+                    source = '#\n%s' % (source,)  # dummy line so linenos match
+                return code.InteractiveInterpreter.runsource(self, source,
+                                                             filename, symbol)
 
     def format(self, tbtext, lexer):
         traceback_informative_formatter = BPythonFormatter(default_colors)
@@ -160,12 +126,6 @@ class Interp(ReplInterpreter):
                 cur_line.append((token, text))
         assert cur_line == [], cur_line
 
-    def runsource(self, source, filename="<input>", symbol="single",
-                  encode=None):
-        # TODO: encode does nothing
-        with self.timer:
-            return code.InteractiveInterpreter.runsource(
-                self, source, filename, symbol)
 
 def code_finished_will_parse(s, compiler):
     """Returns a tuple of whether the buffer could be complete and whether it
