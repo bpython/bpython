@@ -6,7 +6,11 @@ pip install setuptools
 
 if [[ $RUN == nosetests ]]; then
     # core dependencies
-    pip install pygments requests 'curtsies >=0.1.17,<0.2.0' greenlet six
+    pip install pygments
+    pip install requests
+    pip install 'curtsies >=0.1.17,<0.2.0'
+    pip install greenlet
+    pip install 'six >=1.4'
     # filewatch specific dependencies
     pip install watchdog
     # jedi specific dependencies
