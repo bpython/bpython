@@ -24,9 +24,11 @@
 from __future__ import with_statement
 import collections
 import inspect
+import io
 import keyword
 import pydoc
 import types
+from six.moves import range
 
 from pygments.token import Token
 
@@ -280,10 +282,22 @@ get_encoding_re = LazyReCompile(r'coding[:=]\s*([-\w.]+)')
 
 
 def get_encoding(obj):
+    """Try to obtain encoding information of the source of an object."""
     for line in inspect.findsource(obj)[0][:2]:
         m = get_encoding_re.search(line)
         if m:
             return m.group(1)
+    return 'ascii'
+
+
+def get_encoding_file(fname):
+    """Try to obtain encoding information from a Python source file."""
+    with io.open(fname, 'rt', encoding='ascii', errors='ignore') as f:
+        for unused in range(2):
+            line = f.readline()
+            match = get_encoding_re.search(line)
+            if match:
+                return match.group(1)
     return 'ascii'
 
 

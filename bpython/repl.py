@@ -24,6 +24,7 @@ from __future__ import with_statement
 import code
 import errno
 import inspect
+import io
 import os
 import pkgutil
 import pydoc
@@ -406,12 +407,9 @@ class Repl(object):
         """
         filename = os.environ.get('PYTHONSTARTUP')
         if filename:
-            with open(filename, 'r') as f:
-                if py3:
-                    self.interp.runsource(f.read(), filename, 'exec')
-                else:
-                    self.interp.runsource(f.read(), filename, 'exec',
-                                          encode=False)
+            encoding = inspection.get_encoding_file(filename)
+            with io.open(filename, 'rt', encoding=encoding) as f:
+                self.interp.runsource(f.read(), filename, 'exec')
 
     def current_string(self, concatenate=False):
         """If the line ends in a string get it, otherwise return ''"""
