@@ -68,6 +68,7 @@ with open(version_file, 'w') as vf:
     vf.write('# Auto-generated file, do not edit!\n')
     vf.write('__version__ = \'%s\'\n' % (version, ))
 
+
 class install(_install):
     """Force install to run build target."""
 
@@ -174,9 +175,9 @@ install_requires = [
 ]
 
 extras_require = {
-    'urwid' : ['urwid'],
-    'watch' : ['watchdog'],
-    'jedi'  : ['jedi'],
+    'urwid': ['urwid'],
+    'watch': ['watchdog'],
+    'jedi': ['jedi'],
 }
 
 packages = [
@@ -220,27 +221,27 @@ for language in os.listdir(translations_dir):
 
 setup(
     name="bpython",
-    version = version,
-    author = "Bob Farrell, Andreas Stuehrk et al.",
-    author_email = "robertanthonyfarrell@gmail.com",
-    description = "Fancy Interface to the Python Interpreter",
-    license = "MIT/X",
-    url = "http://www.bpython-interpreter.org/",
-    long_description = """bpython is a fancy interface to the Python
+    version=version,
+    author="Bob Farrell, Andreas Stuehrk et al.",
+    author_email="robertanthonyfarrell@gmail.com",
+    description="Fancy Interface to the Python Interpreter",
+    license="MIT/X",
+    url="http://www.bpython-interpreter.org/",
+    long_description="""bpython is a fancy interface to the Python
     interpreter for Unix-like operating systems.""",
-    install_requires = install_requires,
-    extras_require = extras_require,
-    tests_require = tests_require,
-    packages = packages,
-    data_files = data_files,
-    package_data = {
+    install_requires=install_requires,
+    extras_require=extras_require,
+    tests_require=tests_require,
+    packages=packages,
+    data_files=data_files,
+    package_data={
         'bpython': ['sample-config'],
         'bpython.translations': mo_files,
         'bpython.test': ['test.config', 'test.theme']
     },
-    entry_points = entry_points,
-    cmdclass = cmdclass,
-    test_suite = 'bpython.test'
+    entry_points=entry_points,
+    cmdclass=cmdclass,
+    test_suite='bpython.test'
 )
 
 # vim: fileencoding=utf-8 sw=4 ts=4 sts=4 ai et sta
