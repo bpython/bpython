@@ -12,6 +12,7 @@ except ImportError:
 
 from bpython.translations import init
 from bpython._py3compat import py3
+from six.moves import builtins
 
 
 class FixLanguageTestCase(unittest.TestCase):
@@ -27,3 +28,8 @@ class MagicIterMock(mock.MagicMock):
         __next__ = mock.Mock(return_value=None)
     else:
         next = mock.Mock(return_value=None)
+
+
+def builtin_target(obj):
+    """Returns mock target string of a builtin"""
+    return '%s.%s' % (builtins.__name__, obj.__name__)

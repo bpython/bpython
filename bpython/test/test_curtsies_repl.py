@@ -15,11 +15,13 @@ except ImportError:
 
 from bpython.curtsiesfrontend import repl as curtsiesrepl
 from bpython.curtsiesfrontend import interpreter
+from bpython.curtsiesfrontend import events as bpythonevents
 from bpython import autocomplete
 from bpython import config
 from bpython import args
 from bpython._py3compat import py3
-from bpython.test import FixLanguageTestCase as TestCase, MagicIterMock, mock
+from bpython.test import (FixLanguageTestCase as TestCase, MagicIterMock, mock,
+                          builtin_target)
 
 
 def setup_config(conf):
@@ -305,6 +307,21 @@ class TestCurtsiesPagerText(TestCase):
         self.repl.config.highlight_show_source = True
         self.repl.get_source_of_current_name = lambda: 'source code å∂ßƒåß∂ƒ'
         self.repl.show_source()
+
+
+class TestCurtsiesStartup(TestCase):
+
+    def setUp(self):
+        self.repl = create_repl()
+        os.environ['PYTHONSTARTUP'] = 'file'
+
+    def tearDown(self):
+        del os.environ['PYTHONSTARTUP']
+
+    @mock.patch(builtin_target(open), mock.mock_open(read_data='a = 1\n'))
+    def test_startup_event(self):
+        self.repl.process_event(bpythonevents.RunStartupFileEvent())
+        self.assertIn('a', self.repl.interp.locals)
 
 
 if __name__ == '__main__':
