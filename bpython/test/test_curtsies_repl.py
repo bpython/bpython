@@ -322,15 +322,14 @@ class TestCurtsiesStartup(TestCase):
         self.startupfile.__exit__(None, None, None)
         del os.environ['PYTHONSTARTUP']
 
-    def write_startup_file(self, encoding, write_encoding=True):
+    def write_startup_file(self, encoding):
         with io.open(self.startupfile.name, mode='wt',
                      encoding=encoding) as f:
-            if write_encoding:
-                f.write('# coding: ')
-                f.write(encoding)
-                f.write('\n')
-                f.write('from __future__ import unicode_literals\n')
-                f.write('a = "äöü"\n')
+            f.write('# coding: ')
+            f.write(encoding)
+            f.write('\n')
+            f.write('from __future__ import unicode_literals\n')
+            f.write('a = "äöü"\n')
 
     def test_startup_event_utf8(self):
         self.write_startup_file('utf-8')
