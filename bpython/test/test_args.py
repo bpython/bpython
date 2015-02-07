@@ -8,7 +8,14 @@ try:
 except ImportError:
     import unittest
 
+try:
+    from nose.plugins.attrib import attr
+except ImportError:
+    def attr(func, *args, **kwargs):
+        return func
 
+
+@attr(speed='slow')
 class TestExecArgs(unittest.TestCase):
     def test_exec_dunder_file(self):
         with tempfile.NamedTemporaryFile(mode="w") as f:
