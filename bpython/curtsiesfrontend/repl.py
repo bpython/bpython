@@ -684,10 +684,16 @@ class Repl(BpythonRepl):
 
     def on_enter(self, insert_into_history=True):
         # so the cursor isn't touching a paren TODO: necessary?
-        self._set_cursor_offset(-1, update_completion=False)
 
-        self.history.append(self.current_line)
-        self.push(self.current_line, insert_into_history=insert_into_history)
+        try:
+            self.interp.compile('\n'.join(self.buffer + [self.current_line]))
+        except (ValueError, SyntaxError, OverflowError) as e:
+            self.status_bar.message(str(e))
+        else:
+            self._set_cursor_offset(-1, update_completion=False)
+
+            self.history.append(self.current_line)
+            self.push(self.current_line, insert_into_history=insert_into_history)
 
     def on_tab(self, back=False):
         """Do something on tab key
