@@ -6,8 +6,9 @@ from contextlib import contextmanager
 
 from curtsies.formatstringarray import FormatStringTest, fsarray
 from curtsies.fmtfuncs import cyan, bold, green, yellow, on_magenta, red
-from bpython.curtsiesfrontend.events import RefreshRequestEvent
 
+from bpython.curtsiesfrontend.events import RefreshRequestEvent
+from bpython.test import mock
 from bpython import config, inspection
 from bpython.curtsiesfrontend.repl import Repl
 from bpython.curtsiesfrontend import replpainter
@@ -23,7 +24,21 @@ def setup_config():
     return config_struct
 
 
-class TestCurtsiesPainting(FormatStringTest, TestCase):
+class ClearEnviron(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mock_environ = mock.patch.dict('os.environ', {}, clear=True)
+        cls.mock_environ.start()
+        TestCase.setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.mock_environ.stop()
+        TestCase.tearDownClass()
+
+
+class CurtsiesPaintingTest(FormatStringTest, ClearEnviron):
     def setUp(self):
         self.repl = Repl(config=setup_config())
         # clear history
@@ -42,13 +57,13 @@ class TestCurtsiesPainting(FormatStringTest, TestCase):
             self.assertEqual(cursor_pos, cursor_row_col)
 
 
-class TestCurtsiesPaintingTest(TestCurtsiesPainting):
+class TestCurtsiesPaintingTest(CurtsiesPaintingTest):
 
     def test_history_is_cleared(self):
         self.assertEqual(self.repl.rl_history.entries, [''])
 
 
-class TestCurtsiesPaintingSimple(TestCurtsiesPainting):
+class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
 
     def test_startup(self):
         screen = fsarray([cyan('>>> '), cyan('Welcome to')])
@@ -137,7 +152,7 @@ def output_to_repl(repl):
         sys.stdout, sys.stderr = old_out, old_err
 
 
-class TestCurtsiesRewindRedraw(TestCurtsiesPainting):
+class TestCurtsiesRewindRedraw(CurtsiesPaintingTest):
     def refresh(self):
         self.refresh_requests.append(RefreshRequestEvent())
 
