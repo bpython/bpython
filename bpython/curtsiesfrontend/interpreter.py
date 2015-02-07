@@ -94,16 +94,6 @@ class Interp(ReplInterpreter):
         self.format(tbtext, lexer)
         # TODO for tracebacks get_lexer_by_name("pytb", stripall=True)
 
-    if not py3:
-        def runsource(self, source, filename="<input>", symbol="single",
-                      encode=True):
-            # TODO: write a test for and implement encoding
-            with self.timer:
-                if encode:
-                    source = '#\n%s' % (source,)  # dummy line so linenos match
-                return code.InteractiveInterpreter.runsource(self, source,
-                                                             filename, symbol)
-
     def format(self, tbtext, lexer):
         traceback_informative_formatter = BPythonFormatter(default_colors)
         traceback_code_formatter = BPythonFormatter({Token: ('d')})
