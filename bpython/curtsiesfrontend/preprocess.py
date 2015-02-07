@@ -7,6 +7,7 @@ from bpython.lazyre import LazyReCompile
 
 
 indent_empty_lines_re = LazyReCompile(r'\s*')
+tabs_to_spaces_re = LazyReCompile(r'^\t+')
 
 
 def indent_empty_lines(s, compiler):
@@ -30,3 +31,16 @@ def indent_empty_lines(s, compiler):
             result_lines.append(line)
 
     return '\n'.join(result_lines) + ('\n' if ends_with_newline else '')
+
+
+def leading_tabs_to_spaces(s):
+    lines = s.split('\n')
+    result_lines = []
+    tab_to_space = lambda m: len(m.group()) * 4 * ' '
+    for line in lines:
+        result_lines.append(tabs_to_spaces_re.sub(tab_to_space, line))
+    return '\n'.join(result_lines)
+
+
+def preprocess(s, compiler):
+    return indent_empty_lines(leading_tabs_to_spaces(s), compiler)

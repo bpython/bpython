@@ -48,3 +48,7 @@ class LazyReCompile(object):
     @compile_regex
     def match(self, *args, **kwargs):
         return self.compiled.match(*args, **kwargs)
+
+    @compile_regex
+    def sub(self, *args, **kwargs):
+        return self.compiled.sub(*args, **kwargs)

@@ -11,11 +11,11 @@ except ImportError:
 skip = unittest.skip
 
 from bpython.curtsiesfrontend.interpreter import code_finished_will_parse
-from bpython.curtsiesfrontend.preprocess import indent_empty_lines
+from bpython.curtsiesfrontend.preprocess import preprocess
 
 from bpython.test.fodder import original as original, processed
 
-indent_empty = partial(indent_empty_lines, compiler=compiler)
+preproc = partial(preprocess, compiler=compiler)
 
 
 def get_fodder_source(test_name):
@@ -39,9 +39,9 @@ class TestPreprocessing(unittest.TestCase):
         return finished and parsable
 
     def test_indent_empty_lines_nops(self):
-        self.assertEqual(indent_empty('hello'), 'hello')
-        self.assertEqual(indent_empty('hello\ngoodbye'), 'hello\ngoodbye')
-        self.assertEqual(indent_empty('a\n    b\nc\n'), 'a\n    b\nc\n')
+        self.assertEqual(preproc('hello'), 'hello')
+        self.assertEqual(preproc('hello\ngoodbye'), 'hello\ngoodbye')
+        self.assertEqual(preproc('a\n    b\nc\n'), 'a\n    b\nc\n')
 
     def assertShowWhitespaceEqual(self, a, b):
         self.assertEqual(
@@ -57,12 +57,12 @@ class TestPreprocessing(unittest.TestCase):
         obj2 = getattr(processed, name)
         orig = inspect.getsource(obj)
         xformed = inspect.getsource(obj2)
-        self.assertShowWhitespaceEqual(indent_empty(orig), xformed)
+        self.assertShowWhitespaceEqual(preproc(orig), xformed)
         self.assertCompiles(xformed)
 
     def assertLinesIndented(self, test_name):
         orig, xformed = get_fodder_source(test_name)
-        self.assertShowWhitespaceEqual(indent_empty(orig), xformed)
+        self.assertShowWhitespaceEqual(preproc(orig), xformed)
         self.assertCompiles(xformed)
 
     def assertIndented(self, obj_or_name):
@@ -92,3 +92,6 @@ class TestPreprocessing(unittest.TestCase):
 
     def test_blank_trailing_line(self):
         self.assertIndented('blank_trailing_line')
+
+    def test_tabs(self):
+        self.assertIndented(original.tabs)

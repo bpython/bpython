@@ -46,7 +46,7 @@ from bpython.curtsiesfrontend.manual_readline import edit_keys
 from bpython.curtsiesfrontend import events as bpythonevents
 from bpython.curtsiesfrontend.parse import parse as bpythonparse
 from bpython.curtsiesfrontend.parse import func_for_letter, color_for_letter
-from bpython.curtsiesfrontend.preprocess import indent_empty_lines
+from bpython.curtsiesfrontend.preprocess import preprocess
 from bpython.curtsiesfrontend.interpreter import Interp, \
     code_finished_will_parse
 
@@ -463,8 +463,8 @@ class Repl(BpythonRepl):
             if ctrl_char is not None:
                 return self.process_event(ctrl_char)
             simple_events = just_simple_events(e.events)
-            source = indent_empty_lines(''.join(simple_events),
-                                        self.interp.compile)
+            source = preprocess(''.join(simple_events),
+                                self.interp.compile)
 
             with self.in_paste_mode():
                 for ee in source:
@@ -740,7 +740,7 @@ class Repl(BpythonRepl):
         text = self.send_to_external_editor(for_editor)
         lines = text.split('\n')
         from_editor = [line for line in lines if line[:4] != '### ']
-        source = indent_empty_lines('\n'.join(from_editor), self.interp.compile)
+        source = preprocess('\n'.join(from_editor), self.interp.compile)
         self.history = source.split('\n')
         self.reevaluate(insert_into_history=True)
         self.current_line = lines[-1][4:]

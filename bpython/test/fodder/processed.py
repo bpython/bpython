@@ -43,3 +43,6 @@ def foo():
     return 1
 
 #EndTest
+
+def tabs():
+    return 1

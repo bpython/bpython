@@ -45,3 +45,5 @@ def foo():
 
 #EndTest
 
+def tabs():
+	return 1
