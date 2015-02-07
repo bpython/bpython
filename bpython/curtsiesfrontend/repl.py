@@ -29,8 +29,8 @@ from curtsies import events
 
 import bpython
 from bpython.repl import Repl as BpythonRepl, SourceNotFound
-from bpython.config import Struct, loadini, default_config_path, \
-        getpreferredencoding
+from bpython.config import (Struct, loadini, default_config_path,
+                            getpreferredencoding)
 from bpython.formatter import BPythonFormatter
 from bpython import autocomplete, importcompletion
 from bpython.translations import _
@@ -38,7 +38,7 @@ from bpython._py3compat import py3
 from bpython.pager import get_pager_command
 
 from bpython.curtsiesfrontend import replpainter as paint
-from bpython.curtsiesfrontend import sitefix; sitefix.monkeypatch_quit()
+from bpython.curtsiesfrontend import sitefix
 from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 from bpython.curtsiesfrontend.filewatch import ModuleChangedEventHandler
 from bpython.curtsiesfrontend.interaction import StatusBar
@@ -47,10 +47,8 @@ from bpython.curtsiesfrontend import events as bpythonevents
 from bpython.curtsiesfrontend.parse import parse as bpythonparse
 from bpython.curtsiesfrontend.parse import func_for_letter, color_for_letter
 from bpython.curtsiesfrontend.preprocess import preprocess
-from bpython.curtsiesfrontend.interpreter import Interp, \
-    code_finished_will_parse
-
-#TODO other autocomplete modes (also fix in other bpython implementations)
+from bpython.curtsiesfrontend.interpreter import (Interp,
+                                                  code_finished_will_parse)
 
 from curtsies.configfile_keynames import keymap as key_dispatch
 
@@ -62,20 +60,22 @@ CONTIGUITY_BROKEN_MSG = u"#<---History contiguity broken by rewind--->"
 HELP_MESSAGE = u"""
 Thanks for using bpython!
 
-See http://bpython-interpreter.org/ for info, http://docs.bpython-interpreter.org/ for docs, and https://github.com/bpython/bpython for source.
+See http://bpython-interpreter.org/ for more information and
+http://docs.bpython-interpreter.org/ for docs.
 Please report issues at https://github.com/bpython/bpython/issues
 
+Features:
 Try using undo ({config.undo_key})!
-Edit the current line ({config.edit_current_block_key}) or the entire session ({config.external_editor_key}) in an external editor! (currently {config.editor})
+Edit the current line ({config.edit_current_block_key}) or the entire session ({config.external_editor_key}) in an external editor. (currently {config.editor})
 Save sessions ({config.save_key}) or post them to pastebins ({config.pastebin_key})! Current pastebin helper: {config.pastebin_helper}
-Re-execute the current session and reload all modules ({config.reimport_key}) to test out changes to a module!
-Toggle auto-reload mode ({config.toggle_file_watch_key}) to re-execute the current session when a module you've imported is modified!
+Reload all modules and rerun session ({config.reimport_key}) to test out changes to a module.
+Toggle auto-reload mode ({config.toggle_file_watch_key}) to re-execute the current session when a module you've imported is modified.
 
-Use bpython-curtsies -i your_script.py to run a file in interactive mode (interpreter in namespace of script).
-Use bpython-curtsies -t your_script.py to paste in the contents of a file, as though you typed them.
+bpython -i your_script.py runs a file in interactive mode
+bpython -t your_script.py pastes the contents of a file into the session
 
-Use a config file at {config_file_location} to customize keys and behavior of bpython.
-You can customize which pastebin helper to use and which external editor to use.
+A config file at {config_file_location} customizes keys and behavior of bpython.
+You can also set which pastebin helper and which external editor to use.
 See {example_config_url} for an example config file.
 Press {config.edit_config_key} to edit this config file.
 """
@@ -86,11 +86,14 @@ if py3:
 
 
 class FakeStdin(object):
-    """Stdin object user code references so sys.stdin.read() asked user for interactive input"""
+    """The stdin object user code will reference
+
+    In user code, sys.stdin.read() asks the user for interactive input,
+    so this class returns control to the UI to get that input."""
     def __init__(self, coderunner, repl, configured_edit_keys=None):
         self.coderunner = coderunner
         self.repl = repl
-        self.has_focus = False # whether FakeStdin receives keypress events
+        self.has_focus = False  # whether FakeStdin receives keypress events
         self.current_line = ''
         self.cursor_offset = 0
         self.old_num_lines = 0
@@ -147,8 +150,10 @@ class FakeStdin(object):
             self.repl.send_to_stdin(self.current_line)
 
     def add_input_character(self, e):
-        if e == '<SPACE>': e = ' '
-        if e.startswith('<') and e.endswith('>'): return
+        if e == '<SPACE>':
+            e = ' '
+        if e.startswith('<') and e.endswith('>'):
+            return
         assert len(e) == 1, 'added multiple characters: %r' % e
         logger.debug('adding normal char %r to current line', e)
 
@@ -187,7 +192,8 @@ class FakeStdin(object):
     def encoding(self):
         return 'UTF8'
 
-    #TODO write a read() method
+    # TODO write a read() method?
+
 
 class ReevaluateFakeStdin(object):
     """Stdin mock used during reevaluation (undo) so raw_inputs don't have to
@@ -196,6 +202,7 @@ class ReevaluateFakeStdin(object):
         self.fakestdin = fakestdin
         self.repl = repl
         self.readline_results = fakestdin.readline_results[:]
+
     def readline(self):
         if self.readline_results:
             value = self.readline_results.pop(0)
@@ -203,6 +210,7 @@ class ReevaluateFakeStdin(object):
             value = 'no saved input available'
         self.repl.send_to_stdout(value)
         return value
+
 
 class Repl(BpythonRepl):
     """Python Repl
@@ -224,7 +232,6 @@ class Repl(BpythonRepl):
     received is a window resize event, this works fine.
     """
 
-    ## initialization, cleanup
     def __init__(self,
                  locals_=None,
                  config=None,
@@ -232,7 +239,7 @@ class Repl(BpythonRepl):
                  schedule_refresh=lambda when=0: None,
                  request_reload=lambda desc: None,
                  request_undo=lambda n=1: None,
-                 get_term_hw=lambda:(50, 10),
+                 get_term_hw=lambda: (50, 10),
                  get_cursor_vertical_diff=lambda: 0,
                  banner=None,
                  interp=None,
@@ -376,6 +383,7 @@ class Repl(BpythonRepl):
         if self.watcher:
             # for reading modules if they fail to load
             old_module_locations = {}
+
             @functools.wraps(self.orig_import)
             def new_import(name, globals={}, locals={}, fromlist=[], level=-1):
                 try:
@@ -393,6 +401,7 @@ class Repl(BpythonRepl):
                 return m
             __builtins__['__import__'] = new_import
 
+        sitefix.monkeypatch_quit()
         return self
 
     def __exit__(self, *args):
@@ -732,11 +741,14 @@ class Repl(BpythonRepl):
         self.cursor_offset = len(self.current_line)
 
     def send_session_to_external_editor(self, filename=None):
-        for_editor = u'### current bpython session - file will be reevaluated, ### lines will not be run\n'
-        for_editor += u'\n'.join(line[len(self.ps1):] if line.startswith(self.ps1) else
-                                (line[len(self.ps2):] if line.startswith(self.ps2) else
-                                '### '+line)
-                                for line in self.getstdout().split('\n'))
+        for_editor = (u"### current bpython session - file will be "
+                      u"reevaluated, ### lines will not be run\n'")
+        for_editor += u'\n'.join(line[len(self.ps1):]
+                                 if line.startswith(self.ps1) else
+                                 line[len(self.ps2):]
+                                 if line.startswith(self.ps2) else
+                                 '### '+line
+                                 for line in self.getstdout().split('\n'))
         text = self.send_to_external_editor(for_editor)
         lines = text.split('\n')
         from_editor = [line for line in lines if line[:4] != '### ']
