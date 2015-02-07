@@ -523,7 +523,7 @@ class Repl(BpythonRepl):
                 self.startup()
             except IOError as e:
                 self.status_bar.message(
-                  _('Executing PYTHONSTARTUP failed: %s') % (str(e)))
+                    _('Executing PYTHONSTARTUP failed: %s') % (str(e)))
 
         elif isinstance(e, bpythonevents.UndoEvent):
             self.undo(n=e.n)
@@ -621,7 +621,7 @@ class Repl(BpythonRepl):
         # TODO add PAD keys hack as in bpython.cli
         elif e in key_dispatch[self.config.edit_current_block_key]:
             self.send_current_block_to_external_editor()
-        elif e in ["<ESC>"]:  #ESC
+        elif e in ["<ESC>"]:
             self.incremental_search_mode = None
         elif e in ["<SPACE>"]:
             self.add_normal_character(' ')
@@ -636,11 +636,11 @@ class Repl(BpythonRepl):
         previous_word = last_word(self.rl_history.entry)
         word = last_word(self.rl_history.back())
         line = self.current_line
-        self._set_current_line(line[:len(line)-len(previous_word)] + word,
+        self._set_current_line(line[:len(line) - len(previous_word)] + word,
                                reset_rl_history=False)
         self._set_cursor_offset(
-                self.cursor_offset-len(previous_word) + len(word),
-                reset_rl_history=False)
+            self.cursor_offset-len(previous_word) + len(word),
+            reset_rl_history=False)
 
     def incremental_search(self, reverse=False, include_current=False):
         if self.incremental_search_mode is None:
@@ -870,7 +870,7 @@ class Repl(BpythonRepl):
         elif self.incremental_search_mode == 'incremental_search':
             self.incremental_search(include_current=True)
         else:
-            raise ValueError('add_to_incremental_search should only be called in a special mode')
+            raise ValueError('add_to_incremental_search not in a special mode')
 
     def update_completion(self, tab=False):
         """Update visible docstring and matches, and possibly hide/show completion box"""
