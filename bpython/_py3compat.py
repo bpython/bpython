@@ -42,3 +42,10 @@ if py3:
     from pygments.lexers import Python3Lexer as PythonLexer
 else:
     from pygments.lexers import PythonLexer
+
+if py3 or sys.version_info[:3] >= (2, 7, 3):
+    def prepare_for_exec(arg, encoding=None):
+        return arg
+else:
+    def prepare_for_exec(arg, encoding=None):
+        return arg.encode(encoding)

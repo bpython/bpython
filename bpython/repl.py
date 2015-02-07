@@ -45,7 +45,7 @@ from six.moves.urllib_parse import quote as urlquote, urljoin, urlparse
 from pygments.token import Token
 
 from bpython import inspection
-from bpython._py3compat import PythonLexer, py3
+from bpython._py3compat import PythonLexer, py3, prepare_for_exec
 from bpython.formatter import Parenthesis
 from bpython.translations import _, ngettext
 from bpython.clipboard import get_clipboard, CopyFailed
@@ -1029,22 +1029,30 @@ class Repl(object):
     def send_to_external_editor(self, text, filename=None):
         """Returns modified text from an editor, or the oriignal text if editor
         exited with non-zero"""
-        editor_args = shlex.split(self.config.editor)
+
+        encoding = getpreferredencoding()
+        editor_args = shlex.split(prepare_for_exec(self.config.editor,
+                                                   encoding))
         with tempfile.NamedTemporaryFile(suffix='.py') as temp:
-            temp.write(text.encode(getpreferredencoding()))
+            temp.write(text.encode(encoding))
             temp.flush()
-            if subprocess.call(editor_args + [temp.name]) == 0:
+
+            args = editor_args + [prepare_for_exec(temp.name, encoding)]
+            if subprocess.call(args) == 0:
                 with open(temp.name) as f:
                     if py3:
                         return f.read()
                     else:
-                        return f.read().decode(getpreferredencoding())
+                        return f.read().decode(encoding)
             else:
                 return text
 
     def open_in_external_editor(self, filename):
-        editor_args = shlex.split(self.config.editor)
-        if subprocess.call(editor_args + [filename]) == 0:
+        encoding = getpreferredencoding()
+        editor_args = shlex.split(prepare_for_exec(self.config.editor,
+                                                   encoding))
+        args = editor_args + [prepare_for_exec(filename, encoding)]
+        if subprocess.call(args) == 0:
             return True
         return False
 
