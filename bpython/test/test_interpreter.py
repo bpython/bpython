@@ -5,8 +5,11 @@ try:
 except ImportError:
     import unittest
 
-from bpython.curtsiesfrontend import interpreter
 from curtsies.fmtfuncs import bold, green, magenta, cyan, red, plain
+
+from bpython.curtsiesfrontend import interpreter
+from bpython._py3compat import py3
+from bpython.test import mock
 
 
 class TestInterpreter(unittest.TestCase):
@@ -51,3 +54,42 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEquals(str(plain('').join(a)), str(expected))
         self.assertEquals(plain('').join(a), expected)
+
+    @unittest.skipIf(py3, "runsource() accepts only unicode in Python 3")
+    def test_runsource_bytes(self):
+        i = interpreter.Interp()
+        i.encoding = 'latin-1'
+
+        i.runsource(b"a = b'\xfe'")
+        self.assertIsInstance(i.locals['a'], str)
+        self.assertEqual(i.locals['a'], b"\xfe")
+
+        i.runsource(b"b = u'\xfe'")
+        self.assertIsInstance(i.locals['b'], unicode)
+        self.assertEqual(i.locals['b'], u"\xfe")
+
+    @unittest.skipUnless(py3, "Only a syntax error in Python 3")
+    @mock.patch.object(interpreter.Interp, 'showsyntaxerror')
+    def test_runsource_bytes_over_128_syntax_error(self):
+        i = interpreter.Interp()
+        i.encoding = 'latin-1'
+
+        i.runsource(u"a = b'\xfe'")
+        i.showsyntaxerror.assert_called_with()
+
+    @unittest.skipIf(py3, "only ASCII allowed in bytestrings in Python 3")
+    def test_runsource_bytes_over_128_syntax_error(self):
+        i = interpreter.Interp()
+        i.encoding = 'latin-1'
+
+        i.runsource(u"a = b'\xfe'")
+        self.assertIsInstance(i.locals['a'], type(b''))
+        self.assertEqual(i.locals['a'], b"\xfe")
+
+    def test_runsource_unicode(self):
+        i = interpreter.Interp()
+        i.encoding = 'latin-1'
+
+        i.runsource(u"a = u'\xfe'")
+        self.assertIsInstance(i.locals['a'], type(u''))
+        self.assertEqual(i.locals['a'], u"\xfe")
