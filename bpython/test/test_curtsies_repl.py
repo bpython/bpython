@@ -314,17 +314,9 @@ class TestCurtsiesStartup(TestCase):
 
     def setUp(self):
         self.repl = create_repl()
-        self.startupfile = tempfile.NamedTemporaryFile()
-        self.startupfile.__enter__()
-        os.environ['PYTHONSTARTUP'] = self.startupfile.name
 
-    def tearDown(self):
-        self.startupfile.__exit__(None, None, None)
-        del os.environ['PYTHONSTARTUP']
-
-    def write_startup_file(self, encoding):
-        with io.open(self.startupfile.name, mode='wt',
-                     encoding=encoding) as f:
+    def write_startup_file(self, fname, encoding):
+        with io.open(fname, mode='wt', encoding=encoding) as f:
             f.write('# coding: ')
             f.write(encoding)
             f.write('\n')
@@ -332,13 +324,17 @@ class TestCurtsiesStartup(TestCase):
             f.write('a = "äöü"\n')
 
     def test_startup_event_utf8(self):
-        self.write_startup_file('utf-8')
-        self.repl.process_event(bpythonevents.RunStartupFileEvent())
+        with tempfile.NamedTemporaryFile() as temp:
+            self.write_startup_file(temp.name, 'utf-8')
+            with mock.patch.dict('os.environ', {'PYTHONSTARTUP': temp.name}):
+                self.repl.process_event(bpythonevents.RunStartupFileEvent())
         self.assertIn('a', self.repl.interp.locals)
 
-    def test_startup_event_utf8(self):
-        self.write_startup_file('latin-1')
-        self.repl.process_event(bpythonevents.RunStartupFileEvent())
+    def test_startup_event_latin1(self):
+        with tempfile.NamedTemporaryFile() as temp:
+            self.write_startup_file(temp.name, 'latin-1')
+            with mock.patch.dict('os.environ', {'PYTHONSTARTUP': temp.name}):
+                self.repl.process_event(bpythonevents.RunStartupFileEvent())
         self.assertIn('a', self.repl.interp.locals)
 
 
