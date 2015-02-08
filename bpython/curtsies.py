@@ -41,7 +41,7 @@ def main(args=None, locals_=None, banner=None):
     if options.log is None:
         options.log = 0
     logging_levels = [logging.ERROR, logging.INFO, logging.DEBUG]
-    level = logging_levels[min(len(logging_levels), options.log)]
+    level = logging_levels[min(len(logging_levels) - 1, options.log)]
     logging.getLogger('curtsies').setLevel(level)
     logging.getLogger('bpython').setLevel(level)
     if options.log:
