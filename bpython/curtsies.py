@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import code
 import logging
 import sys
+import io
 from optparse import Option
 
 import curtsies
@@ -17,6 +18,7 @@ from bpython import translations
 from bpython.translations import _
 from bpython.importcompletion import find_iterator
 from bpython.curtsiesfrontend import events as bpythonevents
+from bpython import inspection
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +59,9 @@ def main(args=None, locals_=None, banner=None):
         exit_value = 0
         if options.type:
             paste = curtsies.events.PasteEvent()
-            sourcecode = open(exec_args[0]).read()
+            encoding = inspection.get_encoding_file(exec_args[0])
+            with io.open(exec_args[0], encoding=encoding) as f:
+                sourcecode = f.read()
             paste.events.extend(sourcecode)
         else:
             try:
