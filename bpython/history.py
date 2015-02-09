@@ -24,7 +24,7 @@
 # THE SOFTWARE.
 
 
-import codecs
+import io
 import os
 from itertools import islice
 from six.moves import range
@@ -175,7 +175,8 @@ class History(object):
         self.saved_line = ''
 
     def load(self, filename, encoding):
-        with codecs.open(filename, 'r', encoding, 'ignore') as hfile:
+        with io.open(filename, 'r', encoding=encoding,
+                     errors='ignore') as hfile:
             with FileLock(hfile):
                 self.entries = self.load_from(hfile)
 
@@ -186,7 +187,8 @@ class History(object):
         return entries
 
     def save(self, filename, encoding, lines=0):
-        with codecs.open(filename, 'w', encoding, 'ignore') as hfile:
+        with io.open(filename, 'w', encoding=encoding,
+                     errors='ignore') as hfile:
             with FileLock(hfile):
                 self.save_to(hfile, self.entries, lines)
 
@@ -202,7 +204,8 @@ class History(object):
             return self.append(s)
 
         try:
-            with codecs.open(filename, 'a+', encoding, 'ignore') as hfile:
+            with io.open(filename, 'a+', encoding=encoding,
+                         errors='ignore') as hfile:
                 with FileLock(hfile):
                     # read entries
                     hfile.seek(0, os.SEEK_SET)
