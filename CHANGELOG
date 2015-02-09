@@ -1,6 +1,29 @@
 Changelog
 =========
 
+0.14
+----
+
+This release contains major changes to the frontends:
+
+* curtsies is the new default frontend.
+* The old curses frontend is available as bpython-cli.
+* The GTK+ frontend has been removed.
+
+New features:
+
+* French translation.
+* #234: Copy to clipboard.
+
+Fixes:
+
+* #284: __file__ is now defined.
+* #366, #367: Fixed help support in curtsies.
+* #432: Fix crash if no history is present.
+
+Python 2.6, 2.7, 3.3 and newer are supported. Support for 2.5 has been dropped.
+Furthermore, it is no longer necessary to run 2to3 on the source code.
+
 0.13.2
 -------
 
