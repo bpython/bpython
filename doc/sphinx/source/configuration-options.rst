@@ -433,3 +433,9 @@ When the cursor is at the end of a line, pressing right arrow or ctrl-f will
 complete the full line.
 This option also turns on substring history search, highlighting the matching
 section in previous result.
+
+Sample config
+-------------
+
+.. include:: ../../../bpython/sample-config
+   :literal:
