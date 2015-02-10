@@ -111,6 +111,11 @@ A bugfix release. The fixed bugs are:
 * #432: Fixed crash in bpython-curtsies in special circumstances if history file
   is empty. Thanks to Lisa van Gelder.
 
+Changes to dependencies:
+
+* requests is a new dependency.
+* PyOpenSSL, ndg-httpsclient and pyasn1 are new dependencies on Mac OS X.
+
 0.13.1
 -------
 
