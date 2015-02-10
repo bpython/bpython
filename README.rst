@@ -10,12 +10,13 @@ Dependencies
 
 * Pygments
 * requests
-* curtsies >= 0.1.15,<0.2.0
+* curtsies >= 0.1.18,<0.2.0
 * greenlet
 * Sphinx != 1.1.2 (optional, for the documentation)
 * mock (optional, for the testsuite)
 * babel (optional, for internationalization)
 * watchdog (optional, for monitoring imported modules for changes)
+* jedi (optional, for experimental multiline completion)
 
 If you are using Python 2 on Mac OS X, the following dependencies are required
 as well:
