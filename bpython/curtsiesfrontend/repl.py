@@ -596,8 +596,6 @@ class Repl(BpythonRepl):
             self.show_source()
         elif e in key_dispatch[self.config.help_key]:
             self.pager(self.help_text())
-        elif e in key_dispatch[self.config.suspend_key]:
-            raise SystemExit()
         elif e in key_dispatch[self.config.exit_key]:
             raise SystemExit()
         elif e in ("\n", "\r", "<PADENTER>", "<Ctrl-j>", "<Ctrl-m>"):
