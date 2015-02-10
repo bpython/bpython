@@ -193,7 +193,8 @@ entry_points = {
     'console_scripts': [
         'bpython = bpython.curtsies:main',
         'bpython-curses = bpython.cli:main',
-        'bpython-urwid = bpython.urwid:main [urwid]'
+        'bpython-urwid = bpython.urwid:main [urwid]',
+        'bpbd = bpdb:main'
     ]
 }
 
