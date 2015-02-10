@@ -3,6 +3,11 @@ General
 This refers to the ``[general]`` section in your
 `$XDG_CONFIG_HOME/bpython/config` file.
 
+arg_spec
+^^^^^^^^
+Display the arg spec (list of arguments) for callables, when possible (default:
+True).
+
 auto_display_list
 ^^^^^^^^^^^^^^^^^
 Display the autocomplete list as you type (default: True).
@@ -16,48 +21,59 @@ subsequence, and fuzzy matches methods with common characters (default: simple).
 
 .. versionadded:: 0.12
 
-syntax
-^^^^^^
-Syntax highlighting as you type (default: True).
+.. _configuration_color_scheme:
 
-arg_spec
-^^^^^^^^
-Display the arg spec (list of arguments) for callables, when possible (default:
-True).
+color_scheme
+^^^^^^^^^^^^
+See :ref:`themes` for more information.
+
+Color schemes should be put in ``$XDG_CONFIG_HOME/bpython/``. For example, to
+use the theme ``$XDG_CONFIG_HOME/bpython/foo.theme`` set ``color_scheme = foo``
+
+Leave blank or set to "default" to use the default (builtin) theme.
+
+complete_magic_methods
+^^^^^^^^^^^^^^^^^^^^^^
+Whether magic methods should be auto completed (default: True).
+
+dedent_after
+^^^^^^^^^^^^
+TODO (default: 1)
+
+editor
+^^^^^^
+Editor for externally editing the current line.
+
+.. versionadded:: 0.13
+
+flush_output
+^^^^^^^^^^^^
+Whether to flush all output to stdout on exit (default: True).
+
+highlight_show_source
+^^^^^^^^^^^^^^^^^^^^^
+Whether the source code of an object should be highlighted (default: True).
+
+hist_duplicates
+^^^^^^^^^^^^^^^
+Whether to store duplicate entries in the history (default: True).
 
 hist_file
 ^^^^^^^^^
 History file (default: ``~/.pythonhist``).
 
-paste_time
-^^^^^^^^^^
-The time between lines before pastemode is activated in seconds (default: 0.02).
-
 hist_length
 ^^^^^^^^^^^
 Number of lines to store in history (set to 0 to disable) (default: 100).
 
-tab_length
+paste_time
 ^^^^^^^^^^
-Soft tab size (default 4, see pep-8)
+The time between lines before pastemode is activated in seconds (default: 0.02).
 
-pastebin_url
-^^^^^^^^^^^^
-The pastebin url to post to (without a trailing slash). This pastebin has to be
-a pastebin which uses provides a similar interface to ``bpaste.net``'s JSON
-interface (default: https://bpaste.net/json/new).
-
-pastebin_show_url
-^^^^^^^^^^^^^^^^^
-The url under which the new paste can be reached. ``$paste_id`` will be replaced
-by the ID of the new paste (default: https://bpaste.net/show/$paste_id/).
-
-pastebin_removal_url
-^^^^^^^^^^^^^^^^^^^^
-The url under which a paste can be removed. ``$removal_id`` will be replaced by
-the removal ID of the paste (default: https://bpaste.net/remova/$removal_id/).
-
-.. versionadded:: 0.14
+pastebin_confirm
+^^^^^^^^^^^^^^^^
+Whether pasting to a pastebin needs to be confirmed before sending the data
+(default: True).
 
 pastebin_expiry
 ^^^^^^^^^^^^^^^
@@ -120,6 +136,29 @@ following helper program can be used to create `gists
 
 .. versionadded:: 0.12
 
+pastebin_show_url
+^^^^^^^^^^^^^^^^^
+The url under which the new paste can be reached. ``$paste_id`` will be replaced
+by the ID of the new paste (default: https://bpaste.net/show/$paste_id/).
+
+pastebin_removal_url
+^^^^^^^^^^^^^^^^^^^^
+The url under which a paste can be removed. ``$removal_id`` will be replaced by
+the removal ID of the paste (default: https://bpaste.net/remova/$removal_id/).
+
+.. versionadded:: 0.14
+
+pastebin_url
+^^^^^^^^^^^^
+The pastebin url to post to (without a trailing slash). This pastebin has to be
+a pastebin which uses provides a similar interface to ``bpaste.net``'s JSON
+interface (default: https://bpaste.net/json/new).
+
+save_append_py
+^^^^^^^^^^^^^^
+Whether to append ``.py`` to the filename while saving the input to a file.
+
+.. versionadded:: 0.13
 
 single_undo_time
 ^^^^^^^^^^^^^^^^
@@ -129,32 +168,13 @@ to undo multiple lines at once. Use -1 to never prompt, or 0 to always prompt.
 
 .. versionadded:: 0.14
 
-.. _configuration_color_scheme:
-
-color_scheme
-^^^^^^^^^^^^
-See :ref:`themes` for more information.
-
-Color schemes should be put in ``$XDG_CONFIG_HOME/bpython/``. For example, to
-use the theme ``$XDG_CONFIG_HOME/bpython/foo.theme`` set ``color_scheme = foo``
-
-Leave blank or set to "default" to use the default (builtin) theme.
-
-flush_output
-^^^^^^^^^^^^
-Whether to flush all output to stdout on exit (default: True).
-
-save_append_py
-^^^^^^^^^^^^^^
-Whether to append ``.py`` to the filename while saving the input to a file.
-
-.. versionadded:: 0.13
-
-editor
+syntax
 ^^^^^^
-Editor for externally editing the current line.
+Syntax highlighting as you type (default: True).
 
-.. versionadded:: 0.13
+tab_length
+^^^^^^^^^^
+Soft tab size (default 4, see PEP-8).
 
 unicode_box
 ^^^^^^^^^^^
