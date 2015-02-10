@@ -54,27 +54,21 @@ New features:
 
 Fixes:
 
-* #366, #367: Fixed help support in curtsies.
-* #432: Fix crash if no history is present.
+* #254: replacement box characters used for ascii terminals
+* #284: __file__ is in scope after module run with bpython -i thanks to Lindsey
+* #341: right arrow key suggestion color is configurable thanks to Alice Chen
 * #347: Fix crash on unsafe autocompletion
 * #349: writing newlines to stderr
 * #363: banner no longer crashes bpython-urwid - thanks to Luca Barbato
-* #369: interactive sessions inherit compiler directives from files
-  run with -i interactive flag
-* #341: right arrow key suggestion color is configurable thanks to
-  Alice Chen
+* #366, #367: Fixed help() support in curtsies.
+* #369: interactive sessions inherit compiler directives from files run with -i
+  interactive flag
 * #391: fix crash when using meta-backspace thanks to Tony Wang
-* doc fixes from Lindsey Raymond,
-* #284: __file__ is in scope after module run with bpython -i
-  thanks to Lindsey
-* #254: replacement box characters used for ascii terminals
-* #442: add message for turning filewatching off thanks to Keyan Pishdadian
-* #435: filewatching api improved and tested thanks to Keyan Pishdadian
+* #438, #450: bpython-curtsies startup behavior fixed - runs on startup, errors
+  during startup reported instead of crashing
 * #447: fix behavior of duplicate keybindings
-* #458: fix dictionary key completion crash in Python 2.6 thanks to
-  Mary Mokuolu
-* #438, #450: bpython-curtsies startup behavior fixed - runs on startup,
-  errors during startup reported instead of crashing
+* #458: fix dictionary key completion crash in Python 2.6 thanks to Mary Mokuolu
+* documenatation fixes from Lindsey Raymond
 
 There was a lot of assorted work bringing the curtsies frontend
 up to the standards of bpython-curses:
