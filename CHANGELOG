@@ -95,11 +95,11 @@ Furthermore, it is no longer necessary to run 2to3 on the source code.
 This release brings a lot more code coverage, a new contributing guide,
 and so much more pep8
 
-new dependencies - the optional ones are for urwid, watching files, and
-completion
-new dependencies for HTTPS on OSX with Python 2
+Changes to dependencies:
 
-nicer version numbers
+* greenlet and curtsies are no longer optional.
+* six is new dependency.
+* jedi and watchdog are new optional dependencies.
 
 0.13.2
 -------
