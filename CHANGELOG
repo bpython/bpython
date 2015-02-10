@@ -7,7 +7,7 @@ Changelog
 This release contains major changes to the frontends:
 
 * curtsies is the new default frontend.
-* The old curses frontend is available as bpython-cli.
+* The old curses frontend is available as bpython-curses.
 * The GTK+ frontend has been removed.
 
 New features:
