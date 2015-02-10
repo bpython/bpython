@@ -18,16 +18,14 @@ New features:
 * #322: watch imported modules for changes and reevaluate on changes
   which requires optional dependency "watchdog" Toggle with F5
 * #285: reevaluate session and reimport modules with F6
-* #234 copy to system keyboard with F10
-* 2 new fish shell style features enabled by default, disable by setting
-   right_arrow_completion in the [curtsies] section of the config to False
-   * right arrow completion: the last readline history
-	 line which the current line could complete to appears in gray and can
-     be completed by hitting the right arrow key, enabled in config with
-     right_arrow_completion thanks to Nicholas Sweeting
-  * fish shell style automatic reverse history search: up arrow searches
-    readline history for entries containing the contents of the current line
-    thanks to Nicholas Sweeting
+* #234: copy to system keyboard with F10
+* fish style right arrow completion: the last readline history.
+  line which the current line could complete to appears in gray and can
+  be completed by hitting the right arrow key, enabled in config with
+  right_arrow_completion thanks to Nicholas Sweeting
+* fish shell style automatic reverse history search: up arrow searches.
+  readline history for entries containing the contents of the current line
+  thanks to Nicholas Sweeting
 * incremental forward and reverse search, be default bound to meta-r and
   meta-s because the standard keys ctrl-r and ctrl-s have well established
   uses in bpython. These can be changed in the config for a more readline-
@@ -46,10 +44,10 @@ New features:
 * Message displayed if history in scrollback buffer is inconsistent with
   output from last reevaluation of bpython session thanks to Susan Steinman
 * Adjust logging level with -L or -LL
-* #426 mutliline autocompletion (requires optional dependency Jedi)
-* #313 warn when undo may take cause extended delay, and prompt to undo
+* #426: mutliline autocompletion (requires optional dependency Jedi)
+* #313: warn when undo may take cause extended delay, and prompt to undo
   multiple lines (set threshold in config with single_undo_time)
-* #382 partial support for pasting in text with blank lines
+* #382: partial support for pasting in text with blank lines
 * basic string literal completion
 
 Fixes:
@@ -81,13 +79,13 @@ up to the standards of bpython-curses:
 * unicode issues
 * curtsies properly suspends and resumes (ctrl-z, fg)
 * Assorted curtsies display issues fixed (#472, #468, #448, #440, #401,
-#370)
+  #370)
 
 Python 2.6, 2.7, 3.3 and newer are supported. Support for 2.5 has been dropped.
 Furthermore, it is no longer necessary to run 2to3 on the source code.
 
 This release brings a lot more code coverage, a new contributing guide,
-and so much more pep8
+and most of the code now conforms to PEP-8.
 
 Changes to dependencies:
 
