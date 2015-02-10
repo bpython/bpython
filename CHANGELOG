@@ -6,23 +6,100 @@ Changelog
 
 This release contains major changes to the frontends:
 
-* curtsies is the new default frontend.
-* The old curses frontend is available as bpython-curses.
-* The GTK+ frontend has been removed.
+* curtsies is the new default frontend
+* the old curses frontend is available as bpython-curses
+* the GTK+ frontend has been removed
 
 New features:
 
 * French translation.
-* #234: Copy to clipboard.
+* #338: bpython help with F1
+* #354: edit config file from within bpython with F3
+* #322: watch imported modules for changes and reevaluate on changes
+  which requires optional dependency "watchdog" Toggle with F5
+* #285: reevaluate session and reimport modules with F6
+* #234 copy to system keyboard with F10
+* 2 new fish shell style features enabled by default, disable by setting
+   right_arrow_completion in the [curtsies] section of the config to False
+   * right arrow completion: the last readline history
+	 line which the current line could complete to appears in gray and can
+     be completed by hitting the right arrow key, enabled in config with
+     right_arrow_completion thanks to Nicholas Sweeting
+  * fish shell style automatic reverse history search: up arrow searches
+    readline history for entries containing the contents of the current line
+    thanks to Nicholas Sweeting
+* incremental forward and reverse search, be default bound to meta-r and
+  meta-s because the standard keys ctrl-r and ctrl-s have well established
+  uses in bpython. These can be changed in the config for a more readline-
+  faithful bpython experience.
+* #410: startup banner that shows Python and bpython version
+* #334: readline command meta-. for yank last argument works
+  thanks to Susan Steinman and Steph Samson
+* all readline keys which kill/cut text correctly copy text for paste
+  with ctrl-y or meta-y
+* #194: Syntax-highlighted tracebacks thanks to Miriam Lauter
+* #328: bpython history not reevaluated to edit a previous line of a
+  multiline statement
+* removal links provided for bpaste pastebins
+* more informative error messages when source can't be found for an object
+  thanks to Liudmila Nikolaeva and Miriam
+* Message displayed if history in scrollback buffer is inconsistent with
+  output from last reevaluation of bpython session thanks to Susan Steinman
+* Adjust logging level with -L or -LL
+* #426 mutliline autocompletion (requires optional dependency Jedi)
+* #313 warn when undo may take cause extended delay, and prompt to undo
+  multiple lines (set threshold in config with single_undo_time)
+* #382 partial support for pasting in text with blank lines
+* basic string literal completion
 
 Fixes:
 
-* #284: __file__ is now defined.
 * #366, #367: Fixed help support in curtsies.
 * #432: Fix crash if no history is present.
+* #347: Fix crash on unsafe autocompletion
+* #349: writing newlines to stderr
+* #363: banner no longer crashes bpython-urwid - thanks to Luca Barbato
+* #369: interactive sessions inherit compiler directives from files
+  run with -i interactive flag
+* #341: right arrow key suggestion color is configurable thanks to
+  Alice Chen
+* #391: fix crash when using meta-backspace thanks to Tony Wang
+* doc fixes from Lindsey Raymond,
+* #284: __file__ is in scope after module run with bpython -i
+  thanks to Lindsey
+* #254: replacement box characters used for ascii terminals
+* #442: add message for turning filewatching off thanks to Keyan Pishdadian
+* #435: filewatching api improved and tested thanks to Keyan Pishdadian
+* #447: fix behavior of duplicate keybindings
+* #458: fix dictionary key completion crash in Python 2.6 thanks to
+  Mary Mokuolu
+* #438, #450: bpython-curtsies startup behavior fixed - runs on startup,
+  errors during startup reported instead of crashing
+
+There was a lot of assorted work bringing the curtsies frontend
+up to the standards of bpython-curses:
+
+* match list dissapears correctly when single match is selected
+* Filename completion working correctly
+* dictionary key completion fixed and re-enabled
+* pager for showing source and native help() viewing
+* better status bar message display and clear code
+* unicode issues
+* curtsies properly suspends and resumes (ctrl-z, fg)
+* Assorted curtsies display issues fixed (#472, #468, #448, #440, #401,
+#370)
 
 Python 2.6, 2.7, 3.3 and newer are supported. Support for 2.5 has been dropped.
 Furthermore, it is no longer necessary to run 2to3 on the source code.
+
+This release brings a lot more code coverage, a new contributing guide,
+and so much more pep8
+
+new dependencies - the optional ones are for urwid, watching files, and
+completion
+new dependencies for HTTPS on OSX with Python 2
+
+nicer version numbers
 
 0.13.2
 -------
