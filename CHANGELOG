@@ -52,34 +52,27 @@ New features:
 
 Fixes:
 
-* #254: replacement box characters used for ascii terminals
-* #284: __file__ is in scope after module run with bpython -i thanks to Lindsey
-* #341: right arrow key suggestion color is configurable thanks to Alice Chen
-* #347: Fix crash on unsafe autocompletion
-* #349: writing newlines to stderr
-* #363: banner no longer crashes bpython-urwid - thanks to Luca Barbato
+* #254: Use ASCII characters if Unicode box characters are not supported by the
+  terminal.
+* #284: __file__ is in scope after module run with bpython -i. Thanks to
+  Lindsey Raymond.
+* #347: Fixed crash on unsafe autocompletion.
+* #349: Fixed writing newlines to stderr.
+* #363: Fixed banner crashing bpython-urwid. Thanks to Luca Barbato.
 * #366, #367: Fixed help() support in curtsies.
-* #369: interactive sessions inherit compiler directives from files run with -i
-  interactive flag
-* #391: fix crash when using meta-backspace thanks to Tony Wang
-* #438, #450: bpython-curtsies startup behavior fixed - runs on startup, errors
-  during startup reported instead of crashing
-* #447: fix behavior of duplicate keybindings
-* #458: fix dictionary key completion crash in Python 2.6 thanks to Mary Mokuolu
-* documenatation fixes from Lindsey Raymond
-
-There was a lot of assorted work bringing the curtsies frontend
-up to the standards of bpython-curses:
-
-* match list dissapears correctly when single match is selected
-* Filename completion working correctly
-* dictionary key completion fixed and re-enabled
-* pager for showing source and native help() viewing
-* better status bar message display and clear code
-* unicode issues
-* curtsies properly suspends and resumes (ctrl-z, fg)
-* Assorted curtsies display issues fixed (#472, #468, #448, #440, #401,
-  #370)
+* #369: Interactive sessions inherit compiler directives from files run with -i
+  interactive flag.
+* #370, #401, #440, #448, #468, #472: Fixed various display issues in curtsies.
+* #391: Fixed crash when using Meta-backspace. Thanks to Tony Wang.
+* #438, #450: bpython-curtsies startup behavior fixed. Errors
+  during startup are reported instead of crashing.
+* #447: Fixed behavior of duplicate keybindings.
+* #458: Fixed dictionary key completion crash in Python 2.6. Thanks to Mary
+  Mokuolu.
+* Documenatation fixes from Lindsey Raymond.
+* Fixed filename completion.
+* Fixed various Unicode issues in curtsies.
+* Fixed and re-enabled dictionary key completion in curtsies.
 
 Python 2.6, 2.7, 3.3 and newer are supported. Support for 2.5 has been dropped.
 Furthermore, it is no longer necessary to run 2to3 on the source code.
