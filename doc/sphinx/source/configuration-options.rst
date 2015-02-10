@@ -38,7 +38,8 @@ Whether magic methods should be auto completed (default: True).
 
 dedent_after
 ^^^^^^^^^^^^
-TODO (default: 1)
+Number of blank lines required before next line will be dedented (default: 1).
+If set to 0, automatic dedenting never occurs.
 
 editor
 ^^^^^^
