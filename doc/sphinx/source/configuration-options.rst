@@ -198,88 +198,21 @@ Valid keys are:
 * Control + any alphanumeric character (C-a through A-z, also a few others).
 * Any function key ranging from F1 to F12.
 
-pastebin
-^^^^^^^^
-Default: F8
+backspace
+^^^^^^^^^
+Default: C-h
 
-last_output
-^^^^^^^^^^^
-Default: F9
-
-Shows the last output in the systems $PAGER.
-
-reimport
-^^^^^^^^
-Default: F6
-
-Reruns entire session, reloading all modules by clearing the sys.modules cache.
+Delete character in front of the cursor.
 
 .. versionadded:: 0.14
 
-help
-^^^^
-Default: F1
-
-Brings up sincerely cheerful description of bpython features and current key bindings.
-
-.. versionadded:: 0.14
-
-toggle_file_watch
+beginning_of_line
 ^^^^^^^^^^^^^^^^^
-Default: F5
+Default: C-a
 
-Toggles file watching behaviour; re-runs entire bpython session whenever an imported
-module is modified.
+Move to the beginning of the line.
 
 .. versionadded:: 0.14
-
-save
-^^^^
-Default: C-s
-
-Saves the current session to a file (prompts for filename)
-
-undo
-^^^^
-Default: C-r
-
-Rewinds the last action.
-
-up_one_line
-^^^^^^^^^^^
-Default: C-p
-
-Move the cursor up, by one line.
-
-down_one_line
-^^^^^^^^^^^^^
-Default: C-n
-
-Move the cursor down, by one line.
-
-cut_to_buffer
-^^^^^^^^^^^^^
-Default: C-k
-
-Cuts the current line to the buffer.
-
-search
-^^^^^^
-Default: C-o
-
-Search up for any lines containing what is on the current line.
-
-yank_from_buffer
-^^^^^^^^^^^^^^^^
-Default: C-y
-
-Pastes the current line from the buffer (the one you previously cutted)
-
-clear_word
-^^^^^^^^^^
-Default: C-w
-
-Clear the word the cursor is currently on.
 
 clear_line
 ^^^^^^^^^^
@@ -293,11 +226,61 @@ Default: C-l
 
 Clears the screen to the top.
 
-show_source
-^^^^^^^^^^^
-Default: F2
+clear_word
+^^^^^^^^^^
+Default: C-w
 
-Shows the source of the currently being completed (python) function.
+Clear the word the cursor is currently on.
+
+copy_clipboard
+^^^^^^^^^^^^^^
+Default: F10
+
+Copy to clipboard.
+
+.. versionadded:: 0.14
+
+cut_to_buffer
+^^^^^^^^^^^^^
+Default: C-k
+
+Cuts the current line to the buffer.
+
+delete
+^^^^^^
+Default: C-d
+
+Delete character under the cursor.
+
+down_one_line
+^^^^^^^^^^^^^
+Default: C-n
+
+Move the cursor down, by one line.
+
+edit_config
+^^^^^^^^^^^
+Default: F3
+
+Edit bpython configuration in external editor.
+
+.. versionadded:: 0.14
+
+edit_current_block
+^^^^^^^^^^^^^^^^^^
+Default: C-x
+
+Edit current block in external editor.
+
+.. versionadded:: 0.14
+
+end_of_line
+^^^^^^^^^^^
+Default: C-e
+
+Move to the of the line.
+
+.. versionadded:: 0.14
 
 exit
 ^^^^
@@ -312,6 +295,101 @@ Default: F7
 Edit current line in an external editor.
 
 .. versionadded:: 0.13
+
+help
+^^^^
+Default: F1
+
+Brings up sincerely cheerful description of bpython features and current key bindings.
+
+.. versionadded:: 0.14
+
+last_output
+^^^^^^^^^^^
+Default: F9
+
+Shows the last output in the systems $PAGER.
+
+left
+^^^^
+Default: C-b
+
+Move a character to the left.
+
+.. versionadded:: 0.14
+
+pastebin
+^^^^^^^^
+Default: F8
+
+reimport
+^^^^^^^^
+Default: F6
+
+Reruns entire session, reloading all modules by clearing the sys.modules cache.
+
+.. versionadded:: 0.14
+
+right
+^^^^^
+Default: C-f
+
+Move a character to the right.
+
+.. versionadded:: 0.14
+
+save
+^^^^
+Default: C-s
+
+Saves the current session to a file (prompts for filename)
+
+search
+^^^^^^
+Default: C-o
+
+Search up for any lines containing what is on the current line.
+
+show_source
+^^^^^^^^^^^
+Default: F2
+
+Shows the source of the currently being completed (python) function.
+
+toggle_file_watch
+^^^^^^^^^^^^^^^^^
+Default: F5
+
+Toggles file watching behaviour; re-runs entire bpython session whenever an imported
+module is modified.
+
+.. versionadded:: 0.14
+
+transpose_chars
+^^^^^^^^^^^^^^^
+Default: C-t
+
+Transpose current character with the one left of it.
+
+.. versionadded:: 0.14
+
+undo
+^^^^
+Default: C-r
+
+Rewinds the last action.
+
+up_one_line
+^^^^^^^^^^^
+Default: C-p
+
+Move the cursor up, by one line.
+
+yank_from_buffer
+^^^^^^^^^^^^^^^^
+Default: C-y
+
+Pastes the current line from the buffer (the one you previously cutted)
 
 CLI
 ---
