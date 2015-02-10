@@ -90,8 +90,10 @@ and most of the code now conforms to PEP-8.
 Changes to dependencies:
 
 * greenlet and curtsies are no longer optional.
-* six is new dependency.
-* jedi and watchdog are new optional dependencies.
+* six is a new dependency.
+* jedi is a new optional dependency required for multiline completion.
+* watchdog is a new optional dependency required for watching changes in
+  imported modules.
 
 0.13.2
 -------
