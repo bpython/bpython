@@ -6,49 +6,42 @@ Changelog
 
 This release contains major changes to the frontends:
 
-* curtsies is the new default frontend
-* the old curses frontend is available as bpython-curses
-* the GTK+ frontend has been removed
+* curtsies is the new default frontend.
+* The old curses frontend is available as bpython-curses.
+* The GTK+ frontend has been removed.
 
 New features:
 
+* #194: Syntax-highlighted tracebacks. Thanks to Miriam Lauter.
+* #234: Copy to system keyboard.
+* #285: Re-evaluate session and reimport modules.
+* #313: Warn when undo may take cause extended delay, and prompt to undo
+  multiple lines.
+* #322: Watch imported modules for changes and re-evaluate on changes.
+* #328: bpython history not re-evaluated to edit a previous line of a multiline
+  statement.
+* #334: readline command Meta-. for yank last argument. Thanks to Susan
+  Steinman and Steph Samson.
+* #338: bpython help with F1.
+* #354: Edit config file from within bpython.
+* #382: Partial support for pasting in text with blank lines.
+* #410: Startup banner that shows Python and bpython version
+* #426: Experimental mutliline autocompletion.
+* fish style last history completion with Arrow Right. Thanks to Nicholas
+  Sweeting.
+* fish style automatic reverse history search with Arrow Up.
+  Thanks to Nicholas Sweeting.
+* Incremental forward and reverse search.
+* All readline keys which kill/cut text correctly copy text for paste
+  with Ctrl-y or Meta-y.
 * French translation.
-* #338: bpython help with F1
-* #354: edit config file from within bpython with F3
-* #322: watch imported modules for changes and reevaluate on changes
-  which requires optional dependency "watchdog" Toggle with F5
-* #285: reevaluate session and reimport modules with F6
-* #234: copy to system keyboard with F10
-* fish style right arrow completion: the last readline history.
-  line which the current line could complete to appears in gray and can
-  be completed by hitting the right arrow key, enabled in config with
-  right_arrow_completion thanks to Nicholas Sweeting
-* fish shell style automatic reverse history search: up arrow searches.
-  readline history for entries containing the contents of the current line
-  thanks to Nicholas Sweeting
-* incremental forward and reverse search, be default bound to meta-r and
-  meta-s because the standard keys ctrl-r and ctrl-s have well established
-  uses in bpython. These can be changed in the config for a more readline-
-  faithful bpython experience.
-* #410: startup banner that shows Python and bpython version
-* #334: readline command meta-. for yank last argument works
-  thanks to Susan Steinman and Steph Samson
-* all readline keys which kill/cut text correctly copy text for paste
-  with ctrl-y or meta-y
-* #194: Syntax-highlighted tracebacks thanks to Miriam Lauter
-* #328: bpython history not reevaluated to edit a previous line of a
-  multiline statement
-* removal links provided for bpaste pastebins
-* more informative error messages when source can't be found for an object
-  thanks to Liudmila Nikolaeva and Miriam
+* Removal links for bpaste pastebins are now displayed.
+* More informative error messages when source cannot be found for an object.
+  Thanks to Liudmila Nikolaeva and Miriam Lauter.
 * Message displayed if history in scrollback buffer is inconsistent with
-  output from last reevaluation of bpython session thanks to Susan Steinman
-* Adjust logging level with -L or -LL
-* #426: mutliline autocompletion (requires optional dependency Jedi)
-* #313: warn when undo may take cause extended delay, and prompt to undo
-  multiple lines (set threshold in config with single_undo_time)
-* #382: partial support for pasting in text with blank lines
-* basic string literal completion
+  output from last re-evaluation of bpython session. Thanks to Susan Steinman.
+* Adjust logging level with -L or -LL.
+* Basic string literal completion.
 
 Fixes:
 
