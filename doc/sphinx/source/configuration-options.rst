@@ -19,6 +19,8 @@ There are three modes for autocomplete. simple, substring, and fuzzy.  Simple
 matches methods with a common prefix, substring matches methods with a common
 subsequence, and fuzzy matches methods with common characters (default: simple).
 
+As of version 0.14 this option has no effect, but is reserved for later use.
+
 .. versionadded:: 0.12
 
 .. _configuration_color_scheme:
@@ -43,7 +45,7 @@ If set to 0, automatic dedenting never occurs.
 
 editor
 ^^^^^^
-Editor for externally editing the current line.
+Editor for externally editing the current line, session, or config file.
 
 .. versionadded:: 0.13
 
@@ -51,9 +53,11 @@ flush_output
 ^^^^^^^^^^^^
 Whether to flush all output to stdout on exit (default: True).
 
+Only relevant to bpython-curses and bpython-urwid.
+
 highlight_show_source
 ^^^^^^^^^^^^^^^^^^^^^
-Whether the source code of an object should be highlighted (default: True).
+Whether the source code of an object should be syntax highlighted (default: True).
 
 hist_duplicates
 ^^^^^^^^^^^^^^^
@@ -69,7 +73,7 @@ Number of lines to store in history (set to 0 to disable) (default: 100).
 
 paste_time
 ^^^^^^^^^^
-The time between lines before pastemode is activated in seconds (default: 0.02).
+The time between keypresses before pastemode is deactivated in bpython-curses (default: 0.02).
 
 pastebin_confirm
 ^^^^^^^^^^^^^^^^
@@ -195,7 +199,7 @@ telling you the key does not exist in bpython.keys.
 
 Valid keys are:
 
-* Control + any alphanumeric character (C-a through A-z, also a few others).
+* Control + any alphanumeric character (C-a through C-z, also a few others).
 * Any function key ranging from F1 to F12.
 
 backspace
@@ -236,7 +240,7 @@ copy_clipboard
 ^^^^^^^^^^^^^^
 Default: F10
 
-Copy to clipboard.
+Copy the entire session to clipboard.
 
 .. versionadded:: 0.14
 
@@ -292,7 +296,7 @@ external_editor
 ^^^^^^^^^^^^^^^
 Default: F7
 
-Edit current line in an external editor.
+Edit the entire session in an external editor.
 
 .. versionadded:: 0.13
 
@@ -308,7 +312,7 @@ last_output
 ^^^^^^^^^^^
 Default: F9
 
-Shows the last output in the systems $PAGER.
+Shows the last output in the systems $PAGER. Only works in bpython-curses.
 
 left
 ^^^^
