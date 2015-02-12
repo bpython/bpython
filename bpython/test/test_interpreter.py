@@ -70,15 +70,15 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(i.locals['b'], "\xfe")
 
     @unittest.skipUnless(py3, "Only a syntax error in Python 3")
-    @mock.patch.object(interpreter.Interp, 'showsyntaxerror')
-    def test_runsource_bytes_over_128_syntax_error(self):
+    def test_runsource_bytes_over_128_syntax_error_py3(self):
         i = interpreter.Interp(encoding='latin-1')
+        i.showsyntaxerror = mock.Mock(return_value=None)
 
         i.runsource("a = b'\xfe'", encode=True)
-        i.showsyntaxerror.assert_called_with()
+        i.showsyntaxerror.assert_called_with(mock.ANY)
 
     @unittest.skipIf(py3, "encode is Python 2 only")
-    def test_runsource_bytes_over_128_syntax_error(self):
+    def test_runsource_bytes_over_128_syntax_error_py2(self):
         i = interpreter.Interp(encoding='latin-1')
 
         i.runsource("a = b'\xfe'", encode=True)
