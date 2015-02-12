@@ -7,6 +7,5 @@ configured by default to paste to this pastebin.
 
 Removal
 -------
-If you want a paste removed from the pastebin you can email Simon at
-simon@ikanobori.jp and he will remove the paste for you, be sure to mention the
-paste URL.
+If you want a paste removed from the pastebin you can use the removal link as
+shown by bpython. Refer to https://bpaste.net/removal if you lost it.

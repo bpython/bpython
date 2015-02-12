@@ -20,7 +20,6 @@ Contents:
    django
    windows
    changelog
-   sourcecode
    bpaste
    tips
    bpdb
