@@ -1,4 +1,6 @@
 from collections import namedtuple
+import inspect
+from bpython._py3compat import py3
 
 try:
     import unittest2 as unittest
@@ -256,3 +258,21 @@ class TestMultilineJediCompletion(unittest.TestCase):
             2, ' a', 'class Foo:\n a', ['adsf'],
             [Comp('Abc', 'bc'), Comp('ade', 'de')])
         self.assertSetEqual(matches, set(['ade']))
+
+
+class TestParameterNameCompletion(unittest.TestCase):
+    def test_set_of_params_returns_when_matches_found(self):
+        def func(apple, apricot, banana, carrot):
+            pass
+        if py3:
+            argspec = list(inspect.getfullargspec(func))
+        else:
+            argspec = list(inspect.getargspec(func))
+
+        argspec = ["func", argspec, False]
+        com=autocomplete.ParameterNameCompletion()
+        self.assertSetEqual(com.matches(1, "a", argspec=argspec), set(['apple=', 'apricot=']))
+        self.assertSetEqual(com.matches(2, "ba", argspec=argspec), set(['banana=']))
+        self.assertSetEqual(com.matches(3, "car", argspec=argspec), set(['carrot=']))
+
+
