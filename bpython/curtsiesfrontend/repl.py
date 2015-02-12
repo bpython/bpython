@@ -1286,7 +1286,7 @@ class Repl(BpythonRepl):
         while chars or requested_refreshes:
             if requested_refreshes:
                 requested_refreshes.pop()
-                self.process_event(events.RefreshRequestEvent())
+                self.process_event(bpythonevents.RefreshRequestEvent())
                 continue
             c = chars.pop(0)
             if c in '/':
