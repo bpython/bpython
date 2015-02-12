@@ -2,7 +2,7 @@
 
 Themes
 ======
-This chapter is about bpython's themeing capabalities.
+This chapter is about bpython's theming capabalities.
 
 bpython uses .theme files placed in your ``$XDG_CONFIG_HOME/bpython`` directory
 [#f1]_.  You can set the theme in the :ref:`configuration_color_scheme` option
