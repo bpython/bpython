@@ -34,8 +34,8 @@ def main(args=None, locals_=None, banner=None):
         'curtsies options', None, [
             Option('--log', '-L', action='count',
                    help=_("log debug messages to bpython.log")),
-            Option('--type', '-t', action='store_true',
-                   help=_("enter lines of file as though interactively "
+            Option('--paste', '-p', action='store_true',
+                   help=_("start by pasting lines of a file into session"
                           "typed")),
             ]))
     if options.log is None:
@@ -57,7 +57,7 @@ def main(args=None, locals_=None, banner=None):
         if not options:
             raise ValueError("don't pass in exec_args without options")
         exit_value = 0
-        if options.type:
+        if options.paste:
             paste = curtsies.events.PasteEvent()
             encoding = inspection.get_encoding_file(exec_args[0])
             with io.open(exec_args[0], encoding=encoding) as f:

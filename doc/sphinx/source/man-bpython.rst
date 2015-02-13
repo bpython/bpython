@@ -63,7 +63,7 @@ options:
 
 -L, --log              Write debugging messages to the file bpython.log. Use
                        -LL for more verbose logging.
--t file, --type=file   Paste in the contents of a file at startup.
+-p file, --paste=file  Paste in the contents of a file at startup. Only available in :program:`bpython`.
 
 In addition to the common options, :program:`bpython-urwid` also supports the
 following options if Twisted is available:
