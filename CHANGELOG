@@ -41,7 +41,7 @@ New features:
 * Message displayed if history in scrollback buffer is inconsistent with
   output from last re-evaluation of bpython session. Thanks to Susan Steinman.
 * Adjust logging level with -L or -LL.
-* Basic string literal completion.
+* String literal attribute completion.
 
 Fixes:
 
@@ -59,10 +59,10 @@ Fixes:
 * #391: Fixed crash when using Meta-backspace. Thanks to Tony Wang.
 * #438, #450: bpython-curtsies startup behavior fixed. Errors
   during startup are reported instead of crashing.
-* #447: Fixed behavior of duplicate keybindings.
+* #447: Fixed behavior of duplicate keybindings. Thanks to Keyan Pishdadian.
 * #458: Fixed dictionary key completion crash in Python 2.6. Thanks to Mary
   Mokuolu.
-* Documenatation fixes from Lindsey Raymond.
+* Documentation fixes from Lindsey Raymond.
 * Fixed filename completion.
 * Fixed various Unicode issues in curtsies.
 * Fixed and re-enabled dictionary key completion in curtsies.
