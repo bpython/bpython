@@ -77,6 +77,12 @@ class TestCurtsiesRepl(TestCase):
         self.repl.get_last_word()
         self.assertEqual(self.repl.current_line, 'abcde3')
 
+    def test_last_word(self):
+        self.assertEquals(curtsiesrepl._last_word(''), '')
+        self.assertEquals(curtsiesrepl._last_word(' '), '')
+        self.assertEquals(curtsiesrepl._last_word('a'), 'a')
+        self.assertEquals(curtsiesrepl._last_word('a b'), 'b')
+
     # this is the behavior of bash - not currently implemented
     @unittest.skip
     def test_get_last_word_with_prev_line(self):

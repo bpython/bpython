@@ -628,11 +628,8 @@ class Repl(BpythonRepl):
 
     def get_last_word(self):
 
-        def last_word(line):
-            return line.split().pop() if line else ''
-
-        previous_word = last_word(self.rl_history.entry)
-        word = last_word(self.rl_history.back())
+        previous_word = _last_word(self.rl_history.entry)
+        word = _last_word(self.rl_history.back())
         line = self.current_line
         self._set_current_line(line[:len(line) - len(previous_word)] + word,
                                reset_rl_history=False)
@@ -1520,6 +1517,10 @@ def is_nop(char):
 
 def tabs_to_spaces(line):
     return line.replace('\t', '    ')
+
+
+def _last_word(line):
+    return line.split().pop() if line else ''
 
 
 def compress_paste_event(paste_event):
