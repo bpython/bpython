@@ -50,12 +50,15 @@ If :program:`bpython` sees an argument it does not know, execution falls back to
 the regular Python interpreter.
 
 
---config=<config>   Use <config> instead of default config file.
--h, --help          Show the help message and exit.
--i, --interactive   Drop to bpython shell after running file instead of exiting.
-                    The PYTHONSTARTUP file is not read.
--q, --quiet         Do not flush the output to stdout.
--V, --version       Print :program:`bpython`'s version and exit.
+--config=<config>      Use <config> instead of default config file.
+-h, --help             Show the help message and exit.
+-i, --interactive      Drop to bpython shell after running file instead of exiting.
+                       The PYTHONSTARTUP file is not read.
+-q, --quiet            Do not flush the output to stdout.
+-V, --version          Print :program:`bpython`'s version and exit.
+-L, --log              Write debugging messages to the file bpython.log. Use
+                       -LL for more verbose logging. Only available in :program:`bpython`.
+-t file, --type=file   Paste in the contents of a file at startup. Only available in :program:`bpython`.
 
 In addition to the above options, :program:`bpython-urwid` also supports the
 following options if Twisted is available:
@@ -69,7 +72,7 @@ following options if Twisted is available:
                                     plugins. Use -- to pass options to the
                                     plugin.
 -s <port>, --server=<port>          Run an eval server on port <port>. This
-                                    options forces the use of a Twisted reactor.
+                                    option forces the use of a Twisted reactor.
 
 Keys
 ----
