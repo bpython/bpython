@@ -1310,7 +1310,11 @@ class Repl(BpythonRepl):
             potential_space_below = min_height - current_line_end_row - 1
             visible_space_below = potential_space_below - self.get_top_usable_line()
 
-            info_max_rows = max(visible_space_above, visible_space_below)
+            if self.config.curtsies_list_above:
+                info_max_rows = max(visible_space_above, visible_space_below)
+            else:
+                minimum_possible_height = 4
+                info_max_rows = max(visible_space_below, minimum_possible_height)
             infobox = paint.paint_infobox(info_max_rows,
                                           int(width * self.config.cli_suggestion_width),
                                           self.matches_iter.matches,
@@ -1324,8 +1328,6 @@ class Repl(BpythonRepl):
                                           else None)
 
             if visible_space_below >= infobox.height or not self.config.curtsies_list_above:
-                if visible_space_below < infobox.height:
-                    raise ValueError('whoops %r %r' % (visible_space_below, infobox.height))
                 arr[current_line_end_row + 1:current_line_end_row + 1 + infobox.height, 0:infobox.width] = infobox
             else:
                 arr[current_line_start_row - infobox.height:current_line_start_row, 0:infobox.width] = infobox
