@@ -311,7 +311,8 @@ class Repl(BpythonRepl):
                  interactive=True,
                  orig_tcattrs=None,
                  on_suspend=lambda *args: None,
-                 after_suspend=lambda *args: None):
+                 after_suspend=lambda *args: None,
+                 get_top_usable_line=lambda: 0):
         """
         locals_ is a mapping of locals to pass into the interpreter
         config is a bpython config.Struct with config attributes
@@ -331,6 +332,7 @@ class Repl(BpythonRepl):
         original terminal state, useful for shelling out with normal terminal
         on_suspend will be called on sigtstp
         after_suspend will be called when process foregrounded after suspend
+        get_top_usable_line returns the top line of the terminal owned
         """
 
         logger.debug("starting init")
@@ -425,6 +427,7 @@ class Repl(BpythonRepl):
         self.orig_tcattrs = orig_tcattrs
         self.on_suspend = on_suspend
         self.after_suspend = after_suspend
+        self.get_top_usable_line = get_top_usable_line
 
         self.coderunner = CodeRunner(self.interp, self.request_refresh)
         self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
@@ -433,6 +436,8 @@ class Repl(BpythonRepl):
 
         # next paint should clear screen
         self.request_paint_to_clear_screen = False
+
+        self.request_paint_to_pad_bottom = 0
 
         # offscreen command yields results different from scrollback bufffer
         self.inconsistent_history = False
@@ -1202,6 +1207,10 @@ class Repl(BpythonRepl):
         if self.request_paint_to_clear_screen: # or show_status_bar and about_to_exit ?
             self.request_paint_to_clear_screen = False
             arr = FSArray(min_height + current_line_start_row, width)
+        elif self.request_paint_to_pad_bottom:
+            # min_height - 1 for startup banner with python version
+            arr = FSArray(min(self.request_paint_to_pad_bottom, min_height - 1), width)
+            self.request_paint_to_pad_bottom = 0
         else:
             arr = FSArray(0, width)
         # TODO test case of current line filling up the whole screen (there
@@ -1298,7 +1307,8 @@ class Repl(BpythonRepl):
         if self.list_win_visible and not self.coderunner.running:
             logger.debug('infobox display code running')
             visible_space_above = history.height
-            visible_space_below = min_height - current_line_end_row - 1
+            potential_space_below = min_height - current_line_end_row - 1
+            visible_space_below = potential_space_below - self.get_top_usable_line()
 
             info_max_rows = max(visible_space_above, visible_space_below)
             infobox = paint.paint_infobox(info_max_rows,
@@ -1309,12 +1319,16 @@ class Repl(BpythonRepl):
                                           self.current_match,
                                           self.docstring,
                                           self.config,
-                                          self.matches_iter.completer.format if self.matches_iter.completer else None)
+                                          self.matches_iter.completer.format
+                                          if self.matches_iter.completer
+                                          else None)
 
-            if visible_space_above >= infobox.height and self.config.curtsies_list_above:
-                arr[current_line_start_row - infobox.height:current_line_start_row, 0:infobox.width] = infobox
-            else:
+            if visible_space_below >= infobox.height or not self.config.curtsies_list_above:
+                if visible_space_below < infobox.height:
+                    raise ValueError('whoops %r %r' % (visible_space_below, infobox.height))
                 arr[current_line_end_row + 1:current_line_end_row + 1 + infobox.height, 0:infobox.width] = infobox
+            else:
+                arr[current_line_start_row - infobox.height:current_line_start_row, 0:infobox.width] = infobox
                 logger.debug('slamming infobox of shape %r into arr of shape %r', infobox.shape, arr.shape)
 
         logger.debug('about to exit: %r', about_to_exit)

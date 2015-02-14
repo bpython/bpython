@@ -158,6 +158,9 @@ def mainloop(config, locals_, banner, interp=None, paste=None,
                 window.__enter__()
                 interrupting_refresh()
 
+            def get_top_usable_line():
+                return window.top_usable_row
+
             # global for easy introspection `from bpython.curtsies import repl`
             global repl
             with Repl(config=config,
@@ -173,8 +176,11 @@ def mainloop(config, locals_, banner, interp=None, paste=None,
                       interactive=interactive,
                       orig_tcattrs=input_generator.original_stty,
                       on_suspend=on_suspend,
-                      after_suspend=after_suspend) as repl:
+                      after_suspend=after_suspend,
+                      get_top_usable_line=get_top_usable_line) as repl:
                 repl.height, repl.width = window.t.height, window.t.width
+
+                repl.request_paint_to_pad_bottom = 10
 
                 def process_event(e):
                     """If None is passed in, just paint the screen"""
