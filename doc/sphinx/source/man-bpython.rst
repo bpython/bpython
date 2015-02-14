@@ -35,7 +35,7 @@ Rewind.
     functions.
 
 Pastebin code/write to file.
-    This posts the current buffer to a pastebin (paste.pocoo.org) or writes it
+    This posts the current buffer to a pastebin (bpaste.net) or writes it
     to a file.
 
 Flush curses screen to stdout.
@@ -49,18 +49,23 @@ The long and short forms of options, shown here as alternatives, are equivalent.
 If :program:`bpython` sees an argument it does not know, execution falls back to
 the regular Python interpreter.
 
+The following options are supported by all frontends:
 
 --config=<config>      Use <config> instead of default config file.
 -h, --help             Show the help message and exit.
--i, --interactive      Drop to bpython shell after running file instead of exiting.
-                       The PYTHONSTARTUP file is not read.
+-i, --interactive      Drop to bpython shell after running file instead of
+                       exiting. The PYTHONSTARTUP file is not read.
 -q, --quiet            Do not flush the output to stdout.
 -V, --version          Print :program:`bpython`'s version and exit.
--L, --log              Write debugging messages to the file bpython.log. Use
-                       -LL for more verbose logging. Only available in :program:`bpython`.
--t file, --type=file   Paste in the contents of a file at startup. Only available in :program:`bpython`.
 
-In addition to the above options, :program:`bpython-urwid` also supports the
+In addition to the above options, :program:`bpython` also supports the following
+options:
+
+-L, --log              Write debugging messages to the file bpython.log. Use
+                       -LL for more verbose logging.
+-t file, --type=file   Paste in the contents of a file at startup.
+
+In addition to the common options, :program:`bpython-urwid` also supports the
 following options if Twisted is available:
 
 -r <reactor>, --reactor=<reactor>   Use Twisted's <reactor> instead of urwid's
