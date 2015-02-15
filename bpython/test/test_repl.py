@@ -364,7 +364,7 @@ class TestRepl(unittest.TestCase):
 
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
-        self.assertEqual(self.repl.matches_iter.matches, ['Foo.bar'])
+        self.assertEqual(self.repl.matches_iter.matches, ['Foo.bar('])
 
     def test_substring_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
