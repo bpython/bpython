@@ -242,7 +242,7 @@ class TestAttrCompletion(unittest.TestCase):
 
     def test_att_matches_found_on_instance(self):
         self.assertSetEqual(self.com.matches(2, 'a.', locals_={'a': Foo()}),
-                            set(['a.method', 'a.a', 'a.b']))
+                            set(['a.method(', 'a.a', 'a.b']))
 
     @skip_old_style
     def test_att_matches_found_on_old_style_instance(self):
