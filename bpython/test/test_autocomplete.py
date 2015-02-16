@@ -256,3 +256,17 @@ class TestMultilineJediCompletion(unittest.TestCase):
             2, ' a', 'class Foo:\n a', ['adsf'],
             [Comp('Abc', 'bc'), Comp('ade', 'de')])
         self.assertSetEqual(matches, set(['ade']))
+
+
+class TestGlobalCompletion(unittest.TestCase):
+
+    def setUp(self):
+        self.com = autocomplete.GlobalCompletion()
+
+    def test_function(self):
+        def function():
+            pass
+
+        self.assertEqual(self.com.matches(8, 'function',
+                                          locals_={'function': function}),
+                         set(('function(', )))
