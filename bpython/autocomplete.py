@@ -707,7 +707,7 @@ def attr_lookup(obj, expr, attr):
     n = len(attr)
     for word in words:
         if method_match(word, n, attr) and word != "__builtins__":
-            attr_obj = getattr(obj, word)  # scary!
+            attr_obj = inspection.safe_get_attribute(obj, word)
             matches.append(_callable_postfix(attr_obj, "%s.%s" % (expr, word)))
     return matches
 

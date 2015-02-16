@@ -277,7 +277,8 @@ class TestAttrCompletion(unittest.TestCase):
     def test_descriptor_attributes_not_run(self):
         com = autocomplete.AttrCompletion()
         self.assertSetEqual(com.matches(2, 'a.', locals_={'a': Properties()}),
-                            set(['a.asserts_when_called']))
+                            set(['a.b', 'a.a', 'a.method(',
+                                 'a.asserts_when_called']))
 
 
 class TestArrayItemCompletion(unittest.TestCase):

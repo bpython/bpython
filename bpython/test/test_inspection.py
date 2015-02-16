@@ -135,5 +135,50 @@ class TestInspection(unittest.TestCase):
         self.assertEqual(encoding, 'utf-8')
 
 
+class A(object):
+    a = 'a'
+
+class B(A):
+    b = 'b'
+
+class Property(object):
+    @property
+    def prop(self):
+        raise AssertionError('Property __get__ executed')
+
+class Slots(object):
+    __slots__ = ['s1', 's2']
+
+class TestSafeGetAttribute(unittest.TestCase):
+
+    def test_lookup_on_object(self):
+        a = A()
+        a.x = 1
+        self.assertEquals(inspection.safe_get_attribute(a, 'x'), 1)
+        self.assertEquals(inspection.safe_get_attribute(a, 'a'), 'a')
+        b = B()
+        b.y = 2
+        self.assertEquals(inspection.safe_get_attribute(b, 'y'), 2)
+        self.assertEquals(inspection.safe_get_attribute(b, 'a'), 'a')
+        self.assertEquals(inspection.safe_get_attribute(b, 'b'), 'b')
+
+    def test_avoid_running_properties(self):
+        p = Property()
+        self.assertEquals(inspection.safe_get_attribute(p, 'prop'),
+                          Property.prop)
+
+    def test_raises_on_old_style_class(self):
+        class Old: pass
+        with self.assertRaises(ValueError):
+            inspection.safe_get_attribute(Old, 'asdf')
+
+    def test_lookup_with_slots(self):
+        s = Slots()
+        s.s1 = 's1'
+        self.assertEquals(inspection.safe_get_attribute(s, 's1'), 's1')
+        self.assertEquals(inspection.safe_get_attribute(s, 's2'),
+                          inspection.AttributeIsEmptySlot)
+
+
 if __name__ == '__main__':
     unittest.main()

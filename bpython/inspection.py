@@ -282,6 +282,43 @@ def is_callable(obj):
     return callable(obj)
 
 
+class AttributeIsEmptySlot(object):
+    pass
+
+
+def safe_get_attribute(obj, attr):
+    """Gets attributes without triggering descriptors on new-style clases
+
+    Returns AttributeIsEmptySlot if requested attribute does not have a value,
+    but is a slot entry.
+    """
+    if not is_new_style(obj):
+        raise ValueError("%r is not a new-style class or object" % obj)
+    to_look_through = (obj.mro()
+                       if hasattr(obj, 'mro')
+                       else [obj] + type(obj).mro())
+
+    for cls in to_look_through:
+        if hasattr(cls, '__dict__') and attr in cls.__dict__:
+            return cls.__dict__[attr]
+        elif hasattr(cls, '__slots__') and attr in cls.__slots__:
+            try:
+                return getattr(cls, attr)
+            except AttributeError:
+                return AttributeIsEmptySlot
+
+    raise AttributeError()
+
+def get_attribute(obj, attr):
+    cls = type(obj)
+    for cls in [obj] + cls.mro():
+        if attr in cls.__dict__:
+            return cls.__dict__[attr]
+            break
+    raise AttributeError
+
+
+
 get_encoding_re = LazyReCompile(r'coding[:=]\s*([-\w.]+)')
 
 
