@@ -146,37 +146,39 @@ class Property(object):
     def prop(self):
         raise AssertionError('Property __get__ executed')
 
+
 class Slots(object):
     __slots__ = ['s1', 's2']
+
 
 class TestSafeGetAttribute(unittest.TestCase):
 
     def test_lookup_on_object(self):
         a = A()
         a.x = 1
-        self.assertEquals(inspection.safe_get_attribute(a, 'x'), 1)
-        self.assertEquals(inspection.safe_get_attribute(a, 'a'), 'a')
+        self.assertEquals(inspection.safe_get_attribute_new_style(a, 'x'), 1)
+        self.assertEquals(inspection.safe_get_attribute_new_style(a, 'a'), 'a')
         b = B()
         b.y = 2
-        self.assertEquals(inspection.safe_get_attribute(b, 'y'), 2)
-        self.assertEquals(inspection.safe_get_attribute(b, 'a'), 'a')
-        self.assertEquals(inspection.safe_get_attribute(b, 'b'), 'b')
+        self.assertEquals(inspection.safe_get_attribute_new_style(b, 'y'), 2)
+        self.assertEquals(inspection.safe_get_attribute_new_style(b, 'a'), 'a')
+        self.assertEquals(inspection.safe_get_attribute_new_style(b, 'b'), 'b')
 
     def test_avoid_running_properties(self):
         p = Property()
-        self.assertEquals(inspection.safe_get_attribute(p, 'prop'),
+        self.assertEquals(inspection.safe_get_attribute_new_style(p, 'prop'),
                           Property.prop)
 
     def test_raises_on_old_style_class(self):
         class Old: pass
         with self.assertRaises(ValueError):
-            inspection.safe_get_attribute(Old, 'asdf')
+            inspection.safe_get_attribute_new_style(Old, 'asdf')
 
     def test_lookup_with_slots(self):
         s = Slots()
         s.s1 = 's1'
-        self.assertEquals(inspection.safe_get_attribute(s, 's1'), 's1')
-        self.assertEquals(inspection.safe_get_attribute(s, 's2'),
+        self.assertEquals(inspection.safe_get_attribute_new_style(s, 's1'), 's1')
+        self.assertEquals(inspection.safe_get_attribute_new_style(s, 's2'),
                           inspection.AttributeIsEmptySlot)
 
 

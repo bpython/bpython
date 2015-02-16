@@ -292,6 +292,12 @@ def safe_get_attribute(obj, attr):
     Returns AttributeIsEmptySlot if requested attribute does not have a value,
     but is a slot entry.
     """
+    if is_new_style(obj):
+        return safe_get_attribute_new_style(obj, attr)
+    return getattr(obj, attr)
+
+
+def safe_get_attribute_new_style(obj, attr):
     if not is_new_style(obj):
         raise ValueError("%r is not a new-style class or object" % obj)
     to_look_through = (obj.mro()
