@@ -284,7 +284,10 @@ class TestParameterNameCompletion(unittest.TestCase):
             argspec = list(inspect.getargspec(func))
 
         argspec = ["func", argspec, False]
-        com=autocomplete.ParameterNameCompletion()
-        self.assertSetEqual(com.matches(1, "a", argspec=argspec), set(['apple=', 'apricot=']))
-        self.assertSetEqual(com.matches(2, "ba", argspec=argspec), set(['banana=']))
-        self.assertSetEqual(com.matches(3, "car", argspec=argspec), set(['carrot=']))
+        com = autocomplete.ParameterNameCompletion()
+        self.assertSetEqual(com.matches(1, "a", argspec=argspec),
+                            set(['apple=', 'apricot=']))
+        self.assertSetEqual(com.matches(2, "ba", argspec=argspec),
+                            set(['banana=']))
+        self.assertSetEqual(com.matches(3, "car", argspec=argspec),
+                            set(['carrot=']))
