@@ -129,8 +129,14 @@ class TestArgspec(unittest.TestCase):
         self.repl.push("def spam(a, b, c):\n", False)
         self.repl.push("    pass\n", False)
         self.repl.push("\n", False)
+        self.repl.push("class Spam(object):\n", False)
+        self.repl.push("    def spam(self, a, b, c):\n", False)
+        self.repl.push("        pass\n", False)
+        self.repl.push("\n", False)
+        self.repl.push("o = Spam()\n", False)
+        self.repl.push("\n", False)
 
-    def setInputLine(self, line):
+    def set_input_line(self, line):
         """Set current input line of the test REPL."""
         self.repl.current_line = line
         self.repl.cursor_offset = len(line)
@@ -139,53 +145,62 @@ class TestArgspec(unittest.TestCase):
         for (line, expected_name) in [("spam(", "spam"),
                                       ("spam(map([]", "map"),
                                       ("spam((), ", "spam")]:
-            self.setInputLine(line)
+            self.set_input_line(line)
             self.assertTrue(self.repl.get_args())
             self.assertEqual(self.repl.current_func.__name__, expected_name)
 
+    def test_func_name_method_issue_479(self):
+        for (line, expected_name) in [("o.spam(", "spam"),
+                                      ("o.spam(map([]", "map"),
+                                      ("o.spam((), ", "spam")]:
+            self.set_input_line(line)
+            self.assertTrue(self.repl.get_args())
+            self.assertEqual(self.repl.current_func.__name__, expected_name)
+
+
     def test_syntax_error_parens(self):
         for line in ["spam(]", "spam([)", "spam())"]:
-            self.setInputLine(line)
+            self.set_input_line(line)
             # Should not explode
             self.repl.get_args()
 
     def test_kw_arg_position(self):
-        self.setInputLine("spam(a=0")
+        self.set_input_line("spam(a=0")
         self.assertTrue(self.repl.get_args())
         self.assertEqual(self.repl.argspec[3], "a")
 
-        self.setInputLine("spam(1, b=1")
+        self.set_input_line("spam(1, b=1")
         self.assertTrue(self.repl.get_args())
         self.assertEqual(self.repl.argspec[3], "b")
 
-        self.setInputLine("spam(1, c=2")
+        self.set_input_line("spam(1, c=2")
         self.assertTrue(self.repl.get_args())
         self.assertEqual(self.repl.argspec[3], "c")
 
     def test_lambda_position(self):
-        self.setInputLine("spam(lambda a, b: 1, ")
+        self.set_input_line("spam(lambda a, b: 1, ")
         self.assertTrue(self.repl.get_args())
         self.assertTrue(self.repl.argspec)
         # Argument position
         self.assertEqual(self.repl.argspec[3], 1)
 
     def test_issue127(self):
-        self.setInputLine("x=range(")
+        self.set_input_line("x=range(")
         self.assertTrue(self.repl.get_args())
         self.assertEqual(self.repl.current_func.__name__, "range")
 
-        self.setInputLine("{x:range(")
+        self.set_input_line("{x:range(")
         self.assertTrue(self.repl.get_args())
         self.assertEqual(self.repl.current_func.__name__, "range")
 
-        self.setInputLine("foo(1, 2, x,range(")
+        self.set_input_line("foo(1, 2, x,range(")
         self.assertEqual(self.repl.current_func.__name__, "range")
 
-        self.setInputLine("(x,range(")
+        self.set_input_line("(x,range(")
         self.assertEqual(self.repl.current_func.__name__, "range")
 
     def test_nonexistent_name(self):
-        self.setInputLine("spamspamspam(")
+        self.set_input_line("spamspamspam(")
         self.assertFalse(self.repl.get_args())
 
 
@@ -235,7 +250,7 @@ class TestGetSource(unittest.TestCase):
 
 class TestRepl(unittest.TestCase):
 
-    def setInputLine(self, line):
+    def set_input_line(self, line):
         """Set current input line of the test REPL."""
         self.repl.current_line = line
         self.repl.cursor_offset = len(line)
@@ -244,12 +259,12 @@ class TestRepl(unittest.TestCase):
         self.repl = FakeRepl()
 
     def test_current_string(self):
-        self.setInputLine('a = "2"')
+        self.set_input_line('a = "2"')
         # TODO factor cpos out of repl.Repl
         self.repl.cpos = 0
         self.assertEqual(self.repl.current_string(), '"2"')
 
-        self.setInputLine('a = "2" + 2')
+        self.set_input_line('a = "2" + 2')
         self.assertEqual(self.repl.current_string(), '')
 
     def test_push(self):
@@ -261,7 +276,7 @@ class TestRepl(unittest.TestCase):
     # 1. Global tests
     def test_simple_global_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
-        self.setInputLine("d")
+        self.set_input_line("d")
 
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
@@ -272,7 +287,7 @@ class TestRepl(unittest.TestCase):
     @unittest.skip("disabled while non-simple completion is disabled")
     def test_substring_global_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
-        self.setInputLine("time")
+        self.set_input_line("time")
 
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.completer, 'matches'))
@@ -282,7 +297,7 @@ class TestRepl(unittest.TestCase):
     @unittest.skip("disabled while non-simple completion is disabled")
     def test_fuzzy_global_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
-        self.setInputLine("doc")
+        self.set_input_line("doc")
 
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.completer, 'matches'))
@@ -292,7 +307,7 @@ class TestRepl(unittest.TestCase):
     # 2. Attribute tests
     def test_simple_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
-        self.setInputLine("Foo.b")
+        self.set_input_line("Foo.b")
 
         code = "class Foo():\n\tdef bar(self):\n\t\tpass\n"
         for line in code.split("\n"):
@@ -305,7 +320,7 @@ class TestRepl(unittest.TestCase):
     @unittest.skip("disabled while non-simple completion is disabled")
     def test_substring_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
-        self.setInputLine("Foo.az")
+        self.set_input_line("Foo.az")
 
         code = "class Foo():\n\tdef baz(self):\n\t\tpass\n"
         for line in code.split("\n"):
@@ -318,7 +333,7 @@ class TestRepl(unittest.TestCase):
     @unittest.skip("disabled while non-simple completion is disabled")
     def test_fuzzy_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
-        self.setInputLine("Foo.br")
+        self.set_input_line("Foo.br")
 
         code = "class Foo():\n\tdef bar(self):\n\t\tpass\n"
         for line in code.split("\n"):
@@ -331,7 +346,7 @@ class TestRepl(unittest.TestCase):
     # 3. Edge Cases
     def test_updating_namespace_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
-        self.setInputLine("foo")
+        self.set_input_line("foo")
         self.repl.push("foobar = 2")
 
         self.assertTrue(self.repl.complete())
@@ -340,7 +355,7 @@ class TestRepl(unittest.TestCase):
 
     def test_file_should_not_appear_in_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
-        self.setInputLine("_")
+        self.set_input_line("_")
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
         self.assertNotIn('__file__', self.repl.matches_iter.matches)
