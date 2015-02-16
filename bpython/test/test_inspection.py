@@ -42,6 +42,10 @@ class TestInspection(unittest.TestCase):
         def spam():
             pass
 
+        class CallableMethod(object):
+            def method(self):
+                pass
+
         self.assertTrue(inspection.is_callable(spam))
         self.assertTrue(inspection.is_callable(Callable))
         self.assertTrue(inspection.is_callable(Callable()))
@@ -50,6 +54,7 @@ class TestInspection(unittest.TestCase):
         self.assertFalse(inspection.is_callable(Noncallable()))
         self.assertFalse(inspection.is_callable(OldNoncallable()))
         self.assertFalse(inspection.is_callable(None))
+        self.assertTrue(inspection.is_callable(CallableMethod().method))
 
     def test_parsekeywordpairs(self):
         # See issue #109
