@@ -235,7 +235,7 @@ def getargspec(func, f):
         func_name = None
 
     try:
-        is_bound_method = ((inspect.ismethod(f) and f.im_self is not None)
+        is_bound_method = ((inspect.ismethod(f) and f.__self__ is not None)
                            or (func_name == '__init__' and not
                                func.endswith('.__init__')))
     except:
