@@ -67,6 +67,8 @@ Fixes:
 * Fixed various Unicode issues in curtsies.
 * Fixed and re-enabled dictionary key completion in curtsies.
 
+The commandline option --type / -t has been renamed to --paste / -p.
+
 Python 2.6, 2.7, 3.3 and newer are supported. Support for 2.5 has been dropped.
 Furthermore, it is no longer necessary to run 2to3 on the source code.
 
