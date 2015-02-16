@@ -4,8 +4,9 @@
 
 import os
 import platform
-import sys
+import re
 import subprocess
+import sys
 
 from distutils.command.build import build
 from setuptools import setup
@@ -34,6 +35,52 @@ except ImportError:
 
 
 # version handling
+
+
+def git_describe_to_python_version(version):
+    """Convert output from git describe to PEP 440 conforming versions."""
+
+    version_info = version.split('-')
+    if len(version_info) < 2:
+        return 'unknown'
+
+    # we always have $version-$release
+    release_type = version_info[1]
+
+    version_data = {
+        'version': version_info[0],
+        'release_type': release_type,
+    }
+    if len(version_info) == 4:
+        version_data['commits'] = version_info[2]
+    else:
+        version_data['commits'] = 0
+
+    if release_type == 'release':
+        if len(version_info) == 2:
+            # format: $version-release
+            # This is the case at time of the release.
+            fmt = '{version}'
+        elif len(version_info) == 4:
+            # format: $version-release-$commits-$hash
+            # This is the case after a release.
+            fmt = '{version}-{commits}'
+    elif release_type == 'dev':
+        # format: $version-dev-$commits-$hash or $version-dev
+        fmt = '{version}.dev{commits}'
+    else:
+        match = re.match(r'^(alpha|beta|rc)(\d*)$', release_type)
+        if match is None:
+            return 'unknown'
+
+        if len(version_info) == 2:
+            fmt = '{version}{release_type}'
+        elif len(version_info) == 4:
+            fmt = '{version}{release_type}-{commits}'
+
+    return fmt.format(**version_data)
+
+
 version_file = 'bpython/_version.py'
 version = 'unknown'
 
@@ -46,13 +93,7 @@ try:
         stdout = stdout.decode('ascii')
 
     if proc.returncode == 0:
-        version_split = stdout.split('-')
-        if len(version_split) == 4:
-            # format: version-release-commits-hash
-            version = '-'.join((version_split[0], version_split[2]))
-        elif len(version_split) == 2:
-            # format: version-release
-            version = version_split[0]
+        version = git_describe_to_python_version(stdout)
 except OSError:
     pass
 
