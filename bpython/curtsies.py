@@ -35,8 +35,7 @@ def main(args=None, locals_=None, banner=None):
             Option('--log', '-L', action='count',
                    help=_("log debug messages to bpython.log")),
             Option('--paste', '-p', action='store_true',
-                   help=_("start by pasting lines of a file into session"
-                          "typed")),
+                   help=_("start by pasting lines of a file into session")),
             ]))
     if options.log is None:
         options.log = 0
