@@ -38,7 +38,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'bpython'
-copyright = u'2008-2014 Bob Farrell, Andreas Stuehrk et al.'
+copyright = u'2008-2015 Bob Farrell, Andreas Stuehrk et al.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
