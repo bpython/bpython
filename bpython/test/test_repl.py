@@ -223,6 +223,8 @@ class TestGetSource(unittest.TestCase):
             self.repl.get_source_of_current_name()
         except repl.SourceNotFound as e:
             self.assertEqual(e.args[0], msg)
+        else:
+            self.fail("Should have raised SourceNotFound")
 
     def test_current_function(self):
         self.set_input_line('INPUTLINE')
