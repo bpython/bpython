@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 from collections import namedtuple
 import inspect
 from bpython._py3compat import py3
@@ -272,6 +274,15 @@ class TestGlobalCompletion(unittest.TestCase):
         self.assertEqual(self.com.matches(8, 'function',
                                           locals_={'function': function}),
                          set(('function(', )))
+
+    def test_completions_are_unicode(self):
+        for m in self.com.matches(1, 'a', locals_={'abc': 10}):
+            self.assertIsInstance(m, type(u''))
+
+    @unittest.skipIf(py3, "in Python 3 invalid identifiers are passed through")
+    def test_ignores_nonascii_encodable(self):
+        self.assertSetEqual(self.com.matches(1, 'abc', locals_={'abcß': 10}),
+                            set())
 
 
 class TestParameterNameCompletion(unittest.TestCase):
