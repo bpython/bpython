@@ -166,14 +166,15 @@ def find_all_modules(path=None):
     """Return a list with all modules in `path`, which should be a list of
     directory names. If path is not given, sys.path will be used."""
     if path is None:
-        modules.update(sys.builtin_module_names)
+        modules.update(try_decode(m, 'ascii')
+                       for m in sys.builtin_module_names)
         path = sys.path
 
     for p in path:
         if not p:
             p = os.curdir
         for module in find_modules(p):
-            module = try_decode(module, sys.getfilesystemencoding())
+            module = try_decode(module, 'ascii')
             if module is None:
                 continue
             modules.add(module)

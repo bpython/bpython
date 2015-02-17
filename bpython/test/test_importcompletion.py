@@ -10,26 +10,27 @@ class TestSimpleComplete(unittest.TestCase):
 
     def setUp(self):
         self.original_modules = importcompletion.modules
-        importcompletion.modules = ['zzabc', 'zzabd', 'zzefg', 'zzabc.e',
-                                    'zzabc.f']
+        importcompletion.modules = [u'zzabc', u'zzabd', u'zzefg', u'zzabc.e',
+                                    u'zzabc.f']
 
     def tearDown(self):
         importcompletion.modules = self.original_modules
 
     def test_simple_completion(self):
         self.assertSetEqual(importcompletion.complete(10, 'import zza'),
-                            set(['zzabc', 'zzabd']))
+                            set([u'zzabc', u'zzabd']))
 
     def test_package_completion(self):
         self.assertSetEqual(importcompletion.complete(13, 'import zzabc.'),
-                            set(['zzabc.e', 'zzabc.f']))
+                            set([u'zzabc.e', u'zzabc.f']))
 
 
 class TestRealComplete(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        [_ for _ in importcompletion.find_iterator]
+        for _ in importcompletion.find_iterator:
+            pass
         __import__('sys')
         __import__('os')
 
