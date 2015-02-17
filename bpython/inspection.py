@@ -25,12 +25,10 @@
 #
 
 from __future__ import with_statement
-import collections
 import inspect
 import io
 import keyword
 import pydoc
-import types
 from six.moves import range
 
 from pygments.token import Token
@@ -38,18 +36,9 @@ from pygments.token import Token
 from bpython._py3compat import PythonLexer, py3
 from bpython.lazyre import LazyReCompile
 
-try:
-    collections.Callable
-    has_collections_callable = True
-except AttributeError:
-    has_collections_callable = False
-try:
-    types.InstanceType
-    has_instance_type = True
-except AttributeError:
-    has_instance_type = False
-
 if not py3:
+    import types
+
     _name = LazyReCompile(r'[a-zA-Z_]\w*$')
 
 
@@ -272,13 +261,7 @@ def is_eval_safe_name(string):
 
 
 def is_callable(obj):
-    if has_instance_type and isinstance(obj, types.InstanceType):
-        # Work around a CPython bug, see CPython issue #7624
-        return callable(obj)
-    elif has_collections_callable:
-        return isinstance(obj, collections.Callable)
-    else:
-        return callable(obj)
+    return callable(obj)
 
 
 get_encoding_re = LazyReCompile(r'coding[:=]\s*([-\w.]+)')
