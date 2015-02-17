@@ -88,7 +88,8 @@ class TestMatchesIterator(unittest.TestCase):
         self.assertEqual(list(slice), self.matches * 3)
 
     def test_current(self):
-        self.assertRaises(ValueError, self.matches_iterator.current)
+        with self.assertRaises(ValueError):
+            self.matches_iterator.current()
         next(self.matches_iterator)
         self.assertEqual(self.matches_iterator.current(), self.matches[0])
 
@@ -113,7 +114,8 @@ class TestMatchesIterator(unittest.TestCase):
             self.matches_iterator.orig_line)
         self.matches_iterator.completer = completer
 
-        self.assertRaises(ValueError, self.matches_iterator.cur_line)
+        with self.assertRaises(ValueError):
+            self.matches_iterator.cur_line()
 
         self.assertEqual(next(self.matches_iterator), self.matches[0])
         self.assertEqual(self.matches_iterator.cur_line(),
@@ -215,8 +217,8 @@ class TestGetSource(unittest.TestCase):
 
     def assert_get_source_error_for_current_function(self, func, msg):
         self.repl.current_func = func
-        self.assertRaises(repl.SourceNotFound,
-                          self.repl.get_source_of_current_name)
+        with self.assertRaises(repl.SourceNotFound):
+            self.repl.get_source_of_current_name()
         try:
             self.repl.get_source_of_current_name()
         except repl.SourceNotFound as e:

@@ -32,10 +32,9 @@ class TestCLIKeys(unittest.TestCase):
 
     def test_keymap_keyerror(self):
         """Verify keys.KeyMap raising KeyError when getting undefined key"""
-        def raiser():
+        with self.assertRaises(KeyError):
             keys.cli_key_dispatch['C-asdf']
             keys.cli_key_dispatch['C-qwerty']
-        self.assertRaises(KeyError, raiser)
 
 
 class TestUrwidKeys(unittest.TestCase):
@@ -64,10 +63,9 @@ class TestUrwidKeys(unittest.TestCase):
 
     def test_keymap_keyerror(self):
         """Verify keys.KeyMap raising KeyError when getting undefined key"""
-        def raiser():
+        with self.assertRaises(KeyError):
             keys.urwid_key_dispatch['C-asdf']
             keys.urwid_key_dispatch['C-qwerty']
-        self.assertRaises(KeyError, raiser)
 
 
 if __name__ == '__main__':

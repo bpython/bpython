@@ -239,20 +239,26 @@ class TestEdits(unittest.TestCase):
         self.assertEqual(self.edits['a'], f)
         self.assertEqual(self.edits.call('a', cursor_offset=3, line='hello'),
                          ('hi', 2))
-        self.assertRaises(KeyError, self.edits.__getitem__, 'b')
-        self.assertRaises(KeyError, self.edits.call, 'b')
+        with self.assertRaises(KeyError):
+            self.edits['b']
+        with self.assertRaises(KeyError):
+            self.edits.call('b')
 
     def test_functions_with_bad_signatures(self):
         f = lambda something: (1, 2)
-        self.assertRaises(TypeError, self.edits.add, 'a', f)
+        with self.assertRaises(TypeError):
+            self.edits.add('a', f)
         g = lambda cursor_offset, line, something, something_else: (1, 2)
-        self.assertRaises(TypeError, self.edits.add, 'a', g)
+        with self.assertRaises(TypeError):
+            self.edits.add('a', g)
 
     def test_functions_with_bad_return_values(self):
         f = lambda cursor_offset, line: ('hi',)
-        self.assertRaises(ValueError, self.edits.add, 'a', f)
+        with self.assertRaises(ValueError):
+            self.edits.add('a', f)
         g = lambda cursor_offset, line: ('hi', 1, 2, 3)
-        self.assertRaises(ValueError, self.edits.add, 'b', g)
+        with self.assertRaises(ValueError):
+            self.edits.add('b', g)
 
     def test_config(self):
         f = lambda cursor_offset, line: ('hi', 2)
@@ -267,10 +273,10 @@ class TestEdits(unittest.TestCase):
         configured_edits = self.edits.mapping_with_config(config, key_dispatch)
         self.assertTrue(configured_edits.__contains__, 'c')
         self.assertNotIn('c', self.edits)
-        self.assertRaises(NotImplementedError,
-                          configured_edits.add_config_attr, 'att2', g)
-        self.assertRaises(NotImplementedError,
-                          configured_edits.add, 'd', g)
+        with self.assertRaises(NotImplementedError):
+            configured_edits.add_config_attr('att2', g)
+        with self.assertRaises(NotImplementedError):
+            configured_edits.add('d', g)
         self.assertEqual(configured_edits.call('c', cursor_offset=5,
                                                line='asfd'),
                          ('hi', 2))
