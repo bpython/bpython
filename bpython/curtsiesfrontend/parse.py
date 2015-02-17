@@ -1,12 +1,14 @@
+# coding: utf-8
+from __future__ import unicode_literals
+
+from functools import partial
+import re
 
 from bpython.lazyre import LazyReCompile
 
 from curtsies.termformatconstants import FG_COLORS, BG_COLORS, colors
 from curtsies.formatstring import fmtstr, FmtStr
 
-from functools import partial
-
-import re
 
 cnames = dict(zip('krgybmcwd', colors + ('default',)))
 
