@@ -22,7 +22,7 @@ This release contains major changes to the frontends:
 New features:
 
 * #194: Syntax-highlighted tracebacks. Thanks to Miriam Lauter.
-* #234: Copy to system keyboard.
+* #234: Copy to system clipboard.
 * #285: Re-evaluate session and reimport modules.
 * #313: Warn when undo may take cause extended delay, and prompt to undo
   multiple lines.
