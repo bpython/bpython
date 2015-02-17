@@ -39,9 +39,5 @@ class TestExecArgs(unittest.TestCase):
 class TestParse(TestCase):
 
     def test_version(self):
-        try:
+        with self.assertRaises(SystemExit):
             args.parse(['--version'])
-        except SystemExit:
-            pass
-        else:
-            self.fail('Should have raise SystemExit')
