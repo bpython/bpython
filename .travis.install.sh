@@ -28,6 +28,10 @@ if [[ $RUN == nosetests ]]; then
         # test specific dependencies
         pip install mock
         ;;
+      pypy)
+        # test specific dependencies
+        pip install mock
+        ;;
     esac
     # build and install
     python setup.py install
