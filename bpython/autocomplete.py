@@ -34,7 +34,7 @@ from glob import glob
 from bpython import inspection
 from bpython import importcompletion
 from bpython import line as lineparts
-from bpython._py3compat import py3
+from bpython._py3compat import py3, try_decode
 from bpython.lazyre import LazyReCompile
 
 
@@ -286,11 +286,17 @@ class GlobalCompletion(BaseCompletionType):
         n = len(text)
         for word in keyword.kwlist:
             if method_match(word, n, text):
-                matches.add(word)
+                word = try_decode(word, 'ascii')  # py2 keywords are all ascii
+                if word is not None:
+                    matches.add(word)
         for nspace in [builtins.__dict__, locals_]:
             for word, val in nspace.items():
                 if (method_match(word, len(text), text) and
                         word != "__builtins__"):
+                    word = try_decode(word, 'ascii')
+                    # if identifier isn't ascii, don't complete (syntax error)
+                    if word is None:
+                        continue
                     matches.add(_callable_postfix(val, word))
         return matches
 
