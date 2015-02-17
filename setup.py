@@ -88,7 +88,7 @@ try:
     # get version from git describe
     proc = subprocess.Popen(['git', 'describe', '--tags'],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout = proc.communicate()[0].rstrip()
+    stdout = proc.communicate()[0].strip()
     if sys.version_info[0] > 2:
         stdout = stdout.decode('ascii')
 
