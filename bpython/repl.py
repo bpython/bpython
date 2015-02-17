@@ -388,16 +388,23 @@ class Repl(object):
     @property
     def ps1(self):
         try:
-            return str(sys.ps1)
+            if not py3:
+                return sys.ps1.decode(getpreferredencoding())
+            else:
+                return sys.ps1
         except AttributeError:
-            return '>>> '
+            return u'>>> '
 
     @property
     def ps2(self):
         try:
-            return str(sys.ps2)
+            if not py3:
+                return sys.ps2.decode(getpreferredencoding())
+            else:
+                return sys.ps2
+
         except AttributeError:
-            return '... '
+            return u'... '
 
     def startup(self):
         """
