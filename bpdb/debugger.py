@@ -25,6 +25,7 @@ from __future__ import print_function
 import pdb
 import bpython
 
+
 class BPdb(pdb.Pdb):
     """ PDB with BPython support. """
 
@@ -39,12 +40,10 @@ class BPdb(pdb.Pdb):
         self.intro = None
         pdb.Pdb.postloop(self)
 
-    ### cmd.Cmd commands
-
+    # cmd.Cmd commands
 
     def do_Bpython(self, arg):
         bpython.embed(self.curframe.f_locals, ['-i'])
-
 
     def help_Bpython(self):
         print("B(python)")
@@ -52,7 +51,6 @@ class BPdb(pdb.Pdb):
         print("Invoke the bpython interpreter for this stack frame. To exit "
               "bpython and return to a standard pdb press Ctrl-d")
 
-
-    ### shortcuts
+    # shortcuts
     do_B = do_Bpython
     help_B = help_Bpython

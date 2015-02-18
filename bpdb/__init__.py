@@ -41,6 +41,7 @@ def set_trace():
     debugger = BPdb()
     debugger.set_trace(sys._getframe().f_back)
 
+
 # Adopted verbatim from pdb for completeness:
 
 def post_mortem(t=None):
@@ -57,8 +58,10 @@ def post_mortem(t=None):
     p.reset()
     p.interaction(None, t)
 
+
 def pm():
     post_mortem(getattr(sys, "last_traceback", None))
+
 
 def main():
     parser = OptionParser(
@@ -73,7 +76,7 @@ def main():
               'See AUTHORS for detail.')
         return 0
 
-    # The following code is baed on Python's pdb.py.
+    # The following code is based on Python's pdb.py.
     mainpyfile = args[1]
     if not os.path.exists(mainpyfile):
         print('Error:', mainpyfile, 'does not exist')
