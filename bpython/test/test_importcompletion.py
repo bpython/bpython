@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from bpython import importcompletion
 
 try:
@@ -29,7 +31,8 @@ class TestRealComplete(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        [_ for _ in importcompletion.find_iterator]
+        for _ in importcompletion.find_iterator:
+            pass
         __import__('sys')
         __import__('os')
 

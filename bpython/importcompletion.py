@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from bpython._py3compat import py3
+from bpython._py3compat import py3, try_decode
 from bpython.line import current_word, current_import, \
     current_from_import_from, current_from_import_import
 
@@ -40,17 +40,6 @@ else:
 # The cached list of all known modules
 modules = set()
 fully_loaded = False
-
-
-def try_decode_module(module, encoding):
-    """Try to decode module names."""
-    if not py3 and not isinstance(module, unicode):
-        try:
-            return module.decode(encoding)
-        except UnicodeDecodeError:
-            # Not importable anyway, ignore it
-            return None
-    return module
 
 
 def module_matches(cw, prefix=''):
@@ -83,7 +72,7 @@ def attr_matches(cw, prefix='', only_modules=False):
     if module_part:
         matches = ('%s.%s' % (module_part, m) for m in matches)
 
-    generator = (try_decode_module(match, 'ascii') for match in matches)
+    generator = (try_decode(match, 'ascii') for match in matches)
     return set(filter(lambda x: x is not None, generator))
 
 
@@ -177,14 +166,15 @@ def find_all_modules(path=None):
     """Return a list with all modules in `path`, which should be a list of
     directory names. If path is not given, sys.path will be used."""
     if path is None:
-        modules.update(sys.builtin_module_names)
+        modules.update(try_decode(m, 'ascii')
+                       for m in sys.builtin_module_names)
         path = sys.path
 
     for p in path:
         if not p:
             p = os.curdir
         for module in find_modules(p):
-            module = try_decode_module(module, sys.getfilesystemencoding())
+            module = try_decode(module, 'ascii')
             if module is None:
                 continue
             modules.add(module)
