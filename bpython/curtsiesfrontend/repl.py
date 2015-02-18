@@ -15,7 +15,7 @@ import tempfile
 import threading
 import time
 import unicodedata
-from six.moves import range
+from six.moves import range, builtins
 
 from pygments import format
 from bpython._py3compat import PythonLexer
@@ -416,7 +416,7 @@ class Repl(BpythonRepl):
         signal.signal(signal.SIGWINCH, self.sigwinch_handler)
         signal.signal(signal.SIGTSTP, self.sigtstp_handler)
 
-        self.orig_import = __builtins__['__import__']
+        self.orig_import = builtins.__import__
         if self.watcher:
             # for reading modules if they fail to load
             old_module_locations = {}
@@ -438,7 +438,7 @@ class Repl(BpythonRepl):
                         old_module_locations[name] = m.__file__
                         self.watcher.track_module(m.__file__)
                 return m
-            __builtins__['__import__'] = new_import
+            builtins.__import__ = new_import
 
         sitefix.monkeypatch_quit()
         return self
@@ -449,7 +449,7 @@ class Repl(BpythonRepl):
         sys.stderr = self.orig_stderr
         signal.signal(signal.SIGWINCH, self.orig_sigwinch_handler)
         signal.signal(signal.SIGTSTP, self.orig_sigtstp_handler)
-        __builtins__['__import__'] = self.orig_import
+        builtins.__import__ = self.orig_import
 
     def sigwinch_handler(self, signum, frame):
         old_rows, old_columns = self.height, self.width
