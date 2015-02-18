@@ -281,7 +281,7 @@ class TestGlobalCompletion(unittest.TestCase):
 
     @unittest.skipIf(py3, "in Python 3 invalid identifiers are passed through")
     def test_ignores_nonascii_encodable(self):
-        self.assertSetEqual(self.com.matches(1, 'abc', locals_={'abcß': 10}),
+        self.assertSetEqual(self.com.matches(3, 'abc', locals_={'abcß': 10}),
                             set())
 
 
