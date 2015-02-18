@@ -1,6 +1,6 @@
 import sys
 
-from bpython._py3compat import py3
+from six.moves import builtins
 
 
 def resetquit(builtins):
@@ -15,4 +15,4 @@ def resetquit(builtins):
 
 def monkeypatch_quit():
     if 'site' in sys.modules:
-        resetquit(sys.modules['builtins' if py3 else '__builtin__'])
+        resetquit(builtins)
