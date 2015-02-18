@@ -49,6 +49,7 @@ import math
 import re
 import time
 import functools
+from pprint import pprint
 
 import struct
 if platform.system() != 'Windows':
@@ -160,6 +161,7 @@ class FakeStdin(object):
         self.encoding = getpreferredencoding()
         self.interface = interface
         self.buffer = list()
+        self.errors = "strict"
 
     def __iter__(self):
         return iter(self.readlines())
@@ -957,6 +959,13 @@ class CLIRepl(repl.Repl):
             self.write2file()
             return ''
 
+        elif key in key_dispatch[config.debug_key]:
+            if sys.excepthook is not debugger_hook:
+                sys.excepthook = debugger_hook
+            else:
+                sys.excepthook = sys.__excepthook__
+            return ''
+
         elif key in key_dispatch[config.pastebin_key]:
             self.pastebin()
             return ''
@@ -1696,7 +1705,8 @@ def init_wins(scr, config):
         (_('Save'), config.save_key),
         (_('Pastebin'), config.pastebin_key),
         (_('Pager'), config.last_output_key),
-        (_('Show Source'), config.show_source_key)
+        (_('Show Source'), config.show_source_key),
+        (_('Auto Debug'), config.debug_key),
     )
 
     message = '  '.join('<%s> %s' % (key, command) for command, key in commands
@@ -1944,9 +1954,46 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     return (exit_value, clirepl.getstdout())
 
 
+def prettydisplayhook(obj):
+    pprint(obj)
+
+
+def debugger_hook(exc, value, tb):
+
+    if exc in (SyntaxError, IndentationError, KeyboardInterrupt):
+        sys.__excepthook__(exc, value, tb)
+        return
+
+    global stdscr
+    from bpython import debugger
+
+    orig_stdin = sys.stdin
+    orig_stdout = sys.stdout
+    orig_stderr = sys.stderr
+
+    sys.stdin = sys.__stdin__
+    sys.stderr = sys.__stderr__
+    sys.stdout = sys.__stdout__
+
+    stdscr.keypad(0)
+    curses.echo()
+    curses.nocbreak()
+    curses.endwin()
+    try:
+        debugger.post_mortem(tb, exc, value)
+    finally:
+        sys.stdin = orig_stdin
+        sys.stdout = orig_stdout
+        sys.stderr = orig_stderr
+        curses.cbreak()
+        curses.noecho()
+        stdscr.keypad(1)
+        if stdscr is None:
+            stdscr = curses.initscr()
+
+
 def main(args=None, locals_=None, banner=None):
     translations.init()
-
 
     config, options, exec_args = bpython.args.parse(args)
 
@@ -1954,6 +2001,11 @@ def main(args=None, locals_=None, banner=None):
     orig_stdin = sys.stdin
     orig_stdout = sys.stdout
     orig_stderr = sys.stderr
+
+    if options.debugger:
+        sys.excepthook = debugger_hook
+    if options.pretty:
+        sys.displayhook = prettydisplayhook
 
     try:
         (exit_value, output) = curses_wrapper(

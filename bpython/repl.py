@@ -159,9 +159,15 @@ class Interpreter(code.InteractiveInterpreter):
                 l.insert(0, "Traceback (most recent call last):\n")
             l[len(l):] = traceback.format_exception_only(t, v)
         finally:
-            tblist = tb = None
+            tblist = None
+        # If someone has set sys.excepthook, we let that take precedence
+        # over self.write
+        if sys.excepthook is sys.__excepthook__:
+            tb = None
+            self.writetb(l)
+        else:
+            sys.excepthook(t, v, tb)
 
-        self.writetb(l)
 
     def writetb(self, lines):
         """This outputs the traceback and should be overridden for anything

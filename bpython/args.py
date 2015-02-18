@@ -74,6 +74,10 @@ def parse(args, extras=None, ignore_stdin=False):
                       help=_("Don't flush the output to stdout."))
     parser.add_option('--version', '-V', action='store_true',
                       help=_('Print version and exit.'))
+    parser.add_option('--pretty', '-p', action='store_true',
+                      help=_('Pretty print output.'))
+    parser.add_option('--debugger', '-D', action='store_true',
+                      help=_('Enter a debugger on exceptions.'))
 
     if extras is not None:
         extras_group = OptionGroup(parser, extras[0], extras[1])
