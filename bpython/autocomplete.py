@@ -367,6 +367,7 @@ else:
             if not lineparts.current_word(cursor_offset, line):
                 return None
             history = '\n'.join(history) + '\n' + line
+
             try:
                 script = jedi.Script(history, len(history.splitlines()),
                                      cursor_offset, 'fake.py')
@@ -374,6 +375,11 @@ else:
             except jedi.NotFoundError:
                 self._orig_start = None
                 return None
+            except IndexError:
+                # for https://github.com/bpython/bpython/issues/483
+                self._orig_start = None
+                return None
+
             if completions:
                 diff = len(completions[0].name) - len(completions[0].complete)
                 self._orig_start = cursor_offset - diff
