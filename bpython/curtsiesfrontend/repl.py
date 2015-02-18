@@ -1195,7 +1195,8 @@ class Repl(BpythonRepl):
             self.clean_up_current_line_for_exit() # exception to not changing state!
 
         width, min_height = self.width, self.height
-        show_status_bar = bool(self.status_bar.should_show_message) or self.status_bar.has_focus
+        show_status_bar = ((bool(self.status_bar.should_show_message) or self.status_bar.has_focus)
+                           and not self.request_paint_to_pad_bottom)
         if show_status_bar:
             # because we're going to tack the status bar on at the end, shoot
             # for an array one less than the height of the screen
