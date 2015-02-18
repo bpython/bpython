@@ -9,6 +9,8 @@ New features:
 
 Fixes:
 
+* #484: Switch `bpython.embed` to the curtsies frontend.
+
 
 0.14
 ----
