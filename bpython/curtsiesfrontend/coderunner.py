@@ -50,6 +50,9 @@ class Unfinished(RequestFromCodeGreenlet):
 class SystemExitRequest(RequestFromCodeGreenlet):
     """Running code raised a SystemExit"""
 
+    def __init__(self, args):
+        self.args = args
+
 
 class CodeRunner(object):
     """Runs user code in an interpreter.
@@ -139,22 +142,22 @@ class CodeRunner(object):
                 request = self.code_greenlet.switch(for_code)
 
         logger.debug('request received from code was %r', request)
-        if not issubclass(request, RequestFromCodeGreenlet):
+        if not isinstance(request, RequestFromCodeGreenlet):
             raise ValueError("Not a valid value from code greenlet: %r" %
                              request)
-        if request in [Wait, Refresh]:
+        if isinstance(request, (Wait, Refresh)):
             self.code_is_waiting = True
-            if request == Refresh:
+            if isinstance(request, Refresh):
                 self.request_refresh()
             return False
-        elif request in [Done, Unfinished]:
+        elif isinstance(request, (Done, Unfinished)):
             self._unload_code()
             signal.signal(signal.SIGINT, self.orig_sigint_handler)
             self.orig_sigint_handler = None
             return request
-        elif request in [SystemExitRequest]:
+        elif isinstance(request, SystemExitRequest):
             self._unload_code()
-            raise SystemExitFromCodeGreenlet()
+            raise SystemExitFromCodeGreenlet(request.args)
 
     def sigint_handler(self, *args):
         """SIGINT handler to use while code is running or request being
@@ -170,9 +173,9 @@ class CodeRunner(object):
     def _blocking_run_code(self):
         try:
             unfinished = self.interp.runsource(self.source)
-        except SystemExit:
-            return SystemExitRequest
-        return Unfinished if unfinished else Done
+        except SystemExit as e:
+            return SystemExitRequest(e.args)
+        return Unfinished() if unfinished else Done()
 
     def request_from_main_greenlet(self, force_refresh=False):
         """Return the argument passed in to .run_code(for_code)
@@ -180,9 +183,9 @@ class CodeRunner(object):
         Nothing means calls to run_code must be... ???
         """
         if force_refresh:
-            value = self.main_greenlet.switch(Refresh)
+            value = self.main_greenlet.switch(Refresh())
         else:
-            value = self.main_greenlet.switch(Wait)
+            value = self.main_greenlet.switch(Wait())
         if value is SigintHappened:
             raise KeyboardInterrupt()
         return value
