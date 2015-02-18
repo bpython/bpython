@@ -53,6 +53,11 @@ MAGIC_METHODS = tuple("__%s__" % s for s in (
     "div", "truediv", "neg", "pos", "abs", "invert", "complex", "int", "float",
     "oct", "hex", "index", "coerce", "enter", "exit"))
 
+if py3:
+    KEYWORDS = frozenset(keyword.kwlist)
+else:
+    KEYWORDS = frozenset(name.decode('ascii') for name in keyword.kwlist)
+
 
 def after_last_dot(name):
     return name.rstrip('.').rsplit('.')[-1]
@@ -284,10 +289,8 @@ class GlobalCompletion(BaseCompletionType):
 
         matches = set()
         n = len(text)
-        for word in keyword.kwlist:
+        for word in KEYWORDS:
             if method_match(word, n, text):
-                if not py3:
-                    word = word.decode('ascii')  # py2 keywords are all ascii
                 matches.add(word)
         for nspace in [builtins.__dict__, locals_]:
             for word, val in nspace.items():
