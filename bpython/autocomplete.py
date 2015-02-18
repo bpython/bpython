@@ -286,9 +286,9 @@ class GlobalCompletion(BaseCompletionType):
         n = len(text)
         for word in keyword.kwlist:
             if method_match(word, n, text):
-                word = try_decode(word, 'ascii')  # py2 keywords are all ascii
-                if word is not None:
-                    matches.add(word)
+                if not py3:
+                    word = word.decode('ascii')  # py2 keywords are all ascii
+                matches.add(word)
         for nspace in [builtins.__dict__, locals_]:
             for word, val in nspace.items():
                 if (method_match(word, len(text), text) and
