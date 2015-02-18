@@ -2,6 +2,7 @@
 
 from collections import namedtuple
 import inspect
+import keyword
 from bpython._py3compat import py3
 
 try:
@@ -283,6 +284,14 @@ class TestGlobalCompletion(unittest.TestCase):
     def test_ignores_nonascii_encodable(self):
         self.assertSetEqual(self.com.matches(3, 'abc', locals_={'abcß': 10}),
                             set())
+
+    def test_mock_kwlist(self):
+        with mock.patch.object(keyword, 'kwlist', new=['abcd']):
+            self.assertSetEqual(self.com.matches(3, 'abc', locals_={}), set())
+
+    def test_mock_kwlist_non_ascii(self):
+        with mock.patch.object(keyword, 'kwlist', new=['abcß']):
+            self.assertSetEqual(self.com.matches(3, 'abc', locals_={}), set())
 
 
 class TestParameterNameCompletion(unittest.TestCase):
