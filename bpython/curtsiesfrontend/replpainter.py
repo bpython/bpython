@@ -108,12 +108,14 @@ def formatted_argspec(argspec, columns, config):
             color = bolds[color]
 
         if not py3:
-            s += color(inspect.strseq(arg, str))
+            s += color(inspect.strseq(arg, unicode))
         else:
             s += color(arg)
 
         if kw is not None:
             s += punctuation_color('=')
+            if not py3:
+                kw = kw.decode('ascii', 'replace')
             s += token_color(kw)
 
         if i != len(args) - 1:
