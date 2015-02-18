@@ -119,7 +119,8 @@ def loadini(struct, configfile):
             'transpose_chars': 'C-t',
             'undo': 'C-r',
             'up_one_line': 'C-p',
-            'yank_from_buffer': 'C-y'
+            'yank_from_buffer': 'C-y',
+            'debug': 'F12',
         },
         'cli': {
             'suggestion_width': 0.8,
@@ -207,6 +208,7 @@ def loadini(struct, configfile):
     struct.edit_current_block_key = get_key_no_doublebind('edit_current_block')
     struct.external_editor_key = get_key_no_doublebind('external_editor')
     struct.help_key = get_key_no_doublebind('help')
+    struct.debug_key = get_key_no_doublebind('debug')
 
     struct.pastebin_confirm = config.getboolean('general', 'pastebin_confirm')
     struct.pastebin_url = config.get('general', 'pastebin_url')
