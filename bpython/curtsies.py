@@ -19,6 +19,7 @@ from bpython.translations import _
 from bpython.importcompletion import find_iterator
 from bpython.curtsiesfrontend import events as bpythonevents
 from bpython import inspection
+from bpython.repl import extract_exit_value
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ def main(args=None, locals_=None, banner=None):
     if exec_args:
         if not options:
             raise ValueError("don't pass in exec_args without options")
-        exit_value = 0
+        exit_value = ()
         if options.paste:
             paste = curtsies.events.PasteEvent()
             encoding = inspection.get_encoding_file(exec_args[0])
@@ -69,14 +70,18 @@ def main(args=None, locals_=None, banner=None):
             except SystemExit as e:
                 exit_value = e.args
             if not options.interactive:
-                raise SystemExit(exit_value)
+                return extract_exit_value(exit_value)
     else:
         # expected for interactive sessions (vanilla python does it)
         sys.path.insert(0, '')
 
     print(bpargs.version_banner())
-    mainloop(config, locals_, banner, interp, paste,
-             interactive=(not exec_args))
+    try:
+        exit_value = mainloop(config, locals_, banner, interp, paste,
+                              interactive=(not exec_args))
+    except (SystemExitFromCodeGreenlet, SystemExit) as e:
+        exit_value = e.args
+    return extract_exit_value(exit_value)
 
 
 def mainloop(config, locals_, banner, interp=None, paste=None,
