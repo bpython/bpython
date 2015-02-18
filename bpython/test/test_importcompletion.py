@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from bpython import importcompletion
 
 try:
@@ -10,19 +12,19 @@ class TestSimpleComplete(unittest.TestCase):
 
     def setUp(self):
         self.original_modules = importcompletion.modules
-        importcompletion.modules = [u'zzabc', u'zzabd', u'zzefg', u'zzabc.e',
-                                    u'zzabc.f']
+        importcompletion.modules = ['zzabc', 'zzabd', 'zzefg', 'zzabc.e',
+                                    'zzabc.f']
 
     def tearDown(self):
         importcompletion.modules = self.original_modules
 
     def test_simple_completion(self):
         self.assertSetEqual(importcompletion.complete(10, 'import zza'),
-                            set([u'zzabc', u'zzabd']))
+                            set(['zzabc', 'zzabd']))
 
     def test_package_completion(self):
         self.assertSetEqual(importcompletion.complete(13, 'import zzabc.'),
-                            set([u'zzabc.e', u'zzabc.f']))
+                            set(['zzabc.e', 'zzabc.f']))
 
 
 class TestRealComplete(unittest.TestCase):
