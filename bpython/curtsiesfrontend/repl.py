@@ -213,6 +213,34 @@ class ReevaluateFakeStdin(object):
         return value
 
 
+class ImportLoader(object):
+
+    def __init__(self, watcher, loader):
+        self.watcher = watcher
+        self.loader = loader
+
+    def load_module(self, fullname):
+        module = self.loader.load_module(fullname)
+        if hasattr(module, '__file__'):
+            self.watcher.track_module(module.__file__)
+        return module
+
+
+class ImportFinder(object):
+
+    def __init__(self, watcher, old_meta_path):
+        self.watcher = watcher
+        self.old_meta_path = old_meta_path
+
+    def find_module(self, fullname, path=None):
+        for finder in self.old_meta_path:
+            loader = finder.find_module(fullname, path)
+            if loader is not None:
+                return ImportLoader(self.watcher, loader)
+
+        return None
+
+
 class Repl(BpythonRepl):
     """Python Repl
 
@@ -416,29 +444,9 @@ class Repl(BpythonRepl):
         signal.signal(signal.SIGWINCH, self.sigwinch_handler)
         signal.signal(signal.SIGTSTP, self.sigtstp_handler)
 
-        self.orig_import = builtins.__import__
+        self.orig_meta_path = sys.meta_path
         if self.watcher:
-            # for reading modules if they fail to load
-            old_module_locations = {}
-            default_level = 0 if py3 else -1
-
-            @functools.wraps(self.orig_import)
-            def new_import(name, globals={}, locals={}, fromlist=[],
-                           level=default_level):
-                try:
-                    m = self.orig_import(name, globals=globals, locals=locals,
-                                         fromlist=fromlist, level=level)
-                except:
-                    if name in old_module_locations:
-                        loc = old_module_locations[name]
-                        self.watcher.track_module(loc)
-                    raise
-                else:
-                    if hasattr(m, "__file__"):
-                        old_module_locations[name] = m.__file__
-                        self.watcher.track_module(m.__file__)
-                return m
-            builtins.__import__ = new_import
+            sys.meta_path = [ImportFinder(self.watcher, self.orig_meta_path)]
 
         sitefix.monkeypatch_quit()
         return self
@@ -449,7 +457,7 @@ class Repl(BpythonRepl):
         sys.stderr = self.orig_stderr
         signal.signal(signal.SIGWINCH, self.orig_sigwinch_handler)
         signal.signal(signal.SIGTSTP, self.orig_sigtstp_handler)
-        builtins.__import__ = self.orig_import
+        sys.meta_path = self.orig_meta_path
 
     def sigwinch_handler(self, signum, frame):
         old_rows, old_columns = self.height, self.width
