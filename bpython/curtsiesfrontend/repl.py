@@ -419,9 +419,11 @@ class Repl(BpythonRepl):
         if self.watcher:
             # for reading modules if they fail to load
             old_module_locations = {}
+            default_level = 0 if py3 else -1
 
             @functools.wraps(self.orig_import)
-            def new_import(name, globals={}, locals={}, fromlist=[], level=-1):
+            def new_import(name, globals={}, locals={}, fromlist=[],
+                           level=default_level):
                 try:
                     m = self.orig_import(name, globals=globals, locals=locals,
                                          fromlist=fromlist, level=level)
