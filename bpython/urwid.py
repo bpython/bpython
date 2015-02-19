@@ -33,7 +33,7 @@ This is still *VERY* rough.
 """
 
 
-from __future__ import absolute_import, with_statement, division, print_function
+from __future__ import absolute_import, division, print_function
 
 import sys
 import os

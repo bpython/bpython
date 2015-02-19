@@ -2,7 +2,7 @@
 Module to handle command line argument parsing, for all front-ends.
 """
 
-from __future__ import with_statement, print_function
+from __future__ import print_function
 import os
 import sys
 import code

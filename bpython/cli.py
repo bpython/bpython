@@ -39,7 +39,7 @@
 # - Instead the suspend key exits the program
 # - View source doesn't work on windows unless you install the less program (From GnuUtils or Cygwin)
 
-from __future__ import division, with_statement
+from __future__ import division
 
 import platform
 import os
