@@ -1,5 +1,7 @@
 import sys
 
+from bpython.test import mock
+
 try:
     import unittest2 as unittest
 except ImportError:
@@ -43,3 +45,13 @@ class TestCodeRunner(unittest.TestCase):
         sys.stderr = stderr
         c.load_code('1 + 1')
         c.run_code()
+
+
+class TestFakeOutput(unittest.TestCase):
+
+    def assert_unicode(self, s):
+        self.assertIsInstance(s, type(u''))
+
+    def test_bytes(self):
+        out = FakeOutput(mock.Mock(), self.assert_unicode)
+        out.write('native string type')

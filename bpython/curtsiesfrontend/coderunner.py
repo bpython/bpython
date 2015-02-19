@@ -15,6 +15,9 @@ import signal
 import greenlet
 import logging
 
+from bpython._py3compat import py3, try_decode
+from bpython.config import getpreferredencoding
+
 logger = logging.getLogger(__name__)
 
 
@@ -193,11 +196,17 @@ class CodeRunner(object):
 
 class FakeOutput(object):
     def __init__(self, coderunner, on_write):
+        """Fakes sys.stdout or sys.stderr
+
+        on_write should always take unicode
+        """
         self.coderunner = coderunner
         self.on_write = on_write
 
-    def write(self, *args, **kwargs):
-        self.on_write(*args, **kwargs)
+    def write(self, s, *args, **kwargs):
+        if not py3 and isinstance(s, str):
+            s = s.decode(getpreferredencoding())
+        self.on_write(s, *args, **kwargs)
         return self.coderunner.request_from_main_greenlet(force_refresh=True)
 
     def writelines(self, l):
