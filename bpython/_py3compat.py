@@ -51,11 +51,15 @@ else:
         return arg.encode(encoding)
 
 
-def try_decode(s, encoding):
-    """Try to decode s which is str names. Return None if not decodable"""
-    if not py3 and not isinstance(s, unicode):
-        try:
-            return s.decode(encoding)
-        except UnicodeDecodeError:
-            return None
-    return s
+if py3:
+    def try_decode(s, encoding):
+        return s
+else:
+    def try_decode(s, encoding):
+        """Try to decode s which is str names. Return None if not decodable"""
+        if not isinstance(s, unicode):
+            try:
+                return s.decode(encoding)
+            except UnicodeDecodeError:
+                return None
+        return s
