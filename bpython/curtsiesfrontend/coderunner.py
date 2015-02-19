@@ -205,7 +205,7 @@ class FakeOutput(object):
 
     def write(self, s, *args, **kwargs):
         if not py3 and isinstance(s, str):
-            s = s.decode(getpreferredencoding())
+            s = s.decode(getpreferredencoding(), errors='replace')
         self.on_write(s, *args, **kwargs)
         return self.coderunner.request_from_main_greenlet(force_refresh=True)
 
