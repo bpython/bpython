@@ -56,9 +56,9 @@ from curtsies.configfile_keynames import keymap as key_dispatch
 
 logger = logging.getLogger(__name__)
 
-INCONSISTENT_HISTORY_MSG = u"#<---History inconsistent with output shown--->"
-CONTIGUITY_BROKEN_MSG = u"#<---History contiguity broken by rewind--->"
-HELP_MESSAGE = u"""
+INCONSISTENT_HISTORY_MSG = "#<---History inconsistent with output shown--->"
+CONTIGUITY_BROKEN_MSG = "#<---History contiguity broken by rewind--->"
+HELP_MESSAGE = """
 Thanks for using bpython!
 
 See http://bpython-interpreter.org/ for more information and
@@ -771,7 +771,7 @@ class Repl(BpythonRepl):
 
     def process_simple_keypress(self, e):
         # '\n' needed for pastes
-        if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>", u"\n", u"\r"):
+        if e in ("<Ctrl-j>", "<Ctrl-m>", "<PADENTER>", "\n", "\r"):
             self.on_enter()
             while self.fake_refresh_requested:
                 self.fake_refresh_requested = False
@@ -796,14 +796,14 @@ class Repl(BpythonRepl):
         self.cursor_offset = len(self.current_line)
 
     def send_session_to_external_editor(self, filename=None):
-        for_editor = (u"### current bpython session - file will be "
-                      u"reevaluated, ### lines will not be run\n")
-        for_editor += u'\n'.join(line[len(self.ps1):]
-                                 if line.startswith(self.ps1) else
-                                 line[len(self.ps2):]
-                                 if line.startswith(self.ps2) else
-                                 '### '+line
-                                 for line in self.getstdout().split('\n'))
+        for_editor = ("### current bpython session - file will be "
+                      "reevaluated, ### lines will not be run\n")
+        for_editor += '\n'.join(line[len(self.ps1):]
+                                if line.startswith(self.ps1) else
+                                line[len(self.ps2):]
+                                if line.startswith(self.ps2) else
+                                '### '+line
+                                for line in self.getstdout().split('\n'))
         text = self.send_to_external_editor(for_editor)
         lines = text.split('\n')
         from_editor = [line for line in lines if line[:4] != '### ']
@@ -1557,8 +1557,8 @@ def just_simple_events(event_list):
     simple_events = []
     for e in event_list:
         # '\n' necessary for pastes
-        if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>", u"\n", u"\r"):
-            simple_events.append(u'\n')
+        if e in ("<Ctrl-j>", "<Ctrl-m>", "<PADENTER>", "\n", "\r"):
+            simple_events.append('\n')
         elif isinstance(e, events.Event):
             pass  # ignore events
         elif e == '<SPACE>':
