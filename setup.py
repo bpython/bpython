@@ -219,6 +219,13 @@ extras_require = {
     'urwid': ['urwid'],
     'watch': ['watchdog'],
     'jedi': ['jedi'],
+    # need PyOpenSSL for SNI support (only 2.X and on Darwin)
+    # list of packages taken from
+    # https://github.com/kennethreitz/requests/blob/master/requests/packages/urllib3/contrib/pyopenssl.py
+    ':sys_platform == "darwin" and '\
+            '(python_version == "2.6" or python_version == "2.7")': [
+        'PyOpenSSL', 'ndg-httpsclient', 'pyasn1'
+    ]
 }
 
 packages = [
@@ -238,14 +245,6 @@ entry_points = {
         'bpbd = bpdb:main'
     ]
 }
-
-if sys.version_info[0] == 2 and sys.platform == "darwin":
-    # need PyOpenSSL for SNI support (only 2.X and on Darwin)
-    # list of packages taken from
-    # https://github.com/kennethreitz/requests/blob/master/requests/packages/urllib3/contrib/pyopenssl.py
-    install_requires.append('PyOpenSSL')
-    install_requires.append('ndg-httpsclient')
-    install_requires.append('pyasn1')
 
 tests_require = []
 if sys.version_info[0] == 2 and sys.version_info[1] < 7:
