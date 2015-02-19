@@ -47,13 +47,13 @@ from six.moves.urllib_parse import quote as urlquote, urljoin, urlparse
 
 from pygments.token import Token
 
+from bpython import autocomplete
 from bpython import inspection
 from bpython._py3compat import PythonLexer, py3, prepare_for_exec
-from bpython.formatter import Parenthesis
-from bpython.translations import _, ngettext
 from bpython.clipboard import get_clipboard, CopyFailed
+from bpython.formatter import Parenthesis
 from bpython.history import History
-import bpython.autocomplete as autocomplete
+from bpython.translations import _, ngettext
 
 
 class RuntimeTimer(object):

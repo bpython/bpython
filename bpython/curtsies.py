@@ -1,9 +1,9 @@
 from __future__ import absolute_import
 
 import code
+import io
 import logging
 import sys
-import io
 from optparse import Option
 
 import curtsies
