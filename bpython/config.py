@@ -98,6 +98,7 @@ def loadini(struct, configfile):
             'clear_word': 'C-w',
             'copy_clipboard': 'F10',
             'cut_to_buffer': 'C-k',
+            'debug': 'F12',
             'delete': 'C-d',
             'down_one_line': 'C-n',
             'edit_config': 'F3',
@@ -120,7 +121,6 @@ def loadini(struct, configfile):
             'undo': 'C-r',
             'up_one_line': 'C-p',
             'yank_from_buffer': 'C-y',
-            'debug': 'F12',
         },
         'cli': {
             'suggestion_width': 0.8,

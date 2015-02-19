@@ -21,7 +21,7 @@ post_mortem = None
 
 def _get_debugger():
     global post_mortem
-    modname = os.environ.get("PYTHON_DEBUGGER", "pdb")
+    modname = os.environ.get("PYTHON_DEBUGGER", "bpdb")
     __import__(modname)
     mod = sys.modules[modname]
     pm = getattr(mod, "post_mortem")
