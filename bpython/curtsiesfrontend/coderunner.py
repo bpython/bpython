@@ -15,7 +15,7 @@ import signal
 import greenlet
 import logging
 
-from bpython._py3compat import py3, try_decode
+from bpython._py3compat import py3
 from bpython.config import getpreferredencoding
 
 logger = logging.getLogger(__name__)
