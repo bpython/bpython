@@ -49,7 +49,6 @@ import math
 import re
 import time
 import functools
-from pprint import pprint
 
 import struct
 if platform.system() != 'Windows':
@@ -1954,10 +1953,6 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     return (exit_value, clirepl.getstdout())
 
 
-def prettydisplayhook(obj):
-    pprint(obj)
-
-
 def debugger_hook(exc, value, tb):
 
     if exc in (SyntaxError, IndentationError, KeyboardInterrupt):
@@ -2004,8 +1999,6 @@ def main(args=None, locals_=None, banner=None):
 
     if options.debugger:
         sys.excepthook = debugger_hook
-    if options.pretty:
-        sys.displayhook = prettydisplayhook
 
     try:
         (exit_value, output) = curses_wrapper(
