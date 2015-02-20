@@ -163,13 +163,16 @@ class Property(object):
 class Slots(object):
     __slots__ = ['s1', 's2', 's3']
 
-    @property
-    def s3(self):
-        raise AssertionError('Property __get__ executed')
+    if not py3:
+        @property
+        def s3(self):
+            raise AssertionError('Property __get__ executed')
 
 
 class SlotsSubclass(Slots):
-    pass
+    @property
+    def s4(self):
+        raise AssertionError('Property __get__ executed')
 
 
 member_descriptor = type(Slots.s1)
@@ -208,19 +211,23 @@ class TestSafeGetAttribute(unittest.TestCase):
             inspection.safe_get_attribute(s, 's2')
         self.assertIsInstance(inspection.safe_get_attribute_new_style(s, 's2'),
                               member_descriptor)
-        self.assertEquals(inspection.safe_get_attribute(s, 's3'),
-                          Slots.__dict__['s3'])
 
     def test_lookup_on_slots_classes(self):
         sga = inspection.safe_get_attribute
-        self.assertIsInstance(inspection.safe_get_attribute(Slots, 's1'),
-                              member_descriptor)
-        self.assertIsInstance(inspection.safe_get_attribute(Slots, 's3'),
-                              property)
-        self.assertIsInstance(inspection.safe_get_attribute(SlotsSubclass, 's1'),
-                              member_descriptor)
-        self.assertIsInstance(inspection.safe_get_attribute(SlotsSubclass, 's3'),
-                              property)
+        s = SlotsSubclass()
+        self.assertIsInstance(sga(Slots, 's1'), member_descriptor)
+        self.assertIsInstance(sga(SlotsSubclass, 's1'), member_descriptor)
+        self.assertIsInstance(sga(SlotsSubclass, 's4'), property)
+        self.assertIsInstance(sga(s, 's4'), property)
+
+    @unittest.skipIf(py3, "Python 3 doesn't allow slots and prop in same class")
+    def test_lookup_with_property_and_slots(self):
+        sga = inspection.safe_get_attribute
+        s = SlotsSubclass()
+        self.assertIsInstance(sga(Slots, 's3'), property)
+        self.assertEquals(inspection.safe_get_attribute(s, 's3'),
+                          Slots.__dict__['s3'])
+        self.assertIsInstance(sga(SlotsSubclass, 's3'), property)
 
 if __name__ == '__main__':
     unittest.main()
