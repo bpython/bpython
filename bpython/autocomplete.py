@@ -27,7 +27,7 @@ import keyword
 import os
 import rlcompleter
 from six.moves import range, builtins
-from six import string_types
+from six import string_types, iteritems
 
 from glob import glob
 
@@ -292,10 +292,9 @@ class GlobalCompletion(BaseCompletionType):
         for word in KEYWORDS:
             if method_match(word, n, text):
                 matches.add(word)
-        for nspace in [builtins.__dict__, locals_]:
-            for word, val in nspace.items():
-                if (method_match(word, len(text), text) and
-                        word != "__builtins__"):
+        for nspace in (builtins.__dict__, locals_):
+            for word, val in iteritems(nspace):
+                if method_match(word, n, text) and word != "__builtins__":
                     word = try_decode(word, 'ascii')
                     # if identifier isn't ascii, don't complete (syntax error)
                     if word is None:
