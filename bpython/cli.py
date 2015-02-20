@@ -81,6 +81,12 @@ from bpython.keys import cli_key_dispatch as key_dispatch
 from bpython import translations
 from bpython.translations import _
 
+# Debugging support
+try:
+    from bpython import debugger
+except ImportError as err:
+    debugger = None
+
 from bpython import repl
 from bpython._py3compat import py3
 from bpython.pager import page
@@ -959,6 +965,11 @@ class CLIRepl(repl.Repl):
             return ''
 
         elif key in key_dispatch[config.debug_key]:
+            if debugger is None:
+                self.echo(
+                    "\x01y\x03No debugger, check your PYTHON_DEBUGGER value.\n",
+                    )
+                return
             if sys.excepthook is not debugger_hook:
                 sys.excepthook = debugger_hook
             else:
@@ -1960,7 +1971,6 @@ def debugger_hook(exc, value, tb):
         return
 
     global stdscr
-    from bpython import debugger
 
     orig_stdin = sys.stdin
     orig_stdout = sys.stdout
@@ -1997,7 +2007,7 @@ def main(args=None, locals_=None, banner=None):
     orig_stdout = sys.stdout
     orig_stderr = sys.stderr
 
-    if options.debugger:
+    if options.debugger and debugger is not None:
         sys.excepthook = debugger_hook
 
     try:
