@@ -53,6 +53,9 @@ from bpython.curtsiesfrontend.interpreter import (Interp,
 
 from curtsies.configfile_keynames import keymap as key_dispatch
 
+if not py3:
+    import imp
+
 
 logger = logging.getLogger(__name__)
 
@@ -220,11 +223,32 @@ class ImportLoader(object):
         self.watcher = watcher
         self.loader = loader
 
-    def load_module(self, fullname):
-        module = self.loader.load_module(fullname)
+    def load_module(self, name):
+        module = self.loader.load_module(name)
         if hasattr(module, '__file__'):
             self.watcher.track_module(module.__file__)
         return module
+
+
+if not py3:
+    class ImpImportLoader(object):
+
+        def __init__(self, watcher, file, pathname, description):
+            self.watcher = watcher
+            self.file = file
+            self.pathname = pathname
+            self.description = description
+
+        def load_module(self, name):
+            try:
+                module = imp.load_module(name, self.file, self.pathname,
+                                         self.description)
+                if hasattr(module, '__file__'):
+                    self.watcher.track_module(module.__file__)
+                return module
+            finally:
+                if self.file is not None:
+                    self.file.close()
 
 
 class ImportFinder(object):
@@ -238,6 +262,15 @@ class ImportFinder(object):
             loader = finder.find_module(fullname, path)
             if loader is not None:
                 return ImportLoader(self.watcher, loader)
+
+        if not py3:
+            # Python 2 does not have the default finders stored in
+            # sys.meta_path. Use imp to perform the actual importing.
+            try:
+                result = imp.find_module(fullname, path)
+                return ImpImportLoader(self.watcher, *result)
+            except ImportError:
+                return None
 
         return None
 
