@@ -375,8 +375,7 @@ class Repl(BpythonRepl):
         def smarter_request_reload(files_modified=()):
             if self.watching_files:
                 request_reload(files_modified=files_modified)
-            else:
-                pass
+
         self.request_reload = smarter_request_reload
         self.request_undo = request_undo
         self.get_term_hw = get_term_hw
