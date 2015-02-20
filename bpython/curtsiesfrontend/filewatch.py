@@ -38,7 +38,7 @@ else:
             dirname = os.path.dirname(path)
             if dirname not in self.dirs:
                 self.observer.schedule(self, dirname, recursive=False)
-                self.dirs[os.path.dirname(path)].add(path)
+            self.dirs[dirname].add(path)
 
         def _add_module_later(self, path):
             self.modules_to_add_later.append(path)
