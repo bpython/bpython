@@ -242,6 +242,10 @@ class Properties(Foo):
         raise AssertionError("getter method called")
 
 
+class Slots(object):
+    __slots__ = ['a', 'b']
+
+
 class TestAttrCompletion(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -279,6 +283,11 @@ class TestAttrCompletion(unittest.TestCase):
         self.assertSetEqual(com.matches(2, 'a.', locals_={'a': Properties()}),
                             set(['a.b', 'a.a', 'a.method(',
                                  'a.asserts_when_called']))
+
+    def test_slots_not_crash(self):
+        com = autocomplete.AttrCompletion()
+        self.assertSetEqual(com.matches(2, 'A.', locals_={'A': Slots}),
+                            set(['A.b', 'A.a', 'A.mro']))
 
 
 class TestArrayItemCompletion(unittest.TestCase):

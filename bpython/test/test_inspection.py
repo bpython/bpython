@@ -161,8 +161,18 @@ class Property(object):
 
 
 class Slots(object):
-    __slots__ = ['s1', 's2']
+    __slots__ = ['s1', 's2', 's3']
 
+    @property
+    def s3(self):
+        raise AssertionError('Property __get__ executed')
+
+
+class SlotsSubclass(Slots):
+    pass
+
+
+member_descriptor = type(Slots.s1)
 
 class TestSafeGetAttribute(unittest.TestCase):
 
@@ -191,10 +201,26 @@ class TestSafeGetAttribute(unittest.TestCase):
     def test_lookup_with_slots(self):
         s = Slots()
         s.s1 = 's1'
-        self.assertEquals(inspection.safe_get_attribute_new_style(s, 's1'), 's1')
-        self.assertEquals(inspection.safe_get_attribute_new_style(s, 's2'),
-                          inspection.AttributeIsEmptySlot)
+        self.assertEquals(inspection.safe_get_attribute(s, 's1'), 's1')
+        self.assertIsInstance(inspection.safe_get_attribute_new_style(s, 's1'),
+                              member_descriptor)
+        with self.assertRaises(AttributeError):
+            inspection.safe_get_attribute(s, 's2')
+        self.assertIsInstance(inspection.safe_get_attribute_new_style(s, 's2'),
+                              member_descriptor)
+        self.assertEquals(inspection.safe_get_attribute(s, 's3'),
+                          Slots.__dict__['s3'])
 
+    def test_lookup_on_slots_classes(self):
+        sga = inspection.safe_get_attribute
+        self.assertIsInstance(inspection.safe_get_attribute(Slots, 's1'),
+                              member_descriptor)
+        self.assertIsInstance(inspection.safe_get_attribute(Slots, 's3'),
+                              property)
+        self.assertIsInstance(inspection.safe_get_attribute(SlotsSubclass, 's1'),
+                              member_descriptor)
+        self.assertIsInstance(inspection.safe_get_attribute(SlotsSubclass, 's3'),
+                              property)
 
 if __name__ == '__main__':
     unittest.main()

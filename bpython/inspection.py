@@ -282,38 +282,48 @@ def is_callable(obj):
     return callable(obj)
 
 
-class AttributeIsEmptySlot(object):
-    pass
-
-
 def safe_get_attribute(obj, attr):
-    """Gets attributes without triggering descriptors on new-style clases
-
-    Returns AttributeIsEmptySlot if requested attribute does not have a value,
-    but is a slot entry.
-    """
+    """Gets attributes without triggering descriptors on new-style clases"""
     if is_new_style(obj):
-        return safe_get_attribute_new_style(obj, attr)
+        result = safe_get_attribute_new_style(obj, attr)
+        if isinstance(result, member_descriptor):
+            # will either be the same slot descriptor or the value
+            return getattr(obj, attr)
+        return result
     return getattr(obj, attr)
 
 
+class _ClassWithSlots(object):
+    __slots__ = ['a']
+member_descriptor = type(_ClassWithSlots.a)
+
+
 def safe_get_attribute_new_style(obj, attr):
+    """Returns approximately the attribute returned by getattr(obj, attr)
+
+    The object returned ought to be callable if getattr(obj, attr) was.
+    Fake callable objects may be returned instead, in order to avoid executing
+    arbitrary code in descriptors.
+
+    If the object is an instance of a class that uses __slots__, will return
+    the member_descriptor object instead of the value.
+    """
     if not is_new_style(obj):
         raise ValueError("%r is not a new-style class or object" % obj)
     to_look_through = (obj.mro()
                        if hasattr(obj, 'mro')
                        else [obj] + type(obj).mro())
 
+    found_in_slots = hasattr(obj, '__slots__') and attr in obj.__slots__
     for cls in to_look_through:
         if hasattr(cls, '__dict__') and attr in cls.__dict__:
             return cls.__dict__[attr]
-        elif hasattr(cls, '__slots__') and attr in cls.__slots__:
-            try:
-                return getattr(cls, attr)
-            except AttributeError:
-                return AttributeIsEmptySlot
+
+    if found_in_slots:
+        return AttributeIsEmptySlot
 
     raise AttributeError()
+
 
 def get_attribute(obj, attr):
     cls = type(obj)
