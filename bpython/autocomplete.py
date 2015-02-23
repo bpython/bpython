@@ -342,8 +342,13 @@ class StringLiteralAttrCompletion(BaseCompletionType):
         r = self.locate(cursor_offset, line)
         if r is None:
             return None
+
         start, end, word = r
         attrs = dir('')
+        if not py3:
+            # decode attributes
+            attrs = (att.decode('ascii') for att in attrs)
+
         matches = set(att for att in attrs if att.startswith(word))
         if not word.startswith('_'):
             return set(match for match in matches if not match.startswith('_'))
