@@ -1,3 +1,5 @@
+# coding: utf-8
+
 # The MIT License
 #
 # Copyright (c) 2009-2015 the bpython authors.
@@ -20,6 +22,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+from __future__ import unicode_literals
 
 import __main__
 import abc
@@ -45,7 +49,7 @@ FUZZY = 'fuzzy'
 
 ALL_MODES = (SIMPLE, SUBSTRING, FUZZY)
 
-MAGIC_METHODS = tuple(u"__%s__" % s for s in (
+MAGIC_METHODS = tuple("__%s__" % s for s in (
     "init", "repr", "str", "lt", "le", "eq", "ne", "gt", "ge", "cmp", "hash",
     "nonzero", "unicode", "getattr", "setattr", "get", "set", "call", "len",
     "getitem", "setitem", "iter", "reversed", "contains", "add", "sub", "mul",
