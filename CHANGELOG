@@ -1,6 +1,15 @@
 Changelog
 =========
 
+0.14.1
+------
+
+Fixes:
+
+* #483: Fixed jedi exceptions handling.
+* #486: Fixed Python 3.3 compatibility.
+* #489: Create history file with mode 0600.
+
 0.14
 ----
 
