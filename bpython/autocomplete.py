@@ -163,11 +163,11 @@ class FilenameCompletion(BaseCompletionType):
 
     if sys.version_info[:2] >= (3, 4):
         def safe_glob(self, pathname):
-            return glob.glob(glob.escape(pathname) + '*')
+            return glob.iglob(glob.escape(pathname) + '*')
     else:
         def safe_glob(self, pathname):
             try:
-                return glob.glob(pathname + '*')
+                return glob.iglob(pathname + '*')
             except re.error:
                 # see #491
                 return tuple()
