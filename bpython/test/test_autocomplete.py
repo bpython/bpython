@@ -123,15 +123,15 @@ class TestFilenameCompletion(unittest.TestCase):
     def test_locate_succeeds_when_in_string(self):
         self.assertEqual(self.completer.locate(4, "a'bc'd"), (2, 4, 'bc'))
 
-    @mock.patch('bpython.autocomplete.glob', new=lambda text: [])
+    @mock.patch('glob.glob', new=lambda text: [])
     def test_match_returns_none_if_not_in_string(self):
         self.assertEqual(self.completer.matches(2, 'abcd'), None)
 
-    @mock.patch('bpython.autocomplete.glob', new=lambda text: [])
+    @mock.patch('glob.glob', new=lambda text: [])
     def test_match_returns_empty_list_when_no_files(self):
         self.assertEqual(self.completer.matches(2, '"a'), set())
 
-    @mock.patch('bpython.autocomplete.glob',
+    @mock.patch('glob.glob',
                 new=lambda text: ['abcde', 'aaaaa'])
     @mock.patch('os.path.expanduser', new=lambda text: text)
     @mock.patch('os.path.isdir', new=lambda text: False)
@@ -140,7 +140,7 @@ class TestFilenameCompletion(unittest.TestCase):
         self.assertEqual(sorted(self.completer.matches(2, '"x')),
                          ['aaaaa', 'abcde'])
 
-    @mock.patch('bpython.autocomplete.glob',
+    @mock.patch('glob.glob',
                 new=lambda text: ['abcde', 'aaaaa'])
     @mock.patch('os.path.expanduser', new=lambda text: text)
     @mock.patch('os.path.isdir', new=lambda text: True)
@@ -149,7 +149,7 @@ class TestFilenameCompletion(unittest.TestCase):
         self.assertEqual(sorted(self.completer.matches(2, '"x')),
                          ['aaaaa/', 'abcde/'])
 
-    @mock.patch('bpython.autocomplete.glob',
+    @mock.patch('glob.glob',
                 new=lambda text: ['/expand/ed/abcde', '/expand/ed/aaaaa'])
     @mock.patch('os.path.expanduser',
                 new=lambda text: text.replace('~', '/expand/ed'))
