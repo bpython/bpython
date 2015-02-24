@@ -23,13 +23,14 @@
 
 import __main__
 import abc
+import glob
 import keyword
 import os
+import re
 import rlcompleter
+import sys
 from six.moves import range, builtins
 from six import string_types
-
-from glob import glob
 
 from bpython import inspection
 from bpython import importcompletion
@@ -151,6 +152,17 @@ class FilenameCompletion(BaseCompletionType):
     def __init__(self):
         super(FilenameCompletion, self).__init__(False)
 
+    if sys.version_info[:2] >= (3, 4):
+        def safe_glob(self, pathname):
+            return glob.glob(glob.escape(pathname) + '*')
+    else:
+        def safe_glob(self, pathname):
+            try:
+                return glob.glob(pathname + '*')
+            except re.error:
+                # see #491
+                return tuple()
+
     def matches(self, cursor_offset, line, **kwargs):
         cs = lineparts.current_string(cursor_offset, line)
         if cs is None:
@@ -159,7 +171,7 @@ class FilenameCompletion(BaseCompletionType):
         matches = set()
         username = text.split(os.path.sep, 1)[0]
         user_dir = os.path.expanduser(username)
-        for filename in glob(os.path.expanduser(text + '*')):
+        for filename in self.safe_glob(os.path.expanduser(text)):
             if os.path.isdir(filename):
                 filename += os.path.sep
             if text.startswith('~'):
