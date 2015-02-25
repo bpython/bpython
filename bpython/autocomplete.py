@@ -167,7 +167,7 @@ class FilenameCompletion(BaseCompletionType):
     else:
         def safe_glob(self, pathname):
             try:
-                return glob.iglob(pathname + '*')
+                return glob.glob(pathname + '*')
             except re.error:
                 # see #491
                 return tuple()
