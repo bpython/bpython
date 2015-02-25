@@ -129,6 +129,9 @@ class TestFilenameCompletion(unittest.TestCase):
     def test_locate_succeeds_when_in_string(self):
         self.assertEqual(self.completer.locate(4, "a'bc'd"), (2, 4, 'bc'))
 
+    def test_issue_491(self):
+        self.assertNotEqual(self.completer.matches(9, '"a[a.l-1]'), None)
+
     @mock.patch(glob_function, new=lambda text: [])
     def test_match_returns_none_if_not_in_string(self):
         self.assertEqual(self.completer.matches(2, 'abcd'), None)
