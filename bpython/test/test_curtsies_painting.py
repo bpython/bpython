@@ -89,18 +89,18 @@ class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
 
     def test_completion(self):
         self.repl.height, self.repl.width = (5, 32)
-        self.repl.current_line = 'se'
+        self.repl.current_line = 'an'
         self.cursor_offset = 2
         if config.supports_box_chars():
-            screen = ['>>> se',
+            screen = ['>>> an',
                       '┌───────────────────────┐',
-                      '│ set(     setattr(     │',
+                      '│ and  any(             │',
                       '└───────────────────────┘',
                       'Welcome to bpython! Press <F1> f']
         else:
-            screen = ['>>> se',
+            screen = ['>>> an',
                       '+-----------------------+',
-                      '| set(     setattr(     |',
+                      '| and  any(             |',
                       '+-----------------------+',
                       'Welcome to bpython! Press <F1> f']
         self.assert_paint_ignoring_formatting(screen, (0, 4))
