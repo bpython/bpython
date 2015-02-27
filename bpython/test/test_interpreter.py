@@ -29,7 +29,7 @@ class TestInterpreter(unittest.TestCase):
             bold(magenta('1')) + '\n    1.1.1.1\n        ^\n' + \
             bold(red('SyntaxError')) + ': ' + cyan('invalid syntax') + '\n'
 
-        self.assertEquals(str(plain('').join(a)), str(expected))
+        self.assertMultiLineEqual(str(plain('').join(a)), str(expected))
         self.assertEquals(plain('').join(a), expected)
 
     def test_traceback(self):
@@ -54,7 +54,7 @@ class TestInterpreter(unittest.TestCase):
             cyan('<module>') + '\n' + bold(red('NameError')) + ': ' + \
             cyan("name 'g' is not defined") + '\n'
 
-        self.assertEquals(str(plain('').join(a)), str(expected))
+        self.assertMultiLineEqual(str(plain('').join(a)), str(expected))
         self.assertEquals(plain('').join(a), expected)
 
     @unittest.skipIf(py3, "runsource() accepts only unicode in Python 3")
