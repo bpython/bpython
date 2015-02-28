@@ -18,12 +18,10 @@ Dependencies
 * watchdog (optional, for monitoring imported modules for changes)
 * jedi (optional, for experimental multiline completion)
 
-If you are using Python 2 on Mac OS X, the following dependencies are required
-as well:
+If you are using Python 2 before 2.7.7, the following dependency is also
+required:
 
-* pyOpenSSL
-* ndg-httpsclien
-* pyasn1
+* requests[security]
 
 If you have problems installing cffi which is needed by pyOpenSSL,
 please take a look at https://cffi.readthedocs.org/en/release-0.8/#macos-x.

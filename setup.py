@@ -219,12 +219,9 @@ extras_require = {
     'urwid': ['urwid'],
     'watch': ['watchdog'],
     'jedi': ['jedi'],
-    # need PyOpenSSL for SNI support (only 2.X and on Darwin)
-    # list of packages taken from
-    # https://github.com/kennethreitz/requests/blob/master/requests/packages/urllib3/contrib/pyopenssl.py
-    ':sys_platform == "darwin" and '\
-            '(python_version == "2.6" or python_version == "2.7")': [
-        'PyOpenSSL', 'ndg-httpsclient', 'pyasn1'
+    # need requests[security] for SNI support (only before 2.7.7)
+    ':python_full_version <= "2.7.7"': [
+        'requests[security]'
     ]
 }
 
