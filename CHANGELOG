@@ -11,6 +11,7 @@ Fixes:
 * #489: Create history file with mode 0600.
 * #491: Fix issues with file name completion.
 * #494: Fix six version requirement.
+* Fix conditional dependencies for SNI support in Python versions before 2.7.7.
 
 0.14
 ----
