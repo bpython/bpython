@@ -102,6 +102,7 @@ if version == 'unknown':
         # get version from existing version file
         with open(version_file) as vf:
             version = vf.read().strip().split('=')[-1].replace('\'', '')
+        version = version.strip()
     except IOError:
         pass
 
