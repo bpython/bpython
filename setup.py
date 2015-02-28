@@ -212,7 +212,7 @@ install_requires = [
     'requests',
     'curtsies >=0.1.18',
     'greenlet',
-    'six >=1.4'
+    'six >=1.5'
 ]
 
 extras_require = {

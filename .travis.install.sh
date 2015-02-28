@@ -10,7 +10,7 @@ if [[ $RUN == nosetests ]]; then
     pip install requests
     pip install 'curtsies >=0.1.17'
     pip install greenlet
-    pip install 'six >=1.4'
+    pip install 'six >=1.5'
     # filewatch specific dependencies
     pip install watchdog
     # jedi specific dependencies
