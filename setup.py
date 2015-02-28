@@ -220,7 +220,14 @@ extras_require = {
     'watch': ['watchdog'],
     'jedi': ['jedi'],
     # need requests[security] for SNI support (only before 2.7.7)
-    ':python_full_version <= "2.7.7"': [
+    ':python_version == "2.6" or '
+            'python_full_version == "2.7.0" or ' \
+            'python_full_version == "2.7.1" or ' \
+            'python_full_version == "2.7.2" or ' \
+            'python_full_version == "2.7.3" or ' \
+            'python_full_version == "2.7.4" or ' \
+            'python_full_version == "2.7.5" or ' \
+            'python_full_version == "2.7.6"': [
         'requests[security]'
     ]
 }
