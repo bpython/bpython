@@ -10,7 +10,7 @@ Dependencies
 
 * Pygments
 * requests
-* curtsies >= 0.1.18,<0.2.0
+* curtsies >= 0.1.18
 * greenlet
 * Sphinx != 1.1.2 (optional, for the documentation)
 * mock (optional, for the testsuite)
