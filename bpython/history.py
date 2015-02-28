@@ -190,7 +190,7 @@ class History(object):
     def save(self, filename, encoding, lines=0):
         fd = os.open(filename, os.O_WRONLY | os.O_CREAT | os.TRUNC,
                      stat.S_IRUSR | stat.S_IWUSR)
-        with io.open(filename, 'w', encoding=encoding,
+        with io.open(fd, 'w', encoding=encoding,
                      errors='ignore') as hfile:
             with FileLock(hfile):
                 self.save_to(hfile, self.entries, lines)
