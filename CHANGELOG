@@ -10,6 +10,7 @@ Fixes:
 * #486: Fixed Python 3.3 compatibility.
 * #489: Create history file with mode 0600.
 * #491: Fix issues with file name completion.
+* #494: Fix six version requirement.
 
 0.14
 ----
