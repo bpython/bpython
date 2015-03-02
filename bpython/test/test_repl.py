@@ -1,7 +1,9 @@
 import collections
 from itertools import islice
 import os
+import shutil
 import socket
+import tempfile
 from six.moves import range
 
 try:
@@ -11,7 +13,7 @@ except ImportError:
 
 from bpython._py3compat import py3
 from bpython import config, repl, cli, autocomplete
-from bpython.test import MagicIterMock, mock
+from bpython.test import MagicIterMock, mock, FixLanguageTestCase as TestCase
 
 
 def setup_config(conf):
@@ -250,6 +252,25 @@ class TestGetSource(unittest.TestCase):
         self.assertIn('dup(self)', self.repl.get_source_of_current_name())
 
 # TODO add tests for various failures without using current function
+
+
+class TestEditConfig(TestCase):
+    def setUp(self):
+        self.repl = FakeRepl()
+        self.repl.interact.confirm = lambda msg: True
+        self.repl.interact.notify = lambda msg: None
+        self.repl.config.editor = 'true'
+
+    def test_create_config(self):
+        tmp_dir = tempfile.mkdtemp()
+        try:
+            config_path = os.path.join(tmp_dir, 'newdir', 'config')
+            self.repl.config.config_path = config_path
+            self.repl.edit_config()
+            self.assertTrue(os.path.exists(config_path))
+        finally:
+            shutil.rmtree(tmp_dir)
+            self.assertFalse(os.path.exists(config_path))
 
 
 class TestRepl(unittest.TestCase):

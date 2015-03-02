@@ -1070,6 +1070,8 @@ class Repl(object):
                 try:
                     default_config = pkgutil.get_data('bpython',
                                                       'sample-config')
+                    if py3:  # py3 files need unicode
+                        default_config = default_config.decode('ascii')
                     bpython_dir, script_name = os.path.split(__file__)
                     containing_dir = os.path.dirname(
                         os.path.abspath(self.config.config_path))
