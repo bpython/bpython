@@ -25,7 +25,7 @@ import string
 from six.moves import range
 
 
-class KeyMap:
+class KeyMap(object):
 
     def __init__(self, default=''):
         self.map = {}
