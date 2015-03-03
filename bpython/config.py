@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+from __future__ import unicode_literals
+
 import os
 import sys
 import locale
@@ -277,23 +279,23 @@ def loadini(struct, configfile):
 
     # set box drawing characters
     if config.getboolean('general', 'unicode_box') and supports_box_chars():
-        struct.left_border = u'│'
-        struct.right_border = u'│'
-        struct.top_border = u'─'
-        struct.bottom_border = u'─'
-        struct.left_bottom_corner = u'└'
-        struct.right_bottom_corner = u'┘'
-        struct.left_top_corner = u'┌'
-        struct.right_top_corner = u'┐'
+        struct.left_border = '│'
+        struct.right_border = '│'
+        struct.top_border = '─'
+        struct.bottom_border = '─'
+        struct.left_bottom_corner = '└'
+        struct.right_bottom_corner = '┘'
+        struct.left_top_corner = '┌'
+        struct.right_top_corner = '┐'
     else:
-        struct.left_border = u'|'
-        struct.right_border = u'|'
-        struct.top_border = u'-'
-        struct.bottom_border = u'-'
-        struct.left_bottom_corner = u'+'
-        struct.right_bottom_corner = u'+'
-        struct.left_top_corner = u'+'
-        struct.right_top_corner = u'+'
+        struct.left_border = '|'
+        struct.right_border = '|'
+        struct.top_border = '-'
+        struct.bottom_border = '-'
+        struct.left_bottom_corner = '+'
+        struct.right_bottom_corner = '+'
+        struct.left_top_corner = '+'
+        struct.right_top_corner = '+'
 
 
 def load_theme(struct, path, colors, default_colors):
