@@ -107,10 +107,12 @@ def loadini(struct, configfile):
             'exit': '',
             'external_editor': 'F7',
             'help': 'F1',
+            'incremental_search': 'M-s',
             'last_output': 'F9',
             'left': 'C-b',
             'pastebin': 'F8',
             'reimport': 'F6',
+            'reverse_incremental_search': 'M-r',
             'right': 'C-f',
             'save': 'C-s',
             'search': 'C-o',
@@ -185,6 +187,9 @@ def loadini(struct, configfile):
     struct.toggle_file_watch_key = get_key_no_doublebind('toggle_file_watch')
     struct.undo_key = get_key_no_doublebind('undo')
     struct.reimport_key = get_key_no_doublebind('reimport')
+    struct.reverse_incremental_search_key = get_key_no_doublebind(
+        'reverse_incremental_search')
+    struct.incremental_search_key = get_key_no_doublebind('incremental_search')
     struct.up_one_line_key = get_key_no_doublebind('up_one_line')
     struct.down_one_line_key = get_key_no_doublebind('down_one_line')
     struct.cut_to_buffer_key = get_key_no_doublebind('cut_to_buffer')

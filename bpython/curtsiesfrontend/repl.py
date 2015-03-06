@@ -611,9 +611,9 @@ class Repl(BpythonRepl):
             self.on_control_d()
         elif e in ("<Esc+.>",):
             self.get_last_word()
-        elif e in ("<Esc+r>",):
+        elif e in key_dispatch[self.config.reverse_incremental_search_key]:
             self.incremental_search(reverse=True)
-        elif e in ("<Esc+s>",):
+        elif e in key_dispatch[self.config.incremental_search_key]:
             self.incremental_search()
         elif (e in ("<BACKSPACE>",) + key_dispatch[self.config.backspace_key]
               and self.incremental_search_mode):
