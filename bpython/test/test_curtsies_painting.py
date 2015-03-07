@@ -168,6 +168,7 @@ class TestCurtsiesRewindRedraw(CurtsiesPaintingTest):
         autocompletion that would happen then, but intermediate
         stages won't happen"""
         if line is not None:
+            self.repl._set_cursor_offset(len(line), update_completion=False)
             self.repl.current_line = line
         with output_to_repl(self.repl):
             self.repl.on_enter(insert_into_history=False)
