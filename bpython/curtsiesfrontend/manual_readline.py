@@ -291,13 +291,9 @@ def transpose_character_before_cursor(cursor_offset, line):
 def transpose_word_before_cursor(cursor_offset, line):
     return cursor_offset, line  # TODO Not implemented
 
+# TODO undo all changes to line: meta-r
+
 # bonus functions (not part of readline)
-
-
-@edit_keys.on('<Esc+r>')
-def delete_line(cursor_offset, line):
-    return 0, ""
-
 
 @edit_keys.on('<Esc+u>')
 def uppercase_next_word(cursor_offset, line):

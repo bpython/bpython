@@ -269,10 +269,6 @@ def loadini(struct, configfile):
                              (color_scheme_name, ))
             sys.exit(1)
 
-    # checks for valid key configuration this part still sucks
-    for key in (struct.pastebin_key, struct.save_key):
-        key_dispatch[key]
-
     # expand path of history file
     struct.hist_file = os.path.expanduser(struct.hist_file)
 
