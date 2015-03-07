@@ -1,10 +1,12 @@
-import collections
 from itertools import islice
+import collections
+import inspect
 import os
 import shutil
 import socket
 import tempfile
 from six.moves import range
+import sys
 
 try:
     import unittest2 as unittest
@@ -15,6 +17,7 @@ from bpython._py3compat import py3
 from bpython import config, repl, cli, autocomplete
 from bpython.test import MagicIterMock, mock, FixLanguageTestCase as TestCase
 
+pypy = 'PyPy' in sys.version
 
 def setup_config(conf):
     config_struct = config.Struct()
@@ -230,21 +233,25 @@ class TestGetSource(unittest.TestCase):
 
     def test_current_function(self):
         self.set_input_line('INPUTLINE')
-        self.repl.current_func = collections.MutableSet.add
-        self.assertIn("Add an element.",
+        self.repl.current_func = inspect.getsource
+        self.assertIn("text of the source code",
                       self.repl.get_source_of_current_name())
-
-        self.assert_get_source_error_for_current_function(
-            collections.defaultdict.copy, "No source code found for INPUTLINE")
-
-        self.assert_get_source_error_for_current_function(
-            collections.defaultdict, "could not find class definition")
 
         self.assert_get_source_error_for_current_function(
             [], "No source code found for INPUTLINE")
 
         self.assert_get_source_error_for_current_function(
             list.pop, "No source code found for INPUTLINE")
+
+    @unittest.skipIf(pypy, 'different errors for PyPy')
+    def test_current_function_cpython(self):
+        self.set_input_line('INPUTLINE')
+        self.assert_get_source_error_for_current_function(
+            collections.defaultdict.copy, "No source code found for INPUTLINE")
+        self.assert_get_source_error_for_current_function(
+            collections.defaultdict, "could not find class definition")
+
+
 
     def test_current_line(self):
         self.repl.interp.locals['a'] = socket.socket
