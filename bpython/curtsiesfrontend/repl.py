@@ -55,6 +55,7 @@ from curtsies.configfile_keynames import keymap as key_dispatch
 
 if not py3:
     import imp
+    import pkgutil
 
 
 logger = logging.getLogger(__name__)
@@ -231,24 +232,18 @@ class ImportLoader(object):
 
 
 if not py3:
-    class ImpImportLoader(object):
+    # Remember that pkgutil.ImpLoader is an old style class.
+    class ImpImportLoader(pkgutil.ImpLoader):
 
-        def __init__(self, watcher, file, pathname, description):
+        def __init__(self, watcher, *args):
             self.watcher = watcher
-            self.file = file
-            self.pathname = pathname
-            self.description = description
+            pkgutil.ImpLoader.__init__(self, *args)
 
         def load_module(self, name):
-            try:
-                module = imp.load_module(name, self.file, self.pathname,
-                                         self.description)
-                if hasattr(module, '__file__'):
-                    self.watcher.track_module(module.__file__)
-                return module
-            finally:
-                if self.file is not None:
-                    self.file.close()
+            module = pkgutil.ImpLoader.load_module(self, name)
+            if hasattr(module, '__file__'):
+                self.watcher.track_module(module.__file__)
+            return module
 
 
 class ImportFinder(object):
@@ -268,7 +263,7 @@ class ImportFinder(object):
             # sys.meta_path. Use imp to perform the actual importing.
             try:
                 result = imp.find_module(fullname, path)
-                return ImpImportLoader(self.watcher, *result)
+                return ImpImportLoader(self.watcher, fullname, *result)
             except ImportError:
                 return None
 
