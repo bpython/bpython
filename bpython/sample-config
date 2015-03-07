@@ -77,6 +77,8 @@
 # exit = C-d
 # external_editor = F7
 # edit_config = F3
+# reverse_incremental_search = M-r
+# incremental_search = M-s
 
 [curtsies]
 
