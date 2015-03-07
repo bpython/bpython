@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.14.2
+------
+
+Fixes:
+
+* #498: Fixed is_callable
+
 0.14.1
 ------
 
