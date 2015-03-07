@@ -205,8 +205,6 @@ def loadini(struct, configfile):
     struct.end_of_line_key = get_key_no_doublebind('end_of_line')
     struct.beginning_of_line_key = get_key_no_doublebind('beginning_of_line')
     struct.transpose_chars_key = get_key_no_doublebind('transpose_chars')
-    struct.clear_line_key = get_key_no_doublebind('clear_line')
-    struct.clear_screen_key = get_key_no_doublebind('clear_screen')
     struct.exit_key = get_key_no_doublebind('exit')
     struct.last_output_key = get_key_no_doublebind('last_output')
     struct.edit_config_key = get_key_no_doublebind('edit_config')
