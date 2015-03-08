@@ -562,7 +562,7 @@ class Repl(BpythonRepl):
                 self.startup()
             except IOError as e:
                 self.status_bar.message(
-                    _('Executing PYTHONSTARTUP failed: %s') % (str(e)))
+                    _('Executing PYTHONSTARTUP failed: %s') % (e, ))
 
         elif isinstance(e, bpythonevents.UndoEvent):
             self.undo(n=e.n)
@@ -1532,7 +1532,7 @@ class Repl(BpythonRepl):
         try:
             source = self.get_source_of_current_name()
         except SourceNotFound as e:
-            self.status_bar.message(str(e))
+            self.status_bar.message('%s' % (e, ))
         else:
             if self.config.highlight_show_source:
                 source = format(PythonLexer().get_tokens(source),
