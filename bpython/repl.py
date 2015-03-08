@@ -717,8 +717,7 @@ class Repl(object):
             with open(fn, mode) as f:
                 f.write(s)
         except IOError as e:
-            self.interact.notify(_("Error writing file '%s': %s") % (fn,
-                                                                     str(e)))
+            self.interact.notify(_("Error writing file '%s': %s") % (fn, e))
         else:
             self.interact.notify(_('Saved to %s.') % (fn, ))
 
@@ -778,7 +777,7 @@ class Repl(object):
             response = requests.post(url, data=payload, verify=True)
             response.raise_for_status()
         except requests.exceptions.RequestException as exc:
-            self.interact.notify(_('Upload failed: %s') % (str(exc), ))
+            self.interact.notify(_('Upload failed: %s') % (exc, ))
             return
 
         self.prev_pastebin_content = s
@@ -866,7 +865,7 @@ class Repl(object):
             self.rl_history.append_reload_and_write(s, self.config.hist_file,
                                                     getpreferredencoding())
         except RuntimeError as e:
-            self.interact.notify(str(e))
+            self.interact.notify(u"%s" % (e, ))
 
     def prompt_undo(self):
         """Returns how many lines to undo, 0 means don't undo"""
@@ -1081,7 +1080,7 @@ class Repl(object):
                         f.write(default_config)
                 except (IOError, OSError) as e:
                     self.interact.notify(_("Error writing file '%s': %s") %
-                                         (self.config.config.path, str(e)))
+                                         (self.config.config.path, e))
                     return False
             else:
                 return False
