@@ -245,9 +245,6 @@ if not py3:
                 self.watcher.track_module(module.__file__)
             return module
 
-        def get_data(self, pathname):
-            return open(pathname, "rb").read()
-
 
 class ImportFinder(object):
 
