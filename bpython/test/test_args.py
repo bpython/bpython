@@ -35,6 +35,22 @@ class TestExecArgs(unittest.TestCase):
 
             self.assertEquals(stderr.strip(), f.name)
 
+    def test_exec_module_object(self):
+        with tempfile.NamedTemporaryFile(mode="w") as f:
+            f.write(dedent("""\
+                import sys
+                a = 1
+                sys.stderr.write(str(sys.modules[__name__].a))
+                sys.stderr.flush()"""))
+            f.flush()
+            p = subprocess.Popen(
+                [sys.executable, "-m", "bpython.curtsies", f.name],
+                stderr=subprocess.PIPE,
+                universal_newlines=True)
+            (_, stderr) = p.communicate()
+
+            self.assertEquals(stderr.strip(), str(1))
+
 
 class TestParse(TestCase):
 
