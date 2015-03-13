@@ -594,12 +594,11 @@ class Repl(BpythonRepl):
         if self.stdin.has_focus:
             return self.stdin.process_event(e)
 
-        if (e in ("<RIGHT>", '<Ctrl-f>') and
+        if (e in ("<RIGHT>", '<Ctrl-f>', '<Ctrl-e>') and
                 self.config.curtsies_right_arrow_completion and
                 self.cursor_offset == len(self.current_line)):
             self.current_line += self.current_suggestion
             self.cursor_offset = len(self.current_line)
-
         elif e in ("<UP>",) + key_dispatch[self.config.up_one_line_key]:
             self.up_one_line()
         elif e in ("<DOWN>",) + key_dispatch[self.config.down_one_line_key]:
