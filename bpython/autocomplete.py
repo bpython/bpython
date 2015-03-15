@@ -557,4 +557,4 @@ def _callable_postfix(value, word):
 
 
 def method_match(word, size, text):
-    return word[:size] == text
+    return text in word
