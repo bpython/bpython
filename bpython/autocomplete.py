@@ -33,7 +33,6 @@ import os
 import re
 import rlcompleter
 import sys
-from types import InstanceType, ClassType
 from six.moves import range, builtins
 from six import string_types, iteritems
 
@@ -42,6 +41,9 @@ from bpython import importcompletion
 from bpython import line as lineparts
 from bpython._py3compat import py3, try_decode
 from bpython.lazyre import LazyReCompile
+
+if not py3:
+    from types import InstanceType, ClassType
 
 
 # Autocomplete modes
@@ -540,7 +542,7 @@ def attr_lookup(obj, expr, attr):
                 words.remove('__abstractmethods__')
             except ValueError:
                 pass
-    if isinstance(obj, (InstanceType, ClassType)):
+    if not py3 and isinstance(obj, (InstanceType, ClassType)):
         # Account for the __dict__ in an old-style class.
         words.append('__dict__')
 
