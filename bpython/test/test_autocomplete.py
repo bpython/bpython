@@ -215,12 +215,41 @@ class Foo(object):
         pass
 
 
+class OldStyleFoo:
+    a = 10
+
+    def __init__(self):
+        self.b = 20
+
+    def method(self, x):
+        pass
+
+
+skip_old_style = unittest.skipIf(py3,
+                                 'In Python 3 there are no old style classes')
+
+
 class TestAttrCompletion(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.com = autocomplete.AttrCompletion()
 
     def test_att_matches_found_on_instance(self):
-        com = autocomplete.AttrCompletion()
-        self.assertSetEqual(com.matches(2, 'a.', locals_={'a': Foo()}),
+        self.assertSetEqual(self.com.matches(2, 'a.', locals_={'a': Foo()}),
                             set(['a.method', 'a.a', 'a.b']))
+
+    @skip_old_style
+    def test_att_matches_found_on_old_style_instance(self):
+        self.assertSetEqual(self.com.matches(2, 'a.',
+                                             locals_={'a': OldStyleFoo()}),
+                            {'a.method', 'a.a', 'a.b'})
+        self.assertIn(u'a.__dict__',
+                      self.com.matches(3, 'a._', locals_={'a': OldStyleFoo()}))
+
+    @skip_old_style
+    def test_att_matches_found_on_old_style_class_object(self):
+        self.assertIn(u'A.__dict__',
+                      self.com.matches(3, 'A._', locals_={'A': OldStyleFoo}))
 
 
 class TestMagicMethodCompletion(unittest.TestCase):
