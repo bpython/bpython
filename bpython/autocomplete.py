@@ -33,6 +33,7 @@ import os
 import re
 import rlcompleter
 import sys
+from types import InstanceType, ClassType
 from six.moves import range, builtins
 from six import string_types, iteritems
 
@@ -539,6 +540,9 @@ def attr_lookup(obj, expr, attr):
                 words.remove('__abstractmethods__')
             except ValueError:
                 pass
+    if isinstance(obj, (InstanceType, ClassType)):
+        # Account for the __dict__ in an old-style class.
+        words.append('__dict__')
 
     matches = []
     n = len(attr)
