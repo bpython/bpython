@@ -179,7 +179,7 @@ class TestCurtsiesReplFilenameCompletion(TestCase):
     def test_list_win_visible_match_selected_on_tab_multiple_options(self):
         self.repl._current_line = " './'"
         self.repl._cursor_offset = 2
-        with mock.patch('bpython.autocomplete.get_completer_bpython') as m:
+        with mock.patch('bpython.autocomplete.get_completer') as m:
             m.return_value = (['./abc', './abcd', './bcd'],
                               autocomplete.FilenameCompletion())
             self.repl.update_completion()
@@ -191,7 +191,7 @@ class TestCurtsiesReplFilenameCompletion(TestCase):
     def test_list_win_not_visible_and_cseq_if_cseq(self):
         self.repl._current_line = " './a'"
         self.repl._cursor_offset = 5
-        with mock.patch('bpython.autocomplete.get_completer_bpython') as m:
+        with mock.patch('bpython.autocomplete.get_completer') as m:
             m.return_value = (['./abcd', './abce'],
                               autocomplete.FilenameCompletion())
             self.repl.update_completion()
@@ -204,7 +204,7 @@ class TestCurtsiesReplFilenameCompletion(TestCase):
     def test_list_win_not_visible_and_match_selected_if_one_option(self):
         self.repl._current_line = " './a'"
         self.repl._cursor_offset = 5
-        with mock.patch('bpython.autocomplete.get_completer_bpython') as m:
+        with mock.patch('bpython.autocomplete.get_completer') as m:
             m.return_value = (['./abcd'], autocomplete.FilenameCompletion())
             self.repl.update_completion()
             self.assertEqual(self.repl.list_win_visible, False)
