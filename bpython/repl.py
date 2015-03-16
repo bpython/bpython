@@ -384,6 +384,9 @@ class Repl(object):
             except EnvironmentError:
                 pass
 
+        self.completers = autocomplete.get_default_completer(
+            config.autocomplete_mode)
+
     @property
     def ps1(self):
         try:
@@ -595,7 +598,8 @@ class Repl(object):
 
         self.set_docstring()
 
-        matches, completer = autocomplete.get_completer_bpython(
+        matches, completer = autocomplete.get_completer(
+            self.completers,
             cursor_offset=self.cursor_offset,
             line=self.current_line,
             locals_=self.interp.locals,
