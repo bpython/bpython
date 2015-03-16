@@ -332,7 +332,8 @@ class TestRepl(unittest.TestCase):
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
         self.assertEqual(self.repl.matches_iter.matches,
-                         ['UnboundLocalError(', '__doc__'])
+                         ['UnboundLocalError(', '__doc__'] if not py3 else
+                         ['ChildProcessError(', 'UnboundLocalError(', '__doc__'])
 
     # 2. Attribute tests
     def test_simple_attribute_complete(self):
