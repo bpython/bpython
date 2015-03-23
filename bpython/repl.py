@@ -24,13 +24,11 @@
 # THE SOFTWARE.
 
 import code
-import errno
 import inspect
 import io
 import os
 import pkgutil
 import pydoc
-import requests
 import shlex
 import subprocess
 import sys
@@ -38,12 +36,9 @@ import tempfile
 import textwrap
 import time
 import traceback
-import unicodedata
 from itertools import takewhile
 from locale import getpreferredencoding
-from string import Template
 from six import itervalues
-from six.moves.urllib_parse import quote as urlquote, urljoin, urlparse
 
 from pygments.token import Token
 
@@ -53,6 +48,7 @@ from bpython._py3compat import PythonLexer, py3, prepare_for_exec
 from bpython.clipboard import get_clipboard, CopyFailed
 from bpython.formatter import Parenthesis
 from bpython.history import History
+from bpython.paste import PasteHelper, PastePinnwand, PasteFailed
 from bpython.translations import _, ngettext
 
 
@@ -386,6 +382,13 @@ class Repl(object):
 
         self.completers = autocomplete.get_default_completer(
             config.autocomplete_mode)
+        if self.config.pastebin_helper:
+            self.paster = PasteHelper(self.config.pastebin_helper)
+        else:
+            self.paster = PastePinnwand(self.config.pastebin_url,
+                                        self.config.pastebin_expiry,
+                                        self.config.pastebin_show_url,
+                                        self.config.pastebin_removal_url)
 
     @property
     def ps1(self):
@@ -761,91 +764,24 @@ class Repl(object):
                                    self.prev_removal_url), 10)
             return self.prev_pastebin_url
 
-        if self.config.pastebin_helper:
-            return self.do_pastebin_helper(s)
-        else:
-            return self.do_pastebin_json(s)
-
-    def do_pastebin_json(self, s):
-        """Upload to pastebin via json interface."""
-
-        url = urljoin(self.config.pastebin_url, '/json/new')
-        payload = {
-            'code': s,
-            'lexer': 'pycon',
-            'expiry': self.config.pastebin_expiry
-        }
 
         self.interact.notify(_('Posting data to pastebin...'))
         try:
-            response = requests.post(url, data=payload, verify=True)
-            response.raise_for_status()
-        except requests.exceptions.RequestException as exc:
-            self.interact.notify(_('Upload failed: %s') % (exc, ))
+            paste_url, removal_url = self.paster.paste(s)
+        except PasteFailed as e:
+            self.interact.notify(_('Upload failed: %s') % e)
             return
 
         self.prev_pastebin_content = s
-        data = response.json()
-
-        paste_url_template = Template(self.config.pastebin_show_url)
-        paste_id = urlquote(data['paste_id'])
-        paste_url = paste_url_template.safe_substitute(paste_id=paste_id)
-
-        removal_url_template = Template(self.config.pastebin_removal_url)
-        removal_id = urlquote(data['removal_id'])
-        removal_url = removal_url_template.safe_substitute(
-            removal_id=removal_id)
-
         self.prev_pastebin_url = paste_url
         self.prev_removal_url = removal_url
-        self.interact.notify(_('Pastebin URL: %s - Removal URL: %s') %
-                             (paste_url, removal_url), 10)
 
-        return paste_url
-
-    def do_pastebin_helper(self, s):
-        """Call out to helper program for pastebin upload."""
-        self.interact.notify(_('Posting data to pastebin...'))
-
-        try:
-            helper = subprocess.Popen('',
-                                      executable=self.config.pastebin_helper,
-                                      stdin=subprocess.PIPE,
-                                      stdout=subprocess.PIPE)
-            helper.stdin.write(s.encode(getpreferredencoding()))
-            output = helper.communicate()[0].decode(getpreferredencoding())
-            paste_url = output.split()[0]
-        except OSError as e:
-            if e.errno == errno.ENOENT:
-                self.interact.notify(_('Upload failed: '
-                                       'Helper program not found.'))
-            else:
-                self.interact.notify(_('Upload failed: '
-                                       'Helper program could not be run.'))
-            return
-
-        if helper.returncode != 0:
-            self.interact.notify(_('Upload failed: '
-                                   'Helper program returned non-zero exit '
-                                   'status %d.' % (helper.returncode, )))
-            return
-
-        if not paste_url:
-            self.interact.notify(_('Upload failed: '
-                                   'No output from helper program.'))
-            return
+        if removal_url is not None:
+            self.interact.notify(_('Pastebin URL: %s - Removal URL: %s') %
+                                 (paste_url, removal_url), 10)
         else:
-            parsed_url = urlparse(paste_url)
-            if (not parsed_url.scheme
-                    or any(unicodedata.category(c) == 'Cc'
-                           for c in paste_url)):
-                self.interact.notify(_("Upload failed: "
-                                       "Failed to recognize the helper "
-                                       "program's output as an URL."))
-                return
+            self.interact.notify(_('Pastebin URL: %s') % (paste_url, ), 10)
 
-        self.prev_pastebin_content = s
-        self.interact.notify(_('Pastebin URL: %s') % (paste_url, ), 10)
         return paste_url
 
     def push(self, s, insert_into_history=True):
