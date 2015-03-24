@@ -37,7 +37,6 @@ import textwrap
 import time
 import traceback
 from itertools import takewhile
-from locale import getpreferredencoding
 from six import itervalues
 
 from pygments.token import Token
@@ -46,6 +45,7 @@ from bpython import autocomplete
 from bpython import inspection
 from bpython._py3compat import PythonLexer, py3, prepare_for_exec
 from bpython.clipboard import get_clipboard, CopyFailed
+from bpython.config import getpreferredencoding
 from bpython.formatter import Parenthesis
 from bpython.history import History
 from bpython.paste import PasteHelper, PastePinnwand, PasteFailed
