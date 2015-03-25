@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import linecache
 import sys
 
 try:
@@ -20,11 +21,7 @@ pypy = 'PyPy' in sys.version
 def _last_console_filename():
     """Returns the last 'filename' used for console input
     (as will be displayed in a traceback)."""
-    import linecache
-    try:
-        return '<bpython-input-%s>' % (len(linecache.cache.bpython_history) - 1)
-    except AttributeError:
-        return '<input>'
+    return '<bpython-input-%s>' % (len(linecache.cache.bpython_history) - 1)
 
 class TestInterpreter(unittest.TestCase):
     def test_syntaxerror(self):
