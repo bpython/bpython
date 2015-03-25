@@ -47,7 +47,7 @@ from bpython._py3compat import PythonLexer, py3, prepare_for_exec
 from bpython.clipboard import get_clipboard, CopyFailed
 from bpython.config import getpreferredencoding
 from bpython.formatter import Parenthesis
-from bpython.history import History
+from bpython.history import History, filename_for_console_input
 from bpython.paste import PasteHelper, PastePinnwand, PasteFailed
 from bpython.translations import _, ngettext
 
@@ -94,7 +94,7 @@ class Interpreter(code.InteractiveInterpreter):
     def reset_running_time(self):
         self.running_time = 0
 
-    def runsource(self, source, filename='<input>', symbol='single',
+    def runsource(self, source, filename=None, symbol='single',
                   encode=True):
         """Execute Python code.
 
@@ -104,6 +104,8 @@ class Interpreter(code.InteractiveInterpreter):
         if not py3 and encode:
             source = u'# coding: %s\n%s' % (self.encoding, source)
             source = source.encode(self.encoding)
+        if filename is None:
+            filename = filename_for_console_input(source)
         with self.timer:
             return code.InteractiveInterpreter.runsource(self, source,
                                                          filename, symbol)

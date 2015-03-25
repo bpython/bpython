@@ -17,6 +17,14 @@ from bpython.test import mock
 
 pypy = 'PyPy' in sys.version
 
+def _last_console_filename():
+    """Returns the last 'filename' used for console input
+    (as will be displayed in a traceback)."""
+    import linecache
+    try:
+        return '<bpython-input-%s>' % (len(linecache.cache.bpython_history) - 1)
+    except AttributeError:
+        return '<input>'
 
 class TestInterpreter(unittest.TestCase):
     def test_syntaxerror(self):
@@ -30,11 +38,11 @@ class TestInterpreter(unittest.TestCase):
         i.runsource('1.1.1.1')
 
         if pypy:
-            expected = '  File ' + green('"<input>"') + ', line ' + \
+            expected = '  File ' + green('"%s"' % _last_console_filename()) + ', line ' + \
                 bold(magenta('1')) + '\n    1.1.1.1\n      ^\n' + \
                 bold(red('SyntaxError')) + ': ' + cyan('invalid syntax') + '\n'
         else:
-            expected = '  File ' + green('"<input>"') + ', line ' + \
+            expected = '  File ' + green('"%s"' % _last_console_filename()) + ', line ' + \
                 bold(magenta('1')) + '\n    1.1.1.1\n        ^\n' + \
                 bold(red('SyntaxError')) + ': ' + cyan('invalid syntax') + '\n'
 
@@ -56,7 +64,7 @@ class TestInterpreter(unittest.TestCase):
         def g():
             return f()
 
-        i.runsource('g()')
+        i.runsource('g()', encode=False)
 
         if pypy:
             global_not_found = "global name 'g' is not defined"
@@ -64,8 +72,8 @@ class TestInterpreter(unittest.TestCase):
             global_not_found = "name 'g' is not defined"
 
         expected = 'Traceback (most recent call last):\n  File ' + \
-            green('"<input>"') + ', line ' + bold(magenta('1')) + ', in ' + \
-            cyan('<module>') + '\n' + bold(red('NameError')) + ': ' + \
+            green('"%s"' % _last_console_filename()) + ', line ' + bold(magenta('1')) + ', in ' + \
+            cyan('<module>') + '\n    g()\n' + bold(red('NameError')) + ': ' + \
             cyan(global_not_found) + '\n'
 
         self.assertMultiLineEqual(str(plain('').join(a)), str(expected))
@@ -106,3 +114,11 @@ class TestInterpreter(unittest.TestCase):
         i.runsource("a = u'\xfe'", encode=True)
         self.assertIsInstance(i.locals['a'], type(u''))
         self.assertEqual(i.locals['a'], u"\xfe")
+
+    def test_getsource_works_on_interactively_defined_functions(self):
+        source = 'def foo(x):\n    return x + 1\n'
+        i = interpreter.Interp()
+        i.runsource(source)
+        import inspect
+        inspected_source = inspect.getsource(i.locals['foo'])
+        self.assertEquals(inspected_source, source)
