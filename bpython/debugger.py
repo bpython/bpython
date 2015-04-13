@@ -4,7 +4,7 @@
 
 """
 Debugger factory. Set PYTHON_DEBUGGER to a module path that has a post_mortem
-function in it. Defaults to pdb. This allows alternate debuggers to be used,
+function in it. Defaults to bpdb. This allows alternate debuggers to be used,
 such as pycopia.debugger. :)
 """
 from __future__ import absolute_import

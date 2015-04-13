@@ -38,6 +38,11 @@ from bpython.translations import _
 from bpython._py3compat import py3
 from bpython.pager import get_pager_command
 
+try:
+    from bpython import debugger
+except ImportError as err:
+    debugger = None
+
 from bpython.curtsiesfrontend import replpainter as paint
 from bpython.curtsiesfrontend import sitefix
 from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
@@ -631,6 +636,8 @@ class Repl(BpythonRepl):
             self.clear_modules_and_reevaluate()
         elif e in key_dispatch[self.config.toggle_file_watch_key]:
             return self.toggle_file_watch()
+        elif e in key_dispatch[self.config.debug_key]:
+            self.toggle_auto_debug()
         elif e in key_dispatch[self.config.clear_screen_key]:
             self.request_paint_to_clear_screen = True
         elif e in key_dispatch[self.config.show_source_key]:
@@ -870,6 +877,16 @@ class Repl(BpythonRepl):
         else:
             self.status_bar.message(_('Auto-reloading not available because '
                                       'watchdog not installed.'))
+
+    def toggle_auto_debug(self):
+        if debugger is None:
+            self.status_bar.message(
+                _('No debugger, check your PYTHON_DEBUGGER value.\n'))
+            return
+        if sys.excepthook is not debugger_hook:
+            sys.excepthook = debugger_hook
+        else:
+            sys.excepthook = sys.__excepthook__
 
     # Handler Helpers
     def add_normal_character(self, char):
@@ -1600,6 +1617,13 @@ def compress_paste_event(paste_event):
         return event
     else:
         return None
+
+
+def debugger_hook(exc, value, tb):
+    if exc in (SyntaxError, IndentationError, KeyboardInterrupt):
+        sys.__excepthook__(exc, value, tb)
+        return
+    debugger.post_mortem(tb, exc, value)
 
 
 def just_simple_events(event_list):

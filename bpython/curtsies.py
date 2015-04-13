@@ -20,6 +20,7 @@ from bpython.importcompletion import find_iterator
 from bpython.curtsiesfrontend import events as bpythonevents
 from bpython import inspection
 from bpython.repl import extract_exit_value
+from bpython.curtsiesfrontend.repl import debugger_hook
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,8 @@ def main(args=None, locals_=None, banner=None):
         logging.getLogger('curtsies').propagate = False
         logging.getLogger('bpython').addHandler(handler)
         logging.getLogger('bpython').propagate = False
+    if options.debugger:
+        sys.excepthook = debugger_hook
 
     interp = None
     paste = None
