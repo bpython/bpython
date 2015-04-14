@@ -80,6 +80,7 @@ Edit the current line ({config.edit_current_block_key}) or the entire session ({
 Save sessions ({config.save_key}) or post them to pastebins ({config.pastebin_key})! Current pastebin helper: {config.pastebin_helper}
 Reload all modules and rerun session ({config.reimport_key}) to test out changes to a module.
 Toggle auto-reload mode ({config.toggle_file_watch_key}) to re-execute the current session when a module you've imported is modified.
+Toggle auto-debug mode ({config.debug_key}) to trigger a debugger whenever an exception is raised.
 
 bpython -i your_script.py runs a file in interactive mode
 bpython -t your_script.py pastes the contents of a file into the session
@@ -881,12 +882,16 @@ class Repl(BpythonRepl):
     def toggle_auto_debug(self):
         if debugger is None:
             self.status_bar.message(
-                _('No debugger, check your PYTHON_DEBUGGER value.\n'))
+                _('No debugger, check your PYTHON_DEBUGGER value.'))
             return
         if sys.excepthook is not debugger_hook:
+            self.status_bar.message(
+                _('Auto-debug activated'))
             sys.excepthook = debugger_hook
         else:
             sys.excepthook = sys.__excepthook__
+            self.status_bar.message(
+                _('Auto-debug deactivated'))
 
     # Handler Helpers
     def add_normal_character(self, char):
