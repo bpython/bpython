@@ -20,13 +20,18 @@ from bpython.importcompletion import find_iterator
 from bpython.curtsiesfrontend import events as bpythonevents
 from bpython import inspection
 from bpython.repl import extract_exit_value
-from bpython.curtsiesfrontend.repl import debugger_hook
+
+try:
+    from bpython import debugger
+except ImportError as err:
+    debugger = None
 
 logger = logging.getLogger(__name__)
 
-
-repl = None  # global for `from bpython.curtsies import repl`
-# WARNING Will be a problem if more than one repl is ever instantiated this way
+# More than one repl may exist, but input_generator and window are global
+repls = []
+input_generator = None
+window = None
 
 
 def main(args=None, locals_=None, banner=None):
@@ -51,8 +56,6 @@ def main(args=None, locals_=None, banner=None):
         logging.getLogger('curtsies').propagate = False
         logging.getLogger('bpython').addHandler(handler)
         logging.getLogger('bpython').propagate = False
-    if options.debugger:
-        sys.excepthook = debugger_hook
 
     interp = None
     paste = None
@@ -81,23 +84,31 @@ def main(args=None, locals_=None, banner=None):
     print(bpargs.version_banner())
     try:
         exit_value = mainloop(config, locals_, banner, interp, paste,
-                              interactive=(not exec_args))
+                              interactive=(not exec_args),
+                              debugger=options.debugger)
     except (SystemExitFromCodeGreenlet, SystemExit) as e:
         exit_value = e.args
     return extract_exit_value(exit_value)
 
 
 def mainloop(config, locals_, banner, interp=None, paste=None,
-             interactive=True):
-    with curtsies.input.Input(keynames='curtsies', sigint_event=True) as \
-            input_generator:
-        with curtsies.window.CursorAwareWindow(
-                sys.stdout,
-                sys.stdin,
-                keep_last_line=True,
-                hide_cursor=False,
-                extra_bytes_callback=input_generator.unget_bytes) as window:
+             interactive=True, debugger=False):
+    global input_generator
+    global window
 
+    if input_generator is None:
+        input_generator = curtsies.input.Input(keynames='curtsies',
+                                               sigint_event=True)
+    if window is None:
+        window = curtsies.window.CursorAwareWindow(
+            sys.stdout,
+            sys.stdin,
+            keep_last_line=True,
+            hide_cursor=False,
+            extra_bytes_callback=input_generator.unget_bytes)
+
+    with input_generator:
+        with window:
             request_refresh = input_generator.event_trigger(
                 bpythonevents.RefreshRequestEvent)
             schedule_refresh = input_generator.scheduled_event_trigger(
@@ -118,8 +129,6 @@ def mainloop(config, locals_, banner, interp=None, paste=None,
                 window.__enter__()
                 interrupting_refresh()
 
-            # global for easy introspection `from bpython.curtsies import repl`
-            global repl
             with Repl(config=config,
                       locals_=locals_,
                       request_refresh=request_refresh,
@@ -134,6 +143,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None,
                       orig_tcattrs=input_generator.original_stty,
                       on_suspend=on_suspend,
                       after_suspend=after_suspend) as repl:
+                repls.append(repl)
                 repl.height, repl.width = window.t.height, window.t.width
 
                 def process_event(e):
