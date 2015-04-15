@@ -91,16 +91,46 @@ def main(args=None, locals_=None, banner=None):
     return extract_exit_value(exit_value)
 
 
+class MultiUserCursorAwareWindow(curtsies.window.CursorAwareWindow):
+    """Window may be used by multiple Repls"""
+    def __enter__(self):
+        if not hasattr(self, '_users'):
+            self._users = 0
+        if self._users == 0:
+            curtsies.window.CursorAwareWindow.__enter__(self)
+        self._users += 1
+
+    def __exit__(self, *args):
+        self._users -= 1
+        if self._users == 0:
+            curtsies.window.CursorAwareWindow.__exit__(self, *args)
+
+
+class MultiUserInput(curtsies.input.Input):
+    """Input may be used by multiple Repls"""
+    def __enter__(self):
+        if not hasattr(self, '_users'):
+            self._users = 0
+        if self._users == 0:
+            curtsies.input.Input.__enter__(self)
+        self._users += 1
+
+    def __exit__(self, *args):
+        self._users -= 1
+        if self._users == 0:
+            curtsies.input.Input.__exit__(self, *args)
+
+
 def mainloop(config, locals_, banner, interp=None, paste=None,
              interactive=True, debugger=False):
     global input_generator
     global window
 
     if input_generator is None:
-        input_generator = curtsies.input.Input(keynames='curtsies',
-                                               sigint_event=True)
+        input_generator = MultiUserInput(keynames='curtsies',
+                                         sigint_event=True)
     if window is None:
-        window = curtsies.window.CursorAwareWindow(
+        window = MultiUserCursorAwareWindow(
             sys.stdout,
             sys.stdin,
             keep_last_line=True,
