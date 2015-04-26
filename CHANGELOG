@@ -8,6 +8,8 @@ Fixes:
 
 * #498: Fixed is_callable
 * #509: Fixed fcntl usage.
+* #523, #524: Fix conditional dependencies for SNI support again.
+* Fix binary name of bpdb.
 
 0.14.1
 ------
