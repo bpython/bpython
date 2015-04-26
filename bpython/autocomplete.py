@@ -42,6 +42,9 @@ from bpython import line as lineparts
 from bpython._py3compat import py3, try_decode
 from bpython.lazyre import LazyReCompile
 
+if not py3:
+    from types import InstanceType, ClassType
+
 
 # Autocomplete modes
 SIMPLE = 'simple'
@@ -68,11 +71,32 @@ def after_last_dot(name):
     return name.rstrip('.').rsplit('.')[-1]
 
 
+def method_match_simple(word, size, text):
+    return word[:size] == text
+
+
+def method_match_substring(word, size, text):
+    return text in word
+
+
+def method_match_fuzzy(word, size, text):
+    s = r'.*%s.*' % '.*'.join(list(text))
+    return re.search(s, word)
+
+
+MODES_MAP = {
+    SIMPLE: method_match_simple,
+    SUBSTRING: method_match_substring,
+    FUZZY: method_match_fuzzy
+}
+
+
 class BaseCompletionType(object):
     """Describes different completion types"""
 
-    def __init__(self, shown_before_tab=True):
+    def __init__(self, shown_before_tab=True, mode=SIMPLE):
         self._shown_before_tab = shown_before_tab
+        self.method_match = MODES_MAP[mode]
 
     def matches(self, cursor_offset, line, **kwargs):
         """Returns a list of possible matches given a line and cursor, or None
@@ -112,17 +136,20 @@ class BaseCompletionType(object):
         once that has happened."""
         return self._shown_before_tab
 
+    def method_match(self, word, size, text):
+        return word[:size] == text
+
 
 class CumulativeCompleter(BaseCompletionType):
     """Returns combined matches from several completers"""
 
-    def __init__(self, completers):
+    def __init__(self, completers, mode=SIMPLE):
         if not completers:
             raise ValueError(
                 "CumulativeCompleter requires at least one completer")
         self._completers = completers
 
-        super(CumulativeCompleter, self).__init__(True)
+        super(CumulativeCompleter, self).__init__(True, mode)
 
     def locate(self, current_offset, line):
         return self._completers[0].locate(current_offset, line)
@@ -158,8 +185,8 @@ class ImportCompletion(BaseCompletionType):
 
 class FilenameCompletion(BaseCompletionType):
 
-    def __init__(self):
-        super(FilenameCompletion, self).__init__(False)
+    def __init__(self, mode=SIMPLE):
+        super(FilenameCompletion, self).__init__(False, mode)
 
     if sys.version_info[:2] >= (3, 4):
         def safe_glob(self, pathname):
@@ -199,6 +226,9 @@ class FilenameCompletion(BaseCompletionType):
             return filename
 
 
+attr_matches_re = LazyReCompile(r"(\w+(\.\w+)*)\.(\w*)")
+
+
 class AttrCompletion(BaseCompletionType):
 
     def matches(self, cursor_offset, line, **kwargs):
@@ -222,7 +252,7 @@ class AttrCompletion(BaseCompletionType):
                 break
         methodtext = text[-i:]
         matches = set(''.join([text[:-i], m])
-                      for m in attr_matches(methodtext, locals_))
+                      for m in self.attr_matches(methodtext, locals_))
 
         # TODO add open paren for methods via _callable_prefix (or decide not
         # to) unless the first character is a _ filter out all attributes
@@ -237,6 +267,55 @@ class AttrCompletion(BaseCompletionType):
 
     def format(self, word):
         return after_last_dot(word)
+
+    def attr_matches(self, text, namespace):
+        """Taken from rlcompleter.py and bent to my will.
+        """
+
+        # Gna, Py 2.6's rlcompleter searches for __call__ inside the
+        # instance instead of the type, so we monkeypatch to prevent
+        # side-effects (__getattr__/__getattribute__)
+        m = attr_matches_re.match(text)
+        if not m:
+            return []
+
+        expr, attr = m.group(1, 3)
+        if expr.isdigit():
+            # Special case: float literal, using attrs here will result in
+            # a SyntaxError
+            return []
+        try:
+            obj = safe_eval(expr, namespace)
+        except EvaluationError:
+            return []
+        with inspection.AttrCleaner(obj):
+            matches = self.attr_lookup(obj, expr, attr)
+        return matches
+
+    def attr_lookup(self, obj, expr, attr):
+        """Second half of original attr_matches method factored out so it can
+        be wrapped in a safe try/finally block in case anything bad happens to
+        restore the original __getattribute__ method."""
+        words = dir(obj)
+        if hasattr(obj, '__class__'):
+            words.append('__class__')
+            words = words + rlcompleter.get_class_members(obj.__class__)
+            if not isinstance(obj.__class__, abc.ABCMeta):
+                try:
+                    words.remove('__abstractmethods__')
+                except ValueError:
+                    pass
+
+        if not py3 and isinstance(obj, (InstanceType, ClassType)):
+            # Account for the __dict__ in an old-style class.
+            words.append('__dict__')
+
+        matches = []
+        n = len(attr)
+        for word in words:
+            if self.method_match(word, n, attr) and word != "__builtins__":
+                matches.append("%s.%s" % (expr, word))
+        return matches
 
 
 class DictKeyCompletion(BaseCompletionType):
@@ -306,11 +385,11 @@ class GlobalCompletion(BaseCompletionType):
         matches = set()
         n = len(text)
         for word in KEYWORDS:
-            if method_match(word, n, text):
+            if self.method_match(word, n, text):
                 matches.add(word)
         for nspace in (builtins.__dict__, locals_):
             for word, val in iteritems(nspace):
-                if method_match(word, n, text) and word != "__builtins__":
+                if self.method_match(word, n, text) and word != "__builtins__":
                     word = try_decode(word, 'ascii')
                     # if identifier isn't ascii, don't complete (syntax error)
                     if word is None:
@@ -460,28 +539,31 @@ def get_completer(completers, cursor_offset, line, **kwargs):
     """
 
     for completer in completers:
-        matches = completer.matches(
-            cursor_offset, line, **kwargs)
+        matches = completer.matches(cursor_offset, line, **kwargs)
         if matches is not None:
             return sorted(matches), (completer if matches else None)
     return [], None
 
 
-BPYTHON_COMPLETER = (
-    DictKeyCompletion(),
-    StringLiteralAttrCompletion(),
-    ImportCompletion(),
-    FilenameCompletion(),
-    MagicMethodCompletion(),
-    MultilineJediCompletion(),
-    GlobalCompletion(),
-    CumulativeCompleter((AttrCompletion(), ParameterNameCompletion()))
-)
+def get_default_completer(mode=SIMPLE):
+    return (
+        DictKeyCompletion(mode=mode),
+        StringLiteralAttrCompletion(mode=mode),
+        ImportCompletion(mode=mode),
+        FilenameCompletion(mode=mode),
+        MagicMethodCompletion(mode=mode),
+        MultilineJediCompletion(mode=mode),
+        GlobalCompletion(mode=mode),
+        CumulativeCompleter((AttrCompletion(mode=mode),
+                             ParameterNameCompletion(mode=mode)),
+                            mode=mode)
+    )
 
 
 def get_completer_bpython(cursor_offset, line, **kwargs):
     """"""
-    return get_completer(BPYTHON_COMPLETER, cursor_offset, line, **kwargs)
+    return get_completer(get_default_completer(),
+                         cursor_offset, line, **kwargs)
 
 
 class EvaluationError(Exception):
@@ -498,63 +580,9 @@ def safe_eval(expr, namespace):
         raise EvaluationError
 
 
-attr_matches_re = LazyReCompile(r"(\w+(\.\w+)*)\.(\w*)")
-
-
-def attr_matches(text, namespace):
-    """Taken from rlcompleter.py and bent to my will.
-    """
-
-    # Gna, Py 2.6's rlcompleter searches for __call__ inside the
-    # instance instead of the type, so we monkeypatch to prevent
-    # side-effects (__getattr__/__getattribute__)
-    m = attr_matches_re.match(text)
-    if not m:
-        return []
-
-    expr, attr = m.group(1, 3)
-    if expr.isdigit():
-        # Special case: float literal, using attrs here will result in
-        # a SyntaxError
-        return []
-    try:
-        obj = safe_eval(expr, namespace)
-    except EvaluationError:
-        return []
-    with inspection.AttrCleaner(obj):
-        matches = attr_lookup(obj, expr, attr)
-    return matches
-
-
-def attr_lookup(obj, expr, attr):
-    """Second half of original attr_matches method factored out so it can
-    be wrapped in a safe try/finally block in case anything bad happens to
-    restore the original __getattribute__ method."""
-    words = dir(obj)
-    if hasattr(obj, '__class__'):
-        words.append('__class__')
-        words = words + rlcompleter.get_class_members(obj.__class__)
-        if not isinstance(obj.__class__, abc.ABCMeta):
-            try:
-                words.remove('__abstractmethods__')
-            except ValueError:
-                pass
-
-    matches = []
-    n = len(attr)
-    for word in words:
-        if method_match(word, n, attr) and word != "__builtins__":
-            matches.append("%s.%s" % (expr, word))
-    return matches
-
-
 def _callable_postfix(value, word):
     """rlcompleter's _callable_postfix done right."""
     with inspection.AttrCleaner(value):
         if inspection.is_callable(value):
             word += '('
     return word
-
-
-def method_match(word, size, text):
-    return word[:size] == text

@@ -316,25 +316,24 @@ class TestRepl(unittest.TestCase):
                          ['def', 'del', 'delattr(', 'dict(', 'dir(',
                           'divmod('])
 
-    @unittest.skip("disabled while non-simple completion is disabled")
     def test_substring_global_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
         self.set_input_line("time")
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.completer, 'matches'))
-        self.assertEqual(self.repl.completer.matches,
+        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
+        self.assertEqual(self.repl.matches_iter.matches,
                          ['RuntimeError(', 'RuntimeWarning('])
 
-    @unittest.skip("disabled while non-simple completion is disabled")
     def test_fuzzy_global_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
         self.set_input_line("doc")
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.completer, 'matches'))
-        self.assertEqual(self.repl.completer.matches,
-                         ['UnboundLocalError(', '__doc__'])
+        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
+        self.assertEqual(self.repl.matches_iter.matches,
+                         ['UnboundLocalError(', '__doc__'] if not py3 else
+                         ['ChildProcessError(', 'UnboundLocalError(', '__doc__'])
 
     # 2. Attribute tests
     def test_simple_attribute_complete(self):
@@ -349,7 +348,6 @@ class TestRepl(unittest.TestCase):
         self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
         self.assertEqual(self.repl.matches_iter.matches, ['Foo.bar'])
 
-    @unittest.skip("disabled while non-simple completion is disabled")
     def test_substring_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
         self.set_input_line("Foo.az")
@@ -359,10 +357,9 @@ class TestRepl(unittest.TestCase):
             self.repl.push(line)
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.completer, 'matches'))
-        self.assertEqual(self.repl.completer.matches, ['Foo.baz'])
+        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
+        self.assertEqual(self.repl.matches_iter.matches, ['Foo.baz'])
 
-    @unittest.skip("disabled while non-simple completion is disabled")
     def test_fuzzy_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
         self.set_input_line("Foo.br")
@@ -372,8 +369,8 @@ class TestRepl(unittest.TestCase):
             self.repl.push(line)
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.completer, 'matches'))
-        self.assertEqual(self.repl.completer.matches, ['Foo.bar'])
+        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
+        self.assertEqual(self.repl.matches_iter.matches, ['Foo.bar'])
 
     # 3. Edge Cases
     def test_updating_namespace_complete(self):

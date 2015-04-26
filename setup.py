@@ -247,7 +247,7 @@ entry_points = {
         'bpython = bpython.curtsies:main',
         'bpython-curses = bpython.cli:main',
         'bpython-urwid = bpython.urwid:main [urwid]',
-        'bpbd = bpdb:main'
+        'bpdb = bpdb:main'
     ]
 }
 
