@@ -2,12 +2,87 @@
 
 .. |ImageLink| image:: https://travis-ci.org/bpython/bpython.svg?branch=master
 .. _ImageLink: https://travis-ci.org/bpython/bpython
-bpython - A fancy curses interface to the Python interactive interpreter
-========================================================================
 
+***********************************************************************
+bpython: A fancy curses interface to the Python interactive interpreter
+***********************************************************************
+
+`bpython`_ is a lightweight Python interpreter that adds several features common
+to IDEs. These features include **syntax highlighting**, **expected parameter
+list**, **auto-indentation**, and **autocompletion**. (See below for example
+usage).
+
+.. image:: http://i.imgur.com/jf8mCtP.gif
+  :alt: bpython
+  :width: 646
+  :height: 300
+  :align: center
+
+bpython does **not** aim to be a complete IDE - the focus is on implementing a
+few ideas in a practical, useful, and lightweight manner.
+
+bpython is a great replacement to any occassion where you would normally use the
+vanilla Python interpreter - testing out solutions to people's problems on IRC,
+quickly testing a method of doing something without creating a temporary file,
+etc..
+
+You can find more about bpython - including `full documentation`_ - at our
+`homepage`_.
+
+.. contents::
+  :local:
+    :depth: 1
+    :backlinks: none
+
+==========================
+Installation & Basic Usage
+==========================
+If you have `pip`_ installed, you can simply run:
+
+.. code-block:: bash
+
+    $ pip install bpython
+
+Start bpython by typing ``bpython`` in your terminal. You can exit bpython by
+using the ``exit()`` command.
+
+===================
+Features & Examples
+===================
+* In-line syntax highlighting.  This uses Pygments for lexing the code as you
+  type, and colours appropriately. 
+
+* Readline-like autocomplete.  Suggestions displayed as you type.
+
+* Expected parameter list.  As in a lot of modern IDEs, bpython will attempt to
+  display a list of parameters for any function you call. The inspect module is
+  tried first, which works with any Python function, and then pydoc if that
+  fails.
+
+* Rewind.  This isn't called "Undo" because it would be misleading, but "Rewind"
+  is probably as bad. The idea is that the code entered is kept in memory and
+  when the Rewind function is called, the last line is popped and the entire
+  code is re-evaluated. 
+
+* Pastebin code/write to file.  Use the <F8> key to upload the screen's contents
+  to pastebin, with a URL returned.
+
+* Flush curses screen to stdout.  When you quit bpython, the screen data will be
+  flushed to stdout, so it basically looks the same as if you had quit the
+  vanilla interpreter.
+
+=============
+Configuration
+=============
+See the sample-config file for a list of available options.  You should save
+your config file as **~/.config/bpython/config** (i.e
+``$XDG_CONFIG_HOME/bpython/config``) or specify at the command line::
+
+  bpython --config /path/to/bpython/config
+
+============
 Dependencies
 ============
-
 * Pygments
 * requests
 * curtsies >= 0.1.18
@@ -18,14 +93,17 @@ Dependencies
 * watchdog (optional, for monitoring imported modules for changes)
 * jedi (optional, for experimental multiline completion)
 
-If you are using Python 2 before 2.7.7, the following dependency is also
+Python 2 before 2.7.7
+---------------------
+If you are using Python 2 before 2.7.7, the followign dependency is also
 required:
 
 * requests[security]
 
-If you have problems installing cffi which is needed by pyOpenSSL,
-please take a look at https://cffi.readthedocs.org/en/release-0.8/#macos-x.
-
+cffi
+----
+If you have problems installing cffi, which is needed by OpenSSL, please take a
+look at `cffi docs`_.
 
 bpython-urwid
 -------------
@@ -33,140 +111,66 @@ bpython-urwid
 
 * urwid
 
-Introduction
-============
-A few people asked for stuff like syntax highlighting and autocomplete for the
-Python interactive interpreter.  IPython seems to offer this (plus you can get
-readline behaviour in the vanilla interpreter) but I tried IPython a couple of
-times. Perhaps I didn't really get it, but I get the feeling that the ideas
-behind IPython are pretty different to bpython. I didn't want to create a whole
-development environment; I simply wanted to provide a couple of neat features
-that already exist and turn them into something a little more interactive.
+==========
+Known Bugs
+==========
+For known bugs please see bpython's `known issues and FAQ`_ page.
 
-The idea is to provide the user with all the features in-line, much like modern
-IDEs, but in a simple, lightweight package that can be run in a terminal
-window, so curses seemed like the best choice.  Sorry if you use Windows.
-
-bpython doesn't attempt to create anything new or groundbreaking, it simply
-brings together a few neat ideas and focuses on practicality and usefulness.
-For this reason, the "Rewind" function should be taken with a pinch of salt,
-but personally I have found it to be very useful. I use bpython now whenever I
-would normally use the vanilla interpreter, e.g. for testing out solutions to
-people's problems on IRC, quickly testing a method of doing something without
-creating a temporary file, etc..
-
-I hope you find it useful and please feel free to submit any bugs/patches (yeah
-right)/suggestions to:
-robertanthonyfarrell@gmail.com
-or place them at the github issue page for this project at:
-http://github.com/bpython/bpython/issues/
+======================
+Contact & Contributing
+======================
+I hope you find it useful and please feel free to submit any bugs/patches
+suggestions to `Robert`_ or place them on the github
+`issues tracker`_.
 
 For any other ways of communicating with bpython users and devs you can find us
-at the community page on the projects homepage:
-http://bpython-interpreter.org/community
-
-Or in the documentation at http://docs.bpython-interpreter.org/community.html.
+at the community page on the `project homepage`_, or in the `community`_.
 
 Hope to see you there!
 
-Features
-========
-
-* In-line syntax highlighting.
-	This uses Pygments for lexing the code as you type, and colours
-	appropriately. Pygments does a great job of doing all of the tricky stuff
-	and really leaving me with very little to do except format the tokens in
-	all my favourite colours.
-
-* Readline-like autocomplete with suggestions displayed as you type.
-	Thanks to Python's readline interface to libreadline and a ready-made class
-	for using a Python interpreter's scope as the dataset, the only work here
-	was displaying the readline matches as you type in a separate curses window
-	below/above the cursor.
-
-* Expected parameter list.
-	As in a lot of modern IDEs, bpython will attempt to display a list of
-	parameters for any function you call. The inspect module is tried first,
-	which works with any Python function, and then pydoc if that fails, which
-	seems to be pretty adequate, but obviously in some cases it's simply not
-	possible. I used pyparsing to cure my nested parentheses woes; again, it
-	was nice and easy.
-
-* Rewind.
-	I didn't call this "Undo" because I thought that would be misleading, but
-	"Rewind" is probably as bad. The idea is that the code entered is kept in
-	memory and when the Rewind function is called, the last line is popped and
-	the entire code is re-evaluated. As you can imagine, this has a lot of
-	potential problems, but for defining classes and functions, I've found it
-	to be nothing but useful.
-
-* Pastebin code/write to file.
-	I don't really use the save thing much, but the pastebin thing's great. Hit
-	a key and what you see on the screen will be sent to a pastebin and a URL
-	is returned for you to do what you like with. I've hardcoded
-	paste.pocoo.org in for now, that needs to be fixed so it's configurable.
-	Next release, I promise.
-
-* Flush curses screen to stdout.
-	A featurette, perhaps, but I thought it was worth noting.  I can't
-	personally recall a curses app that does this, perhaps it's often not
-	useful, but when you quit bpython, the screen data will be flushed to
-	stdout, so it basically looks the same as if you had quit the vanilla
-	interpreter.
-
-Configuration
-=============
-See the sample-config file for a list of available options.  You should save
-your config file as ~/.config/bpython/config (i.e
-$XDG_CONFIG_HOME/bpython/config) or specify at the command line::
-
-	bpython --config /path/to/bpython/config
-
-Known Bugs
-==========
-For known bugs please see bpython's issue tracker at github:
-
-http://github.com/bpython/bpython/issues/
-
+===================
 CLI Windows Support
 ===================
 
 Dependencies
 ------------
-Curses
-    Use the appropriate version compiled by Christoph Gohlke
-    http://www.lfd.uci.edu/~gohlke/pythonlibs/
+`Curses`_ Use the appropriate version compiled by Christoph Gohlke.
 
-pyreadline
-    Use the version in the cheeseshop
-    http://pypi.python.org/pypi/pyreadline/
+`pyreadline`_ Use the version in the cheeseshop.
 
+===========
 Recommended
------------
+===========
 Obtain the less program from GnuUtils. This makes the pager work as intended.
 It can be obtained from cygwin or GnuWin32 or msys
 
+==============================
 Current version is tested with
-------------------------------
- * Curses 2.2
- * pyreadline 1.7
+==============================
+* Curses 2.2
+* pyreadline 1.7
 
+============
 Curses Notes
-------------
+============
 The curses used has a bug where the colours are displayed incorrectly:
- * red  is swapped with blue
- * cyan is swapped with yellow
+* red  is swapped with blue
+* cyan is swapped with yellow
 
-To correct this I have provided my windows.theme file.
+To correct this I have provided a windows.theme file.
 
 This curses implementation has 16 colors (dark and light versions of the
 colours)
 
-See also
-========
-
-Documentation
-    http://docs.bpython-interpreter.org/
-
-Developer documentation
-    http://docs.bpython-interpreter.org/contributing.html
+.. _homepage: http://www.bpython-interpreter.org
+.. _full documentation: http://docs.bpython-interpreter.org/
+.. _cffi docs: https://cffi.readthedocs.org/en/release-0.8/#macos-x
+.. _issues tracker: http://github.com/bpython/bpython/issues/
+.. _pip: https://pip.pypa.io/en/latest/index.html
+.. _project homepage: http://bpython-interpreter.org/community
+.. _community: http://docs.bpython-interpreter.org/community.html
+.. _Robert: robertanthonyfarrell@gmail.com
+.. _bpython: http://www.bpython-interpreter.org/
+.. _Curses: http://www.lfd.uci.edu/~gohlke/pythonlibs/
+.. _pyreadline: http://pypi.python.org/pypi/pyreadline/
+.. _known issues and FAQ: http://bpython-interpreter.org/known-issues-and-faq.html
