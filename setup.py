@@ -229,7 +229,9 @@ extras_require = {
             'python_full_version == "2.7.4" or ' \
             'python_full_version == "2.7.5" or ' \
             'python_full_version == "2.7.6"': [
-        'requests[security]'
+        'pyOpenSSL',
+        'pyasn1',
+        'ndg-httpsclient'
     ]
 }
 
