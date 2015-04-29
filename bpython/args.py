@@ -4,6 +4,7 @@ Module to handle command line argument parsing, for all front-ends.
 
 from __future__ import print_function
 import os
+import os.path
 import sys
 import code
 from optparse import OptionParser, OptionGroup
@@ -110,10 +111,15 @@ def exec_code(interpreter, args):
     Helper to execute code in a given interpreter. args should be a [faked]
     sys.argv
     """
-    with open(args[0], 'r') as sourcefile:
+    plusmain = os.path.join(args[0], '__main__.py')
+    if os.path.isdir(args[0]) and os.path.exists(plusmain):
+        path = plusmain
+    else:
+        path = args[0]
+    with open(path, 'r') as sourcefile:
         source = sourcefile.read()
     old_argv, sys.argv = sys.argv, args
-    sys.path.insert(0, os.path.abspath(os.path.dirname(args[0])))
-    interpreter.locals['__file__'] = args[0]
-    interpreter.runsource(source, args[0], 'exec')
+    sys.path.insert(0, os.path.abspath(os.path.dirname(path)))
+    interpreter.locals['__file__'] = path
+    interpreter.runsource(source, path, 'exec')
     sys.argv = old_argv
