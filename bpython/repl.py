@@ -1001,9 +1001,7 @@ class Repl(object):
         editor_args = shlex.split(prepare_for_exec(self.config.editor,
                                                    encoding))
         args = editor_args + [prepare_for_exec(filename, encoding)]
-        if subprocess.call(args) == 0:
-            return True
-        return False
+        return subprocess.call(args) == 0:
 
     def edit_config(self):
         if not (os.path.isfile(self.config.config_path)):
@@ -1028,11 +1026,12 @@ class Repl(object):
             else:
                 return False
 
-        if self.open_in_external_editor(self.config.config_path):
-            self.interact.notify(_('bpython config file edited. Restart '
-                                   'bpython for changes to take effect.'))
-        else:
-            self.interact.notify(_('Error editing config file.'))
+        try:
+            if self.open_in_external_editor(self.config.config_path):
+                self.interact.notify(_('bpython config file edited. Restart '
+                                       'bpython for changes to take effect.'))
+            except OSError as e:
+                self.interact.notify(_('Error editing config file: %s') % e)
 
 
 def next_indentation(line, tab_length):
