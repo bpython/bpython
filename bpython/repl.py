@@ -1030,8 +1030,8 @@ class Repl(object):
             if self.open_in_external_editor(self.config.config_path):
                 self.interact.notify(_('bpython config file edited. Restart '
                                        'bpython for changes to take effect.'))
-            except OSError as e:
-                self.interact.notify(_('Error editing config file: %s') % e)
+        except OSError as e:
+            self.interact.notify(_('Error editing config file: %s') % e)
 
 
 def next_indentation(line, tab_length):
