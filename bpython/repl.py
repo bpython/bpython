@@ -1001,7 +1001,7 @@ class Repl(object):
         editor_args = shlex.split(prepare_for_exec(self.config.editor,
                                                    encoding))
         args = editor_args + [prepare_for_exec(filename, encoding)]
-        return subprocess.call(args) == 0:
+        return subprocess.call(args) == 0
 
     def edit_config(self):
         if not (os.path.isfile(self.config.config_path)):
