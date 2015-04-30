@@ -3,9 +3,10 @@ Module to handle command line argument parsing, for all front-ends.
 """
 
 from __future__ import print_function
+import code
+import imp
 import os
 import sys
-import code
 from optparse import OptionParser, OptionGroup
 
 from bpython import __version__
@@ -114,6 +115,9 @@ def exec_code(interpreter, args):
         source = sourcefile.read()
     old_argv, sys.argv = sys.argv, args
     sys.path.insert(0, os.path.abspath(os.path.dirname(args[0])))
+    mod = imp.new_module('__console__')
+    sys.modules['__console__'] = mod
+    interpreter.locals = mod.__dict__
     interpreter.locals['__file__'] = args[0]
     interpreter.runsource(source, args[0], 'exec')
     sys.argv = old_argv
