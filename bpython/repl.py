@@ -636,7 +636,6 @@ class Repl(object):
             return completer.shown_before_tab
 
         else:
-            assert len(matches) > 1
             return tab or completer.shown_before_tab
 
     def format_docstring(self, docstring, width, height):
