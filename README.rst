@@ -154,6 +154,7 @@ Current version is tested with
 Curses Notes
 ============
 The curses used has a bug where the colours are displayed incorrectly:
+
 * red  is swapped with blue
 * cyan is swapped with yellow
 
