@@ -296,7 +296,7 @@ class AttrCompletion(BaseCompletionType):
         """Second half of original attr_matches method factored out so it can
         be wrapped in a safe try/finally block in case anything bad happens to
         restore the original __getattribute__ method."""
-        words = dir(obj)
+        words = self.list_attributes(obj)
         if hasattr(obj, '__class__'):
             words.append('__class__')
             words = words + rlcompleter.get_class_members(obj.__class__)
@@ -316,6 +316,23 @@ class AttrCompletion(BaseCompletionType):
             if self.method_match(word, n, attr) and word != "__builtins__":
                 matches.append("%s.%s" % (expr, word))
         return matches
+
+    if py3:
+        def list_attributes(self, obj):
+            return dir(obj)
+    else:
+        def list_attributes(self, obj):
+            if isinstance(obj, InstanceType):
+                try:
+                    return dir(obj)
+                except Exception:
+                    # This is a case where we can not prevent user code from
+                    # running. We return a default list attributes on error
+                    # instead. (#536)
+                    return ['__doc__', '__module__']
+            else:
+                return dir(obj)
+
 
 
 class DictKeyCompletion(BaseCompletionType):
