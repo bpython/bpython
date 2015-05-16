@@ -251,6 +251,16 @@ class TestAttrCompletion(unittest.TestCase):
         self.assertIn(u'A.__dict__',
                       self.com.matches(3, 'A._', locals_={'A': OldStyleFoo}))
 
+    @skip_old_style
+    @unittest.expectedFailure
+    def test_issue536(self):
+        class OldStyleWithBrokenGetAttr:
+            def __getattr__(self, attr):
+                raise Exception()
+
+        locals_ = {'a': OldStyleWithBrokenGetAttr()}
+        self.com.matches(2, 'a.', locals_=locals_)
+
 
 class TestMagicMethodCompletion(unittest.TestCase):
 
