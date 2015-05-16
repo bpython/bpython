@@ -286,8 +286,11 @@ def get_encoding_file(fname):
     return 'ascii'
 
 
-def get_source_unicode(obj):
-    """Returns a decoded source of object"""
-    if py3:
+if py3:
+    def get_source_unicode(obj):
+        """Returns a decoded source of object"""
         return inspect.getsource(obj)
-    return inspect.getsource(obj).decode(get_encoding(obj))
+else:
+    def get_source_unicode(obj):
+        """Returns a decoded source of object"""
+        return inspect.getsource(obj).decode(get_encoding(obj))
