@@ -330,7 +330,6 @@ class AttrCompletion(BaseCompletionType):
                 return dir(obj)
 
 
-
 class DictKeyCompletion(BaseCompletionType):
 
     def matches(self, cursor_offset, line, **kwargs):

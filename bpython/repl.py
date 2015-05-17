@@ -766,7 +766,6 @@ class Repl(object):
                                    self.prev_removal_url), 10)
             return self.prev_pastebin_url
 
-
         self.interact.notify(_('Posting data to pastebin...'))
         try:
             paste_url, removal_url = self.paster.paste(s)

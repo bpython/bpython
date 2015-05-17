@@ -1,5 +1,6 @@
 import linecache
 
+
 class BPythonLinecache(dict):
     """Replaces the cache dict in the standard-library linecache module,
     to also remember (in an unerasable way) bpython console input."""
@@ -29,7 +30,7 @@ class BPythonLinecache(dict):
         a fake filename to use to retrieve it later."""
         filename = '<bpython-input-%s>' % len(self.bpython_history)
         self.bpython_history.append((len(source), None,
-            source.splitlines(True), filename))
+                                    source.splitlines(True), filename))
         return filename
 
     def __getitem__(self, key):
@@ -50,6 +51,7 @@ class BPythonLinecache(dict):
         if not self.is_bpython_filename(key):
             return super(BPythonLinecache, self).__delitem__(key)
 
+
 def _bpython_clear_linecache():
     try:
         bpython_history = linecache.cache.bpython_history
@@ -58,10 +60,12 @@ def _bpython_clear_linecache():
     linecache.cache = BPythonLinecache()
     linecache.cache.bpython_history = bpython_history
 
+
 # Monkey-patch the linecache module so that we're able
 # to hold our command history there and have it persist
 linecache.cache = BPythonLinecache(linecache.cache)
 linecache.clearcache = _bpython_clear_linecache
+
 
 def filename_for_console_input(code_string):
     """Remembers a string of source code, and returns
