@@ -136,9 +136,6 @@ class BaseCompletionType(object):
         once that has happened."""
         return self._shown_before_tab
 
-    def method_match(self, word, size, text):
-        return word[:size] == text
-
 
 class CumulativeCompleter(BaseCompletionType):
     """Returns combined matches from several completers"""
