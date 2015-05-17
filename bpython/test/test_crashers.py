@@ -6,10 +6,7 @@ import sys
 import termios
 import textwrap
 
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
+from bpython.test import unittest
 
 try:
     from twisted.internet import reactor

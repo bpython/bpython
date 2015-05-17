@@ -1,18 +1,13 @@
 import os
 
 try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
-
-try:
     import watchdog
     from bpython.curtsiesfrontend.filewatch import ModuleChangedEventHandler
     has_watchdog = True
 except ImportError:
     has_watchdog = False
 
-from bpython.test import mock
+from bpython.test import mock, unittest
 
 @unittest.skipUnless(has_watchdog, "watchdog required")
 class TestModuleChangeEventHandler(unittest.TestCase):

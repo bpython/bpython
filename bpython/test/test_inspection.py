@@ -2,15 +2,12 @@
 
 import os
 
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
-
 from bpython import inspection
+from bpython.test import unittest
 from bpython.test.fodder import encoding_ascii
 from bpython.test.fodder import encoding_latin1
 from bpython.test.fodder import encoding_utf8
+
 
 foo_ascii_only = u'''def foo():
     """Test"""

@@ -8,16 +8,14 @@ import tempfile
 from six.moves import range
 import sys
 
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
-
 from bpython._py3compat import py3
 from bpython import config, repl, cli, autocomplete
 from bpython.test import MagicIterMock, mock, FixLanguageTestCase as TestCase
+from bpython.test import unittest
+
 
 pypy = 'PyPy' in sys.version
+
 
 def setup_config(conf):
     config_struct = config.Struct()

@@ -1,11 +1,7 @@
 from __future__ import unicode_literals
 
 from bpython import importcompletion
-
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
+from bpython.test import unittest
 
 
 class TestSimpleComplete(unittest.TestCase):

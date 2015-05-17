@@ -9,11 +9,6 @@ import io
 from contextlib import contextmanager
 from six.moves import StringIO
 
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
-
 from bpython.curtsiesfrontend import repl as curtsiesrepl
 from bpython.curtsiesfrontend import interpreter
 from bpython.curtsiesfrontend import events as bpythonevents
@@ -22,7 +17,7 @@ from bpython import config
 from bpython import args
 from bpython._py3compat import py3
 from bpython.test import (FixLanguageTestCase as TestCase, MagicIterMock, mock,
-                          builtin_target)
+                          builtin_target, unittest)
 
 
 def setup_config(conf):

@@ -488,7 +488,7 @@ else:
                 self._orig_start = None
                 return None
             except IndexError:
-                # for https://github.com/bpython/bpython/issues/483
+                # for #483
                 self._orig_start = None
                 return None
 

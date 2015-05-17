@@ -5,23 +5,20 @@ from __future__ import unicode_literals
 import linecache
 import sys
 
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
-
 from curtsies.fmtfuncs import bold, green, magenta, cyan, red, plain
 
 from bpython.curtsiesfrontend import interpreter
 from bpython._py3compat import py3
-from bpython.test import mock
+from bpython.test import mock, unittest
 
 pypy = 'PyPy' in sys.version
+
 
 def _last_console_filename():
     """Returns the last 'filename' used for console input
     (as will be displayed in a traceback)."""
     return '<bpython-input-%s>' % (len(linecache.cache.bpython_history) - 1)
+
 
 class TestInterpreter(unittest.TestCase):
     def test_syntaxerror(self):
