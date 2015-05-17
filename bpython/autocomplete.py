@@ -223,10 +223,9 @@ class FilenameCompletion(BaseCompletionType):
             return filename
 
 
-attr_matches_re = LazyReCompile(r"(\w+(\.\w+)*)\.(\w*)")
-
-
 class AttrCompletion(BaseCompletionType):
+
+    attr_matches_re = LazyReCompile(r"(\w+(\.\w+)*)\.(\w*)")
 
     def matches(self, cursor_offset, line, **kwargs):
         if 'locals_' not in kwargs:
@@ -272,7 +271,7 @@ class AttrCompletion(BaseCompletionType):
         # Gna, Py 2.6's rlcompleter searches for __call__ inside the
         # instance instead of the type, so we monkeypatch to prevent
         # side-effects (__getattr__/__getattribute__)
-        m = attr_matches_re.match(text)
+        m = self.attr_matches_re.match(text)
         if not m:
             return []
 
