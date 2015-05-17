@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 import contextlib
 import errno
-import functools
 import greenlet
 import logging
 import os
@@ -15,7 +14,7 @@ import tempfile
 import threading
 import time
 import unicodedata
-from six.moves import range, builtins
+from six.moves import range
 
 from pygments import format
 from bpython._py3compat import PythonLexer

@@ -1,5 +1,3 @@
-import code
-import traceback
 import sys
 from codeop import CommandCompiler
 from six import iteritems
@@ -13,7 +11,7 @@ from pygments.lexers import get_lexer_by_name
 from bpython.curtsiesfrontend.parse import parse
 from bpython.repl import Interpreter as ReplInterpreter
 from bpython.config import getpreferredencoding
-from bpython._py3compat import py3
+
 
 default_colors = {
     Generic.Error: 'R',

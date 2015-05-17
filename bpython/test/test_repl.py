@@ -1,12 +1,12 @@
 from itertools import islice
+from six.moves import range
 import collections
 import inspect
 import os
 import shutil
 import socket
-import tempfile
-from six.moves import range
 import sys
+import tempfile
 
 from bpython._py3compat import py3
 from bpython import config, repl, cli, autocomplete
@@ -65,7 +65,7 @@ class TestMatchesIterator(unittest.TestCase):
             next(self.matches_iterator)
 
         self.assertEqual(next(self.matches_iterator), self.matches[0])
-        self.assertEqual(next(self.matches_iterator), self. matches[1])
+        self.assertEqual(next(self.matches_iterator), self.matches[1])
         self.assertNotEqual(next(self.matches_iterator), self.matches[1])
 
     def test_previous(self):
@@ -248,8 +248,6 @@ class TestGetSource(unittest.TestCase):
             collections.defaultdict.copy, "No source code found for INPUTLINE")
         self.assert_get_source_error_for_current_function(
             collections.defaultdict, "could not find class definition")
-
-
 
     def test_current_line(self):
         self.repl.interp.locals['a'] = socket.socket
