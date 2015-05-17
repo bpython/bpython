@@ -162,7 +162,6 @@ class TestArgspec(unittest.TestCase):
             self.assertTrue(self.repl.get_args())
             self.assertEqual(self.repl.current_func.__name__, expected_name)
 
-
     def test_syntax_error_parens(self):
         for line in ["spam(]", "spam([)", "spam())"]:
             self.set_input_line(line)
@@ -329,7 +328,8 @@ class TestRepl(unittest.TestCase):
         self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
         self.assertEqual(self.repl.matches_iter.matches,
                          ['UnboundLocalError(', '__doc__'] if not py3 else
-                         ['ChildProcessError(', 'UnboundLocalError(', '__doc__'])
+                         ['ChildProcessError(', 'UnboundLocalError(',
+                          '__doc__'])
 
     # 2. Attribute tests
     def test_simple_attribute_complete(self):

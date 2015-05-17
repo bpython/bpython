@@ -9,6 +9,7 @@ except ImportError:
 
 from bpython.test import mock, unittest
 
+
 @unittest.skipUnless(has_watchdog, "watchdog required")
 class TestModuleChangeEventHandler(unittest.TestCase):
 
