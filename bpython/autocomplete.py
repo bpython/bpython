@@ -402,11 +402,11 @@ class GlobalCompletion(BaseCompletionType):
                 matches.add(word)
         for nspace in (builtins.__dict__, locals_):
             for word, val in iteritems(nspace):
+                word = try_decode(word, 'ascii')
+                # if identifier isn't ascii, don't complete (syntax error)
+                if word is None:
+                    continue
                 if self.method_match(word, n, text) and word != "__builtins__":
-                    word = try_decode(word, 'ascii')
-                    # if identifier isn't ascii, don't complete (syntax error)
-                    if word is None:
-                        continue
                     matches.add(_callable_postfix(val, word))
         return matches
 
