@@ -2,7 +2,6 @@
 
 # The MIT License
 #
-# Copyright (c) 2009-2015 the bpython authors.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +38,7 @@ from six import string_types, iteritems
 from bpython import inspection
 from bpython import importcompletion
 from bpython import line as lineparts
+from bpython.line import LinePart
 from bpython._py3compat import py3, try_decode
 from bpython.lazyre import LazyReCompile
 
@@ -126,8 +126,8 @@ class BaseCompletionType(object):
 
     def substitute(self, cursor_offset, line, match):
         """Returns a cursor offset and line with match swapped in"""
-        start, end, word = self.locate(cursor_offset, line)
-        result = start + len(match), line[:start] + match + line[end:]
+        lpart =  self.locate(cursor_offset, line)
+        result = lpart.start + len(match), line[:lpart.start] + match + line[lpart.end:]
         return result
 
     @property
@@ -200,14 +200,13 @@ class FilenameCompletion(BaseCompletionType):
         cs = lineparts.current_string(cursor_offset, line)
         if cs is None:
             return None
-        start, end, text = cs
         matches = set()
-        username = text.split(os.path.sep, 1)[0]
+        username = cs.word.split(os.path.sep, 1)[0]
         user_dir = os.path.expanduser(username)
-        for filename in self.safe_glob(os.path.expanduser(text)):
+        for filename in self.safe_glob(os.path.expanduser(cs.word)):
             if os.path.isdir(filename):
                 filename += os.path.sep
-            if text.startswith('~'):
+            if cs.word.startswith('~'):
                 filename = username + filename[len(user_dir):]
             matches.add(filename)
         return matches
@@ -235,25 +234,24 @@ class AttrCompletion(BaseCompletionType):
         r = self.locate(cursor_offset, line)
         if r is None:
             return None
-        text = r[2]
 
         if locals_ is None:
             locals_ = __main__.__dict__
 
-        assert '.' in text
+        assert '.' in r.word
 
-        for i in range(1, len(text) + 1):
-            if text[-i] == '[':
+        for i in range(1, len(r.word) + 1):
+            if r.word[-i] == '[':
                 i -= 1
                 break
-        methodtext = text[-i:]
-        matches = set(''.join([text[:-i], m])
+        methodtext = r.word[-i:]
+        matches = set(''.join([r.word[:-i], m])
                       for m in self.attr_matches(methodtext, locals_))
 
         # TODO add open paren for methods via _callable_prefix (or decide not
         # to) unless the first character is a _ filter out all attributes
         # starting with a _
-        if not text.split('.')[-1].startswith('_'):
+        if not r.word.split('.')[-1].startswith('_'):
             matches = set(match for match in matches
                           if not match.split('.')[-1].startswith('_'))
         return matches
@@ -340,7 +338,6 @@ class DictKeyCompletion(BaseCompletionType):
         r = self.locate(cursor_offset, line)
         if r is None:
             return None
-        start, end, orig = r
         _, _, dexpr = lineparts.current_dict(cursor_offset, line)
         try:
             obj = safe_eval(dexpr, locals_)
@@ -348,7 +345,7 @@ class DictKeyCompletion(BaseCompletionType):
             return set()
         if isinstance(obj, dict) and obj.keys():
             return set("{0!r}]".format(k) for k in obj.keys()
-                       if repr(k).startswith(orig))
+                       if repr(k).startswith(r.word))
         else:
             return set()
 
@@ -371,8 +368,7 @@ class MagicMethodCompletion(BaseCompletionType):
             return None
         if 'class' not in current_block:
             return None
-        start, end, word = r
-        return set(name for name in MAGIC_METHODS if name.startswith(word))
+        return set(name for name in MAGIC_METHODS if name.startswith(r.word))
 
     def locate(self, current_offset, line):
         return lineparts.current_method_definition_name(current_offset, line)
@@ -392,12 +388,11 @@ class GlobalCompletion(BaseCompletionType):
         r = self.locate(cursor_offset, line)
         if r is None:
             return None
-        start, end, text = r
 
         matches = set()
-        n = len(text)
+        n = len(r.word)
         for word in KEYWORDS:
-            if self.method_match(word, n, text):
+            if self.method_match(word, n, r.word):
                 matches.add(word)
         for nspace in (builtins.__dict__, locals_):
             for word, val in iteritems(nspace):
@@ -405,7 +400,7 @@ class GlobalCompletion(BaseCompletionType):
                 # if identifier isn't ascii, don't complete (syntax error)
                 if word is None:
                     continue
-                if self.method_match(word, n, text) and word != "__builtins__":
+                if self.method_match(word, n, r.word) and word != "__builtins__":
                     matches.add(_callable_postfix(val, word))
         return matches
 
@@ -425,14 +420,13 @@ class ParameterNameCompletion(BaseCompletionType):
         r = self.locate(cursor_offset, line)
         if r is None:
             return None
-        start, end, word = r
         if argspec:
             matches = set(name + '=' for name in argspec[1][0]
                           if isinstance(name, string_types) and
-                          name.startswith(word))
+                          name.startswith(r.word))
             if py3:
                 matches.update(name + '=' for name in argspec[1][4]
-                               if name.startswith(word))
+                               if name.startswith(r.word))
         return matches
 
     def locate(self, current_offset, line):
@@ -446,14 +440,13 @@ class StringLiteralAttrCompletion(BaseCompletionType):
         if r is None:
             return None
 
-        start, end, word = r
         attrs = dir('')
         if not py3:
             # decode attributes
             attrs = (att.decode('ascii') for att in attrs)
 
-        matches = set(att for att in attrs if att.startswith(word))
-        if not word.startswith('_'):
+        matches = set(att for att in attrs if att.startswith(r.word))
+        if not r.word.startswith('_'):
             return set(match for match in matches if not match.startswith('_'))
         return matches
 
@@ -513,7 +506,7 @@ else:
         def locate(self, cursor_offset, line):
             start = self._orig_start
             end = cursor_offset
-            return start, end, line[start:end]
+            return LinePart(start, end, line[start:end])
 
     class MultilineJediCompletion(JediCompletion):
         def matches(self, cursor_offset, line, **kwargs):
