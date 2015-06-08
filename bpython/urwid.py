@@ -745,13 +745,14 @@ class URWIDRepl(repl.Repl):
             widget_list.pop()
         # This is just me flailing around wildly. TODO: actually write.
         if self.complete():
-            if self.argspec:
+            if self.funcprops:
                 # This is mostly just stolen from the cli module.
-                func_name, args, is_bound, in_arg = self.argspec
+                func_name, args, is_bound = self.funcprops
+                in_arg = self.arg_pos
                 args, varargs, varkw, defaults = args[:4]
                 if py3:
-                    kwonly = self.argspec[1][4]
-                    kwonly_defaults = self.argspec[1][5] or {}
+                    kwonly = self.funcprops.argspec.kwonly
+                    kwonly_defaults = self.funcprops.argspec.kwonly_defaults or {}
                 else:
                     kwonly, kwonly_defaults = [], {}
                 markup = [('bold name', func_name),
