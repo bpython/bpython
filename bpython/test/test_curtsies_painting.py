@@ -109,8 +109,8 @@ class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
         def foo(x, y, z=10):
             "docstring!"
             pass
-        argspec = inspection.getargspec('foo', foo) + [1]
-        array = replpainter.formatted_argspec(argspec, 30, setup_config())
+        argspec = inspection.getfuncprops('foo', foo)
+        array = replpainter.formatted_argspec(argspec, 1, 30, setup_config())
         screen = [bold(cyan('foo')) + cyan(':') + cyan(' ') + cyan('(') +
                   cyan('x') + yellow(',') + yellow(' ') + bold(cyan('y')) +
                   yellow(',') + yellow(' ') + cyan('z') + yellow('=') +
