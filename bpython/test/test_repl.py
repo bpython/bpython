@@ -429,6 +429,7 @@ class TestCliReplTab(unittest.TestCase):
         self.repl.matches_iter.is_cseq.return_value = False
         self.repl.show_list = mock.Mock()
         self.repl.funcprops = mock.Mock()
+        self.repl.arg_pos = mock.Mock()
         self.repl.matches_iter.cur_line.return_value = (None, "foobar")
 
         self.repl.s = "foo"
@@ -472,6 +473,7 @@ class TestCliReplTab(unittest.TestCase):
         self.repl.matches_iter.is_cseq.return_value = False
         self.repl.show_list = mock.Mock()
         self.repl.funcprops = mock.Mock()
+        self.repl.arg_pos = mock.Mock()
         self.repl.matches_iter.cur_line.return_value = (None, "previtem")
         self.repl.print_line = mock.Mock()
         self.repl.s = "foo"
