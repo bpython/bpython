@@ -699,16 +699,17 @@ class CLIRepl(repl.Repl):
         sturdy."""
 
         r = 3
-        fn = topline[0]
-        args = topline[1][0]
-        kwargs = topline[1][3]
-        _args = topline[1][1]
-        _kwargs = topline[1][2]
-        is_bound_method = topline[2]
-        in_arg = topline[3]
+        fn = topline.func
+        args = topline.arginfo.args
+        kwargs = topline.arginfo.defaults
+        _args = topline.arginfo.varargs
+        _kwargs = topline.arginfo.varkwargs
+        is_bound_method = topline.is_bound_method
+        in_arg = topline.in_arg
+        print "\n\nprinting topline",topline
         if py3:
-            kwonly = topline[1][4]
-            kwonly_defaults = topline[1][5] or dict()
+            kwonly = topline.arginfo.kwonly
+            kwonly_defaults = topline.kwonly_defaults or dict()
         max_w = int(self.scr.getmaxyx()[1] * 0.6)
         self.list_win.erase()
         self.list_win.resize(3, max_w)
@@ -1454,7 +1455,7 @@ class CLIRepl(repl.Repl):
             current_match = back and self.matches_iter.previous() \
                                   or next(self.matches_iter)
             try:
-                self.show_list(self.matches_iter.matches, topline=self.argspec,
+                self.show_list(self.matches_iter.matches, topline=self.funcprops,
                                formatter=self.matches_iter.completer.format,
                                current_item=current_match)
             except curses.error:
