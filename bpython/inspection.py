@@ -41,7 +41,7 @@ if not py3:
 
     _name = LazyReCompile(r'[a-zA-Z_]\w*$')
 
-Argspec = namedtuple('Argspec', ['args', 'varargs', 'varkwargs',  'defaults',
+ArgSpec = namedtuple('ArgSpec', ['args', 'varargs', 'varkwargs',  'defaults',
                         'kwonly', 'kwonly_defaults', 'annotations'])
 
 FuncProps = namedtuple('FuncProps', ['func', 'argspec', 'is_bound_method'])
@@ -191,7 +191,7 @@ def getpydocspec(f, func):
     if not hasattr(f, '__name__') or s.groups()[0] != f.__name__:
         return None
 
-    argspec = Argspec(list(), None, None, list(), list(), dict(), None)
+    argspec = ArgSpec(list(), None, None, list(), list(), dict(), None)
 
     for arg in s.group(2).split(','):
         arg = arg.strip()
@@ -241,7 +241,7 @@ def getfuncprops(func, f):
         fixlongargs(f, argspec)
         if len(argspec) == 4:
             argspec = argspec + [list(),dict(),None]
-        argspec = Argspec(*argspec)
+        argspec = ArgSpec(*argspec)
         fprops = FuncProps(func, argspec, is_bound_method)
     except (TypeError, KeyError):
         with AttrCleaner(f):
