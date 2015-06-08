@@ -28,6 +28,7 @@ import inspect
 import io
 import keyword
 import pydoc
+from collections import namedtuple
 from six.moves import range
 
 from pygments.token import Token
@@ -39,6 +40,11 @@ if not py3:
     import types
 
     _name = LazyReCompile(r'[a-zA-Z_]\w*$')
+
+Argspec = namedtuple('Argspec', ['args', 'varargs', 'varkwargs',  'defaults',
+                        'kwonly', 'kwonly_defaults', 'annotations'])
+
+FuncProps = namedtuple('FuncProps', ['func', 'argspec', 'is_bound_method'])
 
 
 class AttrCleaner(object):
@@ -175,44 +181,39 @@ getpydocspec_re = LazyReCompile(r'([a-zA-Z_][a-zA-Z0-9_]*?)\((.*?)\)')
 
 def getpydocspec(f, func):
     try:
-        argspec = pydoc.getdoc(f)
+        docstring = pydoc.getdoc(f)
     except NameError:
         return None
-
-    s = getpydocspec_re.search(argspec)
+    s = getpydocspec_re.search(docstring)
     if s is None:
         return None
 
     if not hasattr(f, '__name__') or s.groups()[0] != f.__name__:
         return None
 
-    args = list()
-    defaults = list()
-    varargs = varkwargs = None
-    kwonly_args = list()
-    kwonly_defaults = dict()
+    argspec = Argspec(list(), None, None, list(), list(), dict(), None)
+
     for arg in s.group(2).split(','):
         arg = arg.strip()
         if arg.startswith('**'):
-            varkwargs = arg[2:]
+            argspec.varkwargs = arg[2:]
         elif arg.startswith('*'):
-            varargs = arg[1:]
+            argspec.varargs = arg[1:]
         else:
             arg, _, default = arg.partition('=')
-            if varargs is not None:
-                kwonly_args.append(arg)
+            if argspec.varargs is not None:
+                argspec.kwonly_args.append(arg)
                 if default:
-                    kwonly_defaults[arg] = default
+                    argspec.kwonly_defaults[arg] = default
             else:
-                args.append(arg)
+                argspec.args.append(arg)
                 if default:
-                    defaults.append(default)
+                    argspec.defaults.append(default)
 
-    return [func, (args, varargs, varkwargs, defaults,
-                   kwonly_args, kwonly_defaults)]
+    return argspec
 
 
-def getargspec(func, f):
+def getfuncprops(func, f):
     # Check if it's a real bound method or if it's implicitly calling __init__
     # (i.e. FooClass(...) and not FooClass.__init__(...) -- the former would
     # not take 'self', the latter would:
@@ -238,16 +239,19 @@ def getargspec(func, f):
 
         argspec = list(argspec)
         fixlongargs(f, argspec)
-        argspec = [func, argspec, is_bound_method]
+        if len(argspec) == 4:
+            argspec = argspec + [list(),dict(),None]
+        argspec = Argspec(*argspec)
+        fprops = FuncProps(func, argspec, is_bound_method)
     except (TypeError, KeyError):
         with AttrCleaner(f):
             argspec = getpydocspec(f, func)
         if argspec is None:
             return None
         if inspect.ismethoddescriptor(f):
-            argspec[1][0].insert(0, 'obj')
-        argspec.append(is_bound_method)
-    return argspec
+            argspec.args.insert(0, 'obj')
+        fprops = FuncProps(func, argspec, is_bound_method)
+    return fprops
 
 
 def is_eval_safe_name(string):
