@@ -295,6 +295,7 @@ def transpose_word_before_cursor(cursor_offset, line):
 
 # bonus functions (not part of readline)
 
+
 @edit_keys.on('<Esc+u>')
 def uppercase_next_word(cursor_offset, line):
     return cursor_offset, line  # TODO Not implemented
