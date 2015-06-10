@@ -42,7 +42,7 @@ if not py3:
     _name = LazyReCompile(r'[a-zA-Z_]\w*$')
 
 ArgSpec = namedtuple('ArgSpec', ['args', 'varargs', 'varkwargs',  'defaults',
-                        'kwonly', 'kwonly_defaults', 'annotations'])
+                                 'kwonly', 'kwonly_defaults', 'annotations'])
 
 FuncProps = namedtuple('FuncProps', ['func', 'argspec', 'is_bound_method'])
 
@@ -240,7 +240,7 @@ def getfuncprops(func, f):
         argspec = list(argspec)
         fixlongargs(f, argspec)
         if len(argspec) == 4:
-            argspec = argspec + [list(),dict(),None]
+            argspec = argspec + [list(), dict(), None]
         argspec = ArgSpec(*argspec)
         fprops = FuncProps(func, argspec, is_bound_method)
     except (TypeError, KeyError):
