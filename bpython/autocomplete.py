@@ -127,9 +127,10 @@ class BaseCompletionType(object):
 
     def substitute(self, cursor_offset, line, match):
         """Returns a cursor offset and line with match swapped in"""
-        lpart =  self.locate(cursor_offset, line)
-        result = lpart.start + len(match), line[:lpart.start] + match + line[lpart.end:]
-        return result
+        lpart = self.locate(cursor_offset, line)
+        offset = lpart.start + len(match)
+        changed_line = line[:lpart.start] + match + line[lpart.end:]
+        return offset, changed_line
 
     @property
     def shown_before_tab(self):
@@ -401,7 +402,8 @@ class GlobalCompletion(BaseCompletionType):
                 # if identifier isn't ascii, don't complete (syntax error)
                 if word is None:
                     continue
-                if self.method_match(word, n, r.word) and word != "__builtins__":
+                if (self.method_match(word, n, r.word) and
+                        word != "__builtins__"):
                     matches.add(_callable_postfix(val, word))
         return matches
 
