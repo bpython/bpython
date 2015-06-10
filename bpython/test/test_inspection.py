@@ -62,22 +62,22 @@ class TestInspection(unittest.TestCase):
         self.assertEqual(str(['-a', '-b']), default_arg_repr,
                          'This test is broken (repr does not match), fix me.')
 
-        argspec = inspection.getargspec('fails', fails)
-        defaults = argspec[1][3]
+        argspec = inspection.getfuncprops('fails', fails)
+        defaults = argspec.argspec.defaults
         self.assertEqual(str(defaults[0]), default_arg_repr)
 
     def test_pasekeywordpairs_string(self):
         def spam(eggs="foo, bar"):
             pass
 
-        defaults = inspection.getargspec("spam", spam)[1][3]
+        defaults = inspection.getfuncprops("spam", spam).argspec.defaults
         self.assertEqual(repr(defaults[0]), "'foo, bar'")
 
     def test_parsekeywordpairs_multiple_keywords(self):
         def spam(eggs=23, foobar="yay"):
             pass
 
-        defaults = inspection.getargspec("spam", spam)[1][3]
+        defaults = inspection.getfuncprops("spam", spam).argspec.defaults
         self.assertEqual(repr(defaults[0]), "23")
         self.assertEqual(repr(defaults[1]), "'yay'")
 

@@ -909,7 +909,7 @@ class Repl(BpythonRepl):
 
     def update_completion(self, tab=False):
         """Update visible docstring and matches, and possibly hide/show completion box"""
-        # Update autocomplete info; self.matches_iter and self.argspec
+        # Update autocomplete info; self.matches_iter and self.funcprops
         # Should be called whenever the completion box might need to appear / dissapear
         # when current line or cursor offset changes, unless via selecting a match
         self.current_match = None
@@ -1272,7 +1272,8 @@ class Repl(BpythonRepl):
             infobox = paint.paint_infobox(info_max_rows,
                                           int(width * self.config.cli_suggestion_width),
                                           self.matches_iter.matches,
-                                          self.argspec,
+                                          self.funcprops,
+                                          self.arg_pos,
                                           self.current_match,
                                           self.docstring,
                                           self.config,

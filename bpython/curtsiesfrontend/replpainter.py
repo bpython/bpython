@@ -72,19 +72,17 @@ def matches_lines(rows, columns, matches, current, config, format):
     return matches_lines
 
 
-def formatted_argspec(argspec, columns, config):
+def formatted_argspec(funcprops, arg_pos, columns, config):
     # Pretty directly taken from bpython.cli
-    is_bound_method = argspec[2]
-    func = argspec[0]
-    args = argspec[1][0]
-    kwargs = argspec[1][3]
-    _args = argspec[1][1]  # *args
-    _kwargs = argspec[1][2]  # **kwargs
-    is_bound_method = argspec[2]
-    in_arg = argspec[3]
+    func = funcprops.func
+    args = funcprops.argspec.args
+    kwargs = funcprops.argspec.defaults
+    _args = funcprops.argspec.varargs
+    _kwargs = funcprops.argspec.varkwargs
+    is_bound_method = funcprops.is_bound_method
     if py3:
-        kwonly = argspec[1][4]
-        kwonly_defaults = argspec[1][5] or dict()
+        kwonly = funcprops.argspec.kwonly
+        kwonly_defaults = funcprops.argspec.kwonly_defaults or dict()
 
     arg_color = func_for_letter(config.color_scheme['name'])
     func_color = func_for_letter(config.color_scheme['name'].swapcase())
@@ -95,16 +93,16 @@ def formatted_argspec(argspec, columns, config):
 
     s = func_color(func) + arg_color(': (')
 
-    if is_bound_method and isinstance(in_arg, int):
+    if is_bound_method and isinstance(arg_pos, int):
         # TODO what values could this have?
-        in_arg += 1
+        arg_pos += 1
 
     for i, arg in enumerate(args):
         kw = None
         if kwargs and i >= len(args) - len(kwargs):
             kw = str(kwargs[i - (len(args) - len(kwargs))])
-        color = token_color if in_arg in (i, arg) else arg_color
-        if i == in_arg or arg == in_arg:
+        color = token_color if arg_pos in (i, arg) else arg_color
+        if i == arg_pos or arg == arg_pos:
             color = bolds[color]
 
         if not py3:
@@ -135,7 +133,7 @@ def formatted_argspec(argspec, columns, config):
         for arg in kwonly:
             s += punctuation_color(', ')
             color = token_color
-            if in_arg:
+            if arg_pos:
                 color = bolds[color]
             s += color(arg)
             default = kwonly_defaults.get(arg, marker)
@@ -159,13 +157,14 @@ def formatted_docstring(docstring, columns, config):
                 for line in docstring.split('\n')), [])
 
 
-def paint_infobox(rows, columns, matches, argspec, match, docstring, config,
-                  format):
-    """Returns painted completions, argspec, match, docstring etc."""
+def paint_infobox(rows, columns, matches, funcprops, arg_pos, match, docstring,
+                  config, format):
+    """Returns painted completions, funcprops, match, docstring etc."""
     if not (rows and columns):
         return fsarray(0, 0)
     width = columns - 4
-    lines = ((formatted_argspec(argspec, width, config) if argspec else []) +
+    lines = ((formatted_argspec(funcprops, arg_pos, width, config)
+              if funcprops else []) +
              (matches_lines(rows, width, matches, match, config, format)
               if matches else []) +
              (formatted_docstring(docstring, width, config)

@@ -359,7 +359,8 @@ class Repl(object):
         self.history = []
         self.evaluating = False
         self.matches_iter = MatchesIterator()
-        self.argspec = None
+        self.funcprops = None
+        self.arg_pos = None
         self.current_func = None
         self.highlighted_paren = None
         self._C = {}
@@ -468,8 +469,8 @@ class Repl(object):
 
     def get_args(self):
         """Check if an unclosed parenthesis exists, then attempt to get the
-        argspec() for it. On success, update self.argspec and return True,
-        otherwise set self.argspec to None and return False"""
+        argspec() for it. On success, update self.funcprops,self.arg_pos and
+        return True, otherwise set self.funcprops to None and return False"""
 
         self.current_func = None
 
@@ -532,11 +533,11 @@ class Repl(object):
             except AttributeError:
                 return None
         self.current_func = f
-
-        self.argspec = inspection.getargspec(func, f)
-        if self.argspec:
-            self.argspec.append(arg_number)
+        self.funcprops = inspection.getfuncprops(func, f)
+        if self.funcprops:
+            self.arg_pos = arg_number
             return True
+        self.arg_pos = None
         return False
 
     def get_source_of_current_name(self):
@@ -567,7 +568,7 @@ class Repl(object):
     def set_docstring(self):
         self.docstring = None
         if not self.get_args():
-            self.argspec = None
+            self.funcprops = None
         elif self.current_func is not None:
             try:
                 self.docstring = pydoc.getdoc(self.current_func)
@@ -609,7 +610,7 @@ class Repl(object):
             cursor_offset=self.cursor_offset,
             line=self.current_line,
             locals_=self.interp.locals,
-            argspec=self.argspec,
+            argspec=self.funcprops,
             current_block='\n'.join(self.buffer + [self.current_line]),
             complete_magic_methods=self.config.complete_magic_methods,
             history=self.history)
@@ -618,7 +619,7 @@ class Repl(object):
 
         if len(matches) == 0:
             self.matches_iter.clear()
-            return bool(self.argspec)
+            return bool(self.funcprops)
 
         self.matches_iter.update(self.cursor_offset,
                                  self.current_line, matches, completer)

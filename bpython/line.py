@@ -5,10 +5,11 @@ Python code, and return None, or a tuple of the start index, end index, and the
 word."""
 
 from itertools import chain
+from collections import namedtuple
 from bpython.lazyre import LazyReCompile
 
-
 current_word_re = LazyReCompile(r'[\w_][\w0-9._]*[(]?')
+LinePart = namedtuple('LinePart', ['start', 'stop', 'word'])
 
 
 def current_word(cursor_offset, line):
@@ -25,7 +26,7 @@ def current_word(cursor_offset, line):
             word = m.group()
     if word is None:
         return None
-    return (start, end, word)
+    return LinePart(start, end, word)
 
 
 current_dict_key_re = LazyReCompile(r'''[\w_][\w0-9._]*\[([\w0-9._(), '"]*)''')
@@ -36,7 +37,7 @@ def current_dict_key(cursor_offset, line):
     matches = current_dict_key_re.finditer(line)
     for m in matches:
         if m.start(1) <= cursor_offset and m.end(1) >= cursor_offset:
-            return (m.start(1), m.end(1), m.group(1))
+            return LinePart(m.start(1), m.end(1), m.group(1))
     return None
 
 
@@ -48,7 +49,7 @@ def current_dict(cursor_offset, line):
     matches = current_dict_re.finditer(line)
     for m in matches:
         if m.start(2) <= cursor_offset and m.end(2) >= cursor_offset:
-            return (m.start(1), m.end(1), m.group(1))
+            return LinePart(m.start(1), m.end(1), m.group(1))
     return None
 
 
@@ -66,7 +67,7 @@ def current_string(cursor_offset, line):
     for m in current_string_re.finditer(line):
         i = 3 if m.group(3) else 4
         if m.start(i) <= cursor_offset and m.end(i) >= cursor_offset:
-            return m.start(i), m.end(i), m.group(i)
+            return LinePart(m.start(i), m.end(i), m.group(i))
     return None
 
 
@@ -89,7 +90,7 @@ def current_object(cursor_offset, line):
             s += m.group(1)
     if not s:
         return None
-    return start, start+len(s), s
+    return LinePart(start, start+len(s), s)
 
 
 current_object_attribute_re = LazyReCompile(r'([\w_][\w0-9_]*)[.]?')
@@ -106,7 +107,7 @@ def current_object_attribute(cursor_offset, line):
     for m in matches:
         if (m.start(1) + start <= cursor_offset and
                 m.end(1) + start >= cursor_offset):
-            return m.start(1) + start, m.end(1) + start, m.group(1)
+            return LinePart(m.start(1) + start, m.end(1) + start, m.group(1))
     return None
 
 
@@ -128,7 +129,7 @@ def current_from_import_from(cursor_offset, line):
     for m in matches:
         if ((m.start(1) < cursor_offset and m.end(1) >= cursor_offset) or
                 (m.start(2) < cursor_offset and m.end(2) >= cursor_offset)):
-            return m.start(1), m.end(1), m.group(1)
+            return LinePart(m.start(1), m.end(1), m.group(1))
     return None
 
 
@@ -153,7 +154,7 @@ def current_from_import_import(cursor_offset, line):
         start = baseline.end() + m.start(1)
         end = baseline.end() + m.end(1)
         if start < cursor_offset and end >= cursor_offset:
-            return start, end, m.group(1)
+            return LinePart(start, end, m.group(1))
     return None
 
 
@@ -175,7 +176,7 @@ def current_import(cursor_offset, line):
         start = baseline.end() + m.start(1)
         end = baseline.end() + m.end(1)
         if start < cursor_offset and end >= cursor_offset:
-            return start, end, m.group(1)
+            return LinePart(start, end, m.group(1))
 
 
 current_method_definition_name_re = LazyReCompile("def\s+([a-zA-Z_][\w]*)")
@@ -186,7 +187,7 @@ def current_method_definition_name(cursor_offset, line):
     matches = current_method_definition_name_re.finditer(line)
     for m in matches:
         if (m.start(1) <= cursor_offset and m.end(1) >= cursor_offset):
-            return m.start(1), m.end(1), m.group(1)
+            return LinePart(m.start(1), m.end(1), m.group(1))
     return None
 
 
@@ -198,7 +199,7 @@ def current_single_word(cursor_offset, line):
     matches = current_single_word_re.finditer(line)
     for m in matches:
         if m.start(1) <= cursor_offset and m.end(1) >= cursor_offset:
-            return m.start(1), m.end(1), m.group(1)
+            return LinePart(m.start(1), m.end(1), m.group(1))
     return None
 
 
@@ -209,7 +210,7 @@ def current_dotted_attribute(cursor_offset, line):
         return None
     start, end, word = match
     if '.' in word[1:]:
-        return start, end, word
+        return LinePart(start, end, word)
 
 
 current_string_literal_attr_re = LazyReCompile(
@@ -223,5 +224,5 @@ def current_string_literal_attr(cursor_offset, line):
     matches = current_string_literal_attr_re.finditer(line)
     for m in matches:
         if m.start(4) <= cursor_offset and m.end(4) >= cursor_offset:
-            return m.start(4), m.end(4), m.group(4)
+            return LinePart(m.start(4), m.end(4), m.group(4))
     return None

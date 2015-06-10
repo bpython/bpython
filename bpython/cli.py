@@ -461,7 +461,9 @@ class CLIRepl(repl.Repl):
         list_win_visible = repl.Repl.complete(self, tab)
         if list_win_visible:
             try:
-                self.show_list(self.matches_iter.matches, topline=self.argspec, formatter=self.matches_iter.completer.format)
+                self.show_list(self.matches_iter.matches, self.arg_pos,
+                               topline=self.funcprops,
+                               formatter=self.matches_iter.completer.format)
             except curses.error:
                 # XXX: This is a massive hack, it will go away when I get
                 # cusswords into a good enough state that we can start
@@ -691,7 +693,7 @@ class CLIRepl(repl.Repl):
         self.print_line(self.s, newline=True)
         self.echo("\n")
 
-    def mkargspec(self, topline, down):
+    def mkargspec(self, topline, in_arg, down):
         """This figures out what to do with the argspec and puts it nicely into
         the list window. It returns the number of lines used to display the
         argspec.  It's also kind of messy due to it having to call so many
@@ -699,16 +701,15 @@ class CLIRepl(repl.Repl):
         sturdy."""
 
         r = 3
-        fn = topline[0]
-        args = topline[1][0]
-        kwargs = topline[1][3]
-        _args = topline[1][1]
-        _kwargs = topline[1][2]
-        is_bound_method = topline[2]
-        in_arg = topline[3]
+        fn = topline.func
+        args = topline.argspec.args
+        kwargs = topline.argspec.defaults
+        _args = topline.argspec.varargs
+        _kwargs = topline.argspec.varkwargs
+        is_bound_method = topline.is_bound_method
         if py3:
-            kwonly = topline[1][4]
-            kwonly_defaults = topline[1][5] or dict()
+            kwonly = topline.argspec.kwonly
+            kwonly_defaults = topline.kwonly_defaults or dict()
         max_w = int(self.scr.getmaxyx()[1] * 0.6)
         self.list_win.erase()
         self.list_win.resize(3, max_w)
@@ -1253,7 +1254,7 @@ class CLIRepl(repl.Repl):
         self.s_hist.append(s.rstrip())
 
 
-    def show_list(self, items, topline=None, formatter=None, current_item=None):
+    def show_list(self, items, arg_pos, topline=None, formatter=None, current_item=None):
 
         shared = Struct()
         shared.cols = 0
@@ -1275,7 +1276,7 @@ class CLIRepl(repl.Repl):
                 current_item = formatter(current_item)
 
         if topline:
-            height_offset = self.mkargspec(topline, down) + 1
+            height_offset = self.mkargspec(topline, arg_pos, down) + 1
         else:
             height_offset = 0
 
@@ -1454,7 +1455,8 @@ class CLIRepl(repl.Repl):
             current_match = back and self.matches_iter.previous() \
                                   or next(self.matches_iter)
             try:
-                self.show_list(self.matches_iter.matches, topline=self.argspec,
+                self.show_list(self.matches_iter.matches, self.arg_pos,
+                               topline=self.funcprops,
                                formatter=self.matches_iter.completer.format,
                                current_item=current_match)
             except curses.error:

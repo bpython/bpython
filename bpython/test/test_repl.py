@@ -171,22 +171,22 @@ class TestArgspec(unittest.TestCase):
     def test_kw_arg_position(self):
         self.set_input_line("spam(a=0")
         self.assertTrue(self.repl.get_args())
-        self.assertEqual(self.repl.argspec[3], "a")
+        self.assertEqual(self.repl.arg_pos, "a")
 
         self.set_input_line("spam(1, b=1")
         self.assertTrue(self.repl.get_args())
-        self.assertEqual(self.repl.argspec[3], "b")
+        self.assertEqual(self.repl.arg_pos, "b")
 
         self.set_input_line("spam(1, c=2")
         self.assertTrue(self.repl.get_args())
-        self.assertEqual(self.repl.argspec[3], "c")
+        self.assertEqual(self.repl.arg_pos, "c")
 
     def test_lambda_position(self):
         self.set_input_line("spam(lambda a, b: 1, ")
         self.assertTrue(self.repl.get_args())
-        self.assertTrue(self.repl.argspec)
+        self.assertTrue(self.repl.funcprops)
         # Argument position
-        self.assertEqual(self.repl.argspec[3], 1)
+        self.assertEqual(self.repl.arg_pos, 1)
 
     def test_issue127(self):
         self.set_input_line("x=range(")
@@ -428,7 +428,8 @@ class TestCliReplTab(unittest.TestCase):
         self.repl.print_line = mock.Mock()
         self.repl.matches_iter.is_cseq.return_value = False
         self.repl.show_list = mock.Mock()
-        self.repl.argspec = mock.Mock()
+        self.repl.funcprops = mock.Mock()
+        self.repl.arg_pos = mock.Mock()
         self.repl.matches_iter.cur_line.return_value = (None, "foobar")
 
         self.repl.s = "foo"
@@ -471,7 +472,8 @@ class TestCliReplTab(unittest.TestCase):
         self.repl.matches_iter.previous.return_value = "previtem"
         self.repl.matches_iter.is_cseq.return_value = False
         self.repl.show_list = mock.Mock()
-        self.repl.argspec = mock.Mock()
+        self.repl.funcprops = mock.Mock()
+        self.repl.arg_pos = mock.Mock()
         self.repl.matches_iter.cur_line.return_value = (None, "previtem")
         self.repl.print_line = mock.Mock()
         self.repl.s = "foo"
