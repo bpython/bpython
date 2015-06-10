@@ -181,36 +181,41 @@ getpydocspec_re = LazyReCompile(r'([a-zA-Z_][a-zA-Z0-9_]*?)\((.*?)\)')
 
 def getpydocspec(f, func):
     try:
-        docstring = pydoc.getdoc(f)
+        argspec = pydoc.getdoc(f)
     except NameError:
         return None
-    s = getpydocspec_re.search(docstring)
+
+    s = getpydocspec_re.search(argspec)
     if s is None:
         return None
 
     if not hasattr(f, '__name__') or s.groups()[0] != f.__name__:
         return None
 
-    argspec = ArgSpec(list(), None, None, list(), list(), dict(), None)
-
+    args = list()
+    defaults = list()
+    varargs = varkwargs = None
+    kwonly_args = list()
+    kwonly_defaults = dict()
     for arg in s.group(2).split(','):
         arg = arg.strip()
         if arg.startswith('**'):
-            argspec.varkwargs = arg[2:]
+            varkwargs = arg[2:]
         elif arg.startswith('*'):
-            argspec.varargs = arg[1:]
+            varargs = arg[1:]
         else:
             arg, _, default = arg.partition('=')
-            if argspec.varargs is not None:
-                argspec.kwonly_args.append(arg)
+            if varargs is not None:
+                kwonly_args.append(arg)
                 if default:
-                    argspec.kwonly_defaults[arg] = default
+                    kwonly_defaults[arg] = default
             else:
-                argspec.args.append(arg)
+                args.append(arg)
                 if default:
-                    argspec.defaults.append(default)
+                    defaults.append(default)
 
-    return argspec
+    return ArgSpec(args, varargs, varkwargs, default, kwonly_args,
+                   kwonly_defaults, None)
 
 
 def getfuncprops(func, f):
