@@ -469,8 +469,8 @@ class Repl(object):
 
     def get_args(self):
         """Check if an unclosed parenthesis exists, then attempt to get the
-        argspec() for it. On success, update self.funcprops,self.arg_pos and return True,
-        otherwise set self.funcprops to None and return False"""
+        argspec() for it. On success, update self.funcprops,self.arg_pos and
+        return True, otherwise set self.funcprops to None and return False"""
 
         self.current_func = None
 
