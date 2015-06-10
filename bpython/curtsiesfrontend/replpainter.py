@@ -157,13 +157,14 @@ def formatted_docstring(docstring, columns, config):
                 for line in docstring.split('\n')), [])
 
 
-def paint_infobox(rows, columns, matches, funcprops, arg_pos, match, docstring, config,
-                  format):
+def paint_infobox(rows, columns, matches, funcprops, arg_pos, match, docstring,
+                  config, format):
     """Returns painted completions, funcprops, match, docstring etc."""
     if not (rows and columns):
         return fsarray(0, 0)
     width = columns - 4
-    lines = ((formatted_argspec(funcprops, arg_pos, width, config) if funcprops else []) +
+    lines = ((formatted_argspec(funcprops, arg_pos, width, config)
+              if funcprops else []) +
              (matches_lines(rows, width, matches, match, config, format)
               if matches else []) +
              (formatted_docstring(docstring, width, config)
