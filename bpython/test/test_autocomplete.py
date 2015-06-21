@@ -20,7 +20,8 @@ from bpython import autocomplete
 from bpython._py3compat import py3
 from bpython.test import mock
 
-if sys.version_info[:2] >= (3, 4):
+is_py34 = sys.version_info[:2] >= (3, 4)
+if is_py34:
     glob_function = 'glob.iglob'
 else:
     glob_function = 'glob.glob'
@@ -307,6 +308,13 @@ class TestMultilineJediCompletion(unittest.TestCase):
             2, ' a', 'class Foo:\n a', ['adsf'],
             [Comp('Abc', 'bc'), Comp('ade', 'de')])
         self.assertSetEqual(matches, set(['ade']))
+
+    @unittest.skipUnless(is_py34, 'asyncio required')
+    def test_issue_544(self):
+        com = autocomplete.MultilineJediCompletion()
+        code = '@asyncio.coroutine\ndef'
+        history = ('import asyncio', '@asyncio.coroutin')
+        com.matches(3, 'def', current_block=code, history=history)
 
 
 class TestGlobalCompletion(unittest.TestCase):
