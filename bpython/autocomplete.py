@@ -479,11 +479,9 @@ else:
                 script = jedi.Script(history, len(history.splitlines()),
                                      cursor_offset, 'fake.py')
                 completions = script.completions()
-            except jedi.NotFoundError:
-                self._orig_start = None
-                return None
-            except IndexError:
-                # for #483
+            except (jedi.NotFoundError, IndexError, KeyError):
+                # IndexError for #483
+                # KeyError for #544
                 self._orig_start = None
                 return None
 
