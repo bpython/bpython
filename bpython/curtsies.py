@@ -75,7 +75,8 @@ def main(args=None, locals_=None, banner=None):
         # expected for interactive sessions (vanilla python does it)
         sys.path.insert(0, '')
 
-    print(bpargs.version_banner())
+    if not options.quiet:
+        print(bpargs.version_banner())
     try:
         exit_value = mainloop(config, locals_, banner, interp, paste,
                               interactive=(not exec_args))
