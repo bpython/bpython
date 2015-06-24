@@ -28,7 +28,11 @@ repl = None  # global for `from bpython.curtsies import repl`
 # WARNING Will be a problem if more than one repl is ever instantiated this way
 
 
-def main(args=None, locals_=None, banner=None):
+def main(args=None, locals_=None, banner=None, welcome_message=None):
+    """
+    banner is displayed directly after the version information.
+    welcome_message is passed on to Repl and displayed in the statusbar.
+    """
     translations.init()
 
     config, options, exec_args = bpargs.parse(args, (
@@ -77,8 +81,10 @@ def main(args=None, locals_=None, banner=None):
 
     if not options.quiet:
         print(bpargs.version_banner())
+    if banner is not None:
+        print(banner)
     try:
-        exit_value = mainloop(config, locals_, banner, interp, paste,
+        exit_value = mainloop(config, locals_, welcome_message, interp, paste,
                               interactive=(not exec_args))
     except (SystemExitFromCodeGreenlet, SystemExit) as e:
         exit_value = e.args
