@@ -450,7 +450,7 @@ class Repl(BpythonRepl):
 
         self.incremental_search_target = ''
 
-        self.original_modules = sys.modules.keys()
+        self.original_modules = set(sys.modules.keys())
 
         self.width = None
         self.height = None
@@ -846,9 +846,8 @@ class Repl(BpythonRepl):
         if self.watcher:
             self.watcher.reset()
         cursor, line = self.cursor_offset, self.current_line
-        for modname in sys.modules.keys():
-            if modname not in self.original_modules:
-                del sys.modules[modname]
+        for modname in (set(sys.modules.keys()) - self.original_modules):
+            del sys.modules[modname]
         self.reevaluate(insert_into_history=True)
         self.cursor_offset, self.current_line = cursor, line
         self.status_bar.message(_('Reloaded at %s by user.') %
