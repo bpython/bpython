@@ -709,7 +709,7 @@ class CLIRepl(repl.Repl):
         is_bound_method = topline.is_bound_method
         if py3:
             kwonly = topline.argspec.kwonly
-            kwonly_defaults = topline.kwonly_defaults or dict()
+            kwonly_defaults = topline.argspec.kwonly_defaults or dict()
         max_w = int(self.scr.getmaxyx()[1] * 0.6)
         self.list_win.erase()
         self.list_win.resize(3, max_w)
