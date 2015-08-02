@@ -14,8 +14,10 @@ except ImportError:
 try:
     from nose.plugins.attrib import attr
 except ImportError:
-    def attr(func, *args, **kwargs):
-        return func
+    def attr(*args, **kwargs):
+        def identity(func):
+            return func
+        return identity
 
 
 @attr(speed='slow')
