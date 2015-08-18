@@ -214,7 +214,7 @@ def getpydocspec(f, func):
                 if default:
                     defaults.append(default)
 
-    return ArgSpec(args, varargs, varkwargs, default, kwonly_args,
+    return ArgSpec(args, varargs, varkwargs, defaults, kwonly_args,
                    kwonly_defaults, None)
 
 
