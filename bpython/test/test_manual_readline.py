@@ -207,9 +207,15 @@ class TestManualReadline(unittest.TestCase):
 
     def test_transpose_first_character(self):
         self.assertEquals(transpose_character_before_cursor(0, 'a'),
-                transpose_character_before_cursor(0, 'a'))
+                (0, 'a'))
         self.assertEquals(transpose_character_before_cursor(0, 'as'),
-                transpose_character_before_cursor(0, 'as'))
+                (0, 'as'))
+    
+    def test_transpose_end_of_line(self):
+        self.assertEquals(transpose_character_before_cursor(1, 'a'),
+                (1, 'a'))
+        self.assertEquals(transpose_character_before_cursor(2, 'as'),
+                (2, 'sa'))
 
     def test_transpose_word_before_cursor(self):
         pass
