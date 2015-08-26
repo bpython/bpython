@@ -280,11 +280,13 @@ def yank_prev_killed_text(cursor_offset, line, cut_buffer):
 
 @edit_keys.on(config='transpose_chars_key')
 def transpose_character_before_cursor(cursor_offset, line):
+    if cursor_offset == 0:
+        return cursor_offset, line
     return (min(len(line), cursor_offset + 1),
-            line[:cursor_offset-1] +
+            line[:cursor_offset - 1] +
             (line[cursor_offset] if len(line) > cursor_offset else '') +
             line[cursor_offset - 1] +
-            line[cursor_offset+1:])
+            line[cursor_offset + 1:])
 
 
 @edit_keys.on('<Esc+t>')

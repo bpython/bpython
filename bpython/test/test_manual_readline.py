@@ -201,6 +201,16 @@ class TestManualReadline(unittest.TestCase):
                          "adf s|asdf",
                          "adf as|sdf"], transpose_character_before_cursor)
 
+    def test_transpose_empty_line(self):
+        self.assertEquals(transpose_character_before_cursor(0, ''),
+                (0,''))
+
+    def test_transpose_first_character(self):
+        self.assertEquals(transpose_character_before_cursor(0, 'a'),
+                transpose_character_before_cursor(0, 'a'))
+        self.assertEquals(transpose_character_before_cursor(0, 'as'),
+                transpose_character_before_cursor(0, 'as'))
+
     def test_transpose_word_before_cursor(self):
         pass
 
