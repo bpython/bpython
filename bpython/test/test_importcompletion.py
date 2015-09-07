@@ -1,9 +1,7 @@
-from bpython import importcompletion
+from __future__ import unicode_literals
 
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
+from bpython import importcompletion
+from bpython.test import unittest
 
 
 class TestSimpleComplete(unittest.TestCase):
@@ -29,7 +27,8 @@ class TestRealComplete(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        [_ for _ in importcompletion.find_iterator]
+        for _ in importcompletion.find_iterator:
+            pass
         __import__('sys')
         __import__('os')
 

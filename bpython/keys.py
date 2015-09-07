@@ -25,7 +25,7 @@ import string
 from six.moves import range
 
 
-class KeyMap:
+class KeyMap(object):
 
     def __init__(self, default=''):
         self.map = {}
@@ -69,7 +69,7 @@ cli_key_dispatch['C-_'] = (chr(31), '^_')
 
 # fill dispatch with function keys
 for x in range(1, 13):
-    cli_key_dispatch['F%s' % str(x)] = ('KEY_F(%s)' % str(x),)
+    cli_key_dispatch['F%d' % x] = ('KEY_F(%d)' % x,)
 
 for x in range(1, 13):
-    urwid_key_dispatch['F%s' % str(x)] = 'f%s' % str(x)
+    urwid_key_dispatch['F%d' % x] = 'f%d' % x

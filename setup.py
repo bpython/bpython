@@ -102,6 +102,7 @@ if version == 'unknown':
         # get version from existing version file
         with open(version_file) as vf:
             version = vf.read().strip().split('=')[-1].replace('\'', '')
+        version = version.strip()
     except IOError:
         pass
 
@@ -210,15 +211,28 @@ data_files.extend(man_pages)
 install_requires = [
     'pygments',
     'requests',
-    'curtsies >=0.1.18, <0.2.0',
+    'curtsies >=0.1.18',
     'greenlet',
-    'six >=1.4'
+    'six >=1.5'
 ]
 
 extras_require = {
     'urwid': ['urwid'],
     'watch': ['watchdog'],
     'jedi': ['jedi'],
+    # need requests[security] for SNI support (only before 2.7.7)
+    ':python_version == "2.6" or '
+            'python_full_version == "2.7.0" or ' \
+            'python_full_version == "2.7.1" or ' \
+            'python_full_version == "2.7.2" or ' \
+            'python_full_version == "2.7.3" or ' \
+            'python_full_version == "2.7.4" or ' \
+            'python_full_version == "2.7.5" or ' \
+            'python_full_version == "2.7.6"': [
+        'pyOpenSSL',
+        'pyasn1',
+        'ndg-httpsclient'
+    ]
 }
 
 packages = [
@@ -235,17 +249,9 @@ entry_points = {
         'bpython = bpython.curtsies:main',
         'bpython-curses = bpython.cli:main',
         'bpython-urwid = bpython.urwid:main [urwid]',
-        'bpbd = bpdb:main'
+        'bpdb = bpdb:main'
     ]
 }
-
-if sys.version_info[0] == 2 and sys.platform == "darwin":
-    # need PyOpenSSL for SNI support (only 2.X and on Darwin)
-    # list of packages taken from
-    # https://github.com/kennethreitz/requests/blob/master/requests/packages/urllib3/contrib/pyopenssl.py
-    install_requires.append('PyOpenSSL')
-    install_requires.append('ndg-httpsclient')
-    install_requires.append('pyasn1')
 
 tests_require = []
 if sys.version_info[0] == 2 and sys.version_info[1] < 7:

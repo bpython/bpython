@@ -1,14 +1,10 @@
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
-
 from bpython.curtsiesfrontend.manual_readline import \
     left_arrow, right_arrow, beginning_of_line, forward_word, back_word, \
     end_of_line, delete, last_word_pos, backspace, delete_from_cursor_back, \
     delete_from_cursor_forward, delete_rest_of_word, delete_word_to_cursor, \
     transpose_character_before_cursor, UnconfiguredEdits, \
     delete_word_from_cursor_back
+from bpython.test import unittest
 
 
 class TestManualReadline(unittest.TestCase):
@@ -204,6 +200,22 @@ class TestManualReadline(unittest.TestCase):
                          "adfs| asdf",
                          "adf s|asdf",
                          "adf as|sdf"], transpose_character_before_cursor)
+
+    def test_transpose_empty_line(self):
+        self.assertEquals(transpose_character_before_cursor(0, ''),
+                (0,''))
+
+    def test_transpose_first_character(self):
+        self.assertEquals(transpose_character_before_cursor(0, 'a'),
+                (0, 'a'))
+        self.assertEquals(transpose_character_before_cursor(0, 'as'),
+                (0, 'as'))
+    
+    def test_transpose_end_of_line(self):
+        self.assertEquals(transpose_character_before_cursor(1, 'a'),
+                (1, 'a'))
+        self.assertEquals(transpose_character_before_cursor(2, 'as'),
+                (2, 'sa'))
 
     def test_transpose_word_before_cursor(self):
         pass

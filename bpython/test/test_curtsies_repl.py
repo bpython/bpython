@@ -6,13 +6,9 @@ import os
 import sys
 import tempfile
 import io
+from functools import partial
 from contextlib import contextmanager
 from six.moves import StringIO
-
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
 
 from bpython.curtsiesfrontend import repl as curtsiesrepl
 from bpython.curtsiesfrontend import interpreter
@@ -22,7 +18,7 @@ from bpython import config
 from bpython import args
 from bpython._py3compat import py3
 from bpython.test import (FixLanguageTestCase as TestCase, MagicIterMock, mock,
-                          builtin_target)
+                          builtin_target, unittest)
 
 
 def setup_config(conf):
@@ -179,7 +175,7 @@ class TestCurtsiesReplFilenameCompletion(TestCase):
     def test_list_win_visible_match_selected_on_tab_multiple_options(self):
         self.repl._current_line = " './'"
         self.repl._cursor_offset = 2
-        with mock.patch('bpython.autocomplete.get_completer_bpython') as m:
+        with mock.patch('bpython.autocomplete.get_completer') as m:
             m.return_value = (['./abc', './abcd', './bcd'],
                               autocomplete.FilenameCompletion())
             self.repl.update_completion()
@@ -191,7 +187,7 @@ class TestCurtsiesReplFilenameCompletion(TestCase):
     def test_list_win_not_visible_and_cseq_if_cseq(self):
         self.repl._current_line = " './a'"
         self.repl._cursor_offset = 5
-        with mock.patch('bpython.autocomplete.get_completer_bpython') as m:
+        with mock.patch('bpython.autocomplete.get_completer') as m:
             m.return_value = (['./abcd', './abce'],
                               autocomplete.FilenameCompletion())
             self.repl.update_completion()
@@ -204,7 +200,7 @@ class TestCurtsiesReplFilenameCompletion(TestCase):
     def test_list_win_not_visible_and_match_selected_if_one_option(self):
         self.repl._current_line = " './a'"
         self.repl._cursor_offset = 5
-        with mock.patch('bpython.autocomplete.get_completer_bpython') as m:
+        with mock.patch('bpython.autocomplete.get_completer') as m:
             m.return_value = (['./abcd'], autocomplete.FilenameCompletion())
             self.repl.update_completion()
             self.assertEqual(self.repl.list_win_visible, False)
@@ -287,6 +283,68 @@ class TestCurtsiesReevaluate(TestCase):
         self.assertIn('b', self.repl.interp.locals)
         self.repl.undo()
         self.assertNotIn('b', self.repl.interp.locals)
+
+
+class TestCurtsiesReevaluateWithImport(TestCase):
+    def setUp(self):
+        self.repl = create_repl()
+        self.open = partial(io.open, mode='wt', encoding='utf-8')
+        self.dont_write_bytecode = sys.dont_write_bytecode
+        sys.dont_write_bytecode = True
+
+    def tearDown(self):
+        sys.dont_write_bytecode = self.dont_write_bytecode
+
+    def push(self, line):
+        self.repl._current_line = line
+        self.repl.on_enter()
+
+    def head(self, path):
+        self.push('import sys')
+        self.push('sys.path.append("%s")' % (path))
+
+    @staticmethod
+    @contextmanager
+    def tempfile():
+        with tempfile.NamedTemporaryFile(suffix='.py') as temp:
+            path, name = os.path.split(temp.name)
+            yield temp.name, path, name.replace('.py', '')
+
+    def test_module_content_changed(self):
+        with self.tempfile() as (fullpath, path, modname):
+            with self.open(fullpath) as f:
+                f.write('a = 0\n')
+            self.head(path)
+            self.push('import %s' % (modname))
+            self.push('a = %s.a' % (modname))
+            self.assertIn('a', self.repl.interp.locals)
+            self.assertEqual(self.repl.interp.locals['a'], 0)
+            with self.open(fullpath) as f:
+                f.write('a = 1\n')
+            self.repl.clear_modules_and_reevaluate()
+            self.assertIn('a', self.repl.interp.locals)
+            self.assertEqual(self.repl.interp.locals['a'], 1)
+
+    def test_import_module_with_rewind(self):
+        with self.tempfile() as (fullpath, path, modname):
+            with self.open(fullpath) as f:
+                f.write('a = 0\n')
+            self.head(path)
+            self.push('import %s' % (modname))
+            self.assertIn(modname, self.repl.interp.locals)
+            self.repl.undo()
+            self.assertNotIn(modname, self.repl.interp.locals)
+            self.repl.clear_modules_and_reevaluate()
+            self.assertNotIn(modname, self.repl.interp.locals)
+            self.push('import %s' % (modname))
+            self.push('a = %s.a' % (modname))
+            self.assertIn('a', self.repl.interp.locals)
+            self.assertEqual(self.repl.interp.locals['a'], 0)
+            with self.open(fullpath) as f:
+                f.write('a = 1\n')
+            self.repl.clear_modules_and_reevaluate()
+            self.assertIn('a', self.repl.interp.locals)
+            self.assertEqual(self.repl.interp.locals['a'], 1)
 
 
 class TestCurtsiesPagerText(TestCase):

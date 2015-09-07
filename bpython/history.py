@@ -26,6 +26,7 @@
 from __future__ import unicode_literals
 import io
 import os
+import stat
 from itertools import islice
 from six.moves import range
 
@@ -187,7 +188,9 @@ class History(object):
         return entries
 
     def save(self, filename, encoding, lines=0):
-        with io.open(filename, 'w', encoding=encoding,
+        fd = os.open(filename, os.O_WRONLY | os.O_CREAT | os.TRUNC,
+                     stat.S_IRUSR | stat.S_IWUSR)
+        with io.open(fd, 'w', encoding=encoding,
                      errors='ignore') as hfile:
             with FileLock(hfile):
                 self.save_to(hfile, self.entries, lines)
@@ -204,7 +207,9 @@ class History(object):
             return self.append(s)
 
         try:
-            with io.open(filename, 'a+', encoding=encoding,
+            fd = os.open(filename, os.O_APPEND | os.O_RDWR | os.O_CREAT,
+                         stat.S_IRUSR | stat.S_IWUSR)
+            with io.open(fd, 'a+', encoding=encoding,
                          errors='ignore') as hfile:
                 with FileLock(hfile):
                     # read entries

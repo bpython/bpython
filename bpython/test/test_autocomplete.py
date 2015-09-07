@@ -1,6 +1,9 @@
+# encoding: utf-8
+
 from collections import namedtuple
 import inspect
-from bpython._py3compat import py3
+import keyword
+import sys
 
 try:
     import unittest2 as unittest
@@ -14,7 +17,14 @@ except ImportError:
     has_jedi = False
 
 from bpython import autocomplete
+from bpython._py3compat import py3
 from bpython.test import mock
+
+is_py34 = sys.version_info[:2] >= (3, 4)
+if is_py34:
+    glob_function = 'glob.iglob'
+else:
+    glob_function = 'glob.glob'
 
 
 class TestSafeEval(unittest.TestCase):
@@ -120,16 +130,18 @@ class TestFilenameCompletion(unittest.TestCase):
     def test_locate_succeeds_when_in_string(self):
         self.assertEqual(self.completer.locate(4, "a'bc'd"), (2, 4, 'bc'))
 
-    @mock.patch('bpython.autocomplete.glob', new=lambda text: [])
+    def test_issue_491(self):
+        self.assertNotEqual(self.completer.matches(9, '"a[a.l-1]'), None)
+
+    @mock.patch(glob_function, new=lambda text: [])
     def test_match_returns_none_if_not_in_string(self):
         self.assertEqual(self.completer.matches(2, 'abcd'), None)
 
-    @mock.patch('bpython.autocomplete.glob', new=lambda text: [])
+    @mock.patch(glob_function, new=lambda text: [])
     def test_match_returns_empty_list_when_no_files(self):
         self.assertEqual(self.completer.matches(2, '"a'), set())
 
-    @mock.patch('bpython.autocomplete.glob',
-                new=lambda text: ['abcde', 'aaaaa'])
+    @mock.patch(glob_function, new=lambda text: ['abcde', 'aaaaa'])
     @mock.patch('os.path.expanduser', new=lambda text: text)
     @mock.patch('os.path.isdir', new=lambda text: False)
     @mock.patch('os.path.sep', new='/')
@@ -137,8 +149,7 @@ class TestFilenameCompletion(unittest.TestCase):
         self.assertEqual(sorted(self.completer.matches(2, '"x')),
                          ['aaaaa', 'abcde'])
 
-    @mock.patch('bpython.autocomplete.glob',
-                new=lambda text: ['abcde', 'aaaaa'])
+    @mock.patch(glob_function, new=lambda text: ['abcde', 'aaaaa'])
     @mock.patch('os.path.expanduser', new=lambda text: text)
     @mock.patch('os.path.isdir', new=lambda text: True)
     @mock.patch('os.path.sep', new='/')
@@ -146,7 +157,7 @@ class TestFilenameCompletion(unittest.TestCase):
         self.assertEqual(sorted(self.completer.matches(2, '"x')),
                          ['aaaaa/', 'abcde/'])
 
-    @mock.patch('bpython.autocomplete.glob',
+    @mock.patch(glob_function,
                 new=lambda text: ['/expand/ed/abcde', '/expand/ed/aaaaa'])
     @mock.patch('os.path.expanduser',
                 new=lambda text: text.replace('~', '/expand/ed'))
@@ -205,12 +216,51 @@ class Foo(object):
         pass
 
 
+class OldStyleFoo:
+    a = 10
+
+    def __init__(self):
+        self.b = 20
+
+    def method(self, x):
+        pass
+
+
+skip_old_style = unittest.skipIf(py3,
+                                 'In Python 3 there are no old style classes')
+
+
 class TestAttrCompletion(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.com = autocomplete.AttrCompletion()
 
     def test_att_matches_found_on_instance(self):
-        com = autocomplete.AttrCompletion()
-        self.assertSetEqual(com.matches(2, 'a.', locals_={'a': Foo()}),
+        self.assertSetEqual(self.com.matches(2, 'a.', locals_={'a': Foo()}),
                             set(['a.method', 'a.a', 'a.b']))
+
+    @skip_old_style
+    def test_att_matches_found_on_old_style_instance(self):
+        self.assertSetEqual(self.com.matches(2, 'a.',
+                                             locals_={'a': OldStyleFoo()}),
+                            set(['a.method', 'a.a', 'a.b']))
+        self.assertIn(u'a.__dict__',
+                      self.com.matches(3, 'a._', locals_={'a': OldStyleFoo()}))
+
+    @skip_old_style
+    def test_att_matches_found_on_old_style_class_object(self):
+        self.assertIn(u'A.__dict__',
+                      self.com.matches(3, 'A._', locals_={'A': OldStyleFoo}))
+
+    @skip_old_style
+    def test_issue536(self):
+        class OldStyleWithBrokenGetAttr:
+            def __getattr__(self, attr):
+                raise Exception()
+
+        locals_ = {'a': OldStyleWithBrokenGetAttr()}
+        self.assertIn(u'a.__module__',
+                      self.com.matches(3, 'a._', locals_=locals_))
 
 
 class TestMagicMethodCompletion(unittest.TestCase):
@@ -259,6 +309,13 @@ class TestMultilineJediCompletion(unittest.TestCase):
             [Comp('Abc', 'bc'), Comp('ade', 'de')])
         self.assertSetEqual(matches, set(['ade']))
 
+    @unittest.skipUnless(is_py34, 'asyncio required')
+    def test_issue_544(self):
+        com = autocomplete.MultilineJediCompletion()
+        code = '@asyncio.coroutine\ndef'
+        history = ('import asyncio', '@asyncio.coroutin')
+        com.matches(3, 'def', current_block=code, history=history)
+
 
 class TestGlobalCompletion(unittest.TestCase):
 
@@ -272,6 +329,23 @@ class TestGlobalCompletion(unittest.TestCase):
         self.assertEqual(self.com.matches(8, 'function',
                                           locals_={'function': function}),
                          set(('function(', )))
+
+    def test_completions_are_unicode(self):
+        for m in self.com.matches(1, 'a', locals_={'abc': 10}):
+            self.assertIsInstance(m, type(u''))
+
+    @unittest.skipIf(py3, "in Python 3 invalid identifiers are passed through")
+    def test_ignores_nonascii_encodable(self):
+        self.assertSetEqual(self.com.matches(3, 'abc', locals_={'abcß': 10}),
+                            set())
+
+    def test_mock_kwlist(self):
+        with mock.patch.object(keyword, 'kwlist', new=['abcd']):
+            self.assertSetEqual(self.com.matches(3, 'abc', locals_={}), set())
+
+    def test_mock_kwlist_non_ascii(self):
+        with mock.patch.object(keyword, 'kwlist', new=['abcß']):
+            self.assertSetEqual(self.com.matches(3, 'abc', locals_={}), set())
 
 
 class TestParameterNameCompletion(unittest.TestCase):

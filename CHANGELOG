@@ -6,11 +6,34 @@ Changelog
 
 New features:
 
+* #425: Added curtsies 0.2.x support.
 
 Fixes:
 
 * #484: Switch `bpython.embed` to the curtsies frontend.
 
+0.14.2
+------
+
+Fixes:
+
+* #498: Fixed is_callable
+* #509: Fixed fcntl usage.
+* #523, #524: Fix conditional dependencies for SNI support again.
+* Fix binary name of bpdb.
+
+
+0.14.1
+------
+
+Fixes:
+
+* #483: Fixed jedi exceptions handling.
+* #486: Fixed Python 3.3 compatibility.
+* #489: Create history file with mode 0600.
+* #491: Fix issues with file name completion.
+* #494: Fix six version requirement.
+* Fix conditional dependencies for SNI support in Python versions before 2.7.7.
 
 0.14
 ----

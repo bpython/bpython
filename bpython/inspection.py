@@ -24,11 +24,11 @@
 # THE SOFTWARE.
 #
 
-from __future__ import with_statement
 import inspect
 import io
 import keyword
 import pydoc
+from collections import namedtuple
 from six.moves import range
 
 from pygments.token import Token
@@ -40,6 +40,11 @@ if not py3:
     import types
 
     _name = LazyReCompile(r'[a-zA-Z_]\w*$')
+
+ArgSpec = namedtuple('ArgSpec', ['args', 'varargs', 'varkwargs',  'defaults',
+                                 'kwonly', 'kwonly_defaults', 'annotations'])
+
+FuncProps = namedtuple('FuncProps', ['func', 'argspec', 'is_bound_method'])
 
 
 class AttrCleaner(object):
@@ -209,11 +214,11 @@ def getpydocspec(f, func):
                 if default:
                     defaults.append(default)
 
-    return [func, (args, varargs, varkwargs, defaults,
-                   kwonly_args, kwonly_defaults)]
+    return ArgSpec(args, varargs, varkwargs, defaults, kwonly_args,
+                   kwonly_defaults, None)
 
 
-def getargspec(func, f):
+def getfuncprops(func, f):
     # Check if it's a real bound method or if it's implicitly calling __init__
     # (i.e. FooClass(...) and not FooClass.__init__(...) -- the former would
     # not take 'self', the latter would:
@@ -239,16 +244,19 @@ def getargspec(func, f):
 
         argspec = list(argspec)
         fixlongargs(f, argspec)
-        argspec = [func, argspec, is_bound_method]
+        if len(argspec) == 4:
+            argspec = argspec + [list(), dict(), None]
+        argspec = ArgSpec(*argspec)
+        fprops = FuncProps(func, argspec, is_bound_method)
     except (TypeError, KeyError):
         with AttrCleaner(f):
             argspec = getpydocspec(f, func)
         if argspec is None:
             return None
         if inspect.ismethoddescriptor(f):
-            argspec[1][0].insert(0, 'obj')
-        argspec.append(is_bound_method)
-    return argspec
+            argspec.args.insert(0, 'obj')
+        fprops = FuncProps(func, argspec, is_bound_method)
+    return fprops
 
 
 def is_eval_safe_name(string):
@@ -287,8 +295,11 @@ def get_encoding_file(fname):
     return 'ascii'
 
 
-def get_source_unicode(obj):
-    """Returns a decoded source of object"""
-    if py3:
+if py3:
+    def get_source_unicode(obj):
+        """Returns a decoded source of object"""
         return inspect.getsource(obj)
-    return inspect.getsource(obj).decode(get_encoding(obj))
+else:
+    def get_source_unicode(obj):
+        """Returns a decoded source of object"""
+        return inspect.getsource(obj).decode(get_encoding(obj))

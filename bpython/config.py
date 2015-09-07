@@ -1,6 +1,7 @@
 # encoding: utf-8
 
-from __future__ import with_statement
+from __future__ import unicode_literals
+
 import os
 import sys
 import locale
@@ -54,7 +55,7 @@ def fill_config_with_default_values(config, default_values):
 
         for (opt, val) in iteritems(default_values[section]):
             if not config.has_option(section, opt):
-                config.set(section, opt, str(val))
+                config.set(section, opt, '%s' % (val, ))
 
 
 def loadini(struct, configfile):
@@ -107,10 +108,12 @@ def loadini(struct, configfile):
             'exit': '',
             'external_editor': 'F7',
             'help': 'F1',
+            'incremental_search': 'M-s',
             'last_output': 'F9',
             'left': 'C-b',
             'pastebin': 'F8',
             'reimport': 'F6',
+            'reverse_incremental_search': 'M-r',
             'right': 'C-f',
             'save': 'C-s',
             'search': 'C-o',
@@ -185,6 +188,9 @@ def loadini(struct, configfile):
     struct.toggle_file_watch_key = get_key_no_doublebind('toggle_file_watch')
     struct.undo_key = get_key_no_doublebind('undo')
     struct.reimport_key = get_key_no_doublebind('reimport')
+    struct.reverse_incremental_search_key = get_key_no_doublebind(
+        'reverse_incremental_search')
+    struct.incremental_search_key = get_key_no_doublebind('incremental_search')
     struct.up_one_line_key = get_key_no_doublebind('up_one_line')
     struct.down_one_line_key = get_key_no_doublebind('down_one_line')
     struct.cut_to_buffer_key = get_key_no_doublebind('cut_to_buffer')
@@ -200,8 +206,6 @@ def loadini(struct, configfile):
     struct.end_of_line_key = get_key_no_doublebind('end_of_line')
     struct.beginning_of_line_key = get_key_no_doublebind('beginning_of_line')
     struct.transpose_chars_key = get_key_no_doublebind('transpose_chars')
-    struct.clear_line_key = get_key_no_doublebind('clear_line')
-    struct.clear_screen_key = get_key_no_doublebind('clear_screen')
     struct.exit_key = get_key_no_doublebind('exit')
     struct.last_output_key = get_key_no_doublebind('last_output')
     struct.edit_config_key = get_key_no_doublebind('edit_config')
@@ -267,10 +271,6 @@ def loadini(struct, configfile):
                              (color_scheme_name, ))
             sys.exit(1)
 
-    # checks for valid key configuration this part still sucks
-    for key in (struct.pastebin_key, struct.save_key):
-        key_dispatch[key]
-
     # expand path of history file
     struct.hist_file = os.path.expanduser(struct.hist_file)
 
@@ -280,23 +280,23 @@ def loadini(struct, configfile):
 
     # set box drawing characters
     if config.getboolean('general', 'unicode_box') and supports_box_chars():
-        struct.left_border = u'│'
-        struct.right_border = u'│'
-        struct.top_border = u'─'
-        struct.bottom_border = u'─'
-        struct.left_bottom_corner = u'└'
-        struct.right_bottom_corner = u'┘'
-        struct.left_top_corner = u'┌'
-        struct.right_top_corner = u'┐'
+        struct.left_border = '│'
+        struct.right_border = '│'
+        struct.top_border = '─'
+        struct.bottom_border = '─'
+        struct.left_bottom_corner = '└'
+        struct.right_bottom_corner = '┘'
+        struct.left_top_corner = '┌'
+        struct.right_top_corner = '┐'
     else:
-        struct.left_border = u'|'
-        struct.right_border = u'|'
-        struct.top_border = u'-'
-        struct.bottom_border = u'-'
-        struct.left_bottom_corner = u'+'
-        struct.right_bottom_corner = u'+'
-        struct.left_top_corner = u'+'
-        struct.right_top_corner = u'+'
+        struct.left_border = '|'
+        struct.right_border = '|'
+        struct.top_border = '-'
+        struct.bottom_border = '-'
+        struct.left_bottom_corner = '+'
+        struct.right_bottom_corner = '+'
+        struct.left_top_corner = '+'
+        struct.right_top_corner = '+'
 
 
 def load_theme(struct, path, colors, default_colors):

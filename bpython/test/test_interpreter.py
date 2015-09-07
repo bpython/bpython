@@ -2,16 +2,22 @@
 
 from __future__ import unicode_literals
 
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
+import linecache
+import sys
 
 from curtsies.fmtfuncs import bold, green, magenta, cyan, red, plain
 
 from bpython.curtsiesfrontend import interpreter
 from bpython._py3compat import py3
-from bpython.test import mock
+from bpython.test import mock, unittest
+
+pypy = 'PyPy' in sys.version
+
+
+def _last_console_filename():
+    """Returns the last 'filename' used for console input
+    (as will be displayed in a traceback)."""
+    return '<bpython-input-%s>' % (len(linecache.cache.bpython_history) - 1)
 
 
 class TestInterpreter(unittest.TestCase):
@@ -25,11 +31,16 @@ class TestInterpreter(unittest.TestCase):
         i.write = append_to_a
         i.runsource('1.1.1.1')
 
-        expected = '  File ' + green('"<input>"') + ', line ' + \
-            bold(magenta('1')) + '\n    1.1.1.1\n        ^\n' + \
-            bold(red('SyntaxError')) + ': ' + cyan('invalid syntax') + '\n'
+        if pypy:
+            expected = '  File ' + green('"%s"' % _last_console_filename()) + ', line ' + \
+                bold(magenta('1')) + '\n    1.1.1.1\n      ^\n' + \
+                bold(red('SyntaxError')) + ': ' + cyan('invalid syntax') + '\n'
+        else:
+            expected = '  File ' + green('"%s"' % _last_console_filename()) + ', line ' + \
+                bold(magenta('1')) + '\n    1.1.1.1\n        ^\n' + \
+                bold(red('SyntaxError')) + ': ' + cyan('invalid syntax') + '\n'
 
-        self.assertEquals(str(plain('').join(a)), str(expected))
+        self.assertMultiLineEqual(str(plain('').join(a)), str(expected))
         self.assertEquals(plain('').join(a), expected)
 
     def test_traceback(self):
@@ -47,14 +58,19 @@ class TestInterpreter(unittest.TestCase):
         def g():
             return f()
 
-        i.runsource('g()')
+        i.runsource('g()', encode=False)
+
+        if pypy:
+            global_not_found = "global name 'g' is not defined"
+        else:
+            global_not_found = "name 'g' is not defined"
 
         expected = 'Traceback (most recent call last):\n  File ' + \
-            green('"<input>"') + ', line ' + bold(magenta('1')) + ', in ' + \
-            cyan('<module>') + '\n' + bold(red('NameError')) + ': ' + \
-            cyan("name 'g' is not defined") + '\n'
+            green('"%s"' % _last_console_filename()) + ', line ' + bold(magenta('1')) + ', in ' + \
+            cyan('<module>') + '\n    g()\n' + bold(red('NameError')) + ': ' + \
+            cyan(global_not_found) + '\n'
 
-        self.assertEquals(str(plain('').join(a)), str(expected))
+        self.assertMultiLineEqual(str(plain('').join(a)), str(expected))
         self.assertEquals(plain('').join(a), expected)
 
     @unittest.skipIf(py3, "runsource() accepts only unicode in Python 3")
@@ -92,3 +108,11 @@ class TestInterpreter(unittest.TestCase):
         i.runsource("a = u'\xfe'", encode=True)
         self.assertIsInstance(i.locals['a'], type(u''))
         self.assertEqual(i.locals['a'], u"\xfe")
+
+    def test_getsource_works_on_interactively_defined_functions(self):
+        source = 'def foo(x):\n    return x + 1\n'
+        i = interpreter.Interp()
+        i.runsource(source)
+        import inspect
+        inspected_source = inspect.getsource(i.locals['foo'])
+        self.assertEquals(inspected_source, source)

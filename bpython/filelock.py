@@ -36,7 +36,10 @@ class FileLock(object):
     On platforms without fcntl, all operations in this class are no-ops.
     """
 
-    def __init__(self, fd, mode=fcntl.LOCK_EX):
+    def __init__(self, fd, mode=None):
+        if has_fcntl and mode is None:
+            mode = fcntl.LOCK_EX
+
         self.fd = fd
         self.mode = mode
 

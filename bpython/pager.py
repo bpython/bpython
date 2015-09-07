@@ -29,6 +29,8 @@ import subprocess
 import sys
 import shlex
 
+from bpython._py3compat import py3
+
 
 def get_pager_command(default='less -rf'):
     command = shlex.split(os.environ.get('PAGER', default))
@@ -51,7 +53,7 @@ def page(data, use_internal=False):
         curses.endwin()
         try:
             popen = subprocess.Popen(command, stdin=subprocess.PIPE)
-            if isinstance(data, unicode):
+            if py3 or isinstance(data, unicode):
                 data = data.encode(sys.__stdout__.encoding, 'replace')
             popen.stdin.write(data)
             popen.stdin.close()

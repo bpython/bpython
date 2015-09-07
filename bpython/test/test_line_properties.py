@@ -1,10 +1,6 @@
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
-
 import re
 
+from bpython.test import unittest
 from bpython.line import current_word, current_dict_key, current_dict, \
     current_string, current_object, current_object_attribute, \
     current_from_import_from, current_from_import_import, current_import, \

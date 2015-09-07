@@ -1,10 +1,6 @@
 from __future__ import unicode_literals
 
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
-
+from bpython.test import unittest
 from bpython.curtsiesfrontend import parse
 from curtsies.fmtfuncs import yellow, cyan, green, bold
 

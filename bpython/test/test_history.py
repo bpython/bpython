@@ -1,11 +1,7 @@
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
-
 from six.moves import range
 
 from bpython.history import History
+from bpython.test import unittest
 
 
 class TestHistory(unittest.TestCase):

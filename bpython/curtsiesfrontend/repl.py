@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 import contextlib
 import errno
-import functools
 import greenlet
 import logging
 import os
@@ -53,12 +52,16 @@ from bpython.curtsiesfrontend.interpreter import (Interp,
 
 from curtsies.configfile_keynames import keymap as key_dispatch
 
+if not py3:
+    import imp
+    import pkgutil
+
 
 logger = logging.getLogger(__name__)
 
-INCONSISTENT_HISTORY_MSG = u"#<---History inconsistent with output shown--->"
-CONTIGUITY_BROKEN_MSG = u"#<---History contiguity broken by rewind--->"
-HELP_MESSAGE = u"""
+INCONSISTENT_HISTORY_MSG = "#<---History inconsistent with output shown--->"
+CONTIGUITY_BROKEN_MSG = "#<---History contiguity broken by rewind--->"
+HELP_MESSAGE = """
 Thanks for using bpython!
 
 See http://bpython-interpreter.org/ for more information and
@@ -80,6 +83,7 @@ You can also set which pastebin helper and which external editor to use.
 See {example_config_url} for an example config file.
 Press {config.edit_config_key} to edit this config file.
 """
+EXAMPLE_CONFIG_URL = 'https://raw.githubusercontent.com/bpython/bpython/master/bpython/sample-config'
 
 # This is needed for is_nop and should be removed once is_nop is fixed.
 if py3:
@@ -213,6 +217,58 @@ class ReevaluateFakeStdin(object):
         return value
 
 
+class ImportLoader(object):
+
+    def __init__(self, watcher, loader):
+        self.watcher = watcher
+        self.loader = loader
+
+    def load_module(self, name):
+        module = self.loader.load_module(name)
+        if hasattr(module, '__file__'):
+            self.watcher.track_module(module.__file__)
+        return module
+
+
+if not py3:
+    # Remember that pkgutil.ImpLoader is an old style class.
+    class ImpImportLoader(pkgutil.ImpLoader):
+
+        def __init__(self, watcher, *args):
+            self.watcher = watcher
+            pkgutil.ImpLoader.__init__(self, *args)
+
+        def load_module(self, name):
+            module = pkgutil.ImpLoader.load_module(self, name)
+            if hasattr(module, '__file__'):
+                self.watcher.track_module(module.__file__)
+            return module
+
+
+class ImportFinder(object):
+
+    def __init__(self, watcher, old_meta_path):
+        self.watcher = watcher
+        self.old_meta_path = old_meta_path
+
+    def find_module(self, fullname, path=None):
+        for finder in self.old_meta_path:
+            loader = finder.find_module(fullname, path)
+            if loader is not None:
+                return ImportLoader(self.watcher, loader)
+
+        if not py3:
+            # Python 2 does not have the default finders stored in
+            # sys.meta_path. Use imp to perform the actual importing.
+            try:
+                result = imp.find_module(fullname, path)
+                return ImpImportLoader(self.watcher, fullname, *result)
+            except ImportError:
+                return None
+
+        return None
+
+
 class Repl(BpythonRepl):
     """Python Repl
 
@@ -313,8 +369,7 @@ class Repl(BpythonRepl):
         def smarter_request_reload(files_modified=()):
             if self.watching_files:
                 request_reload(files_modified=files_modified)
-            else:
-                pass
+
         self.request_reload = smarter_request_reload
         self.request_undo = request_undo
         self.get_term_hw = get_term_hw
@@ -395,7 +450,7 @@ class Repl(BpythonRepl):
 
         self.incremental_search_target = ''
 
-        self.original_modules = sys.modules.keys()
+        self.original_modules = set(sys.modules.keys())
 
         self.width = None
         self.height = None
@@ -416,27 +471,9 @@ class Repl(BpythonRepl):
         signal.signal(signal.SIGWINCH, self.sigwinch_handler)
         signal.signal(signal.SIGTSTP, self.sigtstp_handler)
 
-        self.orig_import = __builtins__['__import__']
+        self.orig_meta_path = sys.meta_path
         if self.watcher:
-            # for reading modules if they fail to load
-            old_module_locations = {}
-
-            @functools.wraps(self.orig_import)
-            def new_import(name, globals={}, locals={}, fromlist=[], level=-1):
-                try:
-                    m = self.orig_import(name, globals=globals, locals=locals,
-                                         fromlist=fromlist, level=level)
-                except:
-                    if name in old_module_locations:
-                        loc = old_module_locations[name]
-                        self.watcher.track_module(loc)
-                    raise
-                else:
-                    if hasattr(m, "__file__"):
-                        old_module_locations[name] = m.__file__
-                        self.watcher.track_module(m.__file__)
-                return m
-            __builtins__['__import__'] = new_import
+            sys.meta_path = [ImportFinder(self.watcher, self.orig_meta_path)]
 
         sitefix.monkeypatch_quit()
         return self
@@ -447,7 +484,7 @@ class Repl(BpythonRepl):
         sys.stderr = self.orig_stderr
         signal.signal(signal.SIGWINCH, self.orig_sigwinch_handler)
         signal.signal(signal.SIGTSTP, self.orig_sigtstp_handler)
-        __builtins__['__import__'] = self.orig_import
+        sys.meta_path = self.orig_meta_path
 
     def sigwinch_handler(self, signum, frame):
         old_rows, old_columns = self.height, self.width
@@ -524,7 +561,7 @@ class Repl(BpythonRepl):
                 self.startup()
             except IOError as e:
                 self.status_bar.message(
-                    _('Executing PYTHONSTARTUP failed: %s') % (str(e)))
+                    _('Executing PYTHONSTARTUP failed: %s') % (e, ))
 
         elif isinstance(e, bpythonevents.UndoEvent):
             self.undo(n=e.n)
@@ -556,12 +593,14 @@ class Repl(BpythonRepl):
         if self.stdin.has_focus:
             return self.stdin.process_event(e)
 
-        if (e in ("<RIGHT>", '<Ctrl-f>') and
-                self.config.curtsies_right_arrow_completion and
-                self.cursor_offset == len(self.current_line)):
+        if (e in (key_dispatch[self.config.right_key] +
+                  key_dispatch[self.config.end_of_line_key] +
+                  ("<RIGHT>",))
+                and self.config.curtsies_right_arrow_completion
+                and self.cursor_offset == len(self.current_line)):
+
             self.current_line += self.current_suggestion
             self.cursor_offset = len(self.current_line)
-
         elif e in ("<UP>",) + key_dispatch[self.config.up_one_line_key]:
             self.up_one_line()
         elif e in ("<DOWN>",) + key_dispatch[self.config.down_one_line_key]:
@@ -570,9 +609,9 @@ class Repl(BpythonRepl):
             self.on_control_d()
         elif e in ("<Esc+.>",):
             self.get_last_word()
-        elif e in ("<Esc+r>",):
+        elif e in key_dispatch[self.config.reverse_incremental_search_key]:
             self.incremental_search(reverse=True)
-        elif e in ("<Esc+s>",):
+        elif e in key_dispatch[self.config.incremental_search_key]:
             self.incremental_search()
         elif (e in ("<BACKSPACE>",) + key_dispatch[self.config.backspace_key]
               and self.incremental_search_mode):
@@ -761,7 +800,7 @@ class Repl(BpythonRepl):
 
     def process_simple_keypress(self, e):
         # '\n' needed for pastes
-        if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>", u"\n", u"\r"):
+        if e in ("<Ctrl-j>", "<Ctrl-m>", "<PADENTER>", "\n", "\r"):
             self.on_enter()
             while self.fake_refresh_requested:
                 self.fake_refresh_requested = False
@@ -786,14 +825,14 @@ class Repl(BpythonRepl):
         self.cursor_offset = len(self.current_line)
 
     def send_session_to_external_editor(self, filename=None):
-        for_editor = (u"### current bpython session - file will be "
-                      u"reevaluated, ### lines will not be run\n")
-        for_editor += u'\n'.join(line[len(self.ps1):]
-                                 if line.startswith(self.ps1) else
-                                 line[len(self.ps2):]
-                                 if line.startswith(self.ps2) else
-                                 '### '+line
-                                 for line in self.getstdout().split('\n'))
+        for_editor = ("### current bpython session - file will be "
+                      "reevaluated, ### lines will not be run\n")
+        for_editor += '\n'.join(line[len(self.ps1):]
+                                if line.startswith(self.ps1) else
+                                line[len(self.ps2):]
+                                if line.startswith(self.ps2) else
+                                '### '+line
+                                for line in self.getstdout().split('\n'))
         text = self.send_to_external_editor(for_editor)
         lines = text.split('\n')
         from_editor = [line for line in lines if line[:4] != '### ']
@@ -807,9 +846,8 @@ class Repl(BpythonRepl):
         if self.watcher:
             self.watcher.reset()
         cursor, line = self.cursor_offset, self.current_line
-        for modname in sys.modules.keys():
-            if modname not in self.original_modules:
-                del sys.modules[modname]
+        for modname in (set(sys.modules.keys()) - self.original_modules):
+            del sys.modules[modname]
         self.reevaluate(insert_into_history=True)
         self.cursor_offset, self.current_line = cursor, line
         self.status_bar.message(_('Reloaded at %s by user.') %
@@ -870,7 +908,7 @@ class Repl(BpythonRepl):
 
     def update_completion(self, tab=False):
         """Update visible docstring and matches, and possibly hide/show completion box"""
-        # Update autocomplete info; self.matches_iter and self.argspec
+        # Update autocomplete info; self.matches_iter and self.funcprops
         # Should be called whenever the completion box might need to appear / dissapear
         # when current line or cursor offset changes, unless via selecting a match
         self.current_match = None
@@ -940,8 +978,8 @@ class Repl(BpythonRepl):
             if err:
                 indent = 0
 
-           #TODO This should be printed ABOVE the error that just happened instead
-            # or maybe just thrown away and not shown
+            # TODO This should be printed ABOVE the error that just happened
+            # instead or maybe just thrown away and not shown
             if self.current_stdouterr_line:
                 self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width))
                 self.current_stdouterr_line = ''
@@ -959,7 +997,8 @@ class Repl(BpythonRepl):
         self.clear_current_block(remove_from_history=False)
 
     def unhighlight_paren(self):
-        """modify line in self.display_buffer to unhighlight a paren if possible
+        """Modify line in self.display_buffer to unhighlight a paren if
+        possible.
 
         self.highlighted_paren should be a line in ?
         """
@@ -1016,7 +1055,8 @@ class Repl(BpythonRepl):
     # formatting, output
     @property
     def done(self):
-        """Whether the last block is complete - which prompt to use, ps1 or ps2"""
+        """Whether the last block is complete - which prompt to use, ps1 or
+        ps2"""
         return not self.buffer
 
     @property
@@ -1072,7 +1112,8 @@ class Repl(BpythonRepl):
     def current_cursor_line_without_suggestion(self):
         """Current line, either output/input or Python prompt + code"""
         value = (self.current_output_line +
-                ('' if self.coderunner.running else self.display_line_with_prompt))
+                 ('' if self.coderunner.running else
+                  self.display_line_with_prompt))
         logger.debug('current cursor line: %r', value)
         return value
 
@@ -1103,12 +1144,13 @@ class Repl(BpythonRepl):
         self.stdin.current_line = '\n'
 
     def paint(self, about_to_exit=False, user_quit=False):
-        """Returns an array of min_height or more rows and width columns, plus cursor position
+        """Returns an array of min_height or more rows and width columns, plus
+        cursor position
 
-        Paints the entire screen - ideally the terminal display layer will take a diff and only
-        write to the screen in portions that have changed, but the idea is that we don't need
-        to worry about that here, instead every frame is completely redrawn because
-        less state is cool!
+        Paints the entire screen - ideally the terminal display layer will take
+        a diff and only write to the screen in portions that have changed, but
+        the idea is that we don't need to worry about that here, instead every
+        frame is completely redrawn because less state is cool!
         """
         # The hairiest function in the curtsies - a cleanup would be great.
         if about_to_exit:
@@ -1117,33 +1159,41 @@ class Repl(BpythonRepl):
         width, min_height = self.width, self.height
         show_status_bar = bool(self.status_bar.should_show_message) or self.status_bar.has_focus
         if show_status_bar:
-            min_height -= 1 # because we're going to tack the status bar on at the end,
-                            # shoot for an array one less than the height of the screen
+            # because we're going to tack the status bar on at the end, shoot
+            # for an array one less than the height of the screen
+            min_height -= 1
 
         current_line_start_row = len(self.lines_for_display) - max(0, self.scroll_offset)
-        #TODO how is the situation of self.scroll_offset < 0 possible?
-        #current_line_start_row = len(self.lines_for_display) - self.scroll_offset
+        # TODO how is the situation of self.scroll_offset < 0 possible?
+        # current_line_start_row = len(self.lines_for_display) - self.scroll_offset
         if self.request_paint_to_clear_screen: # or show_status_bar and about_to_exit ?
             self.request_paint_to_clear_screen = False
             arr = FSArray(min_height + current_line_start_row, width)
         else:
             arr = FSArray(0, width)
-        #TODO test case of current line filling up the whole screen (there aren't enough rows to show it)
+        # TODO test case of current line filling up the whole screen (there
+        # aren't enough rows to show it)
 
-        current_line = paint.paint_current_line(min_height, width, self.current_cursor_line)
-        # needs to happen before we calculate contents of history because calculating
-        # self.current_cursor_line has the side effect of unhighlighting parens in buffer
+        current_line = paint.paint_current_line(min_height, width,
+                                                self.current_cursor_line)
+        # needs to happen before we calculate contents of history because
+        # calculating self.current_cursor_line has the side effect of
+        # unhighlighting parens in buffer
 
         def move_screen_up(current_line_start_row):
             # move screen back up a screen minus a line
             while current_line_start_row < 0:
-                logger.debug('scroll_offset was %s, current_line_start_row was %s', self.scroll_offset, current_line_start_row)
+                logger.debug('scroll_offset was %s, current_line_start_row '
+                             'was %s', self.scroll_offset,
+                             current_line_start_row)
                 self.scroll_offset = self.scroll_offset - self.height
                 current_line_start_row = len(self.lines_for_display) - max(-1, self.scroll_offset)
-                logger.debug('scroll_offset changed to %s, current_line_start_row changed to %s', self.scroll_offset, current_line_start_row)
+                logger.debug('scroll_offset changed to %s, '
+                             'current_line_start_row changed to %s',
+                             self.scroll_offset, current_line_start_row)
             return current_line_start_row
 
-        if self.inconsistent_history == True and not self.history_already_messed_up:
+        if self.inconsistent_history and not self.history_already_messed_up:
             logger.debug(INCONSISTENT_HISTORY_MSG)
             self.history_already_messed_up = True
             msg = INCONSISTENT_HISTORY_MSG
@@ -1155,36 +1205,41 @@ class Repl(BpythonRepl):
             current_line_start_row = move_screen_up(current_line_start_row)
             logger.debug('current_line_start_row: %r', current_line_start_row)
 
-            history = paint.paint_history(max(0, current_line_start_row - 1), width, self.lines_for_display)
-            arr[1:history.height+1,:history.width] = history
+            history = paint.paint_history(max(0, current_line_start_row - 1),
+                                          width, self.lines_for_display)
+            arr[1:history.height + 1, :history.width] = history
 
             if arr.height <= min_height:
-                arr[min_height, 0] = ' ' # force scroll down to hide broken history message
+                arr[min_height, 0] = ' '  # force scroll down to hide broken history message
 
-        elif current_line_start_row < 0: #if current line trying to be drawn off the top of the screen
+        elif current_line_start_row < 0:  # if current line trying to be drawn off the top of the screen
             logger.debug(CONTIGUITY_BROKEN_MSG)
             msg = CONTIGUITY_BROKEN_MSG
             arr[0, 0:min(len(msg), width)] = [msg[:width]]
 
             current_line_start_row = move_screen_up(current_line_start_row)
 
-            history = paint.paint_history(max(0, current_line_start_row - 1), width, self.lines_for_display)
-            arr[1:history.height+1,:history.width] = history
+            history = paint.paint_history(max(0, current_line_start_row - 1),
+                                          width, self.lines_for_display)
+            arr[1:history.height + 1, :history.width] = history
 
             if arr.height <= min_height:
-                arr[min_height, 0] = ' ' # force scroll down to hide broken history message
+                # force scroll down to hide broken history message
+                arr[min_height, 0] = ' '
 
         else:
             assert current_line_start_row >= 0
-            logger.debug("no history issues. start %i",current_line_start_row)
-            history = paint.paint_history(current_line_start_row, width, self.lines_for_display)
-            arr[:history.height,:history.width] = history
+            logger.debug("no history issues. start %i", current_line_start_row)
+            history = paint.paint_history(current_line_start_row, width,
+                                          self.lines_for_display)
+            arr[:history.height, :history.width] = history
 
         self.inconsistent_history = False
 
         if user_quit: # quit() or exit() in interp
             current_line_start_row = current_line_start_row - current_line.height
-        logger.debug("---current line row slice %r, %r", current_line_start_row, current_line_start_row + current_line.height)
+        logger.debug("---current line row slice %r, %r", current_line_start_row,
+                     current_line_start_row + current_line.height)
         logger.debug("---current line col slice %r, %r", 0, current_line.width)
         arr[current_line_start_row:current_line_start_row + current_line.height,
             0:current_line.width] = current_line
@@ -1193,13 +1248,13 @@ class Repl(BpythonRepl):
             return arr, (0, 0) # short circuit, no room for infobox
 
         lines = paint.display_linize(self.current_cursor_line+'X', width)
-                                       # extra character for space for the cursor
+        # extra character for space for the cursor
         current_line_end_row = current_line_start_row + len(lines) - 1
 
         if self.stdin.has_focus:
             cursor_row, cursor_column = divmod(len(self.current_stdouterr_line) + self.stdin.cursor_offset, width)
             assert cursor_column >= 0, cursor_column
-        elif self.coderunner.running: #TODO does this ever happen?
+        elif self.coderunner.running:  # TODO does this ever happen?
             cursor_row, cursor_column = divmod(len(self.current_cursor_line_without_suggestion) + self.cursor_offset, width)
             assert cursor_column >= 0, (cursor_column, len(self.current_cursor_line), len(self.current_line), self.cursor_offset)
         else:
@@ -1216,7 +1271,8 @@ class Repl(BpythonRepl):
             infobox = paint.paint_infobox(info_max_rows,
                                           int(width * self.config.cli_suggestion_width),
                                           self.matches_iter.matches,
-                                          self.argspec,
+                                          self.funcprops,
+                                          self.arg_pos,
                                           self.current_match,
                                           self.docstring,
                                           self.config,
@@ -1249,7 +1305,6 @@ class Repl(BpythonRepl):
         logger.debug('cursor pos: %r', (cursor_row, cursor_column))
         return arr, (cursor_row, cursor_column)
 
-
     @contextlib.contextmanager
     def in_paste_mode(self):
         orig_value = self.paste_mode
@@ -1257,12 +1312,14 @@ class Repl(BpythonRepl):
         yield
         self.paste_mode = orig_value
 
-    ## Debugging shims, good example of embedding a Repl in other code
+    # Debugging shims, good example of embedding a Repl in other code
     def dumb_print_output(self):
         arr, cpos = self.paint()
         arr[cpos[0]:cpos[0]+1, cpos[1]:cpos[1]+1] = ['~']
+
         def my_print(msg):
             self.orig_stdout.write(str(msg)+'\n')
+
         my_print('X'*(self.width+8))
         my_print(' use "/" for enter '.center(self.width+8, 'X'))
         my_print(' use "\\" for rewind '.center(self.width+8, 'X'))
@@ -1345,16 +1402,17 @@ class Repl(BpythonRepl):
         self.unhighlight_paren()
 
     cursor_offset = property(_get_cursor_offset, _set_cursor_offset, None,
-                            "The current cursor offset from the front of the line")
+                             "The current cursor offset from the front of the "
+                             "line")
 
     def echo(self, msg, redraw=True):
         """
         Notification that redrawing the current line is necessary (we don't
         care, since we always redraw the whole screen)
 
-        Supposed to parse and echo a formatted string with appropriate attributes.
-        It's not supposed to update the screen if it's reevaluating the code (as it
-        does with undo)."""
+        Supposed to parse and echo a formatted string with appropriate
+        attributes. It's not supposed to update the screen if it's reevaluating
+        the code (as it does with undo)."""
         logger.debug("echo called with %r" % msg)
 
     @property
@@ -1428,7 +1486,7 @@ class Repl(BpythonRepl):
         logger.debug('old_display_lines_offscreen %s', '|'.join(str(x) for x in old_display_lines_offscreen))
         logger.debug('    display_lines_offscreen %s', '|'.join(str(x) for x in display_lines_offscreen))
         if old_display_lines_offscreen[:len(display_lines_offscreen)] != display_lines_offscreen and not self.history_already_messed_up:
-            #self.scroll_offset = self.scroll_offset + (len(old_display_lines)-len(self.display_lines))
+            # self.scroll_offset = self.scroll_offset + (len(old_display_lines)-len(self.display_lines))
             self.inconsistent_history = True
         logger.debug('after rewind, self.inconsistent_history is %r', self.inconsistent_history)
 
@@ -1475,7 +1533,7 @@ class Repl(BpythonRepl):
         try:
             source = self.get_source_of_current_name()
         except SourceNotFound as e:
-            self.status_bar.message(str(e))
+            self.status_bar.message('%s' % (e, ))
         else:
             if self.config.highlight_show_source:
                 source = format(PythonLexer().get_tokens(source),
@@ -1489,7 +1547,7 @@ class Repl(BpythonRepl):
         return (('bpython-curtsies version %s' % bpython.__version__) + ' ' +
                 ('using curtsies version %s' % curtsies.__version__) + '\n' +
                 HELP_MESSAGE.format(config_file_location=default_config_path(),
-                                    example_config_url='https://raw.githubusercontent.com/bpython/bpython/master/bpython/sample-config',
+                                    example_config_url=EXAMPLE_CONFIG_URL,
                                     config=self.config))
 
     def key_help_text(self):
@@ -1498,13 +1556,13 @@ class Repl(BpythonRepl):
         pairs = []
         pairs.append(['complete history suggestion', 'right arrow at end of line'])
         pairs.append(['previous match with current line', 'up arrow'])
-        pairs.append(['reverse incremental search', 'M-r'])
-        pairs.append(['incremental search', 'M-s'])
         for functionality, key in [(attr[:-4].replace('_', ' '), getattr(self.config, attr))
                                    for attr in self.config.__dict__
                                    if attr.endswith('key')]:
-            if functionality in NOT_IMPLEMENTED: key = "Not Implemented"
-            if key == '': key = 'Disabled'
+            if functionality in NOT_IMPLEMENTED:
+                key = 'Not Implemented'
+            if key == '':
+                key = 'Disabled'
 
             pairs.append([functionality, key])
 
@@ -1547,8 +1605,8 @@ def just_simple_events(event_list):
     simple_events = []
     for e in event_list:
         # '\n' necessary for pastes
-        if e in (u"<Ctrl-j>", u"<Ctrl-m>", u"<PADENTER>", u"\n", u"\r"):
-            simple_events.append(u'\n')
+        if e in ("<Ctrl-j>", "<Ctrl-m>", "<PADENTER>", "\n", "\r"):
+            simple_events.append('\n')
         elif isinstance(e, events.Event):
             pass  # ignore events
         elif e == '<SPACE>':

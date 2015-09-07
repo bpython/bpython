@@ -23,15 +23,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import with_statement
 import code
-import errno
 import inspect
 import io
 import os
 import pkgutil
 import pydoc
-import requests
 import shlex
 import subprocess
 import sys
@@ -39,22 +36,21 @@ import tempfile
 import textwrap
 import time
 import traceback
-import unicodedata
 from itertools import takewhile
-from locale import getpreferredencoding
-from string import Template
 from six import itervalues
-from six.moves.urllib_parse import quote as urlquote, urljoin, urlparse
 
 from pygments.token import Token
 
+from bpython import autocomplete
 from bpython import inspection
 from bpython._py3compat import PythonLexer, py3, prepare_for_exec
-from bpython.formatter import Parenthesis
-from bpython.translations import _, ngettext
 from bpython.clipboard import get_clipboard, CopyFailed
+from bpython.config import getpreferredencoding
+from bpython.formatter import Parenthesis
 from bpython.history import History
-import bpython.autocomplete as autocomplete
+from bpython.paste import PasteHelper, PastePinnwand, PasteFailed
+from bpython.patch_linecache import filename_for_console_input
+from bpython.translations import _, ngettext
 
 
 class RuntimeTimer(object):
@@ -99,7 +95,7 @@ class Interpreter(code.InteractiveInterpreter):
     def reset_running_time(self):
         self.running_time = 0
 
-    def runsource(self, source, filename='<input>', symbol='single',
+    def runsource(self, source, filename=None, symbol='single',
                   encode=True):
         """Execute Python code.
 
@@ -109,6 +105,8 @@ class Interpreter(code.InteractiveInterpreter):
         if not py3 and encode:
             source = u'# coding: %s\n%s' % (self.encoding, source)
             source = source.encode(self.encoding)
+        if filename is None:
+            filename = filename_for_console_input(source)
         with self.timer:
             return code.InteractiveInterpreter.runsource(self, source,
                                                          filename, symbol)
@@ -367,7 +365,8 @@ class Repl(object):
         self.history = []
         self.evaluating = False
         self.matches_iter = MatchesIterator()
-        self.argspec = None
+        self.funcprops = None
+        self.arg_pos = None
         self.current_func = None
         self.highlighted_paren = None
         self._C = {}
@@ -390,6 +389,16 @@ class Repl(object):
                                      getpreferredencoding() or "ascii")
             except EnvironmentError:
                 pass
+
+        self.completers = autocomplete.get_default_completer(
+            config.autocomplete_mode)
+        if self.config.pastebin_helper:
+            self.paster = PasteHelper(self.config.pastebin_helper)
+        else:
+            self.paster = PastePinnwand(self.config.pastebin_url,
+                                        self.config.pastebin_expiry,
+                                        self.config.pastebin_show_url,
+                                        self.config.pastebin_removal_url)
 
     @property
     def ps1(self):
@@ -466,8 +475,8 @@ class Repl(object):
 
     def get_args(self):
         """Check if an unclosed parenthesis exists, then attempt to get the
-        argspec() for it. On success, update self.argspec and return True,
-        otherwise set self.argspec to None and return False"""
+        argspec() for it. On success, update self.funcprops,self.arg_pos and
+        return True, otherwise set self.funcprops to None and return False"""
 
         self.current_func = None
 
@@ -530,11 +539,11 @@ class Repl(object):
             except AttributeError:
                 return None
         self.current_func = f
-
-        self.argspec = inspection.getargspec(func, f)
-        if self.argspec:
-            self.argspec.append(arg_number)
+        self.funcprops = inspection.getfuncprops(func, f)
+        if self.funcprops:
+            self.arg_pos = arg_number
             return True
+        self.arg_pos = None
         return False
 
     def get_source_of_current_name(self):
@@ -552,11 +561,11 @@ class Repl(object):
                     obj = self.get_object(line)
             return inspection.get_source_unicode(obj)
         except (AttributeError, NameError) as e:
-            msg = _("Cannot get source: %s") % (str(e), )
+            msg = _(u"Cannot get source: %s") % (e, )
         except IOError as e:
-            msg = str(e)
+            msg = u"%s" % (e, )
         except TypeError as e:
-            if "built-in" in str(e):
+            if "built-in" in u"%s" % (e, ):
                 msg = _("Cannot access source of %r") % (obj, )
             else:
                 msg = _("No source code found for %s") % (self.current_line, )
@@ -565,7 +574,7 @@ class Repl(object):
     def set_docstring(self):
         self.docstring = None
         if not self.get_args():
-            self.argspec = None
+            self.funcprops = None
         elif self.current_func is not None:
             try:
                 self.docstring = pydoc.getdoc(self.current_func)
@@ -602,11 +611,12 @@ class Repl(object):
 
         self.set_docstring()
 
-        matches, completer = autocomplete.get_completer_bpython(
+        matches, completer = autocomplete.get_completer(
+            self.completers,
             cursor_offset=self.cursor_offset,
             line=self.current_line,
             locals_=self.interp.locals,
-            argspec=self.argspec,
+            argspec=self.funcprops,
             current_block='\n'.join(self.buffer + [self.current_line]),
             complete_magic_methods=self.config.complete_magic_methods,
             history=self.history)
@@ -615,7 +625,7 @@ class Repl(object):
 
         if len(matches) == 0:
             self.matches_iter.clear()
-            return bool(self.argspec)
+            return bool(self.funcprops)
 
         self.matches_iter.update(self.cursor_offset,
                                  self.current_line, matches, completer)
@@ -633,7 +643,6 @@ class Repl(object):
             return completer.shown_before_tab
 
         else:
-            assert len(matches) > 1
             return tab or completer.shown_before_tab
 
     def format_docstring(self, docstring, width, height):
@@ -724,8 +733,7 @@ class Repl(object):
             with open(fn, mode) as f:
                 f.write(s)
         except IOError as e:
-            self.interact.notify(_("Error writing file '%s': %s") % (fn,
-                                                                     str(e)))
+            self.interact.notify(_("Error writing file '%s': %s") % (fn, e))
         else:
             self.interact.notify(_('Saved to %s.') % (fn, ))
 
@@ -765,91 +773,23 @@ class Repl(object):
                                    self.prev_removal_url), 10)
             return self.prev_pastebin_url
 
-        if self.config.pastebin_helper:
-            return self.do_pastebin_helper(s)
-        else:
-            return self.do_pastebin_json(s)
-
-    def do_pastebin_json(self, s):
-        """Upload to pastebin via json interface."""
-
-        url = urljoin(self.config.pastebin_url, '/json/new')
-        payload = {
-            'code': s,
-            'lexer': 'pycon',
-            'expiry': self.config.pastebin_expiry
-        }
-
         self.interact.notify(_('Posting data to pastebin...'))
         try:
-            response = requests.post(url, data=payload, verify=True)
-            response.raise_for_status()
-        except requests.exceptions.RequestException as exc:
-            self.interact.notify(_('Upload failed: %s') % (str(exc), ))
+            paste_url, removal_url = self.paster.paste(s)
+        except PasteFailed as e:
+            self.interact.notify(_('Upload failed: %s') % e)
             return
 
         self.prev_pastebin_content = s
-        data = response.json()
-
-        paste_url_template = Template(self.config.pastebin_show_url)
-        paste_id = urlquote(data['paste_id'])
-        paste_url = paste_url_template.safe_substitute(paste_id=paste_id)
-
-        removal_url_template = Template(self.config.pastebin_removal_url)
-        removal_id = urlquote(data['removal_id'])
-        removal_url = removal_url_template.safe_substitute(
-            removal_id=removal_id)
-
         self.prev_pastebin_url = paste_url
         self.prev_removal_url = removal_url
-        self.interact.notify(_('Pastebin URL: %s - Removal URL: %s') %
-                             (paste_url, removal_url), 10)
 
-        return paste_url
-
-    def do_pastebin_helper(self, s):
-        """Call out to helper program for pastebin upload."""
-        self.interact.notify(_('Posting data to pastebin...'))
-
-        try:
-            helper = subprocess.Popen('',
-                                      executable=self.config.pastebin_helper,
-                                      stdin=subprocess.PIPE,
-                                      stdout=subprocess.PIPE)
-            helper.stdin.write(s.encode(getpreferredencoding()))
-            output = helper.communicate()[0].decode(getpreferredencoding())
-            paste_url = output.split()[0]
-        except OSError as e:
-            if e.errno == errno.ENOENT:
-                self.interact.notify(_('Upload failed: '
-                                       'Helper program not found.'))
-            else:
-                self.interact.notify(_('Upload failed: '
-                                       'Helper program could not be run.'))
-            return
-
-        if helper.returncode != 0:
-            self.interact.notify(_('Upload failed: '
-                                   'Helper program returned non-zero exit '
-                                   'status %d.' % (helper.returncode, )))
-            return
-
-        if not paste_url:
-            self.interact.notify(_('Upload failed: '
-                                   'No output from helper program.'))
-            return
+        if removal_url is not None:
+            self.interact.notify(_('Pastebin URL: %s - Removal URL: %s') %
+                                 (paste_url, removal_url), 10)
         else:
-            parsed_url = urlparse(paste_url)
-            if (not parsed_url.scheme
-                    or any(unicodedata.category(c) == 'Cc'
-                           for c in paste_url)):
-                self.interact.notify(_("Upload failed: "
-                                       "Failed to recognize the helper "
-                                       "program's output as an URL."))
-                return
+            self.interact.notify(_('Pastebin URL: %s') % (paste_url, ), 10)
 
-        self.prev_pastebin_content = s
-        self.interact.notify(_('Pastebin URL: %s') % (paste_url, ), 10)
         return paste_url
 
     def push(self, s, insert_into_history=True):
@@ -873,7 +813,7 @@ class Repl(object):
             self.rl_history.append_reload_and_write(s, self.config.hist_file,
                                                     getpreferredencoding())
         except RuntimeError as e:
-            self.interact.notify(str(e))
+            self.interact.notify(u"%s" % (e, ))
 
     def prompt_undo(self):
         """Returns how many lines to undo, 0 means don't undo"""
@@ -1066,9 +1006,7 @@ class Repl(object):
         editor_args = shlex.split(prepare_for_exec(self.config.editor,
                                                    encoding))
         args = editor_args + [prepare_for_exec(filename, encoding)]
-        if subprocess.call(args) == 0:
-            return True
-        return False
+        return subprocess.call(args) == 0
 
     def edit_config(self):
         if not (os.path.isfile(self.config.config_path)):
@@ -1077,6 +1015,8 @@ class Repl(object):
                 try:
                     default_config = pkgutil.get_data('bpython',
                                                       'sample-config')
+                    if py3:  # py3 files need unicode
+                        default_config = default_config.decode('ascii')
                     bpython_dir, script_name = os.path.split(__file__)
                     containing_dir = os.path.dirname(
                         os.path.abspath(self.config.config_path))
@@ -1086,16 +1026,17 @@ class Repl(object):
                         f.write(default_config)
                 except (IOError, OSError) as e:
                     self.interact.notify(_("Error writing file '%s': %s") %
-                                         (self.config.config.path, str(e)))
+                                         (self.config.config.path, e))
                     return False
             else:
                 return False
 
-        if self.open_in_external_editor(self.config.config_path):
-            self.interact.notify(_('bpython config file edited. Restart '
-                                   'bpython for changes to take effect.'))
-        else:
-            self.interact.notify(_('Error editing config file.'))
+        try:
+            if self.open_in_external_editor(self.config.config_path):
+                self.interact.notify(_('bpython config file edited. Restart '
+                                       'bpython for changes to take effect.'))
+        except OSError as e:
+            self.interact.notify(_('Error editing config file: %s') % e)
 
 
 def next_indentation(line, tab_length):

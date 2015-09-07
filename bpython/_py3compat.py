@@ -49,3 +49,17 @@ if py3 or sys.version_info[:3] >= (2, 7, 3):
 else:
     def prepare_for_exec(arg, encoding=None):
         return arg.encode(encoding)
+
+
+if py3:
+    def try_decode(s, encoding):
+        return s
+else:
+    def try_decode(s, encoding):
+        """Try to decode s which is str names. Return None if not decodable"""
+        if not isinstance(s, unicode):
+            try:
+                return s.decode(encoding)
+            except UnicodeDecodeError:
+                return None
+        return s

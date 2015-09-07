@@ -7,3 +7,4 @@ Terminal=true
 Type=Application
 Categories=Development;Utility;ConsoleOnly;
 StartupNotify=true
+Keywords=Python;REPL;interpreter;

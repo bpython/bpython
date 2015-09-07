@@ -1,17 +1,20 @@
-import collections
 from itertools import islice
-import os
-import socket
 from six.moves import range
-
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
+import collections
+import inspect
+import os
+import shutil
+import socket
+import sys
+import tempfile
 
 from bpython._py3compat import py3
 from bpython import config, repl, cli, autocomplete
-from bpython.test import MagicIterMock, mock
+from bpython.test import MagicIterMock, mock, FixLanguageTestCase as TestCase
+from bpython.test import unittest
+
+
+pypy = 'PyPy' in sys.version
 
 
 def setup_config(conf):
@@ -62,7 +65,7 @@ class TestMatchesIterator(unittest.TestCase):
             next(self.matches_iterator)
 
         self.assertEqual(next(self.matches_iterator), self.matches[0])
-        self.assertEqual(next(self.matches_iterator), self. matches[1])
+        self.assertEqual(next(self.matches_iterator), self.matches[1])
         self.assertNotEqual(next(self.matches_iterator), self.matches[1])
 
     def test_previous(self):
@@ -159,7 +162,6 @@ class TestArgspec(unittest.TestCase):
             self.assertTrue(self.repl.get_args())
             self.assertEqual(self.repl.current_func.__name__, expected_name)
 
-
     def test_syntax_error_parens(self):
         for line in ["spam(]", "spam([)", "spam())"]:
             self.set_input_line(line)
@@ -169,22 +171,22 @@ class TestArgspec(unittest.TestCase):
     def test_kw_arg_position(self):
         self.set_input_line("spam(a=0")
         self.assertTrue(self.repl.get_args())
-        self.assertEqual(self.repl.argspec[3], "a")
+        self.assertEqual(self.repl.arg_pos, "a")
 
         self.set_input_line("spam(1, b=1")
         self.assertTrue(self.repl.get_args())
-        self.assertEqual(self.repl.argspec[3], "b")
+        self.assertEqual(self.repl.arg_pos, "b")
 
         self.set_input_line("spam(1, c=2")
         self.assertTrue(self.repl.get_args())
-        self.assertEqual(self.repl.argspec[3], "c")
+        self.assertEqual(self.repl.arg_pos, "c")
 
     def test_lambda_position(self):
         self.set_input_line("spam(lambda a, b: 1, ")
         self.assertTrue(self.repl.get_args())
-        self.assertTrue(self.repl.argspec)
+        self.assertTrue(self.repl.funcprops)
         # Argument position
-        self.assertEqual(self.repl.argspec[3], 1)
+        self.assertEqual(self.repl.arg_pos, 1)
 
     def test_issue127(self):
         self.set_input_line("x=range(")
@@ -228,15 +230,9 @@ class TestGetSource(unittest.TestCase):
 
     def test_current_function(self):
         self.set_input_line('INPUTLINE')
-        self.repl.current_func = collections.MutableSet.add
-        self.assertIn("Add an element.",
+        self.repl.current_func = inspect.getsource
+        self.assertIn("text of the source code",
                       self.repl.get_source_of_current_name())
-
-        self.assert_get_source_error_for_current_function(
-            collections.defaultdict.copy, "No source code found for INPUTLINE")
-
-        self.assert_get_source_error_for_current_function(
-            collections.defaultdict, "could not find class definition")
 
         self.assert_get_source_error_for_current_function(
             [], "No source code found for INPUTLINE")
@@ -244,12 +240,39 @@ class TestGetSource(unittest.TestCase):
         self.assert_get_source_error_for_current_function(
             list.pop, "No source code found for INPUTLINE")
 
+    @unittest.skipIf(pypy, 'different errors for PyPy')
+    def test_current_function_cpython(self):
+        self.set_input_line('INPUTLINE')
+        self.assert_get_source_error_for_current_function(
+            collections.defaultdict.copy, "No source code found for INPUTLINE")
+        self.assert_get_source_error_for_current_function(
+            collections.defaultdict, "could not find class definition")
+
     def test_current_line(self):
         self.repl.interp.locals['a'] = socket.socket
         self.set_input_line('a')
         self.assertIn('dup(self)', self.repl.get_source_of_current_name())
 
 # TODO add tests for various failures without using current function
+
+
+class TestEditConfig(TestCase):
+    def setUp(self):
+        self.repl = FakeRepl()
+        self.repl.interact.confirm = lambda msg: True
+        self.repl.interact.notify = lambda msg: None
+        self.repl.config.editor = 'true'
+
+    def test_create_config(self):
+        tmp_dir = tempfile.mkdtemp()
+        try:
+            config_path = os.path.join(tmp_dir, 'newdir', 'config')
+            self.repl.config.config_path = config_path
+            self.repl.edit_config()
+            self.assertTrue(os.path.exists(config_path))
+        finally:
+            shutil.rmtree(tmp_dir)
+            self.assertFalse(os.path.exists(config_path))
 
 
 class TestRepl(unittest.TestCase):
@@ -288,25 +311,25 @@ class TestRepl(unittest.TestCase):
                          ['def', 'del', 'delattr(', 'dict(', 'dir(',
                           'divmod('])
 
-    @unittest.skip("disabled while non-simple completion is disabled")
     def test_substring_global_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
         self.set_input_line("time")
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.completer, 'matches'))
-        self.assertEqual(self.repl.completer.matches,
+        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
+        self.assertEqual(self.repl.matches_iter.matches,
                          ['RuntimeError(', 'RuntimeWarning('])
 
-    @unittest.skip("disabled while non-simple completion is disabled")
     def test_fuzzy_global_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
         self.set_input_line("doc")
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.completer, 'matches'))
-        self.assertEqual(self.repl.completer.matches,
-                         ['UnboundLocalError(', '__doc__'])
+        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
+        self.assertEqual(self.repl.matches_iter.matches,
+                         ['UnboundLocalError(', '__doc__'] if not py3 else
+                         ['ChildProcessError(', 'UnboundLocalError(',
+                          '__doc__'])
 
     # 2. Attribute tests
     def test_simple_attribute_complete(self):
@@ -321,7 +344,6 @@ class TestRepl(unittest.TestCase):
         self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
         self.assertEqual(self.repl.matches_iter.matches, ['Foo.bar'])
 
-    @unittest.skip("disabled while non-simple completion is disabled")
     def test_substring_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
         self.set_input_line("Foo.az")
@@ -331,10 +353,9 @@ class TestRepl(unittest.TestCase):
             self.repl.push(line)
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.completer, 'matches'))
-        self.assertEqual(self.repl.completer.matches, ['Foo.baz'])
+        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
+        self.assertEqual(self.repl.matches_iter.matches, ['Foo.baz'])
 
-    @unittest.skip("disabled while non-simple completion is disabled")
     def test_fuzzy_attribute_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
         self.set_input_line("Foo.br")
@@ -344,8 +365,8 @@ class TestRepl(unittest.TestCase):
             self.repl.push(line)
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.completer, 'matches'))
-        self.assertEqual(self.repl.completer.matches, ['Foo.bar'])
+        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
+        self.assertEqual(self.repl.matches_iter.matches, ['Foo.bar'])
 
     # 3. Edge Cases
     def test_updating_namespace_complete(self):
@@ -407,7 +428,8 @@ class TestCliReplTab(unittest.TestCase):
         self.repl.print_line = mock.Mock()
         self.repl.matches_iter.is_cseq.return_value = False
         self.repl.show_list = mock.Mock()
-        self.repl.argspec = mock.Mock()
+        self.repl.funcprops = mock.Mock()
+        self.repl.arg_pos = mock.Mock()
         self.repl.matches_iter.cur_line.return_value = (None, "foobar")
 
         self.repl.s = "foo"
@@ -450,7 +472,8 @@ class TestCliReplTab(unittest.TestCase):
         self.repl.matches_iter.previous.return_value = "previtem"
         self.repl.matches_iter.is_cseq.return_value = False
         self.repl.show_list = mock.Mock()
-        self.repl.argspec = mock.Mock()
+        self.repl.funcprops = mock.Mock()
+        self.repl.arg_pos = mock.Mock()
         self.repl.matches_iter.cur_line.return_value = (None, "previtem")
         self.repl.print_line = mock.Mock()
         self.repl.s = "foo"

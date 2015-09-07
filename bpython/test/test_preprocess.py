@@ -4,17 +4,13 @@ import difflib
 import inspect
 import re
 
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
-skip = unittest.skip
-
 from bpython.curtsiesfrontend.interpreter import code_finished_will_parse
 from bpython.curtsiesfrontend.preprocess import preprocess
+from bpython.test import unittest
+from bpython.test.fodder import original, processed
 
-from bpython.test.fodder import original as original, processed
 
+skip = unittest.skip
 preproc = partial(preprocess, compiler=compiler)
 
 

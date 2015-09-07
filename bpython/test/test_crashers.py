@@ -6,10 +6,7 @@ import sys
 import termios
 import textwrap
 
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
+from bpython.test import unittest
 
 try:
     from twisted.internet import reactor
@@ -30,8 +27,10 @@ except ImportError:
 try:
     from nose.plugins.attrib import attr
 except ImportError:
-    def attr(func, *args, **kwargs):
-        return func
+    def attr(*args, **kwargs):
+        def identity(func):
+            return func
+        return identity
 
 TEST_CONFIG = os.path.join(os.path.dirname(__file__), "test.config")
 
