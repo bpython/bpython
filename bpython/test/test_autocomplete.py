@@ -90,6 +90,11 @@ class TestGetCompleter(unittest.TestCase):
         b = completer(['a'])
         self.assertEqual(autocomplete.get_completer([a, b], 0, ''), (['a'], b))
 
+    def test_completer_shows_single_underscore_before_double(self):
+        # TODO: do this!
+        a = completer([])
+        
+
 
 class TestCumulativeCompleter(unittest.TestCase):
 
@@ -261,6 +266,7 @@ class TestAttrCompletion(unittest.TestCase):
         locals_ = {'a': OldStyleWithBrokenGetAttr()}
         self.assertIn(u'a.__module__',
                       self.com.matches(3, 'a._', locals_=locals_))
+
 
 
 class TestMagicMethodCompletion(unittest.TestCase):

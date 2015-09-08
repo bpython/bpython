@@ -256,6 +256,7 @@ class AttrCompletion(BaseCompletionType):
         if not r.word.split('.')[-1].startswith('_'):
             matches = set(match for match in matches
                           if not match.split('.')[-1].startswith('_'))
+        # MAYBE HERE 2 ??
         return matches
 
     def locate(self, current_offset, line):
@@ -311,6 +312,8 @@ class AttrCompletion(BaseCompletionType):
         for word in words:
             if self.method_match(word, n, attr) and word != "__builtins__":
                 matches.append("%s.%s" % (expr, word))
+#        print 'matches', matches
+        # ORGANIZE THE THINGS HERE MAYBE 1??
         return matches
 
     if py3:
@@ -543,13 +546,31 @@ def get_completer(completers, cursor_offset, line, **kwargs):
         complete_magic_methods is a bool of whether we ought to complete
             double underscore methods like __len__ in method signatures
     """
-
     for completer in completers:
         matches = completer.matches(cursor_offset, line, **kwargs)
         if matches is not None:
-            return sorted(matches), (completer if matches else None)
+            if len(matches) > 0:
+                matches = sort_by_underscore(matches)
+            return matches, (completer if matches else None)
     return [], None
 
+def sort_by_underscore(matches):
+    """Sort single underscore attributes before double underscore ones.
+    """
+    matches = sorted(matches)
+    if len(matches) == 0 or len(matches) == 1:
+        return matches
+    one_underscore = None
+    for i in xrange(1, len(matches)+1):
+        i = -i
+        dot_i = matches[i].rfind('.') + 1
+        if matches[i][dot_i] == '_' and matches[i][dot_i+1] != '_':
+            one_underscore = i
+        else:
+            break
+    if one_underscore_i != None:
+        return matches[one_underscore:] + matches[:one_underscore]
+    return matches
 
 def get_default_completer(mode=SIMPLE):
     return (
