@@ -88,9 +88,7 @@ class TestGetCompleter(unittest.TestCase):
     def test_first_completer_returns_None(self):
         a = completer(None)
         b = completer(['a'])
-        print '\n\n\n', b.matches, '\n\n\n'
         self.assertEqual(autocomplete.get_completer([a, b], 0, ''), (['a'], b))
-
 
 
 class TestCumulativeCompleter(unittest.TestCase):
@@ -367,6 +365,3 @@ class TestParameterNameCompletion(unittest.TestCase):
                             set(['banana=']))
         self.assertSetEqual(com.matches(3, "car", argspec=argspec),
                             set(['carrot=']))
-
-if __name__ == '__main__':
-    unittest.main()
