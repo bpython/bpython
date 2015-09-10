@@ -558,17 +558,10 @@ def sort_by_underscore(matches):
     matches = sorted(matches)
     if len(matches) == 0 or len(matches) == 1:
         return matches
-    one_underscore = None
-    dot = matches[i].rfind('.') + 1
-    for i in xrange(1, len(matches)+1):
-        i = -i
-        if matches[i][dot] == '_' and matches[i][dot+1] != '_':
-            one_underscore = i
-        else:
-            break
-    if one_underscore != None:
-        return matches[one_underscore:] + matches[:one_underscore]
-    return matches
+    dot = matches[0].rfind('.') + 1
+    single = [m for m in matches if not m[dot:].startswith('__')]
+    double = [m for m in matches if m[dot:].startswith('__')]
+    return single + double
 
 def get_default_completer(mode=SIMPLE):
     return (
