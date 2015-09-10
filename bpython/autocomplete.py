@@ -552,7 +552,8 @@ def get_completer(completers, cursor_offset, line, **kwargs):
     return [], None
 
 def sort_by_underscore(matches):
-    """Sort single underscore attributes before double underscore ones.
+    """Returns a sorted list with single underscore attributes before double 
+    underscore ones.
     """
     matches = sorted(matches)
     if len(matches) == 0 or len(matches) == 1:
@@ -565,7 +566,7 @@ def sort_by_underscore(matches):
             one_underscore = i
         else:
             break
-    if one_underscore_i != None:
+    if one_underscore != None:
         return matches[one_underscore:] + matches[:one_underscore]
     return matches
 
