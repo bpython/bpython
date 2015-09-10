@@ -256,7 +256,6 @@ class AttrCompletion(BaseCompletionType):
         if not r.word.split('.')[-1].startswith('_'):
             matches = set(match for match in matches
                           if not match.split('.')[-1].startswith('_'))
-        # MAYBE HERE 2 ??
         return matches
 
     def locate(self, current_offset, line):
@@ -312,8 +311,6 @@ class AttrCompletion(BaseCompletionType):
         for word in words:
             if self.method_match(word, n, attr) and word != "__builtins__":
                 matches.append("%s.%s" % (expr, word))
-#        print 'matches', matches
-        # ORGANIZE THE THINGS HERE MAYBE 1??
         return matches
 
     if py3:
