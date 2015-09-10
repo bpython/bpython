@@ -559,10 +559,10 @@ def sort_by_underscore(matches):
     if len(matches) == 0 or len(matches) == 1:
         return matches
     one_underscore = None
+    dot = matches[i].rfind('.') + 1
     for i in xrange(1, len(matches)+1):
         i = -i
-        dot_i = matches[i].rfind('.') + 1
-        if matches[i][dot_i] == '_' and matches[i][dot_i+1] != '_':
+        if matches[i][dot] == '_' and matches[i][dot+1] != '_':
             one_underscore = i
         else:
             break
