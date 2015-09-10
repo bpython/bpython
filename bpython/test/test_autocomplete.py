@@ -88,12 +88,9 @@ class TestGetCompleter(unittest.TestCase):
     def test_first_completer_returns_None(self):
         a = completer(None)
         b = completer(['a'])
+        print '\n\n\n', b.matches, '\n\n\n'
         self.assertEqual(autocomplete.get_completer([a, b], 0, ''), (['a'], b))
 
-    def test_completer_shows_single_underscore_before_double(self):
-        # TODO: do this!
-        a = completer([])
-        
 
 
 class TestCumulativeCompleter(unittest.TestCase):
@@ -268,7 +265,6 @@ class TestAttrCompletion(unittest.TestCase):
                       self.com.matches(3, 'a._', locals_=locals_))
 
 
-
 class TestMagicMethodCompletion(unittest.TestCase):
 
     def test_magic_methods_complete_after_double_underscores(self):
@@ -371,3 +367,6 @@ class TestParameterNameCompletion(unittest.TestCase):
                             set(['banana=']))
         self.assertSetEqual(com.matches(3, "car", argspec=argspec),
                             set(['carrot=']))
+
+if __name__ == '__main__':
+    unittest.main()
