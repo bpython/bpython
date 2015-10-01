@@ -245,12 +245,12 @@ class TestAttrCompletion(unittest.TestCase):
                                              locals_={'a': OldStyleFoo()}),
                             set(['a.method', 'a.a', 'a.b']))
         self.assertIn(u'a.__dict__',
-                      self.com.matches(3, 'a._', locals_={'a': OldStyleFoo()}))
+                      self.com.matches(3, 'a.__', locals_={'a': OldStyleFoo()}))
 
     @skip_old_style
     def test_att_matches_found_on_old_style_class_object(self):
         self.assertIn(u'A.__dict__',
-                      self.com.matches(3, 'A._', locals_={'A': OldStyleFoo}))
+                      self.com.matches(3, 'A.__', locals_={'A': OldStyleFoo}))
 
     @skip_old_style
     def test_issue536(self):
@@ -260,7 +260,7 @@ class TestAttrCompletion(unittest.TestCase):
 
         locals_ = {'a': OldStyleWithBrokenGetAttr()}
         self.assertIn(u'a.__module__',
-                      self.com.matches(3, 'a._', locals_=locals_))
+                      self.com.matches(3, 'a.__', locals_=locals_))
 
 
 class TestMagicMethodCompletion(unittest.TestCase):
