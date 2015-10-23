@@ -548,13 +548,25 @@ def get_completer(completers, cursor_offset, line, **kwargs):
         complete_magic_methods is a bool of whether we ought to complete
             double underscore methods like __len__ in method signatures
     """
-
     for completer in completers:
         matches = completer.matches(cursor_offset, line, **kwargs)
         if matches is not None:
-            return sorted(matches), (completer if matches else None)
+            if len(matches) > 0:
+                matches = sort_by_underscore(matches)
+            return matches, (completer if matches else None)
     return [], None
 
+def sort_by_underscore(matches):
+    """Returns a sorted list with single underscore attributes before double 
+    underscore ones.
+    """
+    matches = sorted(matches)
+    if len(matches) == 0 or len(matches) == 1:
+        return matches
+    dot = matches[0].rfind('.') + 1
+    single = [m for m in matches if not m[dot:].startswith('__')]
+    double = [m for m in matches if m[dot:].startswith('__')]
+    return single + double
 
 def get_default_completer(mode=SIMPLE):
     return (
