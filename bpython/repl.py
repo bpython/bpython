@@ -527,11 +527,21 @@ class Repl(object):
             return False
 
         if inspect.isclass(f):
-            try:
-                if f.__init__ is not object.__init__:
-                    f = f.__init__
-            except AttributeError:
-                return None
+            class_f = None
+
+            if (hasattr(f, '__init__') and
+                f.__init__ is not object.__init__):
+                    class_f = f.__init__
+            if ((not class_f or
+                not inspection.getfuncprops(func, class_f)) and
+                hasattr(f, '__new__') and
+                f.__new__ is not object.__new__ and
+                f.__new__.__class__ is not object.__new__.__class__):  # py3
+                    class_f = f.__new__
+
+            if class_f:
+                f = class_f
+
         self.current_func = f
         self.funcprops = inspection.getfuncprops(func, f)
         if self.funcprops:
