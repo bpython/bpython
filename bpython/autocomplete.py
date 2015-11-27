@@ -339,7 +339,11 @@ class ArrayObjectMembersCompletion(BaseCompletionType):
 
     def __init__(self, shown_before_tab=True, mode=SIMPLE):
         self._shown_before_tab = shown_before_tab
-        self.completers = [ StringLiteralAttrCompletion() ]
+        self.completers = CumulativeCompleter((
+                            StringLiteralAttrCompletion(mode=mode),
+                            AttrCompletion(mode=mode),
+                            ParameterNameCompletion(mode=mode)),
+                            mode=mode)
 
     def matches(self, cursor_offset, line, **kwargs):
         if 'locals_' not in kwargs:
@@ -352,21 +356,16 @@ class ArrayObjectMembersCompletion(BaseCompletionType):
         member_part = r[2]
         _, _, dexpr = lineparts.current_array_with_indexer(cursor_offset, line)
         try:
-            obj = safe_eval(dexpr, locals_)  # TODO
-            # obj = eval(dexpr)
+            exec('temp_val_from_array = ' + dexpr, locals_)
         except EvaluationError:
             return set()
+        except NameError:
+            return set()
 
-        if isinstance(obj, str):
-            obj = '"' + obj + '"'
+        obj = 'temp_val_from_array.'
 
-        obj += "."
-        obj += member_part
-
-        for completer in self.completers:
-            matches = completer.matches(len(obj), obj)
-            if matches:
-                return matches
+        matches = self.completers.matches(len(obj), obj, **kwargs)
+        return [match.replace('temp_val_from_array.', line) for match in matches]
 
     def locate(self, current_offset, line):
         return lineparts.current_array_item_member_name(current_offset, line)
