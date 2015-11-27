@@ -335,7 +335,7 @@ class AttrCompletion(BaseCompletionType):
                 return dir(obj)
 
 
-class ArrayObjectMembersCompletion(BaseCompletionType):
+class ArrayItemMembersCompletion(BaseCompletionType):
 
     def __init__(self, shown_before_tab=True, mode=SIMPLE):
         self._shown_before_tab = shown_before_tab
@@ -357,14 +357,14 @@ class ArrayObjectMembersCompletion(BaseCompletionType):
         _, _, dexpr = lineparts.current_array_with_indexer(cursor_offset, line)
         try:
             exec('temp_val_from_array = ' + dexpr, locals_)
-        except (EvaluationError, NameError, IndexError):
+        except (EvaluationError, NameError, IndexError, AttributeError, TypeError):
             return set()
 
         temp_line = line.replace(member_part, 'temp_val_from_array.')
 
         matches = self.completers.matches(len(temp_line), temp_line, **kwargs)
         matches_with_correct_name = \
-            [match.replace('temp_val_from_array.', member_part) for match in matches]
+            set([match.replace('temp_val_from_array.', member_part) for match in matches])
         return matches_with_correct_name
 
     def locate(self, current_offset, line):
@@ -604,7 +604,7 @@ def get_default_completer(mode=SIMPLE):
         MagicMethodCompletion(mode=mode),
         MultilineJediCompletion(mode=mode),
         GlobalCompletion(mode=mode),
-        ArrayObjectMembersCompletion(mode=mode),
+        ArrayItemMembersCompletion(mode=mode),
         CumulativeCompleter((AttrCompletion(mode=mode),
                              ParameterNameCompletion(mode=mode)),
                             mode=mode)
