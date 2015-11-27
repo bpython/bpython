@@ -374,7 +374,7 @@ class ArrayItemMembersCompletion(BaseCompletionType):
         return lineparts.current_array_item_member_name(current_offset, line)
 
     def format(self, match):
-        return match[:-1]
+        return after_last_dot(match)
 
 
 class DictKeyCompletion(BaseCompletionType):
