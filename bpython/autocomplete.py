@@ -335,7 +335,7 @@ class AttrCompletion(BaseCompletionType):
                 return dir(obj)
 
 
-class ArrayObjectMembersCompletion(BaseCompletionType):
+class ArrayItemMembersCompletion(BaseCompletionType):
 
     def __init__(self, shown_before_tab=True, mode=SIMPLE):
         self._shown_before_tab = shown_before_tab
@@ -603,7 +603,7 @@ def get_default_completer(mode=SIMPLE):
         MagicMethodCompletion(mode=mode),
         MultilineJediCompletion(mode=mode),
         GlobalCompletion(mode=mode),
-        ArrayObjectMembersCompletion(mode=mode),
+        ArrayItemMembersCompletion(mode=mode),
         CumulativeCompleter((AttrCompletion(mode=mode),
                              ParameterNameCompletion(mode=mode)),
                             mode=mode)

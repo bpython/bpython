@@ -263,6 +263,22 @@ class TestAttrCompletion(unittest.TestCase):
                       self.com.matches(4, 'a.__', locals_=locals_))
 
 
+class TestArrayItemCompletion(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.com = autocomplete.ArrayItemMembersCompletion()
+
+    def test_att_matches_found_on_instance(self):
+        self.assertSetEqual(self.com.matches(5, 'a[0].', locals_={'a': [Foo()]}),
+                            set(['a[0].method', 'a[0].a', 'a[0].b']))
+
+    @skip_old_style
+    def test_att_matches_found_on_old_style_instance(self):
+        self.assertSetEqual(self.com.matches(5, 'a[0].',
+                                             locals_={'a': [OldStyleFoo()]}),
+                            set(['a[0].method', 'a[0].a', 'a[0].b']))
+
+
 class TestMagicMethodCompletion(unittest.TestCase):
 
     def test_magic_methods_complete_after_double_underscores(self):
