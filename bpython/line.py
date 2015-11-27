@@ -241,7 +241,7 @@ def current_array_with_indexer(cursor_offset, line):
 
 
 current_array_item_member_name_re = LazyReCompile(
-    r'''([\w_][\w0-9._]*\[[a-zA-Z0-9_"']+\])\.(.*)''')
+    r'''([\w_][\w0-9._]*\[[a-zA-Z0-9_"']+\]\.)(.*)''')
 
 
 def current_array_item_member_name(cursor_offset, line):
@@ -249,4 +249,4 @@ def current_array_item_member_name(cursor_offset, line):
     matches = current_array_item_member_name_re.finditer(line)
     for m in matches:
         if m.start(2) <= cursor_offset and m.end(2) >= cursor_offset:
-            return LinePart(m.start(2), m.end(2), m.group(2))
+            return LinePart(m.start(1), m.end(2), m.group(1))

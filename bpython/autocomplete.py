@@ -362,10 +362,12 @@ class ArrayObjectMembersCompletion(BaseCompletionType):
         except NameError:
             return set()
 
-        obj = 'temp_val_from_array.'
+        temp_line = line.replace(member_part, 'temp_val_from_array.')
 
-        matches = self.completers.matches(len(obj), obj, **kwargs)
-        return [match.replace('temp_val_from_array.', line) for match in matches]
+        matches = self.completers.matches(len(temp_line), temp_line, **kwargs)
+        matches_with_correct_name = \
+            [match.replace('temp_val_from_array.', member_part) for match in matches]
+        return matches_with_correct_name
 
     def locate(self, current_offset, line):
         return lineparts.current_array_item_member_name(current_offset, line)
