@@ -335,6 +335,44 @@ class AttrCompletion(BaseCompletionType):
                 return dir(obj)
 
 
+class ArrayObjectMembersCompletion(BaseCompletionType):
+
+    def __init__(self, shown_before_tab=True, mode=SIMPLE):
+        self._shown_before_tab = shown_before_tab
+        self.completers = [ StringLiteralAttrCompletion() ]
+
+    def matches(self, cursor_offset, line, **kwargs):
+        if 'locals_' not in kwargs:
+            return None
+        locals_ = kwargs['locals_']
+
+        r = self.locate(cursor_offset, line)
+        if r is None:
+            return None
+        _, _, dexpr = lineparts.current_array_with_indexer(cursor_offset, line)
+        try:
+            obj = safe_eval(dexpr, locals_)  # TODO
+            # obj = eval(dexpr)
+        except EvaluationError:
+            return set()
+
+        if isinstance(obj, str):
+            obj = '"' + obj + '"'
+
+        obj += "."
+
+        for completer in self.completers:
+            matches = completer.matches(len(obj), obj)
+            if matches:
+                return matches
+
+    def locate(self, current_offset, line):
+        return lineparts.current_array_item_member_name(current_offset, line)
+
+    def format(self, match):
+        return match[:-1]
+
+
 class DictKeyCompletion(BaseCompletionType):
 
     def matches(self, cursor_offset, line, **kwargs):
@@ -565,6 +603,7 @@ def get_default_completer(mode=SIMPLE):
         MagicMethodCompletion(mode=mode),
         MultilineJediCompletion(mode=mode),
         GlobalCompletion(mode=mode),
+        ArrayObjectMembersCompletion(mode=mode),
         CumulativeCompleter((AttrCompletion(mode=mode),
                              ParameterNameCompletion(mode=mode)),
                             mode=mode)

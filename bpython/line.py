@@ -226,3 +226,27 @@ def current_string_literal_attr(cursor_offset, line):
         if m.start(4) <= cursor_offset and m.end(4) >= cursor_offset:
             return LinePart(m.start(4), m.end(4), m.group(4))
     return None
+
+
+current_array_with_indexer_re = LazyReCompile(
+    r'''([\w_][\w0-9._]*\[[a-zA-Z0-9_"']+\])\.(.*)''')
+
+
+def current_array_with_indexer(cursor_offset, line):
+    """an array and indexer, e.g. foo[1]"""
+    matches = current_array_with_indexer_re.finditer(line)
+    for m in matches:
+        if m.start(1) <= cursor_offset and m.end(1) <= cursor_offset:
+            return LinePart(m.start(1), m.end(1), m.group(1))
+
+
+current_array_item_member_name_re = LazyReCompile(
+    r'''([\w_][\w0-9._]*\[[a-zA-Z0-9_"']+\])\.(.*)''')
+
+
+def current_array_item_member_name(cursor_offset, line):
+    """the member name after an array indexer, e.g. foo[1].bar"""
+    matches = current_array_item_member_name_re.finditer(line)
+    for m in matches:
+        if m.start(2) <= cursor_offset and m.end(2) >= cursor_offset:
+            return LinePart(m.start(2), m.end(2), m.group(2))
