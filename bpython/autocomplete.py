@@ -349,6 +349,7 @@ class ArrayObjectMembersCompletion(BaseCompletionType):
         r = self.locate(cursor_offset, line)
         if r is None:
             return None
+        member_part = r[2]
         _, _, dexpr = lineparts.current_array_with_indexer(cursor_offset, line)
         try:
             obj = safe_eval(dexpr, locals_)  # TODO
@@ -360,6 +361,7 @@ class ArrayObjectMembersCompletion(BaseCompletionType):
             obj = '"' + obj + '"'
 
         obj += "."
+        obj += member_part
 
         for completer in self.completers:
             matches = completer.matches(len(obj), obj)
