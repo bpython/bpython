@@ -275,7 +275,7 @@ class TestArrayItemCompletion(unittest.TestCase):
     @skip_old_style
     def test_att_matches_found_on_old_style_instance(self):
         self.assertSetEqual(self.com.matches(5, 'a[0].',
-                                             locals_={'a': OldStyleFoo()}),
+                                             locals_={'a': [OldStyleFoo()]}),
                             set(['a[0].method', 'a[0].a', 'a[0].b']))
 
 
