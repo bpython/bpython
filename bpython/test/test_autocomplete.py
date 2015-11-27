@@ -269,7 +269,6 @@ class TestArrayItemCompletion(unittest.TestCase):
         cls.com = autocomplete.ArrayItemMembersCompletion()
 
     def test_att_matches_found_on_instance(self):
-        # import pdb; pdb.set_trace()
         self.assertSetEqual(self.com.matches(5, 'a[0].', locals_={'a': [Foo()]}),
                             set(['a[0].method', 'a[0].a', 'a[0].b']))
 
