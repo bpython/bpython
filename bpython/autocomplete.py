@@ -357,9 +357,7 @@ class ArrayObjectMembersCompletion(BaseCompletionType):
         _, _, dexpr = lineparts.current_array_with_indexer(cursor_offset, line)
         try:
             exec('temp_val_from_array = ' + dexpr, locals_)
-        except EvaluationError:
-            return set()
-        except NameError:
+        except (EvaluationError, NameError, IndexError):
             return set()
 
         temp_line = line.replace(member_part, 'temp_val_from_array.')
