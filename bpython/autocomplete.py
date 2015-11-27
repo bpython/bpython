@@ -365,6 +365,9 @@ class ArrayItemMembersCompletion(BaseCompletionType):
         matches = self.completers.matches(len(temp_line), temp_line, **kwargs)
         matches_with_correct_name = \
             set([match.replace('temp_val_from_array.', member_part) for match in matches])
+
+        exec('temp_val_from_array = None', locals_)
+
         return matches_with_correct_name
 
     def locate(self, current_offset, line):
