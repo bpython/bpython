@@ -229,7 +229,7 @@ def current_string_literal_attr(cursor_offset, line):
 
 
 current_array_with_indexer_re = LazyReCompile(
-    r'''([\w_][\w0-9._]*\[[a-zA-Z0-9_"']+\])\.(.*)''')
+    r'''([\w_][\w0-9._]*(?:\[[a-zA-Z0-9_"']+\])+)\.(.*)''')
 
 
 def current_array_with_indexer(cursor_offset, line):
@@ -241,7 +241,7 @@ def current_array_with_indexer(cursor_offset, line):
 
 
 current_array_item_member_name_re = LazyReCompile(
-    r'''([\w_][\w0-9._]*\[[a-zA-Z0-9_"']+\]\.)(.*)''')
+    r'''([\w_][\w0-9._]*(?:\[[a-zA-Z0-9_"']+\])+\.)(.*)''')
 
 
 def current_array_item_member_name(cursor_offset, line):
