@@ -337,10 +337,6 @@ class AttrCompletion(BaseCompletionType):
 
 class ArrayItemMembersCompletion(BaseCompletionType):
 
-    def __init__(self, shown_before_tab=True, mode=SIMPLE):
-        self._shown_before_tab = shown_before_tab
-        self.completer = AttrCompletion(mode=mode)
-
     def matches(self, cursor_offset, line, **kwargs):
         if 'locals_' not in kwargs:
             return None
@@ -349,28 +345,28 @@ class ArrayItemMembersCompletion(BaseCompletionType):
         r = self.locate(cursor_offset, line)
         if r is None:
             return None
-        member_part = r[2]
         _, _, dexpr = lineparts.current_array_with_indexer(cursor_offset, line)
         try:
-            exec('temp_val_from_array = ' + dexpr, locals_)
-        except (EvaluationError, NameError, IndexError, AttributeError, TypeError):
+            obj = safe_eval(dexpr, locals_)  # TODO
+            # obj = eval(dexpr)
+        except EvaluationError:
             return set()
 
-        temp_line = line.replace(member_part, 'temp_val_from_array.')
+        attrs = dir('')
+        if not py3:
+            # decode attributes
+            attrs = (att.decode('ascii') for att in attrs)
 
-        matches = self.completer.matches(len(temp_line), temp_line, **kwargs)
-        matches_with_correct_name = \
-            set([match.replace('temp_val_from_array.', member_part) for match in matches])
-
-        exec('temp_val_from_array = None', locals_)
-
-        return matches_with_correct_name
+        matches = set(att for att in attrs if att.startswith(r.word))
+        if not r.word.startswith('_'):
+            return set(match for match in matches if not match.startswith('_'))
+        return matches
 
     def locate(self, current_offset, line):
         return lineparts.current_array_item_member_name(current_offset, line)
 
     def format(self, match):
-        return after_last_dot(match)
+        return match[:-1]
 
 
 class DictKeyCompletion(BaseCompletionType):
@@ -481,11 +477,8 @@ class ParameterNameCompletion(BaseCompletionType):
 
 class StringLiteralAttrCompletion(BaseCompletionType):
 
-    def matches(self, cursor_offset, line, **kwargs):
-        r = self.locate(cursor_offset, line)
-        if r is None:
-            return None
-
+    @staticmethod
+    def complete_string(cursor_offset, line, r):
         attrs = dir('')
         if not py3:
             # decode attributes
@@ -495,6 +488,13 @@ class StringLiteralAttrCompletion(BaseCompletionType):
         if not r.word.startswith('_'):
             return set(match for match in matches if not match.startswith('_'))
         return matches
+
+    def matches(self, cursor_offset, line, **kwargs):
+        r = self.locate(cursor_offset, line)
+        if r is None:
+            return None
+
+        return StringLiteralAttrCompletion.complete_string(cursor_offset, line, r)
 
     def locate(self, current_offset, line):
         return lineparts.current_string_literal_attr(current_offset, line)
