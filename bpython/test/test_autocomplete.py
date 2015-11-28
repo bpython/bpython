@@ -190,20 +190,25 @@ class TestDictKeyCompletion(unittest.TestCase):
         self.assertSetEqual(com.matches(2, "d[", locals_=local),
                             set(["'ab']", "'cd']"]))
 
-    def test_empty_set_returned_when_eval_error(self):
+    def test_none_returned_when_eval_error(self):
         com = autocomplete.DictKeyCompletion()
         local = {'e': {"ab": 1, "cd": 2}}
-        self.assertSetEqual(com.matches(2, "d[", locals_=local), set())
+        self.assertEqual(com.matches(2, "d[", locals_=local), None)
 
-    def test_empty_set_returned_when_not_dict_type(self):
+    def test_none_returned_when_not_dict_type(self):
         com = autocomplete.DictKeyCompletion()
         local = {'l': ["ab", "cd"]}
-        self.assertSetEqual(com.matches(2, "l[", locals_=local), set())
+        self.assertEqual(com.matches(2, "l[", locals_=local), None)
+
+    def test_none_returned_when_no_matches_left(self):
+        com = autocomplete.DictKeyCompletion()
+        local = {'d': {"ab": 1, "cd": 2}}
+        self.assertEqual(com.matches(3, "d[r", locals_=local), None)
 
     def test_obj_that_does_not_allow_conversion_to_bool(self):
         com = autocomplete.DictKeyCompletion()
         local = {'mNumPy': MockNumPy()}
-        self.assertSetEqual(com.matches(7, "mNumPy[", locals_=local), set())
+        self.assertEqual(com.matches(7, "mNumPy[", locals_=local), None)
 
 
 class Foo(object):

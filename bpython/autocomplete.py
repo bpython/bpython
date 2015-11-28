@@ -387,12 +387,13 @@ class DictKeyCompletion(BaseCompletionType):
         try:
             obj = safe_eval(dexpr, locals_)
         except EvaluationError:
-            return set()
+            return None
         if isinstance(obj, dict) and obj.keys():
-            return set("{0!r}]".format(k) for k in obj.keys()
-                       if repr(k).startswith(r.word))
+            matches = set("{0!r}]".format(k) for k in obj.keys()
+                          if repr(k).startswith(r.word))
+            return matches if matches else None
         else:
-            return set()
+            return None
 
     def locate(self, current_offset, line):
         return lineparts.current_dict_key(current_offset, line)
