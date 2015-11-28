@@ -118,8 +118,10 @@ class BaseCompletionType(object):
         raise NotImplementedError
 
     def locate(self, cursor_offset, line):
-        """Returns a start, stop, and word given a line and cursor, or None
-        if no target for this type of completion is found under the cursor"""
+        """Returns a Linepart namedtuple instance or None given cursor and line
+
+        A Linepart namedtuple contains a start, stop, and word. None is returned
+        if no target for this type of completion is found under the cursor."""
         raise NotImplementedError
 
     def format(self, word):
@@ -346,28 +348,47 @@ class ArrayItemMembersCompletion(BaseCompletionType):
             return None
         locals_ = kwargs['locals_']
 
-        r = self.locate(cursor_offset, line)
-        if r is None:
+        full = self.locate(cursor_offset, line)
+        if full is None:
             return None
-        member_part = r[2]
-        _, _, dexpr = lineparts.current_array_with_indexer(cursor_offset, line)
-        try:
-            locals_['temp_val_from_array'] = safe_eval(dexpr, locals_)
-        except (EvaluationError, IndexError):
-            return set()
 
-        temp_line = line.replace(member_part, 'temp_val_from_array.')
+        arr = lineparts.current_indexed_member_access_identifier(
+                cursor_offset, line)
+        index = lineparts.current_indexed_member_access_identifier_with_index(
+                cursor_offset, line)
+        member = lineparts.current_indexed_member_access_member(
+                cursor_offset, line)
+
+        try:
+            obj = safe_eval(arr.word, locals_)
+        except EvaluationError:
+            return None
+        if type(obj) not in (list, tuple) + string_types:
+            # then is may be unsafe to do attribute lookup on it
+            return None
+
+        try:
+            locals_['temp_val_from_array'] = safe_eval(index.word, locals_)
+        except (EvaluationError, IndexError):
+            return None
+
+        temp_line = line.replace(index.word, 'temp_val_from_array.')
 
         matches = self.completer.matches(len(temp_line), temp_line, **kwargs)
+        if matches is None:
+            return None
+
         matches_with_correct_name = \
-            set(match.replace('temp_val_from_array.', member_part) for match in matches)
+            set(match.replace('temp_val_from_array.', index.word+'.')
+                for match in matches if match[20:].startswith(member.word))
 
         del locals_['temp_val_from_array']
 
         return matches_with_correct_name
 
     def locate(self, current_offset, line):
-        return lineparts.current_array_item_member_name(current_offset, line)
+        a = lineparts.current_indexed_member_access(current_offset, line)
+        return a
 
     def format(self, match):
         return after_last_dot(match)

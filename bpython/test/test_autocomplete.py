@@ -283,6 +283,32 @@ class TestArrayItemCompletion(unittest.TestCase):
                                              locals_={'a': [OldStyleFoo()]}),
                             set(['a[0].method', 'a[0].a', 'a[0].b']))
 
+    def test_other_getitem_methods_not_called(self):
+        class FakeList(object):
+            def __getitem__(inner_self, i):
+                self.fail("possibly side-effecting __getitem_ method called")
+
+        self.com.matches(5, 'a[0].', locals_={'a': FakeList()})
+
+    def test_tuples_complete(self):
+        self.assertSetEqual(self.com.matches(5, 'a[0].',
+                            locals_={'a': (Foo(),)}),
+                            set(['a[0].method', 'a[0].a', 'a[0].b']))
+
+    @unittest.skip('TODO, subclasses do not complete yet')
+    def test_list_subclasses_complete(self):
+        class ListSubclass(list): pass
+        self.assertSetEqual(self.com.matches(5, 'a[0].',
+                            locals_={'a': ListSubclass([Foo()])}),
+                            set(['a[0].method', 'a[0].a', 'a[0].b']))
+
+    def test_getitem_not_called_in_list_subclasses_overriding_getitem(self):
+        class FakeList(list):
+            def __getitem__(inner_self, i):
+                self.fail("possibly side-effecting __getitem_ method called")
+
+        self.com.matches(5, 'a[0].', locals_={'a': FakeList()})
+
 
 class TestMagicMethodCompletion(unittest.TestCase):
 

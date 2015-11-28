@@ -228,25 +228,38 @@ def current_string_literal_attr(cursor_offset, line):
     return None
 
 
-current_array_with_indexer_re = LazyReCompile(
-    r'''([\w_][\w0-9._]*(?:\[[a-zA-Z0-9_"']+\])+)\.(.*)''')
+current_indexed_member_re = LazyReCompile(
+    r'''([a-zA-Z_][\w.]*)\[([a-zA-Z0-9_"']+)\]\.([\w.]*)''')
 
 
-def current_array_with_indexer(cursor_offset, line):
-    """an array and indexer, e.g. foo[1]"""
-    matches = current_array_with_indexer_re.finditer(line)
+def current_indexed_member_access(cursor_offset, line):
+    """An identifier being indexed and member accessed"""
+    matches = current_indexed_member_re.finditer(line)
     for m in matches:
-        if m.start(1) <= cursor_offset and m.end(1) <= cursor_offset:
+        if m.start(3) <= cursor_offset and m.end(3) >= cursor_offset:
+            return LinePart(m.start(1), m.end(3), m.group())
+
+
+def current_indexed_member_access_identifier(cursor_offset, line):
+    """An identifier being indexed, e.g. foo in foo[1].bar"""
+    matches = current_indexed_member_re.finditer(line)
+    for m in matches:
+        if m.start(3) <= cursor_offset and m.end(3) >= cursor_offset:
             return LinePart(m.start(1), m.end(1), m.group(1))
 
 
-current_array_item_member_name_re = LazyReCompile(
-    r'''([\w_][\w0-9._]*(?:\[[a-zA-Z0-9_"']+\])+\.)(.*)''')
-
-
-def current_array_item_member_name(cursor_offset, line):
-    """the member name after an array indexer, e.g. foo[1].bar"""
-    matches = current_array_item_member_name_re.finditer(line)
+def current_indexed_member_access_identifier_with_index(cursor_offset, line):
+    """An identifier being indexed with the index, e.g. foo[1] in foo[1].bar"""
+    matches = current_indexed_member_re.finditer(line)
     for m in matches:
-        if m.start(2) <= cursor_offset and m.end(2) >= cursor_offset:
-            return LinePart(m.start(1), m.end(2), m.group(1))
+        if m.start(3) <= cursor_offset and m.end(3) >= cursor_offset:
+            return LinePart(m.start(1), m.end(2)+1,
+                            "%s[%s]" % (m.group(1), m.group(2)))
+
+
+def current_indexed_member_access_member(cursor_offset, line):
+    """The member name of an indexed object, e.g. bar in foo[1].bar"""
+    matches = current_indexed_member_re.finditer(line)
+    for m in matches:
+        if m.start(3) <= cursor_offset and m.end(3) >= cursor_offset:
+            return LinePart(m.start(3), m.end(3), m.group(3))
