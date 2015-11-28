@@ -231,7 +231,9 @@ def getfuncprops(func, f):
     try:
         is_bound_method = ((inspect.ismethod(f) and f.__self__ is not None)
                            or (func_name == '__init__' and not
-                               func.endswith('.__init__')))
+                               func.endswith('.__init__'))
+                           or (func_name == '__new__' and not
+                               func.endswith('.__new__')))
     except:
         # if f is a method from a xmlrpclib.Server instance, func_name ==
         # '__init__' throws xmlrpclib.Fault (see #202)

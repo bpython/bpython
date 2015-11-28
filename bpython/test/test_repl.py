@@ -138,6 +138,14 @@ class TestArgspec(unittest.TestCase):
         self.repl.push("    def spam(self, a, b, c):\n", False)
         self.repl.push("        pass\n", False)
         self.repl.push("\n", False)
+        self.repl.push("class SpammitySpam(object):\n", False)
+        self.repl.push("    def __init__(self, a, b, c):\n", False)
+        self.repl.push("        pass\n", False)
+        self.repl.push("\n", False)
+        self.repl.push("class WonderfulSpam(object):\n", False)
+        self.repl.push("    def __new__(self, a, b, c):\n", False)
+        self.repl.push("        pass\n", False)
+        self.repl.push("\n", False)
         self.repl.push("o = Spam()\n", False)
         self.repl.push("\n", False)
 
@@ -206,6 +214,13 @@ class TestArgspec(unittest.TestCase):
     def test_nonexistent_name(self):
         self.set_input_line("spamspamspam(")
         self.assertFalse(self.repl.get_args())
+
+    def test_issue572(self):
+        self.set_input_line("SpammitySpam(")
+        self.assertTrue(self.repl.get_args())
+
+        self.set_input_line("WonderfulSpam(")
+        self.assertTrue(self.repl.get_args())
 
 
 class TestGetSource(unittest.TestCase):
