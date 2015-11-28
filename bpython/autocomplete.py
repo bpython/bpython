@@ -352,7 +352,7 @@ class ArrayItemMembersCompletion(BaseCompletionType):
         member_part = r[2]
         _, _, dexpr = lineparts.current_array_with_indexer(cursor_offset, line)
         try:
-            exec('temp_val_from_array = ' + dexpr, locals_)
+            locals_['temp_val_from_array'] = safe_eval(dexpr, locals_)
         except (EvaluationError, NameError, IndexError, AttributeError, TypeError):
             return set()
 
