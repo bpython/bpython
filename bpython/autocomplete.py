@@ -362,7 +362,7 @@ class ArrayItemMembersCompletion(BaseCompletionType):
         matches_with_correct_name = \
             set([match.replace('temp_val_from_array.', member_part) for match in matches])
 
-        exec('temp_val_from_array = None', locals_)
+        del locals_['temp_val_from_array']
 
         return matches_with_correct_name
 
