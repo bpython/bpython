@@ -160,17 +160,17 @@ class CumulativeCompleter(BaseCompletionType):
         return self._completers[0].format(word)
 
     def matches(self, cursor_offset, line, **kwargs):
+        return_value = None
         all_matches = set()
         for completer in self._completers:
-            # these have to be explicitely listed to deal with the different
-            # signatures of various matches() methods of completers
             matches = completer.matches(cursor_offset=cursor_offset,
                                         line=line,
                                         **kwargs)
             if matches is not None:
                 all_matches.update(matches)
+                return_value = all_matches
 
-        return all_matches
+        return return_value
 
 
 class ImportCompletion(BaseCompletionType):
@@ -634,11 +634,11 @@ def get_default_completer(mode=SIMPLE):
         FilenameCompletion(mode=mode),
         MagicMethodCompletion(mode=mode),
         MultilineJediCompletion(mode=mode),
-        GlobalCompletion(mode=mode),
-        ArrayItemMembersCompletion(mode=mode),
-        CumulativeCompleter((AttrCompletion(mode=mode),
+        CumulativeCompleter((GlobalCompletion(mode=mode),
                              ParameterNameCompletion(mode=mode)),
-                            mode=mode)
+                            mode=mode),
+        ArrayItemMembersCompletion(mode=mode),
+        AttrCompletion(mode=mode),
     )
 
 

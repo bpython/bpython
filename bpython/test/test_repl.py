@@ -383,7 +383,7 @@ class TestRepl(unittest.TestCase):
         self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
         self.assertEqual(self.repl.matches_iter.matches, ['Foo.bar'])
 
-    # 3. Edge Cases
+    # 3. Edge cases
     def test_updating_namespace_complete(self):
         self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
         self.set_input_line("foo")
@@ -399,6 +399,19 @@ class TestRepl(unittest.TestCase):
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
         self.assertNotIn('__file__', self.repl.matches_iter.matches)
+
+    # 4. Parameter names
+    def test_paremeter_name_completion(self):
+        self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
+        self.set_input_line("foo(ab")
+
+        code = "def foo(abc=1, abd=2, xyz=3):\n\tpass\n"
+        for line in code.split("\n"):
+            self.repl.push(line)
+
+        self.assertTrue(self.repl.complete())
+        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
+        self.assertEqual(self.repl.matches_iter.matches, ['abc=', 'abd=', 'abs('])
 
 
 class TestCliRepl(unittest.TestCase):

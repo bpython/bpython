@@ -107,10 +107,10 @@ class TestCumulativeCompleter(unittest.TestCase):
         cumulative = autocomplete.CumulativeCompleter([a])
         self.assertEqual(cumulative.matches(3, 'abc'), set())
 
-    def test_one_none_completer_returns_empty(self):
+    def test_one_none_completer_returns_none(self):
         a = self.completer(None)
         cumulative = autocomplete.CumulativeCompleter([a])
-        self.assertEqual(cumulative.matches(3, 'abc'), set())
+        self.assertEqual(cumulative.matches(3, 'abc'), None)
 
     def test_two_completers_get_both(self):
         a = self.completer(['a'])
