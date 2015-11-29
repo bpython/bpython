@@ -43,6 +43,7 @@ from bpython import line as lineparts
 from bpython.line import LinePart
 from bpython._py3compat import py3, try_decode
 from bpython.lazyre import LazyReCompile
+from bpython.simpleeval import safe_eval, EvaluationError
 
 if not py3:
     from types import InstanceType, ClassType
@@ -646,20 +647,6 @@ def get_completer_bpython(cursor_offset, line, **kwargs):
     """"""
     return get_completer(get_default_completer(),
                          cursor_offset, line, **kwargs)
-
-
-class EvaluationError(Exception):
-    """Raised if an exception occurred in safe_eval."""
-
-
-def safe_eval(expr, namespace):
-    """Not all that safe, just catches some errors"""
-    try:
-        return eval(expr, namespace)
-    except (NameError, AttributeError, SyntaxError):
-        # If debugging safe_eval, raise this!
-        # raise
-        raise EvaluationError
 
 
 def _callable_postfix(value, word):
