@@ -609,10 +609,14 @@ def get_completer(completers, cursor_offset, line, **kwargs):
             double underscore methods like __len__ in method signatures
     """
 
-    for completer in completers:
-        matches = completer.matches(cursor_offset, line, **kwargs)
-        if matches is not None:
-            return sorted(matches), (completer if matches else None)
+    try:
+        for completer in completers:
+            matches = completer.matches(cursor_offset, line, **kwargs)
+            if matches is not None:
+                return sorted(matches), (completer if matches else None)
+    except:
+        pass
+
     return [], None
 
 
