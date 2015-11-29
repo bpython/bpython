@@ -29,6 +29,7 @@ import __main__
 import abc
 import glob
 import keyword
+import logging
 import os
 import re
 import rlcompleter
@@ -609,13 +610,18 @@ def get_completer(completers, cursor_offset, line, **kwargs):
             double underscore methods like __len__ in method signatures
     """
 
-    try:
-        for completer in completers:
+    for completer in completers:
+        try:
             matches = completer.matches(cursor_offset, line, **kwargs)
-            if matches is not None:
-                return sorted(matches), (completer if matches else None)
-    except:
-        pass
+        except Exception as e:
+            # Instead of crashing the UI, log exceptions from autocompleters.
+            logger = logging.getLogger(__name__)
+            logger.debug(
+                'Completer {} failed with unhandled exception: {}'.format(
+                    completer, e))
+            continue
+        if matches is not None:
+            return sorted(matches), (completer if matches else None)
 
     return [], None
 
