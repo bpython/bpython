@@ -7,7 +7,8 @@ from bpython.line import current_word, current_dict_key, current_dict, \
     current_method_definition_name, current_single_word, \
     current_string_literal_attr, current_indexed_member_access_identifier, \
     current_indexed_member_access_identifier_with_index, \
-    current_indexed_member_access_member
+    current_indexed_member_access_member, \
+    current_simple_expression, current_simple_expression_attribute
 
 
 def cursor(s):
@@ -341,6 +342,43 @@ class TestCurrentIndexedMemberAccessMember(LineTestCase):
         self.assertAccess('abc[def].<gh|i>')
         self.assertAccess('abc[def].gh |i')
         self.assertAccess('abc[def]|')
+
+@unittest.skip("TODO")
+class TestCurrentSimpleExpression(LineTestCase):
+    def setUp(self):
+        self.func = current_simple_expression
+
+    def test_only_dots(self):
+        self.assertAccess('<Object>.attr1|')
+        self.assertAccess('<Object>.|')
+        self.assertAccess('Object|')
+        self.assertAccess('Object|.')
+        self.assertAccess('<Object>.|')
+        self.assertAccess('<Object.attr1>.attr2|')
+        self.assertAccess('<Object>.att|r1.attr2')
+        self.assertAccess('stuff[stuff] + {123: 456} + <Object.attr1>.attr2|')
+        self.assertAccess('stuff[asd|fg]')
+        self.assertAccess('stuff[asdf[asd|fg]')
+
+    def test_with_brackets(self):
+        self.assertAccess('<foo[a]>.ba|r')
+        self.assertAccess('<foo[a]>.ba|r baz[qux]xyzzy')
+        self.assertAccess('foo[<bar[baz]>.qux|].xyzzy')
+        self.assertAccess('<foo[bar[baz].qux]>.xyzzy|')
+        self.assertAccess('foo[bar[baz].qux].xyzzy, <a>.b|')
+        self.assertAccess('foo[bar[<baz>.|')
+        self.assertAccess('foo[bar[<baz>.|] + 1].qux')
+
+    def test_cases_disallowed_by_simple_eval(self):
+        # These are allowed for now, but could be changed.
+        # for example, function calls are not allowed in simple expressions but
+        # seem like they'd be a pain to weed out so we catch them in the next step."""
+        self.assertAccess('foo().bar|')
+        self.assertAccess('foo[bar(a, b)].baz|')
+        self.assertAccess('foo(a, b).bar|')
+        self.assertAccess('<(1 + 1)>.bar|')
+        self.assertAccess('<(1 + 1 - foo.bar()[1])>.baz|')
+
 
 if __name__ == '__main__':
     unittest.main()

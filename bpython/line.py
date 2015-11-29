@@ -263,3 +263,15 @@ def current_indexed_member_access_member(cursor_offset, line):
     for m in matches:
         if m.start(3) <= cursor_offset and m.end(3) >= cursor_offset:
             return LinePart(m.start(3), m.end(3), m.group(3))
+
+def current_simple_expression(cursor_offset, line):
+    """The expression attribute lookup being performed on
+
+    e.g. <foo[0][1].bar>.ba|z
+    A "simple expression" contains only . lookup and [] indexing."""
+
+def current_simple_expression_attribute(cursor_offset, line):
+    """The attribute being looked up on a simple expression
+
+    e.g. foo[0][1].bar.<ba|z>
+    A "simple expression" contains only . lookup and [] indexing."""
