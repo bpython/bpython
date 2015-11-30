@@ -81,3 +81,33 @@ def safe_getitem(obj, index):
     if type(obj) in (list, tuple, dict, bytes) + string_types:
         return obj[index]
     raise ValueError('unsafe to lookup on object of type %s' % (type(obj), ))
+
+
+class AttributeSearcher(NodeVisitor):
+    """Search for a Load of an Attribute at col_offset"""
+    def visit_attribute(self, node):
+        print node.attribute
+
+def _current_simple_expression(cursor_offset, line):
+    """
+    Returns the current "simple expression" being attribute accessed
+
+    build asts from with increasing numbers of characters.
+    Find the biggest valid ast.
+    Once our attribute access is a subtree, stop
+
+
+    """
+
+    # in case attribute is blank, e.g. foo.| -> foo.xxx|
+    temp_line = line[:cursor_offset] + 'xxx' + line[cursor_offset:]
+    temp_cursor = cursor_offset + 3
+
+    for i in range(temp_cursor-1, -1, -1):
+        try:
+            tree = parse(temp_line[i:temp_cursor])
+        except SyntaxError:
+            return None
+        
+
+

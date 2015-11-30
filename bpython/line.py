@@ -3,10 +3,16 @@
 All functions take cursor offset from the beginning of the line and the line of
 Python code, and return None, or a tuple of the start index, end index, and the
 word."""
+from __future__ import unicode_literals
+
+import re
 
 from itertools import chain
 from collections import namedtuple
+from pygments.token import Token
+
 from bpython.lazyre import LazyReCompile
+from bpython._py3compat import PythonLexer, py3
 
 current_word_re = LazyReCompile(r'[\w_][\w0-9._]*[(]?')
 LinePart = namedtuple('LinePart', ['start', 'stop', 'word'])
@@ -93,7 +99,7 @@ def current_object(cursor_offset, line):
     return LinePart(start, start+len(s), s)
 
 
-current_object_attribute_re = LazyReCompile(r'([\w_][\w0-9_]*)[.]?')
+current_object_attribute_re = LazyReCompile(r'([\w_][\w0-9_]*)')
 
 
 def current_object_attribute(cursor_offset, line):
@@ -264,14 +270,40 @@ def current_indexed_member_access_member(cursor_offset, line):
         if m.start(3) <= cursor_offset and m.end(3) >= cursor_offset:
             return LinePart(m.start(3), m.end(3), m.group(3))
 
+current_simple_expression_re = LazyReCompile(
+    r'''([a-zA-Z_][\w.]*)\[([a-zA-Z0-9_"']+)\]\.([\w.]*)''')
+
+def _current_simple_expression(cursor_offset, line):
+    """
+    Returns the current "simple expression" being attribute accessed
+
+    build asts from with increasing numbers of characters.
+    Find the biggest valid ast.
+    Once our attribute access is a subtree, stop
+
+
+    """
+    for i in range(cursor):
+        pass
+
+
 def current_simple_expression(cursor_offset, line):
     """The expression attribute lookup being performed on
 
     e.g. <foo[0][1].bar>.ba|z
     A "simple expression" contains only . lookup and [] indexing."""
 
+
 def current_simple_expression_attribute(cursor_offset, line):
     """The attribute being looked up on a simple expression
 
     e.g. foo[0][1].bar.<ba|z>
     A "simple expression" contains only . lookup and [] indexing."""
+
+
+
+
+
+
+
+
