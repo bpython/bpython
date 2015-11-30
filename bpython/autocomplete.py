@@ -340,63 +340,6 @@ class AttrCompletion(BaseCompletionType):
                 return dir(obj)
 
 
-class ArrayItemMembersCompletion(BaseCompletionType):
-
-    def __init__(self, shown_before_tab=True, mode=SIMPLE):
-        self._shown_before_tab = shown_before_tab
-        self.completer = AttrCompletion(mode=mode)
-
-    def matches(self, cursor_offset, line, **kwargs):
-        if 'locals_' not in kwargs:
-            return None
-        locals_ = kwargs['locals_']
-
-        full = self.locate(cursor_offset, line)
-        if full is None:
-            return None
-
-        arr = lineparts.current_indexed_member_access_identifier(
-                cursor_offset, line)
-        index = lineparts.current_indexed_member_access_identifier_with_index(
-                cursor_offset, line)
-        member = lineparts.current_indexed_member_access_member(
-                cursor_offset, line)
-
-        try:
-            obj = safe_eval(arr.word, locals_)
-        except EvaluationError:
-            return None
-        if type(obj) not in (list, tuple) + string_types:
-            # then is may be unsafe to do attribute lookup on it
-            return None
-
-        try:
-            locals_['temp_val_from_array'] = safe_eval(index.word, locals_)
-        except (EvaluationError, IndexError):
-            return None
-
-        temp_line = line.replace(index.word, 'temp_val_from_array.')
-
-        matches = self.completer.matches(len(temp_line), temp_line, **kwargs)
-        if matches is None:
-            return None
-
-        matches_with_correct_name = \
-            set(match.replace('temp_val_from_array.', index.word+'.')
-                for match in matches if match[20:].startswith(member.word))
-
-        del locals_['temp_val_from_array']
-
-        return matches_with_correct_name
-
-    def locate(self, current_offset, line):
-        a = lineparts.current_indexed_member_access(current_offset, line)
-        return a
-
-    def format(self, match):
-        return after_last_dot(match)
-
-
 class DictKeyCompletion(BaseCompletionType):
 
     def matches(self, cursor_offset, line, **kwargs):
@@ -526,8 +469,7 @@ class StringLiteralAttrCompletion(BaseCompletionType):
 
 
 class ExpressionAttributeCompletion(AttrCompletion):
-    # could replace ArrayItemMember completion and attr completion
-    # as a more general case
+    # could replace attr completion as a more general case with some work
     def locate(self, current_offset, line):
         return lineparts.current_expression_attribute(current_offset, line)
 
@@ -676,7 +618,6 @@ def get_default_completer(mode=SIMPLE):
                             mode=mode),
         AttrCompletion(mode=mode),
         ExpressionAttributeCompletion(mode=mode),
-        ArrayItemMembersCompletion(mode=mode),
     )
 
 

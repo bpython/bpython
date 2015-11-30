@@ -268,20 +268,20 @@ class TestAttrCompletion(unittest.TestCase):
                       self.com.matches(4, 'a.__', locals_=locals_))
 
 
-class TestArrayItemCompletion(unittest.TestCase):
+class TestExpressionAttributeCompletion(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.com = autocomplete.ArrayItemMembersCompletion()
+        cls.com = autocomplete.ExpressionAttributeCompletion()
 
     def test_att_matches_found_on_instance(self):
         self.assertSetEqual(self.com.matches(5, 'a[0].', locals_={'a': [Foo()]}),
-                            set(['a[0].method', 'a[0].a', 'a[0].b']))
+                            set(['method', 'a', 'b']))
 
     @skip_old_style
     def test_att_matches_found_on_old_style_instance(self):
         self.assertSetEqual(self.com.matches(5, 'a[0].',
                                              locals_={'a': [OldStyleFoo()]}),
-                            set(['a[0].method', 'a[0].a', 'a[0].b']))
+                            set(['method', 'a', 'b']))
 
     def test_other_getitem_methods_not_called(self):
         class FakeList(object):
@@ -293,14 +293,14 @@ class TestArrayItemCompletion(unittest.TestCase):
     def test_tuples_complete(self):
         self.assertSetEqual(self.com.matches(5, 'a[0].',
                             locals_={'a': (Foo(),)}),
-                            set(['a[0].method', 'a[0].a', 'a[0].b']))
+                            set(['method', 'a', 'b']))
 
     @unittest.skip('TODO, subclasses do not complete yet')
     def test_list_subclasses_complete(self):
         class ListSubclass(list): pass
         self.assertSetEqual(self.com.matches(5, 'a[0].',
                             locals_={'a': ListSubclass([Foo()])}),
-                            set(['a[0].method', 'a[0].a', 'a[0].b']))
+                            set(['method', 'a', 'b']))
 
     def test_getitem_not_called_in_list_subclasses_overriding_getitem(self):
         class FakeList(list):
