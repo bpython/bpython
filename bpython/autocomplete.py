@@ -43,7 +43,8 @@ from bpython import line as lineparts
 from bpython.line import LinePart
 from bpython._py3compat import py3, try_decode
 from bpython.lazyre import LazyReCompile
-from bpython.simpleeval import safe_eval, EvaluationError
+from bpython.simpleeval import (safe_eval, evaluate_current_expression,
+                                EvaluationError)
 
 if not py3:
     from types import InstanceType, ClassType
@@ -241,7 +242,7 @@ class AttrCompletion(BaseCompletionType):
         if r is None:
             return None
 
-        if locals_ is None:
+        if locals_ is None:  # TODO add a note about why
             locals_ = __main__.__dict__
 
         assert '.' in r.word
@@ -524,6 +525,41 @@ class StringLiteralAttrCompletion(BaseCompletionType):
         return lineparts.current_string_literal_attr(current_offset, line)
 
 
+class ExpressionAttributeCompletion(AttrCompletion):
+    # could replace ArrayItemMember completion and attr completion
+    # as a more general case
+    def locate(self, current_offset, line):
+        return lineparts.current_expression_attribute(current_offset, line)
+
+    def matches(self, cursor_offset, line, **kwargs):
+        if 'locals_' not in kwargs:
+            return None
+        locals_ = kwargs['locals_']
+
+        if locals_ is None:
+            locals_ = __main__.__dict__
+
+        attr = self.locate(cursor_offset, line)
+
+        try:
+            obj = evaluate_current_expression(cursor_offset, line, locals_)
+        except EvaluationError:
+            return set()
+        with inspection.AttrCleaner(obj):
+                       # strips leading dot
+            matches = [m[1:] for m in self.attr_lookup(obj, '', attr.word)]
+
+        if attr.word.startswith('__'):
+            pass
+        elif attr.word.startswith('_'):
+            matches = set(match for match in matches
+                          if not match.startswith('__'))
+        else:
+            matches = set(match for match in matches
+                          if not match.split('.')[-1].startswith('_'))
+        return matches
+
+
 try:
     import jedi
 except ImportError:
@@ -638,8 +674,9 @@ def get_default_completer(mode=SIMPLE):
         CumulativeCompleter((GlobalCompletion(mode=mode),
                              ParameterNameCompletion(mode=mode)),
                             mode=mode),
-        ArrayItemMembersCompletion(mode=mode),
         AttrCompletion(mode=mode),
+        ExpressionAttributeCompletion(mode=mode),
+        ArrayItemMembersCompletion(mode=mode),
     )
 
 
