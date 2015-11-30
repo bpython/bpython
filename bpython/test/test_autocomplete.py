@@ -309,6 +309,16 @@ class TestExpressionAttributeCompletion(unittest.TestCase):
 
         self.com.matches(5, 'a[0].', locals_={'a': FakeList()})
 
+    def test_literals_complete(self):
+        self.assertSetEqual(self.com.matches(10, '[a][0][0].',
+                            locals_={'a': (Foo(),)}),
+                            set(['method', 'a', 'b']))
+
+    def test_dictionaries_complete(self):
+        self.assertSetEqual(self.com.matches(7, 'a["b"].',
+                            locals_={'a': {'b': Foo()}}),
+                            set(['method', 'a', 'b']))
+
 
 class TestMagicMethodCompletion(unittest.TestCase):
 
