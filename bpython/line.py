@@ -5,14 +5,10 @@ Python code, and return None, or a tuple of the start index, end index, and the
 word."""
 from __future__ import unicode_literals
 
-import re
-
 from itertools import chain
 from collections import namedtuple
-from pygments.token import Token
 
 from bpython.lazyre import LazyReCompile
-from bpython._py3compat import PythonLexer, py3
 
 current_word_re = LazyReCompile(r'[\w_][\w0-9._]*[(]?')
 LinePart = namedtuple('LinePart', ['start', 'stop', 'word'])
@@ -99,11 +95,12 @@ def current_object(cursor_offset, line):
     return LinePart(start, start+len(s), s)
 
 
-current_object_attribute_re = LazyReCompile(r'([\w_][\w0-9_]*)')
+current_object_attribute_re = LazyReCompile(r'([\w_][\w0-9_]*)[.]?')
 
 
 def current_object_attribute(cursor_offset, line):
     """If in attribute completion, the attribute being completed"""
+    #TODO replace with more general current_expression_attribute
     match = current_word(cursor_offset, line)
     if match is None:
         return None
@@ -270,40 +267,15 @@ def current_indexed_member_access_member(cursor_offset, line):
         if m.start(3) <= cursor_offset and m.end(3) >= cursor_offset:
             return LinePart(m.start(3), m.end(3), m.group(3))
 
-current_simple_expression_re = LazyReCompile(
-    r'''([a-zA-Z_][\w.]*)\[([a-zA-Z0-9_"']+)\]\.([\w.]*)''')
 
-def _current_simple_expression(cursor_offset, line):
-    """
-    Returns the current "simple expression" being attribute accessed
-
-    build asts from with increasing numbers of characters.
-    Find the biggest valid ast.
-    Once our attribute access is a subtree, stop
+current_expression_attribute_re = LazyReCompile(r'[.]\s*((?:[\w_][\w0-9_]*)|(?:))')
 
 
-    """
-    for i in range(cursor):
-        pass
-
-
-def current_simple_expression(cursor_offset, line):
-    """The expression attribute lookup being performed on
-
-    e.g. <foo[0][1].bar>.ba|z
-    A "simple expression" contains only . lookup and [] indexing."""
-
-
-def current_simple_expression_attribute(cursor_offset, line):
-    """The attribute being looked up on a simple expression
-
-    e.g. foo[0][1].bar.<ba|z>
-    A "simple expression" contains only . lookup and [] indexing."""
-
-
-
-
-
-
-
-
+def current_expression_attribute(cursor_offset, line):
+    """If after a dot, the attribute being completed"""
+    #TODO replace with more general current_expression_attribute
+    matches = current_expression_attribute_re.finditer(line)
+    for m in matches:
+        if (m.start(1) <= cursor_offset and m.end(1) >= cursor_offset):
+            return LinePart(m.start(1), m.end(1), m.group(1))
+    return None

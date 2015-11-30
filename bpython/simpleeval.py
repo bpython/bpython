@@ -8,6 +8,8 @@ In order to provide fancy completion, some code can be executed safely.
 from ast import *
 from six import string_types
 
+from bpython import line as line_properties
+
 class EvaluationError(Exception):
     """Raised if an exception occurred in safe_eval."""
 
@@ -21,7 +23,7 @@ def safe_eval(expr, namespace):
         # raise
         raise EvaluationError
 
-def simple_eval(node_or_string, namespace={}):
+def simple_eval(node_or_string, namespace=None):
     """
     Safely evaluate an expression node or a string containing a Python
     expression.  The string or node provided may only consist of:
@@ -35,6 +37,8 @@ def simple_eval(node_or_string, namespace={}):
 
     The optional namespace dict-like ought not to cause side effects on lookup
     """
+    if namespace is None:
+        namespace = {}
     if isinstance(node_or_string, string_types):
         node_or_string = parse(node_or_string, mode='eval')
     if isinstance(node_or_string, Expression):
@@ -77,37 +81,65 @@ def simple_eval(node_or_string, namespace={}):
         raise ValueError('malformed string')
     return _convert(node_or_string)
 
+
 def safe_getitem(obj, index):
     if type(obj) in (list, tuple, dict, bytes) + string_types:
         return obj[index]
     raise ValueError('unsafe to lookup on object of type %s' % (type(obj), ))
 
 
-class AttributeSearcher(NodeVisitor):
-    """Search for a Load of an Attribute at col_offset"""
-    def visit_attribute(self, node):
-        print node.attribute
+def find_attribute_with_name(node, name):
+    """Based on ast.NodeVisitor"""
+    if isinstance(node, Attribute) and node.attr == name:
+        return node
+    for field, value in iter_fields(node):
+        if isinstance(value, list):
+            for item in value:
+               if isinstance(item, AST):
+                    r = find_attribute_with_name(item, name)
+                    if r:
+                        return r
+        elif isinstance(value, AST):
+            r = find_attribute_with_name(value, name)
+            if r:
+                return r
 
-def _current_simple_expression(cursor_offset, line):
+
+def evaluate_current_expression(cursor_offset, line, namespace={}):
     """
-    Returns the current "simple expression" being attribute accessed
+    Return evaluted expression to the right of the dot of current attribute.
 
     build asts from with increasing numbers of characters.
     Find the biggest valid ast.
     Once our attribute access is a subtree, stop
-
-
     """
 
     # in case attribute is blank, e.g. foo.| -> foo.xxx|
     temp_line = line[:cursor_offset] + 'xxx' + line[cursor_offset:]
     temp_cursor = cursor_offset + 3
+    temp_attribute = line_properties.current_expression_attribute(
+            temp_cursor, temp_line)
+    if temp_attribute is None:
+        raise EvaluationError("No current attribute")
+    attr_before_cursor = temp_line[temp_attribute.start:temp_cursor]
 
-    for i in range(temp_cursor-1, -1, -1):
-        try:
-            tree = parse(temp_line[i:temp_cursor])
-        except SyntaxError:
-            return None
-        
+    def parse_trees(cursor_offset, line):
+        for i in range(cursor_offset-1, -1, -1):
+            try:
+                ast = parse(line[i:cursor_offset])
+                yield ast
+            except SyntaxError:
+                continue
 
+    largest_ast = None
+    for tree in parse_trees(temp_cursor, temp_line):
+        attribute_access = find_attribute_with_name(tree, attr_before_cursor)
+        if attribute_access:
+            largest_ast = attribute_access.value
 
+    if largest_ast is None:
+        raise EvaluationError("Corresponding ASTs to right of cursor are invalid")
+    try:
+        return simple_eval(largest_ast, namespace)
+    except (ValueError, KeyError, IndexError):
+        raise EvaluationError("Could not safely evaluate")

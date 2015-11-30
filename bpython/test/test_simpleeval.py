@@ -2,11 +2,13 @@
 
 import ast
 
-from bpython.simpleeval import simple_eval
+from bpython.simpleeval import (simple_eval,
+                                evaluate_current_expression,
+                                EvaluationError)
 from bpython.test import unittest
 
 
-class TestInspection(unittest.TestCase):
+class TestSimpleEval(unittest.TestCase):
     def assertMatchesStdlib(self, expr):
         self.assertEqual(ast.literal_eval(expr), simple_eval(expr))
 
@@ -66,6 +68,41 @@ class TestInspection(unittest.TestCase):
         with self.assertRaises(KeyError):
             simple_eval('a')
 
+class TestEvaluateCurrentExpression(unittest.TestCase):
+
+    def assertEvaled(self, line, value, ns=None):
+        assert line.count('|') == 1
+        cursor_offset = line.find('|')
+        line = line.replace('|', '')
+        self.assertEqual(evaluate_current_expression(cursor_offset, line, ns),
+                         value)
+
+    def assertCannotEval(self, line, ns=None):
+        assert line.count('|') == 1
+        cursor_offset = line.find('|')
+        line = line.replace('|', '')
+        with self.assertRaises(EvaluationError):
+            evaluate_current_expression(cursor_offset, line, ns)
+
+    def test_simple(self):
+        self.assertEvaled('[1].a|bc', [1])
+        self.assertEvaled('[1].abc|', [1])
+        self.assertEvaled('[1].|abc', [1])
+        self.assertEvaled('[1]. |abc', [1])
+        self.assertEvaled('[1] .|abc', [1])
+        self.assertCannotEval('[1].abc |', [1])
+        self.assertCannotEval('[1]. abc |', [1])
+        self.assertCannotEval('[2][1].a|bc', [1])
+
+    def test_nonsense(self):
+        self.assertEvaled('!@#$ [1].a|bc', [1])
+        self.assertEvaled('--- [2][0].a|bc', 2)
+        self.assertCannotEval('"asdf".centered()[1].a|bc')
+        self.assertEvaled('"asdf"[1].a|bc', 's')
+
+    def test_with_namespace(self):
+        self.assertEvaled('a[1].a|bc', 'd', {'a':'adsf'})
+        self.assertCannotEval('a[1].a|bc', {})
 
 if __name__ == '__main__':
     unittest.main()

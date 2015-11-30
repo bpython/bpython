@@ -8,7 +8,7 @@ from bpython.line import current_word, current_dict_key, current_dict, \
     current_string_literal_attr, current_indexed_member_access_identifier, \
     current_indexed_member_access_identifier_with_index, \
     current_indexed_member_access_member, \
-    current_simple_expression, current_simple_expression_attribute
+    current_expression_attribute
 
 
 def cursor(s):
@@ -227,10 +227,6 @@ class TestCurrentAttribute(LineTestCase):
         self.assertAccess('Object.<attr1|>.attr2')
         self.assertAccess('Object.<attr1|>.attr2')
 
-    def test_after_dot(self):
-        self.assertAccess('Object.<attr1|>.')
-        self.assertAccess('Object.attr1.|')
-
 
 class TestCurrentFromImportFrom(LineTestCase):
     def setUp(self):
@@ -347,6 +343,33 @@ class TestCurrentIndexedMemberAccessMember(LineTestCase):
         self.assertAccess('abc[def].<gh|i>')
         self.assertAccess('abc[def].gh |i')
         self.assertAccess('abc[def]|')
+
+class TestCurrentExpressionAttribute(LineTestCase):
+    def setUp(self):
+        self.func = current_expression_attribute
+
+    def test_simple(self):
+        self.assertAccess('Object.<attr1|>.')
+        self.assertAccess('Object.<|attr1>.')
+        self.assertAccess('Object.(|)')
+        self.assertAccess('Object.another.(|)')
+        self.assertAccess('asdf asdf asdf.(abc|)')
+
+    def test_without_dot(self):
+        self.assertAccess('Object|')
+        self.assertAccess('Object|.')
+        self.assertAccess('|Object.')
+
+    def test_with_whitespace(self):
+        self.assertAccess('Object. <attr|>')
+        self.assertAccess('Object .<attr|>')
+        self.assertAccess('Object . <attr|>')
+        self.assertAccess('Object .asdf attr|')
+        self.assertAccess('Object .<asdf|> attr')
+        self.assertAccess('Object. asdf attr|')
+        self.assertAccess('Object. <asdf|> attr')
+        self.assertAccess('Object . asdf attr|')
+        self.assertAccess('Object . <asdf|> attr')
 
 
 if __name__ == '__main__':
