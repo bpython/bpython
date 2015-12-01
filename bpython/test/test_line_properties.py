@@ -5,10 +5,7 @@ from bpython.line import current_word, current_dict_key, current_dict, \
     current_string, current_object, current_object_attribute, \
     current_from_import_from, current_from_import_import, current_import, \
     current_method_definition_name, current_single_word, \
-    current_string_literal_attr, current_indexed_member_access_identifier, \
-    current_indexed_member_access_identifier_with_index, \
-    current_indexed_member_access_member, \
-    current_expression_attribute
+    current_string_literal_attr, current_expression_attribute
 
 
 def cursor(s):
@@ -225,7 +222,6 @@ class TestCurrentAttribute(LineTestCase):
         self.assertAccess('stuff[asdf[asd|fg]')
         self.assertAccess('Object.attr1.<|attr2>')
         self.assertAccess('Object.<attr1|>.attr2')
-        self.assertAccess('Object.<attr1|>.attr2')
 
 
 class TestCurrentFromImportFrom(LineTestCase):
@@ -309,40 +305,6 @@ class TestCurrentStringLiteral(LineTestCase):
         self.assertAccess('"hey".asdf d|')
         self.assertAccess('"hey".<|>')
 
-class TestCurrentIndexedMemberAccessIdentifier(LineTestCase):
-    def setUp(self):
-        self.func = current_indexed_member_access_identifier
-
-    def test_simple(self):
-        self.assertAccess('<abc>[def].ghi|')
-        self.assertAccess('<abc>[def].|ghi')
-        self.assertAccess('<abc>[def].gh|i')
-        self.assertAccess('abc[def].gh |i')
-        self.assertAccess('abc[def]|')
-
-
-class TestCurrentIndexedMemberAccessIdentifierWithIndex(LineTestCase):
-    def setUp(self):
-        self.func = current_indexed_member_access_identifier_with_index
-
-    def test_simple(self):
-        self.assertAccess('<abc[def]>.ghi|')
-        self.assertAccess('<abc[def]>.|ghi')
-        self.assertAccess('<abc[def]>.gh|i')
-        self.assertAccess('abc[def].gh |i')
-        self.assertAccess('abc[def]|')
-
-
-class TestCurrentIndexedMemberAccessMember(LineTestCase):
-    def setUp(self):
-        self.func = current_indexed_member_access_member
-
-    def test_simple(self):
-        self.assertAccess('abc[def].<ghi|>')
-        self.assertAccess('abc[def].<|ghi>')
-        self.assertAccess('abc[def].<gh|i>')
-        self.assertAccess('abc[def].gh |i')
-        self.assertAccess('abc[def]|')
 
 class TestCurrentExpressionAttribute(LineTestCase):
     def setUp(self):
@@ -371,6 +333,12 @@ class TestCurrentExpressionAttribute(LineTestCase):
         self.assertAccess('Object . asdf attr|')
         self.assertAccess('Object . <asdf|> attr')
 
+    def test_indexing(self):
+        self.assertAccess('abc[def].<ghi|>')
+        self.assertAccess('abc[def].<|ghi>')
+        self.assertAccess('abc[def].<gh|i>')
+        self.assertAccess('abc[def].gh |i')
+        self.assertAccess('abc[def]|')
 
 if __name__ == '__main__':
     unittest.main()

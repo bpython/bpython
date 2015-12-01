@@ -231,43 +231,6 @@ def current_string_literal_attr(cursor_offset, line):
     return None
 
 
-current_indexed_member_re = LazyReCompile(
-    r'''([a-zA-Z_][\w.]*)\[([a-zA-Z0-9_"']+)\]\.([\w.]*)''')
-
-
-def current_indexed_member_access(cursor_offset, line):
-    """An identifier being indexed and member accessed"""
-    matches = current_indexed_member_re.finditer(line)
-    for m in matches:
-        if m.start(3) <= cursor_offset and m.end(3) >= cursor_offset:
-            return LinePart(m.start(1), m.end(3), m.group())
-
-
-def current_indexed_member_access_identifier(cursor_offset, line):
-    """An identifier being indexed, e.g. foo in foo[1].bar"""
-    matches = current_indexed_member_re.finditer(line)
-    for m in matches:
-        if m.start(3) <= cursor_offset and m.end(3) >= cursor_offset:
-            return LinePart(m.start(1), m.end(1), m.group(1))
-
-
-def current_indexed_member_access_identifier_with_index(cursor_offset, line):
-    """An identifier being indexed with the index, e.g. foo[1] in foo[1].bar"""
-    matches = current_indexed_member_re.finditer(line)
-    for m in matches:
-        if m.start(3) <= cursor_offset and m.end(3) >= cursor_offset:
-            return LinePart(m.start(1), m.end(2)+1,
-                            "%s[%s]" % (m.group(1), m.group(2)))
-
-
-def current_indexed_member_access_member(cursor_offset, line):
-    """The member name of an indexed object, e.g. bar in foo[1].bar"""
-    matches = current_indexed_member_re.finditer(line)
-    for m in matches:
-        if m.start(3) <= cursor_offset and m.end(3) >= cursor_offset:
-            return LinePart(m.start(3), m.end(3), m.group(3))
-
-
 current_expression_attribute_re = LazyReCompile(r'[.]\s*((?:[\w_][\w0-9_]*)|(?:))')
 
 
