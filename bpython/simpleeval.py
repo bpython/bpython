@@ -5,8 +5,9 @@ In order to provide fancy completion, some code can be executed safely.
 
 """
 
-from ast import *
+import ast
 from six import string_types
+from six.moves import builtins
 
 from bpython import line as line_properties
 
@@ -23,6 +24,7 @@ def safe_eval(expr, namespace):
         # raise
         raise EvaluationError
 
+# taken from Python 2 stdlib ast.literal_eval
 def simple_eval(node_or_string, namespace=None):
     """
     Safely evaluate an expression node or a string containing a Python
@@ -37,43 +39,44 @@ def simple_eval(node_or_string, namespace=None):
 
     The optional namespace dict-like ought not to cause side effects on lookup
     """
+    # Based heavily on stdlib ast.literal_eval
     if namespace is None:
         namespace = {}
     if isinstance(node_or_string, string_types):
-        node_or_string = parse(node_or_string, mode='eval')
-    if isinstance(node_or_string, Expression):
+        node_or_string = ast.parse(node_or_string, mode='eval')
+    if isinstance(node_or_string, ast.Expression):
         node_or_string = node_or_string.body
     def _convert(node):
-        if isinstance(node, Str):
+        if isinstance(node, ast.Str):
             return node.s
-        elif isinstance(node, Num):
+        elif isinstance(node, ast.Num):
             return node.n
-        elif isinstance(node, Tuple):
+        elif isinstance(node, ast.Tuple):
             return tuple(map(_convert, node.elts))
-        elif isinstance(node, List):
+        elif isinstance(node, ast.List):
             return list(map(_convert, node.elts))
-        elif isinstance(node, Dict):
+        elif isinstance(node, ast.Dict):
             return dict((_convert(k), _convert(v)) for k, v
                         in zip(node.keys, node.values))
-        elif isinstance(node, Name):
+        elif isinstance(node, ast.Name):
             try:
                 return namespace[node.id]
             except KeyError:
-                return __builtins__[node.id]
-        elif isinstance(node, BinOp) and \
-             isinstance(node.op, (Add, Sub)) and \
-             isinstance(node.right, Num) and \
+                return getattr(builtins, node.id)
+        elif isinstance(node, ast.BinOp) and \
+             isinstance(node.op, (ast.Add, ast.Sub)) and \
+             isinstance(node.right, ast.Num) and \
              isinstance(node.right.n, complex) and \
-             isinstance(node.left, Num) and \
+             isinstance(node.left, ast.Num) and \
              isinstance(node.left.n, (int, long, float)):
             left = node.left.n
             right = node.right.n
-            if isinstance(node.op, Add):
+            if isinstance(node.op, ast.Add):
                 return left + right
             else:
                 return left - right
-        elif isinstance(node, Subscript) and \
-             isinstance(node.slice, Index):
+        elif isinstance(node, ast.Subscript) and \
+             isinstance(node.slice, ast.Index):
             obj = _convert(node.value)
             index = _convert(node.slice.value)
             return safe_getitem(obj, index)
@@ -90,16 +93,16 @@ def safe_getitem(obj, index):
 
 def find_attribute_with_name(node, name):
     """Based on ast.NodeVisitor"""
-    if isinstance(node, Attribute) and node.attr == name:
+    if isinstance(node, ast.Attribute) and node.attr == name:
         return node
-    for field, value in iter_fields(node):
+    for field, value in ast.iter_fields(node):
         if isinstance(value, list):
             for item in value:
-               if isinstance(item, AST):
+               if isinstance(item, ast.AST):
                     r = find_attribute_with_name(item, name)
                     if r:
                         return r
-        elif isinstance(value, AST):
+        elif isinstance(value, ast.AST):
             r = find_attribute_with_name(value, name)
             if r:
                 return r
@@ -126,8 +129,8 @@ def evaluate_current_expression(cursor_offset, line, namespace={}):
     def parse_trees(cursor_offset, line):
         for i in range(cursor_offset-1, -1, -1):
             try:
-                ast = parse(line[i:cursor_offset])
-                yield ast
+                tree = ast.parse(line[i:cursor_offset])
+                yield tree
             except SyntaxError:
                 continue
 
@@ -141,5 +144,5 @@ def evaluate_current_expression(cursor_offset, line, namespace={}):
         raise EvaluationError("Corresponding ASTs to right of cursor are invalid")
     try:
         return simple_eval(largest_ast, namespace)
-    except (ValueError, KeyError, IndexError):
+    except (ValueError, KeyError, IndexError, AttributeError):
         raise EvaluationError("Could not safely evaluate")
