@@ -216,21 +216,6 @@ def current_dotted_attribute(cursor_offset, line):
         return LinePart(start, end, word)
 
 
-current_string_literal_attr_re = LazyReCompile(
-    "('''" +
-    r'''|"""|'|")''' +
-    r'''((?:(?=([^"'\\]+|\\.|(?!\1)["']))\3)*)\1[.]([a-zA-Z_]?[\w]*)''')
-
-
-def current_string_literal_attr(cursor_offset, line):
-    """The attribute following a string literal"""
-    matches = current_string_literal_attr_re.finditer(line)
-    for m in matches:
-        if m.start(4) <= cursor_offset and m.end(4) >= cursor_offset:
-            return LinePart(m.start(4), m.end(4), m.group(4))
-    return None
-
-
 current_expression_attribute_re = LazyReCompile(r'[.]\s*((?:[\w_][\w0-9_]*)|(?:))')
 
 

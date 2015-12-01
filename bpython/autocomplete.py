@@ -447,27 +447,6 @@ class ParameterNameCompletion(BaseCompletionType):
         return lineparts.current_word(current_offset, line)
 
 
-class StringLiteralAttrCompletion(BaseCompletionType):
-
-    def matches(self, cursor_offset, line, **kwargs):
-        r = self.locate(cursor_offset, line)
-        if r is None:
-            return None
-
-        attrs = dir('')
-        if not py3:
-            # decode attributes
-            attrs = (att.decode('ascii') for att in attrs)
-
-        matches = set(att for att in attrs if att.startswith(r.word))
-        if not r.word.startswith('_'):
-            return set(match for match in matches if not match.startswith('_'))
-        return matches
-
-    def locate(self, current_offset, line):
-        return lineparts.current_string_literal_attr(current_offset, line)
-
-
 class ExpressionAttributeCompletion(AttrCompletion):
     # could replace attr completion as a more general case with some work
     def locate(self, current_offset, line):
@@ -608,7 +587,6 @@ def get_completer(completers, cursor_offset, line, **kwargs):
 def get_default_completer(mode=SIMPLE):
     return (
         DictKeyCompletion(mode=mode),
-        StringLiteralAttrCompletion(mode=mode),
         ImportCompletion(mode=mode),
         FilenameCompletion(mode=mode),
         MagicMethodCompletion(mode=mode),
