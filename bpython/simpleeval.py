@@ -30,12 +30,9 @@ def simple_eval(node_or_string, namespace=None):
     Safely evaluate an expression node or a string containing a Python
     expression.  The string or node provided may only consist of:
     * the following Python literal structures: strings, numbers, tuples,
-        lists, dicts, booleans, and None.
+        lists, and dicts
     * variable names causing lookups in the passed in namespace or builtins
     * getitem calls using the [] syntax on objects of the types above
-    * getitem calls on subclasses of the above types if they do not override
-        the __getitem__ method and do not override __getattr__ or __getattribute__
-        (or maybe we'll try to clean those up?)
 
     The optional namespace dict-like ought not to cause side effects on lookup
     """
