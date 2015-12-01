@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2014 bpython authors -->
+<!-- Copyright 2014-2015 bpython authors -->
 
-<application>
-  <id type="desktop">bpython.desktop</id>
+<component type="desktop">
+  <id>bpython.desktop</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <name>bpython interpreter</name>
@@ -23,15 +23,32 @@
     </p>
   </description>
   <url type="homepage">http://www.bpython-interpreter.org/</url>
+  <url type="bugtracker">https://github.com/bpython/bpython/issues</url>
   <screenshots>
-    <screenshot type="default">http://bpython-interpreter.org/images/8.png</screenshot>
-    <screenshot>http://bpython-interpreter.org/images/1.png</screenshot>
-    <screenshot>http://bpython-interpreter.org/images/2.png</screenshot>
-    <screenshot>http://bpython-interpreter.org/images/3.png</screenshot>
-    <screenshot>http://bpython-interpreter.org/images/4.png</screenshot>
-    <screenshot>http://bpython-interpreter.org/images/5.png</screenshot>
-    <screenshot>http://bpython-interpreter.org/images/6.png</screenshot>
-    <screenshot>http://bpython-interpreter.org/images/7.png</screenshot>
+    <screenshot type="default">
+      <image>http://bpython-interpreter.org/images/8.png</image>
+    </screenshot>
+    <screenshot>
+      <image>http://bpython-interpreter.org/images/1.png</image>
+    </screenshot>
+    <screenshot>
+      <image>http://bpython-interpreter.org/images/2.png</image>
+    </screenshot>
+    <screenshot>
+      <image>http://bpython-interpreter.org/images/3.png</image>
+    </screenshot>
+    <screenshot>
+      <image>http://bpython-interpreter.org/images/4.png</image>
+    </screenshot>
+    <screenshot>
+      <image>http://bpython-interpreter.org/images/5.png</image>
+    </screenshot>
+    <screenshot>
+      <image>http://bpython-interpreter.org/images/6.png</image>
+    </screenshot>
+    <screenshot>
+      <image>http://bpython-interpreter.org/images/7.png</image>
+    </screenshot>
   </screenshots>
-  <updatecontact>bpython@googlegroups.com</updatecontact>
-</application>
+  <update_contact>bpython@googlegroups.com</update_contact>
+</component>
