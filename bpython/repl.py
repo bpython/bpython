@@ -51,6 +51,7 @@ from bpython.history import History
 from bpython.paste import PasteHelper, PastePinnwand, PasteFailed
 from bpython.patch_linecache import filename_for_console_input
 from bpython.translations import _, ngettext
+from bpython import simpleeval
 
 
 class RuntimeTimer(object):
@@ -518,7 +519,15 @@ class Repl(object):
             return False
 
         try:
-            f = self.get_object(func)
+            if inspection.is_eval_safe_name(func):
+                f = self.get_object(func)
+            else:
+                try:
+                    fake_cursor = self.current_line.index(func) + len(func)
+                    f = simpleeval.evaluate_current_attribute(
+                            fake_cursor, self.current_line, self.interp.locals)
+                except simpleeval.EvaluationError:
+                    return False
         except Exception:
             # another case of needing to catch every kind of error
             # since user code is run in the case of descriptors
@@ -624,8 +633,6 @@ class Repl(object):
             current_block='\n'.join(self.buffer + [self.current_line]),
             complete_magic_methods=self.config.complete_magic_methods,
             history=self.history)
-        # TODO implement completer.shown_before_tab == False (filenames
-        # shouldn't fill screen)
 
         if len(matches) == 0:
             self.matches_iter.clear()

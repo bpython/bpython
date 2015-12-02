@@ -8,7 +8,6 @@ In order to provide fancy completion, some code can be executed safely.
 import ast
 from six import string_types
 from six.moves import builtins
-from numbers import Number
 
 from bpython import line as line_properties
 from bpython._py3compat import py3
@@ -136,14 +135,16 @@ def find_attribute_with_name(node, name):
                 return r
 
 
-def evaluate_current_expression(cursor_offset, line, namespace={}):
+def evaluate_current_expression(cursor_offset, line, namespace=None):
     """
-    Return evaluted expression to the right of the dot of current attribute.
+    Return evaluated expression to the right of the dot of current attribute.
 
     build asts from with increasing numbers of characters.
     Find the biggest valid ast.
     Once our attribute access is a subtree, stop
     """
+    if namespace is None:
+        namespace = {}
 
     # in case attribute is blank, e.g. foo.| -> foo.xxx|
     temp_line = line[:cursor_offset] + 'xxx' + line[cursor_offset:]
@@ -174,3 +175,17 @@ def evaluate_current_expression(cursor_offset, line, namespace={}):
         return simple_eval(largest_ast, namespace)
     except ValueError:
         raise EvaluationError("Could not safely evaluate")
+
+
+def evaluate_current_attribute(cursor_offset, line, namespace=None):
+    # this function runs user code in case of custom descriptors,
+    # so could fail in any way
+
+    obj = evaluate_current_expression(cursor_offset, line, namespace)
+    attr = line_properties.current_expression_attribute(cursor_offset, line)
+    if attr is None:
+        raise EvaluationError("No attribute found to look up")
+    try:
+        return getattr(obj, attr.word)
+    except AttributeError:
+        raise EvaluationError("can't lookup attribute %s on %r" % (attr.word, obj))
