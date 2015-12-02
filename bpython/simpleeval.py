@@ -1,4 +1,27 @@
 # encoding: utf-8
+
+# The MIT License
+#
+# Copyright (c) 2015 the bpython authors.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
 """simple evaluation of side-effect free code
 
 In order to provide fancy completion, some code can be executed safely.
@@ -26,6 +49,16 @@ def safe_eval(expr, namespace):
         raise EvaluationError
 
 
+# This function is under the Python License, Version 2
+# This license requires modifications to the code be reported.
+# Based on ast.literal_eval in Python 2 and Python 3
+# Modifications:
+# * Python 2 and Python 3 versions of the function are combined
+# * checks that objects used as operands of + and - are numbers
+#   instead of checking they are constructed with number literals
+# * new docstring describing different functionality
+# * looks up names from namespace
+# * indexing syntax is allowed
 def simple_eval(node_or_string, namespace=None):
     """
     Safely evaluate an expression node or a string containing a Python
@@ -40,7 +73,6 @@ def simple_eval(node_or_string, namespace=None):
 
     The optional namespace dict-like ought not to cause side effects on lookup
     """
-    # Based heavily on stdlib ast.literal_eval
     if namespace is None:
         namespace = {}
     if isinstance(node_or_string, string_types):
@@ -118,11 +150,18 @@ def safe_getitem(obj, index):
     raise ValueError('unsafe to lookup on object of type %s' % (type(obj), ))
 
 
+# This function is under the Python License, Version 2
+# This license requires modifications to the code be reported.
+# Based on ast.NodeVisitor.generic_visit
+# Modifications:
+# * Now a standalone function instead of method
+# * now hardcoded to look for Attribute node with given attr name
+# * returns values back up the recursive call stack to stop once target found
 def find_attribute_with_name(node, name):
-    """Based on ast.NodeVisitor"""
+    """Search depth-first for getitem indexing with name"""
     if isinstance(node, ast.Attribute) and node.attr == name:
         return node
-    for field, value in ast.iter_fields(node):
+    for _, value in ast.iter_fields(node):
         if isinstance(value, list):
             for item in value:
                if isinstance(item, ast.AST):
@@ -133,7 +172,6 @@ def find_attribute_with_name(node, name):
             r = find_attribute_with_name(value, name)
             if r:
                 return r
-
 
 def evaluate_current_expression(cursor_offset, line, namespace=None):
     """
