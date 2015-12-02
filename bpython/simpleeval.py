@@ -81,8 +81,13 @@ def simple_eval(node_or_string, namespace=None):
         node_or_string = node_or_string.body
 
     string_type_nodes = (ast.Str, ast.Bytes) if py3 else (ast.Str,)
-    name_type_nodes = (ast.Name, ast.NameConstant) if py3 else (ast.Name,)
     numeric_types = (int, float, complex) + (() if py3 else (long,))
+
+    # added in Python 3.4
+    if hasattr(ast, 'NameConstant'):
+        name_type_nodes = (ast.Name, ast.NameConstant)
+    else:
+        name_type_nodes = (ast.Name,)
 
     def _convert(node):
         if isinstance(node, string_type_nodes):
