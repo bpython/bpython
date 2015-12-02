@@ -8,8 +8,10 @@ In order to provide fancy completion, some code can be executed safely.
 import ast
 from six import string_types
 from six.moves import builtins
+from numbers import Number
 
 from bpython import line as line_properties
+from bpython._py3compat import py3
 
 class EvaluationError(Exception):
     """Raised if an exception occurred in safe_eval."""
@@ -24,7 +26,7 @@ def safe_eval(expr, namespace):
         # raise
         raise EvaluationError
 
-# taken from Python 2 stdlib ast.literal_eval
+
 def simple_eval(node_or_string, namespace=None):
     """
     Safely evaluate an expression node or a string containing a Python
@@ -33,6 +35,9 @@ def simple_eval(node_or_string, namespace=None):
         lists, and dicts
     * variable names causing lookups in the passed in namespace or builtins
     * getitem calls using the [] syntax on objects of the types above
+
+    Like the Python 3 (and unlike the Python 2) literal_eval, unary and binary
+    + and - operations are allowed on all builtin numeric types.
 
     The optional namespace dict-like ought not to cause side effects on lookup
     """
@@ -43,8 +48,13 @@ def simple_eval(node_or_string, namespace=None):
         node_or_string = ast.parse(node_or_string, mode='eval')
     if isinstance(node_or_string, ast.Expression):
         node_or_string = node_or_string.body
+
+    string_type_nodes = (ast.Str, ast.Bytes) if py3 else (ast.Str,)
+    name_type_nodes = (ast.Name, ast.NameConstant) if py3 else (ast.Name,)
+    numeric_types = (int, float, complex) + (() if py3 else (long,))
+
     def _convert(node):
-        if isinstance(node, ast.Str):
+        if isinstance(node, string_type_nodes):
             return node.s
         elif isinstance(node, ast.Num):
             return node.n
@@ -55,23 +65,41 @@ def simple_eval(node_or_string, namespace=None):
         elif isinstance(node, ast.Dict):
             return dict((_convert(k), _convert(v)) for k, v
                         in zip(node.keys, node.values))
-        elif isinstance(node, ast.Name):
+
+        # this is a deviation from literal_eval: we allow non-literals
+        elif isinstance(node, name_type_nodes):
             try:
                 return namespace[node.id]
             except KeyError:
-                return getattr(builtins, node.id)
+                try:
+                    return getattr(builtins, node.id)
+                except AttributeError:
+                    raise EvaluationError("can't lookup %s" % node.id)
+
+        # unary + and - are allowed on any type
+        elif isinstance(node, ast.UnaryOp) and \
+             isinstance(node.op, (ast.UAdd, ast.USub)):
+             # ast.literal_eval does ast typechecks here, we use type checks
+            operand = _convert(node.operand)
+            if not type(operand) in numeric_types:
+                raise ValueError("unary + and - only allowed on builtin nums")
+            if isinstance(node.op, ast.UAdd):
+                return + operand
+            else:
+                return - operand
         elif isinstance(node, ast.BinOp) and \
-             isinstance(node.op, (ast.Add, ast.Sub)) and \
-             isinstance(node.right, ast.Num) and \
-             isinstance(node.right.n, complex) and \
-             isinstance(node.left, ast.Num) and \
-             isinstance(node.left.n, (int, long, float)):
-            left = node.left.n
-            right = node.right.n
+             isinstance(node.op, (ast.Add, ast.Sub)):
+            # ast.literal_eval does ast typechecks here, we use type checks
+            left = _convert(node.left)
+            right = _convert(node.right)
+            if not (type(left) in numeric_types and type(right) in numeric_types):
+                raise ValueError("binary + and - only allowed on builtin nums")
             if isinstance(node.op, ast.Add):
                 return left + right
             else:
                 return left - right
+
+        # this is a deviation from literal_eval: we allow indexing
         elif isinstance(node, ast.Subscript) and \
              isinstance(node.slice, ast.Index):
             obj = _convert(node.value)
@@ -84,7 +112,10 @@ def simple_eval(node_or_string, namespace=None):
 
 def safe_getitem(obj, index):
     if type(obj) in (list, tuple, dict, bytes) + string_types:
-        return obj[index]
+        try:
+            return obj[index]
+        except (KeyError, IndexError):
+            raise EvaluationError("can't lookup key %r on %r" % (index, obj))
     raise ValueError('unsafe to lookup on object of type %s' % (type(obj), ))
 
 
@@ -141,5 +172,5 @@ def evaluate_current_expression(cursor_offset, line, namespace={}):
         raise EvaluationError("Corresponding ASTs to right of cursor are invalid")
     try:
         return simple_eval(largest_ast, namespace)
-    except (ValueError, KeyError, IndexError, AttributeError):
+    except ValueError:
         raise EvaluationError("Could not safely evaluate")

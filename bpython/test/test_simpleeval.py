@@ -65,7 +65,7 @@ class TestSimpleEval(unittest.TestCase):
             simple_eval('1()')
 
     def test_nonexistant_names_raise(self):
-        with self.assertRaises((KeyError, AttributeError)):
+        with self.assertRaises(EvaluationError):
             simple_eval('a')
 
 class TestEvaluateCurrentExpression(unittest.TestCase):
