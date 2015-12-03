@@ -35,6 +35,15 @@ from six.moves import builtins
 from bpython import line as line_properties
 from bpython._py3compat import py3
 
+_string_type_nodes = (ast.Str, ast.Bytes) if py3 else (ast.Str,)
+_numeric_types = (int, float, complex) + (() if py3 else (long,))
+
+# added in Python 3.4
+if hasattr(ast, 'NameConstant'):
+    _name_type_nodes = (ast.Name, ast.NameConstant)
+else:
+    _name_type_nodes = (ast.Name,)
+
 class EvaluationError(Exception):
     """Raised if an exception occurred in safe_eval."""
 
@@ -80,17 +89,8 @@ def simple_eval(node_or_string, namespace=None):
     if isinstance(node_or_string, ast.Expression):
         node_or_string = node_or_string.body
 
-    string_type_nodes = (ast.Str, ast.Bytes) if py3 else (ast.Str,)
-    numeric_types = (int, float, complex) + (() if py3 else (long,))
-
-    # added in Python 3.4
-    if hasattr(ast, 'NameConstant'):
-        name_type_nodes = (ast.Name, ast.NameConstant)
-    else:
-        name_type_nodes = (ast.Name,)
-
     def _convert(node):
-        if isinstance(node, string_type_nodes):
+        if isinstance(node, _string_type_nodes):
             return node.s
         elif isinstance(node, ast.Num):
             return node.n
@@ -103,7 +103,7 @@ def simple_eval(node_or_string, namespace=None):
                         in zip(node.keys, node.values))
 
         # this is a deviation from literal_eval: we allow non-literals
-        elif isinstance(node, name_type_nodes):
+        elif isinstance(node, _name_type_nodes):
             try:
                 return namespace[node.id]
             except KeyError:
@@ -117,7 +117,7 @@ def simple_eval(node_or_string, namespace=None):
              isinstance(node.op, (ast.UAdd, ast.USub)):
              # ast.literal_eval does ast typechecks here, we use type checks
             operand = _convert(node.operand)
-            if not type(operand) in numeric_types:
+            if not type(operand) in _numeric_types:
                 raise ValueError("unary + and - only allowed on builtin nums")
             if isinstance(node.op, ast.UAdd):
                 return + operand
@@ -128,7 +128,7 @@ def simple_eval(node_or_string, namespace=None):
             # ast.literal_eval does ast typechecks here, we use type checks
             left = _convert(node.left)
             right = _convert(node.right)
-            if not (type(left) in numeric_types and type(right) in numeric_types):
+            if not (type(left) in _numeric_types and type(right) in _numeric_types):
                 raise ValueError("binary + and - only allowed on builtin nums")
             if isinstance(node.op, ast.Add):
                 return left + right
