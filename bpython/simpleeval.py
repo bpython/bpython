@@ -155,28 +155,14 @@ def safe_getitem(obj, index):
     raise ValueError('unsafe to lookup on object of type %s' % (type(obj), ))
 
 
-# This function is under the Python License, Version 2
-# This license requires modifications to the code be reported.
-# Based on ast.NodeVisitor.generic_visit
-# Modifications:
-# * Now a standalone function instead of method
-# * now hardcoded to look for Attribute node with given attr name
-# * returns values back up the recursive call stack to stop once target found
 def find_attribute_with_name(node, name):
-    """Search depth-first for getitem indexing with name"""
     if isinstance(node, ast.Attribute) and node.attr == name:
         return node
-    for _, value in ast.iter_fields(node):
-        if isinstance(value, list):
-            for item in value:
-               if isinstance(item, ast.AST):
-                    r = find_attribute_with_name(item, name)
-                    if r:
-                        return r
-        elif isinstance(value, ast.AST):
-            r = find_attribute_with_name(value, name)
-            if r:
-                return r
+    for item in ast.iter_child_nodes(node):
+        r = find_attribute_with_name(item, name)
+        if r:
+            return r
+
 
 def evaluate_current_expression(cursor_offset, line, namespace=None):
     """

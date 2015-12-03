@@ -21,8 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-Two functions in bpython/simpleeval.py are licensed under the
-Python Software Foundation License version 2: simple_eval and find_attribute_with_name
+One function in bpython/simpleeval.py is licensed under the
+Python Software Foundation License version 2: simple_eval
 
 PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 --------------------------------------------
