@@ -74,6 +74,22 @@ else:
 def after_last_dot(name):
     return name.rstrip('.').rsplit('.')[-1]
 
+def few_enough_underscores(current, match):
+    """Returns whether match should be shown based on current
+
+    if current is _, True if match starts with 0 or 1 underscore
+    if current is __, True regardless of match
+    otherwise True if match does not start with any underscore
+    """
+    if current.startswith('__'):
+        return True
+    elif current.startswith('_') and not match.startswith('__'):
+        return True
+    elif match.startswith('_'):
+        return False
+    else:
+        return True
+
 
 def method_match_simple(word, size, text):
     return word[:size] == text
@@ -255,18 +271,9 @@ class AttrCompletion(BaseCompletionType):
         matches = set(''.join([r.word[:-i], m])
                       for m in self.attr_matches(methodtext, locals_))
 
-        # TODO add open paren for methods via _callable_prefix (or decide not
-        # to) unless the first character is a _ filter out all attributes
-        # starting with a _
-        if r.word.split('.')[-1].startswith('__'):
-            pass
-        elif r.word.split('.')[-1].startswith('_'):
-            matches = set(match for match in matches
-                          if not match.split('.')[-1].startswith('__'))
-        else:
-            matches = set(match for match in matches
-                          if not match.split('.')[-1].startswith('_'))
-        return matches
+        return set(m for m in matches
+                   if few_enough_underscores(r.word.split('.')[-1],
+                                             m.split('.')[-1]))
 
     def locate(self, current_offset, line):
         return lineparts.current_dotted_attribute(current_offset, line)
@@ -470,14 +477,8 @@ class ExpressionAttributeCompletion(AttrCompletion):
                        # strips leading dot
             matches = [m[1:] for m in self.attr_lookup(obj, '', attr.word)]
 
-        if attr.word.startswith('__'):
-            pass
-        elif attr.word.startswith('_'):
-            matches = set(match for match in matches
-                          if not match.startswith('__'))
-        else:
-            matches = set(match for match in matches
-                          if not match.split('.')[-1].startswith('_'))
+
+        return set(m for m in matches if few_enough_underscores(attr.word, m))
         return matches
 
 

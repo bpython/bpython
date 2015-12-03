@@ -168,10 +168,12 @@ def evaluate_current_expression(cursor_offset, line, namespace=None):
     """
     Return evaluated expression to the right of the dot of current attribute.
 
-    build asts from with increasing numbers of characters.
-    Find the biggest valid ast.
-    Once our attribute access is a subtree, stop
+    Only evaluates builtin objects, and do any attribute lookup.
     """
+    # Builds asts from with increasing numbers of characters back from cursor.
+    # Find the biggest valid ast.
+    # Once our attribute access is found, return its .value subtree
+
     if namespace is None:
         namespace = {}
 
@@ -207,6 +209,7 @@ def evaluate_current_expression(cursor_offset, line, namespace=None):
 
 
 def evaluate_current_attribute(cursor_offset, line, namespace=None):
+    """Safely evaluates the expression attribute lookup currently occuring on"""
     # this function runs user code in case of custom descriptors,
     # so could fail in any way
 

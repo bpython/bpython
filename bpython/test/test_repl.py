@@ -230,6 +230,13 @@ class TestArgspec(unittest.TestCase):
         self.repl.set_docstring()
         self.assertIsNot(self.repl.docstring, None)
 
+    def test_methods_of_expressions(self):
+        self.set_input_line("'a'.capitalize(")
+        self.assertTrue(self.repl.get_args())
+
+        self.set_input_line("(1 + 1).bit_length(")
+        self.assertTrue(self.repl.get_args())
+
 
 class TestGetSource(unittest.TestCase):
     def setUp(self):

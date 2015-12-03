@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import ast
+import numbers
 
 from bpython.simpleeval import (simple_eval,
                                 evaluate_current_expression,
@@ -59,6 +60,23 @@ class TestSimpleEval(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             simple_eval('a[1]', {'a': SchrodingersDict()})
+
+    def test_operators_on_suspicious_types(self):
+        class Spam(numbers.Number):
+            def __add__(inner_self, other):
+                self.fail("doing attribute lookup might have side effects")
+
+        with self.assertRaises(ValueError):
+            simple_eval('a + 1', {'a': Spam()})
+
+    def test_operators_on_numbers(self):
+        self.assertEqual(simple_eval('-2'), -2)
+        self.assertEqual(simple_eval('1 + 1'), 2)
+        self.assertEqual(simple_eval('a - 2', {'a':1}), -1)
+        with self.assertRaises(ValueError):
+            simple_eval('2 * 3')
+        with self.assertRaises(ValueError):
+            simple_eval('2 ** 3')
 
     def test_function_calls_raise(self):
         with self.assertRaises(ValueError):
