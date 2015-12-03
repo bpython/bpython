@@ -20,6 +20,12 @@ from bpython._py3compat import py3
 from bpython.test import (FixLanguageTestCase as TestCase, MagicIterMock, mock,
                           builtin_target, unittest)
 
+if py3:
+    from importlib import invalidate_caches
+else:
+    def invalidate_caches():
+        """Does not exist before Python 3.3"""
+
 
 def setup_config(conf):
     config_struct = config.Struct()
@@ -291,6 +297,7 @@ class TestCurtsiesReevaluateWithImport(TestCase):
         self.open = partial(io.open, mode='wt', encoding='utf-8')
         self.dont_write_bytecode = sys.dont_write_bytecode
         sys.dont_write_bytecode = True
+        invalidate_caches()
 
     def tearDown(self):
         sys.dont_write_bytecode = self.dont_write_bytecode
