@@ -234,7 +234,7 @@ class TestArgspec(unittest.TestCase):
         self.set_input_line("'a'.capitalize(")
         self.assertTrue(self.repl.get_args())
 
-        self.set_input_line("(1 + 1).bit_length(")
+        self.set_input_line("(1 + 1.1).as_integer_ratio(")
         self.assertTrue(self.repl.get_args())
 
 
