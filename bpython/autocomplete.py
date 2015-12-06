@@ -471,7 +471,7 @@ class GlobalCompletion(BaseCompletionType):
                 if (self.method_match(word, n, r.word) and
                         word != "__builtins__"):
                     matches.add(_callable_postfix(val, word))
-        return matches
+        return matches if matches else None
 
     def locate(self, current_offset, line):
         return lineparts.current_single_word(current_offset, line)
@@ -496,7 +496,7 @@ class ParameterNameCompletion(BaseCompletionType):
             if py3:
                 matches.update(name + '=' for name in argspec[1][4]
                                if name.startswith(r.word))
-        return matches
+        return matches if matches else None
 
     def locate(self, current_offset, line):
         return lineparts.current_word(current_offset, line)

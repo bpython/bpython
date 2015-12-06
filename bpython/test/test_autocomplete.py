@@ -383,16 +383,16 @@ class TestGlobalCompletion(unittest.TestCase):
 
     @unittest.skipIf(py3, "in Python 3 invalid identifiers are passed through")
     def test_ignores_nonascii_encodable(self):
-        self.assertSetEqual(self.com.matches(3, 'abc', locals_={'abcß': 10}),
-                            set())
+        self.assertEqual(self.com.matches(3, 'abc', locals_={'abcß': 10}),
+                            None)
 
     def test_mock_kwlist(self):
         with mock.patch.object(keyword, 'kwlist', new=['abcd']):
-            self.assertSetEqual(self.com.matches(3, 'abc', locals_={}), set())
+            self.assertEqual(self.com.matches(3, 'abc', locals_={}), None)
 
     def test_mock_kwlist_non_ascii(self):
         with mock.patch.object(keyword, 'kwlist', new=['abcß']):
-            self.assertSetEqual(self.com.matches(3, 'abc', locals_={}), set())
+            self.assertEqual(self.com.matches(3, 'abc', locals_={}), None)
 
 
 class TestParameterNameCompletion(unittest.TestCase):
