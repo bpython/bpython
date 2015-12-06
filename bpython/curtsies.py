@@ -180,7 +180,7 @@ def mainloop(config, locals_, banner, interp=None, paste=None,
                       get_top_usable_line=get_top_usable_line) as repl:
                 repl.height, repl.width = window.t.height, window.t.width
 
-                repl.request_paint_to_pad_bottom = 10
+                repl.request_paint_to_pad_bottom = 6
 
                 def process_event(e):
                     """If None is passed in, just paint the screen"""
