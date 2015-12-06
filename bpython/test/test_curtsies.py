@@ -44,6 +44,7 @@ class EventGenerator(object):
 
     def tick(self, dt=1):
         self._current_tick += dt
+        return self._current_tick
 
 
 class TestCurtsiesPasteDetection(TestCase):
@@ -63,9 +64,11 @@ class TestCurtsiesPasteDetection(TestCase):
         self.assertEqual(next(cb), None)
 
     def test_set_timeout(self):
-        eg = EventGenerator('a', zip('bcd', [1,2,3]))
+        eg = EventGenerator('a', zip('bcdefg', [1, 2, 3, 3, 3, 4]))
+        eg.schedule_event(curtsies.events.SigIntEvent(), 5)
+        eg.schedule_event('h', 6)
         inputs = combined_events(eg)
-        cb = combined_events(inputs, paste_threshold=5)
+        cb = combined_events(inputs, paste_threshold=3)
         self.assertEqual(next(cb), 'a')
         self.assertEqual(cb.send(0), None)
         self.assertEqual(next(cb), 'b')
@@ -74,9 +77,15 @@ class TestCurtsiesPasteDetection(TestCase):
         self.assertEqual(cb.send(0), 'c')
         self.assertEqual(cb.send(0), None)
         eg.tick()
-        self.assertEqual(cb.send(0), 'd')
+        self.assertIsInstance(cb.send(0), curtsies.events.PasteEvent)
         self.assertEqual(cb.send(0), None)
-
+        self.assertEqual(cb.send(None), 'g')
+        self.assertEqual(cb.send(0), None)
+        eg.tick(1)
+        self.assertIsInstance(cb.send(0), curtsies.events.SigIntEvent)
+        self.assertEqual(cb.send(0), None)
+        self.assertEqual(cb.send(None), 'h')
+        self.assertEqual(cb.send(None), None)
 
 
 if __name__ == '__main__':
