@@ -7,10 +7,27 @@ Changelog
 New features:
 
 * #425: Added curtsies 0.2.x support.
+* Attribute completion on items in lists and tuples
+* #528: Hide private attribute from initial autocompletion suggestions.
+  Thanks to Jeppe Toustrup.
+* #538: Multi-line banners are allowed.
+* #229: inspect.getsource works on interactively defined functions.
+  Thanks to Michael Mulley.
+* Ctrl-e can be used to autocomplete current fish-style suggestion.
+  Thanks to Amjith Ramanujam
 
 Fixes:
 
 * #484: Switch `bpython.embed` to the curtsies frontend.
+* Exceptions in autcompletion are now logged instead of crashing bpython.
+* #548 fix transpose character bug. Thanks to Wes E. Vial.
+* #527 -q disables version banner.
+* #544 fix Jedi completion error
+* #536 fix completion on old-style classes with custom __getattr__
+* #480 fix old-style class autocompletion. Thanks to Joe Jevnik.
+* Fix reload in Python 3. Thanks to sharow.
+* Fix keyword agument parameter name completion
+
 
 0.14.2
 ------
