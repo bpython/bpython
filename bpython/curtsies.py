@@ -94,14 +94,15 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
 
 def _combined_events(event_provider, paste_threshold):
     """Combines consecutive keypress events into paste events."""
-    timeout = (yield 'nonsense_event')  # so send can be used
+    timeout = yield 'nonsense_event'  # so send can be used immediately
     queue = collections.deque()
     while True:
         e = event_provider.send(timeout)
         if isinstance(e, curtsies.events.Event):
-            timeout = (yield e)
+            timeout = yield e
             continue
         elif e is None:
+            timeout = yield None
             continue
         else:
             queue.append(e)
@@ -113,10 +114,10 @@ def _combined_events(event_provider, paste_threshold):
             paste = curtsies.events.PasteEvent()
             paste.events.extend(queue)
             queue.clear()
-            yield paste
+            timeout = yield paste
         else:
             while len(queue):
-                yield queue.popleft()
+                timeout = yield queue.popleft()
 
 
 def combined_events(event_provider, paste_threshold=10):
