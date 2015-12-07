@@ -579,7 +579,7 @@ class Repl(object):
         self.docstring = None
         if not self.get_args():
             self.funcprops = None
-        elif self.current_func is not None:
+        if self.current_func is not None:
             try:
                 self.docstring = pydoc.getdoc(self.current_func)
             except IndexError:

@@ -222,6 +222,13 @@ class TestArgspec(unittest.TestCase):
         self.set_input_line("WonderfulSpam(")
         self.assertTrue(self.repl.get_args())
 
+    def test_issue583(self):
+        self.repl = FakeRepl()
+        self.repl.push("a = 1.2\n", False)
+        self.set_input_line("a.is_integer(")
+        self.repl.set_docstring()
+        self.assertIsNot(self.repl.docstring, None)
+
 
 class TestGetSource(unittest.TestCase):
     def setUp(self):
