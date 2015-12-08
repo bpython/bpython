@@ -1311,6 +1311,8 @@ class Repl(BpythonRepl):
         self.paste_mode = True
         yield
         self.paste_mode = orig_value
+        if not self.paste_mode:
+            self.update_completion()
 
     # Debugging shims, good example of embedding a Repl in other code
     def dumb_print_output(self):
@@ -1375,6 +1377,8 @@ class Repl(BpythonRepl):
         if self._current_line == line:
             return
         self._current_line = line
+        if self.paste_mode:
+            return
         if update_completion:
             self.update_completion()
         if reset_rl_history:
@@ -1391,6 +1395,10 @@ class Repl(BpythonRepl):
     def _set_cursor_offset(self, offset, update_completion=True,
                            reset_rl_history=False, clear_special_mode=True):
         if self._cursor_offset == offset:
+            return
+        if self.paste_mode:
+            self._cursor_offset = offset
+            self.unhighlight_paren()
             return
         if reset_rl_history:
             self.rl_history.reset()
