@@ -299,13 +299,13 @@ class TestCurtsiesReevaluateWithImport(TestCase):
         sys.dont_write_bytecode = True
 
         # Because these tests create Python source files at runtime,
-        # it's possible for the importlib.machinery.FileFinder for
-        # a directory to have an outdated cache in the following situation:
+        # it's possible in Python >=3.3 for the importlib.machinery.FileFinder
+        # for a directory to have an outdated cache when
         # * a module in that directory is imported,
         # * then a new module is created in that directory,
         # * then that new module is imported.
-        #
-        # invalidate_cache() is used to prevent this.
+        # Automatic cache invalidation is based on the second-resolution mtime
+        # of the directory, so we need to manually call invalidate_caches().
         #
         # see https://docs.python.org/3/library/importlib.html
         # sections #importlib.machinery.FileFinder and
