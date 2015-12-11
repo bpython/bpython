@@ -20,6 +20,8 @@ from bpython._py3compat import py3
 from bpython.test import (FixLanguageTestCase as TestCase, MagicIterMock, mock,
                           builtin_target, unittest)
 
+from curtsies import events
+
 
 def setup_config(conf):
     config_struct = config.Struct()
@@ -400,6 +402,30 @@ class TestCurtsiesStartup(TestCase):
             with mock.patch.dict('os.environ', {'PYTHONSTARTUP': temp.name}):
                 self.repl.process_event(bpythonevents.RunStartupFileEvent())
         self.assertIn('a', self.repl.interp.locals)
+
+
+class TestCurtsiesPasteEvents(TestCase):
+
+    def setUp(self):
+        self.repl = create_repl()
+
+    def test_control_events_in_small_paste(self):
+        self.assertGreaterEqual(curtsiesrepl.MAX_EVENTS_POSSIBLY_NOT_PASTE, 6,
+                                'test assumes UI lag could cause 6 events')
+        p = events.PasteEvent()
+        p.events = ['a', 'b', 'c', 'd', '<Ctrl-a>', 'e']
+        self.repl.process_event(p)
+        self.assertEqual(self.repl.current_line, 'eabcd')
+
+
+    def test_control_events_in_large_paste(self):
+        """Large paste events should ignore control characters"""
+        p = events.PasteEvent()
+        p.events = (['a', '<Ctrl-a>'] +
+                    ['e'] * curtsiesrepl.MAX_EVENTS_POSSIBLY_NOT_PASTE)
+        self.repl.process_event(p)
+        self.assertEqual(self.repl.current_line,
+                         'a' + 'e'*curtsiesrepl.MAX_EVENTS_POSSIBLY_NOT_PASTE)
 
 
 if __name__ == '__main__':

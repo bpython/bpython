@@ -49,15 +49,15 @@ class EventGenerator(object):
 
 class TestCurtsiesPasteDetection(TestCase):
     def test_paste_threshold(self):
-        inputs = combined_events(EventGenerator(list('abc')))
-        cb = combined_events(inputs, paste_threshold=3)
+        eg = EventGenerator(list('abc'))
+        cb = combined_events(eg, paste_threshold=3)
         e = next(cb)
         self.assertIsInstance(e, curtsies.events.PasteEvent)
         self.assertEqual(e.events, list('abc'))
         self.assertEqual(next(cb), None)
 
-        inputs = combined_events(EventGenerator(list('abc')))
-        cb = combined_events(inputs, paste_threshold=4)
+        eg = EventGenerator(list('abc'))
+        cb = combined_events(eg, paste_threshold=4)
         self.assertEqual(next(cb), 'a')
         self.assertEqual(next(cb), 'b')
         self.assertEqual(next(cb), 'c')
@@ -67,8 +67,7 @@ class TestCurtsiesPasteDetection(TestCase):
         eg = EventGenerator('a', zip('bcdefg', [1, 2, 3, 3, 3, 4]))
         eg.schedule_event(curtsies.events.SigIntEvent(), 5)
         eg.schedule_event('h', 6)
-        inputs = combined_events(eg)
-        cb = combined_events(inputs, paste_threshold=3)
+        cb = combined_events(eg, paste_threshold=3)
         self.assertEqual(next(cb), 'a')
         self.assertEqual(cb.send(0), None)
         self.assertEqual(next(cb), 'b')

@@ -84,6 +84,9 @@ See {example_config_url} for an example config file.
 Press {config.edit_config_key} to edit this config file.
 """
 EXAMPLE_CONFIG_URL = 'https://raw.githubusercontent.com/bpython/bpython/master/bpython/sample-config'
+MAX_EVENTS_POSSIBLY_NOT_PASTE = 20  # more than this many events will be assumed to
+                                    # be a true paste event, i.e. control characters
+                                    # like '<Ctrl-a>' will be stripped
 
 # This is needed for is_nop and should be removed once is_nop is fixed.
 if py3:
@@ -545,16 +548,25 @@ class Repl(BpythonRepl):
             ctrl_char = compress_paste_event(e)
             if ctrl_char is not None:
                 return self.process_event(ctrl_char)
-            simple_events = just_simple_events(e.events)
-            source = preprocess(''.join(simple_events),
-                                self.interp.compile)
-
             with self.in_paste_mode():
-                for ee in source:
-                    if self.stdin.has_focus:
-                        self.stdin.process_event(ee)
-                    else:
-                        self.process_simple_keypress(ee)
+                # Might not really be a paste, UI might just be lagging
+                if (len(e.events) <= MAX_EVENTS_POSSIBLY_NOT_PASTE and
+                        any(not is_simple_event(ee) for ee in e.events)):
+                    for ee in e.events:
+                        if self.stdin.has_focus:
+                            self.stdin.process_event(ee)
+                        else:
+                            self.process_event(ee)
+                else:
+                    simple_events = just_simple_events(e.events)
+                    source = preprocess(''.join(simple_events),
+                                        self.interp.compile)
+                    for ee in source:
+                        if self.stdin.has_focus:
+                            self.stdin.process_event(ee)
+                        else:
+                            self.process_simple_keypress(ee)
+
 
         elif isinstance(e, bpythonevents.RunStartupFileEvent):
             try:
@@ -1611,9 +1623,22 @@ def just_simple_events(event_list):
             pass  # ignore events
         elif e == '<SPACE>':
             simple_events.append(' ')
+        elif len(e) > 1:
+            pass  # get rid of <Ctrl-a> etc.
         else:
             simple_events.append(e)
     return simple_events
+
+
+def is_simple_event(e):
+    if isinstance(e, events.Event):
+        return False
+    if e in ("<Ctrl-j>", "<Ctrl-m>", "<PADENTER>", "\n", "\r", "<SPACE>"):
+        return True
+    if len(e) > 1:
+        return False
+    else:
+        return True
 
 
 # TODO this needs some work to function again and be useful for embedding
