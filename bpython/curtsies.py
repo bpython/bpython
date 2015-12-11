@@ -25,9 +25,113 @@ from bpython.repl import extract_exit_value
 logger = logging.getLogger(__name__)
 
 
-repl = None  # global for `from bpython.curtsies import repl`
+#repl = None  # global for `from bpython.curtsies import repl`
 # WARNING Will be a problem if more than one repl is ever instantiated this way
 
+
+class FullCurtsiesRepl(Repl):
+    def __init__(self, config, locals_, banner, interp=None,
+                 paste=None, interactive=True):
+        self.input_generator = curtsies.input.Input(
+                keynames='curtsies',
+                sigint_event=True,
+                paste_threshold=None)
+        self.window = curtsies.window.CursorAwareWindow(
+                sys.stdout,
+                sys.stdin,
+                keep_last_line=True,
+                hide_cursor=False,
+                extra_bytes_callback=self.input_generator.unget_bytes)
+
+        self.request_refresh = self.input_generator.event_trigger(
+            bpythonevents.RefreshRequestEvent)
+        self.schedule_refresh = self.input_generator.scheduled_event_trigger(
+            bpythonevents.ScheduledRefreshRequestEvent)
+        self.request_reload = self.input_generator.threadsafe_event_trigger(
+            bpythonevents.ReloadEvent)
+        self.interrupting_refresh = (self.input_generator
+            .threadsafe_event_trigger(lambda: None))
+        self.request_undo = self.input_generator.event_trigger(
+            bpythonevents.UndoEvent)
+
+        with self.input_generator:
+            pass  # temp hack to get .original_stty
+
+        Repl.__init__(self,
+                      config=config,
+                      locals_=locals_,
+                      request_refresh=self.request_refresh,
+                      schedule_refresh=self.schedule_refresh,
+                      request_reload=self.request_reload,
+                      request_undo=self.request_undo,
+                      get_term_hw=self.window.get_term_hw,
+                      get_cursor_vertical_diff=self.window.get_cursor_vertical_diff,
+                      banner=banner,
+                      interp=interp,
+                      interactive=interactive,
+                      orig_tcattrs=self.input_generator.original_stty,
+                      on_suspend=self.on_suspend,
+                      after_suspend=self.after_suspend)
+
+
+    def on_suspend(self):
+        self.window.__exit__(None, None, None)
+        self.input_generator.__exit__(None, None, None)
+
+    def after_suspend(self):
+        self.input_generator.__enter__()
+        self.window.__enter__()
+        self.interrupting_refresh()
+
+    def process_event(self, e):
+        """If None is passed in, just paint the screen"""
+        try:
+            if e is not None:
+                Repl.process_event(self, e)
+        except (SystemExitFromCodeGreenlet, SystemExit) as err:
+            array, cursor_pos = self.paint(
+                about_to_exit=True,
+                user_quit=isinstance(err,
+                                     SystemExitFromCodeGreenlet))
+            scrolled = self.window.render_to_terminal(array, cursor_pos)
+            self.scroll_offset += scrolled
+            raise
+        else:
+            array, cursor_pos = self.paint()
+            scrolled = self.window.render_to_terminal(array, cursor_pos)
+            self.scroll_offset += scrolled
+
+    def mainloop(self, interactive=True, paste=None):
+        if interactive:
+            # Add custom help command
+            # TODO: add methods to run the code
+            self.coderunner.interp.locals['_repl'] = self
+
+            self.coderunner.interp.runsource(
+                'from bpython.curtsiesfrontend._internal '
+                'import _Helper')
+            self.coderunner.interp.runsource('help = _Helper(_repl)\n')
+
+            del self.coderunner.interp.locals['_repl']
+            del self.coderunner.interp.locals['_Helper']
+
+            # run startup file
+            self.process_event(bpythonevents.RunStartupFileEvent())
+
+        # handle paste
+        if paste:
+            self.process_event(paste)
+
+        # do a display before waiting for first event
+        self.process_event(None)
+        inputs = combined_events(self.input_generator)
+        for unused in find_iterator:
+            e = inputs.send(0)
+            if e is not None:
+                self.process_event(e)
+
+        for e in inputs:
+            self.process_event(e)
 
 def main(args=None, locals_=None, banner=None, welcome_message=None):
     """
@@ -85,8 +189,13 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
     if banner is not None:
         print(banner)
     try:
-        exit_value = mainloop(config, locals_, welcome_message, interp, paste,
-                              interactive=(not exec_args))
+        r = FullCurtsiesRepl(config, locals_, welcome_message, interp, paste,
+                             interactive=(not exec_args))
+        with r.input_generator:
+            with r.window as win:
+                with r:
+                    r.height, r.width = win.t.height, win.t.width
+                    exit_value = r.mainloop()
     except (SystemExitFromCodeGreenlet, SystemExit) as e:
         exit_value = e.args
     return extract_exit_value(exit_value)
