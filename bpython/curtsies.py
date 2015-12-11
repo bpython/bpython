@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import code
+import collections
 import io
 import logging
 import sys
@@ -91,10 +92,45 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
     return extract_exit_value(exit_value)
 
 
+def _combined_events(event_provider, paste_threshold):
+    """Combines consecutive keypress events into paste events."""
+    timeout = yield 'nonsense_event'  # so send can be used immediately
+    queue = collections.deque()
+    while True:
+        e = event_provider.send(timeout)
+        if isinstance(e, curtsies.events.Event):
+            timeout = yield e
+            continue
+        elif e is None:
+            timeout = yield None
+            continue
+        else:
+            queue.append(e)
+        e = event_provider.send(0)
+        while not (e is None or isinstance(e, curtsies.events.Event)):
+            queue.append(e)
+            e = event_provider.send(0)
+        if len(queue) >= paste_threshold:
+            paste = curtsies.events.PasteEvent()
+            paste.events.extend(queue)
+            queue.clear()
+            timeout = yield paste
+        else:
+            while len(queue):
+                timeout = yield queue.popleft()
+
+
+def combined_events(event_provider, paste_threshold=3):
+    g = _combined_events(event_provider, paste_threshold)
+    next(g)
+    return g
+
+
 def mainloop(config, locals_, banner, interp=None, paste=None,
              interactive=True):
-    with curtsies.input.Input(keynames='curtsies', sigint_event=True) as \
-            input_generator:
+    with curtsies.input.Input(keynames='curtsies',
+                              sigint_event=True,
+                              paste_threshold=None) as input_generator:
         with curtsies.window.CursorAwareWindow(
                 sys.stdout,
                 sys.stdin,
@@ -180,12 +216,13 @@ def mainloop(config, locals_, banner, interp=None, paste=None,
 
                 # do a display before waiting for first event
                 process_event(None)
+                inputs = combined_events(input_generator)
                 for unused in find_iterator:
-                    e = input_generator.send(0)
+                    e = inputs.send(0)
                     if e is not None:
                         process_event(e)
 
-                for e in input_generator:
+                for e in inputs:
                     process_event(e)
 
 
