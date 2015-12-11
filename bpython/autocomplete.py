@@ -253,8 +253,7 @@ class AttrCompletion(BaseCompletionType):
         matches = set(''.join([r.word[:-i], m])
                       for m in self.attr_matches(methodtext, locals_))
 
-        # TODO add open paren for methods via _callable_prefix (or decide not
-        # to) unless the first character is a _ filter out all attributes
+        # unless the first character is a _ filter out all attributes
         # starting with a _
         if r.word.split('.')[-1].startswith('__'):
             pass
@@ -660,6 +659,61 @@ def safe_eval(expr, namespace):
         # If debugging safe_eval, raise this!
         # raise
         raise EvaluationError
+
+
+attr_matches_re = LazyReCompile(r"(\w+(\.\w+)*)\.(\w*)")
+
+
+def attr_matches(text, namespace):
+    """Taken from rlcompleter.py and bent to my will.
+    """
+
+    # Gna, Py 2.6's rlcompleter searches for __call__ inside the
+    # instance instead of the type, so we monkeypatch to prevent
+    # side-effects (__getattr__/__getattribute__)
+    m = attr_matches_re.match(text)
+    if not m:
+        return []
+
+    expr, attr = m.group(1, 3)
+    if expr.isdigit():
+        # Special case: float literal, using attrs here will result in
+        # a SyntaxError
+        return []
+    try:
+        obj = safe_eval(expr, namespace)
+    except EvaluationError:
+        return []
+    with inspection.AttrCleaner(obj):
+        matches = attr_lookup(obj, expr, attr)
+    return matches
+
+
+def attr_lookup(obj, expr, attr):
+    """Second half of original attr_matches method factored out so it can
+    be wrapped in a safe try/finally block in case anything bad happens to
+    restore the original __getattribute__ method."""
+    words = dir(obj)
+    if hasattr(obj, '__class__'):
+        words.append('__class__')
+        words = words + rlcompleter.get_class_members(obj.__class__)
+        if not isinstance(obj.__class__, abc.ABCMeta):
+            try:
+                words.remove('__abstractmethods__')
+            except ValueError:
+                pass
+
+    matches = []
+    n = len(attr)
+    for word in words:
+        if method_match(word, n, attr) and word != "__builtins__":
+            try:
+                attr_obj = inspection.safe_get_attribute(obj, word)
+            except AttributeError:
+                matches.append("%s.%s" % (expr, word))
+            else:
+                matches.append(_callable_postfix(attr_obj, "%s.%s" % (expr, word)))
+    return matches
 
 
 def _callable_postfix(value, word):

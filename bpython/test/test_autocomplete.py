@@ -235,6 +235,17 @@ skip_old_style = unittest.skipIf(py3,
                                  'In Python 3 there are no old style classes')
 
 
+class Properties(Foo):
+
+    @property
+    def asserts_when_called(self):
+        raise AssertionError("getter method called")
+
+
+class Slots(object):
+    __slots__ = ['a', 'b']
+
+
 class TestAttrCompletion(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -242,7 +253,7 @@ class TestAttrCompletion(unittest.TestCase):
 
     def test_att_matches_found_on_instance(self):
         self.assertSetEqual(self.com.matches(2, 'a.', locals_={'a': Foo()}),
-                            set(['a.method', 'a.a', 'a.b']))
+                            set(['a.method(', 'a.a', 'a.b']))
 
     @skip_old_style
     def test_att_matches_found_on_old_style_instance(self):
@@ -266,6 +277,17 @@ class TestAttrCompletion(unittest.TestCase):
         locals_ = {'a': OldStyleWithBrokenGetAttr()}
         self.assertIn(u'a.__module__',
                       self.com.matches(4, 'a.__', locals_=locals_))
+
+    def test_descriptor_attributes_not_run(self):
+        com = autocomplete.AttrCompletion()
+        self.assertSetEqual(com.matches(2, 'a.', locals_={'a': Properties()}),
+                            set(['a.b', 'a.a', 'a.method(',
+                                 'a.asserts_when_called']))
+
+    def test_slots_not_crash(self):
+        com = autocomplete.AttrCompletion()
+        self.assertSetEqual(com.matches(2, 'A.', locals_={'A': Slots}),
+                            set(['A.b', 'A.a', 'A.mro']))
 
 
 class TestArrayItemCompletion(unittest.TestCase):

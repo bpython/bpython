@@ -69,7 +69,7 @@ class AttrCleaner(object):
         # original methods. :-(
         # The upshot being that introspecting on an object to display its
         # attributes will avoid unwanted side-effects.
-        if py3 or type_ != types.InstanceType:
+        if is_new_style(self.obj):
             __getattr__ = getattr(type_, '__getattr__', None)
             if __getattr__ is not None:
                 try:
@@ -96,6 +96,14 @@ class AttrCleaner(object):
         if __getattr__ is not None:
             setattr(type_, '__getattr__', __getattr__)
         # /Dark magic
+
+
+if py3:
+    is_new_style = lambda obj: True
+else:
+    def is_new_style(obj):
+        """Returns True if obj is a new-style class or object"""
+        return type(obj) != types.InstanceType and hasattr(obj, '__class__')
 
 
 class _Repr(object):
@@ -272,6 +280,59 @@ def is_eval_safe_name(string):
 
 def is_callable(obj):
     return callable(obj)
+
+
+def safe_get_attribute(obj, attr):
+    """Gets attributes without triggering descriptors on new-style clases"""
+    if is_new_style(obj):
+        result = safe_get_attribute_new_style(obj, attr)
+        if isinstance(result, member_descriptor):
+            # will either be the same slot descriptor or the value
+            return getattr(obj, attr)
+        return result
+    return getattr(obj, attr)
+
+
+class _ClassWithSlots(object):
+    __slots__ = ['a']
+member_descriptor = type(_ClassWithSlots.a)
+
+
+def safe_get_attribute_new_style(obj, attr):
+    """Returns approximately the attribute returned by getattr(obj, attr)
+
+    The object returned ought to be callable if getattr(obj, attr) was.
+    Fake callable objects may be returned instead, in order to avoid executing
+    arbitrary code in descriptors.
+
+    If the object is an instance of a class that uses __slots__, will return
+    the member_descriptor object instead of the value.
+    """
+    if not is_new_style(obj):
+        raise ValueError("%r is not a new-style class or object" % obj)
+    to_look_through = (obj.mro()
+                       if hasattr(obj, 'mro')
+                       else [obj] + type(obj).mro())
+
+    found_in_slots = hasattr(obj, '__slots__') and attr in obj.__slots__
+    for cls in to_look_through:
+        if hasattr(cls, '__dict__') and attr in cls.__dict__:
+            return cls.__dict__[attr]
+
+    if found_in_slots:
+        return AttributeIsEmptySlot
+
+    raise AttributeError()
+
+
+def get_attribute(obj, attr):
+    cls = type(obj)
+    for cls in [obj] + cls.mro():
+        if attr in cls.__dict__:
+            return cls.__dict__[attr]
+            break
+    raise AttributeError
+
 
 
 get_encoding_re = LazyReCompile(r'coding[:=]\s*([-\w.]+)')
