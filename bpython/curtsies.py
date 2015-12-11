@@ -120,7 +120,7 @@ def _combined_events(event_provider, paste_threshold):
                 timeout = yield queue.popleft()
 
 
-def combined_events(event_provider, paste_threshold=10):
+def combined_events(event_provider, paste_threshold=3):
     g = _combined_events(event_provider, paste_threshold)
     next(g)
     return g
