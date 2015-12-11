@@ -10,7 +10,7 @@ from curtsies.fmtfuncs import cyan, bold, green, yellow, on_magenta, red
 from bpython.curtsiesfrontend.events import RefreshRequestEvent
 from bpython.test import mock
 from bpython import config, inspection
-from bpython.curtsiesfrontend.repl import Repl
+from bpython.curtsiesfrontend.repl import BaseRepl
 from bpython.curtsiesfrontend import replpainter
 from bpython.repl import History
 from bpython.curtsiesfrontend.repl import INCONSISTENT_HISTORY_MSG, \
@@ -40,7 +40,10 @@ class ClearEnviron(TestCase):
 
 class CurtsiesPaintingTest(FormatStringTest, ClearEnviron):
     def setUp(self):
-        self.repl = Repl(config=setup_config())
+        class TestRepl(BaseRepl):
+            def _request_refresh(inner_self):
+                pass
+        self.repl = TestRepl(config=setup_config())
         # clear history
         self.repl.rl_history = History()
         self.repl.height, self.repl.width = (5, 10)
@@ -182,8 +185,10 @@ class TestCurtsiesRewindRedraw(CurtsiesPaintingTest):
 
     def setUp(self):
         self.refresh_requests = []
-        self.repl = Repl(banner='', config=setup_config(),
-                         request_refresh=self.refresh)
+        class TestRepl(BaseRepl):
+            def _request_refresh(inner_self):
+                self.refresh()
+        self.repl = TestRepl(banner='', config=setup_config())
         # clear history
         self.repl.rl_history = History()
         self.repl.height, self.repl.width = (5, 32)

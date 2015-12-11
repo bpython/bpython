@@ -232,7 +232,7 @@ def captured_output():
 
 def create_repl(**kwargs):
     config = setup_config({'editor': 'true'})
-    repl = curtsiesrepl.Repl(config=config, **kwargs)
+    repl = curtsiesrepl.BaseRepl(config=config, **kwargs)
     os.environ['PAGER'] = 'true'
     os.environ.pop('PYTHONSTARTUP', None)
     repl.width = 50

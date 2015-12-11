@@ -12,7 +12,7 @@ import curtsies.window
 import curtsies.input
 import curtsies.events
 
-from bpython.curtsiesfrontend.repl import Repl
+from bpython.curtsiesfrontend.repl import BaseRepl
 from bpython.curtsiesfrontend.coderunner import SystemExitFromCodeGreenlet
 from bpython import args as bpargs
 from bpython import translations
@@ -25,29 +25,29 @@ from bpython.repl import extract_exit_value
 logger = logging.getLogger(__name__)
 
 
-#repl = None  # global for `from bpython.curtsies import repl`
+repl = None  # global for `from bpython.curtsies import repl`
 # WARNING Will be a problem if more than one repl is ever instantiated this way
 
 
-class FullCurtsiesRepl(Repl):
+class FullCurtsiesRepl(BaseRepl):
     def __init__(self, config, locals_, banner, interp=None,
-                 paste=None, interactive=True):
+                 paste=None):
         self.input_generator = curtsies.input.Input(
-                keynames='curtsies',
-                sigint_event=True,
-                paste_threshold=None)
+            keynames='curtsies',
+            sigint_event=True,
+            paste_threshold=None)
         self.window = curtsies.window.CursorAwareWindow(
-                sys.stdout,
-                sys.stdin,
-                keep_last_line=True,
-                hide_cursor=False,
-                extra_bytes_callback=self.input_generator.unget_bytes)
+            sys.stdout,
+            sys.stdin,
+            keep_last_line=True,
+            hide_cursor=False,
+            extra_bytes_callback=self.input_generator.unget_bytes)
 
-        self.request_refresh = self.input_generator.event_trigger(
+        self._request_refresh = self.input_generator.event_trigger(
             bpythonevents.RefreshRequestEvent)
-        self.schedule_refresh = self.input_generator.scheduled_event_trigger(
+        self._schedule_refresh = self.input_generator.scheduled_event_trigger(
             bpythonevents.ScheduledRefreshRequestEvent)
-        self.request_reload = self.input_generator.threadsafe_event_trigger(
+        self._request_reload = self.input_generator.threadsafe_event_trigger(
             bpythonevents.ReloadEvent)
         self.interrupting_refresh = (self.input_generator
             .threadsafe_event_trigger(lambda: None))
@@ -57,22 +57,21 @@ class FullCurtsiesRepl(Repl):
         with self.input_generator:
             pass  # temp hack to get .original_stty
 
-        Repl.__init__(self,
-                      config=config,
+        BaseRepl.__init__(self,
                       locals_=locals_,
-                      request_refresh=self.request_refresh,
-                      schedule_refresh=self.schedule_refresh,
-                      request_reload=self.request_reload,
-                      request_undo=self.request_undo,
-                      get_term_hw=self.window.get_term_hw,
-                      get_cursor_vertical_diff=self.window.get_cursor_vertical_diff,
+                      config=config,
                       banner=banner,
                       interp=interp,
-                      interactive=interactive,
-                      orig_tcattrs=self.input_generator.original_stty,
-                      on_suspend=self.on_suspend,
-                      after_suspend=self.after_suspend)
+                      orig_tcattrs=self.input_generator.original_stty)
 
+    def get_term_hw(self):
+        return self.window.get_term_hw()
+
+    def get_cursor_vertical_diff(self):
+        return self.window.get_cursor_vertical_diff()
+
+    def get_top_usable_line(self):
+        return self.window.top_usable_row
 
     def on_suspend(self):
         self.window.__exit__(None, None, None)
@@ -87,7 +86,7 @@ class FullCurtsiesRepl(Repl):
         """If None is passed in, just paint the screen"""
         try:
             if e is not None:
-                Repl.process_event(self, e)
+                BaseRepl.process_event(self, e)
         except (SystemExitFromCodeGreenlet, SystemExit) as err:
             array, cursor_pos = self.paint(
                 about_to_exit=True,
@@ -188,14 +187,14 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
         print(bpargs.version_banner())
     if banner is not None:
         print(banner)
+    global repl
+    repl = FullCurtsiesRepl(config, locals_, welcome_message, interp, paste)
     try:
-        r = FullCurtsiesRepl(config, locals_, welcome_message, interp, paste,
-                             interactive=(not exec_args))
-        with r.input_generator:
-            with r.window as win:
-                with r:
-                    r.height, r.width = win.t.height, win.t.width
-                    exit_value = r.mainloop()
+        with repl.input_generator:
+            with repl.window as win:
+                with repl:
+                    repl.height, repl.width = win.t.height, win.t.width
+                    exit_value = repl.mainloop()
     except (SystemExitFromCodeGreenlet, SystemExit) as e:
         exit_value = e.args
     return extract_exit_value(exit_value)

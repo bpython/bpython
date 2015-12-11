@@ -11,7 +11,6 @@ import signal
 import subprocess
 import sys
 import tempfile
-import threading
 import time
 import unicodedata
 from six.moves import range
@@ -32,7 +31,7 @@ from bpython.repl import Repl as BpythonRepl, SourceNotFound
 from bpython.config import (Struct, loadini, default_config_path,
                             getpreferredencoding)
 from bpython.formatter import BPythonFormatter
-from bpython import autocomplete, importcompletion
+from bpython import autocomplete
 from bpython.translations import _
 from bpython._py3compat import py3
 from bpython.pager import get_pager_command
@@ -277,7 +276,7 @@ class ImportFinder(object):
         return None
 
 
-class Repl(BpythonRepl):
+class BaseRepl(BpythonRepl):
     """Python Repl
 
     Reacts to events like
@@ -290,49 +289,27 @@ class Repl(BpythonRepl):
     outputs:
      - 2D array to be rendered
 
-    Repl is mostly view-independent state of Repl - but self.width and
+    BaseRepl is mostly view-independent state of Repl - but self.width and
     self.height are important for figuring out how to wrap lines for example.
     Usually self.width and self.height should be set by receiving a window
     resize event, not manually set to anything - as long as the first event
     received is a window resize event, this works fine.
+
+    Subclasses are responsible for implementing several methods.
     """
 
     def __init__(self,
                  locals_=None,
                  config=None,
-                 request_refresh=lambda: None,
-                 schedule_refresh=lambda when=0: None,
-                 request_reload=lambda desc: None,
-                 request_undo=lambda n=1: None,
-                 get_term_hw=lambda: (50, 10),
-                 get_cursor_vertical_diff=lambda: 0,
                  banner=None,
                  interp=None,
-                 interactive=True,
-                 orig_tcattrs=None,
-                 on_suspend=lambda *args: None,
-                 after_suspend=lambda *args: None,
-                 get_top_usable_line=lambda: 0):
+                 orig_tcattrs=None):
         """
         locals_ is a mapping of locals to pass into the interpreter
         config is a bpython config.Struct with config attributes
-        request_refresh is a function that will be called when the Repl
-            wants to refresh the display, but wants control returned to it
-            afterwards
-        schedule_refresh is the same, but takes as a kwarg when= of when to
-            fire. Scheduled refreshes interrupt waiting for keyboard input
-        request_reload is like request_refresh, but for a different event
-        request_undo is like reload, but for a different event
-        get_term_hw is a function that returns the current width and height of
-            the terminal
-        get_cursor_vertical_diff is a function that returns how the cursor
-            moved due to a window size change
         banner is a string to display briefly in the status bar
         interp is an interpreter instance to use
         original terminal state, useful for shelling out with normal terminal
-        on_suspend will be called on sigtstp
-        after_suspend will be called when process foregrounded after suspend
-        get_top_usable_line returns the top line of the terminal owned
         """
 
         logger.debug("starting init")
@@ -362,35 +339,12 @@ class Repl(BpythonRepl):
         self.reevaluating = False
         self.fake_refresh_requested = False
 
-        def smarter_request_refresh():
-            if self.reevaluating or self.paste_mode:
-                self.fake_refresh_requested = True
-            else:
-                request_refresh()
-        self.request_refresh = smarter_request_refresh
-
-        def smarter_schedule_refresh(when='now'):
-            if self.reevaluating or self.paste_mode:
-                self.fake_refresh_requested = True
-            else:
-                schedule_refresh(when=when)
-        self.schedule_refresh = smarter_schedule_refresh
-
-        def smarter_request_reload(files_modified=()):
-            if self.watching_files:
-                request_reload(files_modified=files_modified)
-
-        self.request_reload = smarter_request_reload
-        self.request_undo = request_undo
-        self.get_term_hw = get_term_hw
-        self.get_cursor_vertical_diff = get_cursor_vertical_diff
-
         self.status_bar = StatusBar('',
                                     request_refresh=self.request_refresh,
                                     schedule_refresh=self.schedule_refresh)
         self.edit_keys = edit_keys.mapping_with_config(config, key_dispatch)
         logger.debug("starting parent init")
-        super(Repl, self).__init__(interp, config)
+        super(BaseRepl, self).__init__(interp, config)
 
         self.formatter = BPythonFormatter(config.color_scheme)
 
@@ -425,9 +379,6 @@ class Repl(BpythonRepl):
         self._cursor_offset = 0
 
         self.orig_tcattrs = orig_tcattrs
-        self.on_suspend = on_suspend
-        self.after_suspend = after_suspend
-        self.get_top_usable_line = get_top_usable_line
 
         self.coderunner = CodeRunner(self.interp, self.request_refresh)
         self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
@@ -470,7 +421,90 @@ class Repl(BpythonRepl):
 
         self.status_bar.message(banner)
 
-        self.watcher = ModuleChangedEventHandler([], smarter_request_reload)
+        self.watcher = ModuleChangedEventHandler([], self.request_reload)
+
+    ### These methods should be overridden, but the default implementations below
+    ### can be used as well.
+
+    def get_cursor_vertical_diff(self):
+        """Return how the cursor moved due to a window size change"""
+        return 0
+
+    def get_top_usable_line(self):
+        """Return the top line of display that can be rewritten"""
+        return 0
+
+    def get_term_hw(self):
+        """Returns the current width and height of the display area."""
+        return (50, 10)
+
+    def _schedule_refresh(self, when='now'):
+        """Arrange for the bpython display to be refreshed soon.
+
+        This method will be called when the Repl wants the display to be
+        refreshed at a known point in the future, and as such it should
+        interrupt a pending request to the user for input.
+
+        Because the worst-case effect of not refreshing
+        is only having an out of date UI until the user enters input, a
+        default NOP implementation is provided."""
+
+    ### These methods must be overridden in subclasses
+
+    def _request_refresh(self):
+        """Arrange for the bpython display to be refreshed soon.
+
+        This method will be called when the Repl wants to refresh the display,
+        but wants control returned to it afterwards. (it is assumed that simply
+        returning from process_event will cause an event refresh)
+
+        The very next event received by process_event should be a
+        RefreshRequestEvent."""
+        raise NotImplementedError
+
+    def _request_reload(self, files_modified=('?',)):
+        """Like request_refresh, but for reload requests events."""
+        raise NotImplementedError
+
+    def request_undo(self, n=1):
+        """ike request_refresh, but for undo request events."""
+        raise NotImplementedError
+
+    def on_suspend():
+        """Will be called on sigtstp.
+
+        Do whatever cleanup would allow the user to use other programs."""
+        raise NotImplementedError
+
+    def after_suspend():
+        """Will be called when process foregrounded after suspend.
+
+        See to it that process_event is called with None to trigger a refresh
+        if not in the middle of a process_event call when suspend happened."""
+        raise NotImplementedError
+
+    ### End methods that should be overridden in subclass
+
+    def request_refresh(self):
+        """Arrange for the bpython display to be refreshed soon."""
+        if self.reevaluating or self.paste_mode:
+            self.fake_refresh_requested = True
+        else:
+            self._request_refresh()
+
+    def request_reload(self, files_modified=()):
+        """Arrange for the """
+        if self.watching_files:
+            self._request_reload(files_modified=files_modified)
+
+    def schedule_refresh(self, when='now'):
+        """Schedule a ScheduledRefreshRequestEvent for when.
+
+        Such a event should interrupt if blockied waiting for keyboard input"""
+        if self.reevaluating or self.paste_mode:
+            self.fake_refresh_requested = True
+        else:
+            self._schedule_refresh(when=when)
 
     def __enter__(self):
         self.orig_stdout = sys.stdout
@@ -1364,55 +1398,9 @@ class Repl(BpythonRepl):
         if not self.paste_mode:
             self.update_completion()
 
-    # Debugging shims, good example of embedding a Repl in other code
-    def dumb_print_output(self):
-        arr, cpos = self.paint()
-        arr[cpos[0]:cpos[0]+1, cpos[1]:cpos[1]+1] = ['~']
-
-        def my_print(msg):
-            self.orig_stdout.write(str(msg)+'\n')
-
-        my_print('X'*(self.width+8))
-        my_print(' use "/" for enter '.center(self.width+8, 'X'))
-        my_print(' use "\\" for rewind '.center(self.width+8, 'X'))
-        my_print(' use "|" to raise an error '.center(self.width+8, 'X'))
-        my_print(' use "$" to pastebin '.center(self.width+8, 'X'))
-        my_print(' "~" is the cursor '.center(self.width+8, 'X'))
-        my_print('X'*(self.width+8))
-        my_print('X``'+('`'*(self.width+2))+'``X')
-        for line in arr:
-            my_print('X```'+line.ljust(self.width)+'```X')
-        logger.debug('line:')
-        logger.debug(repr(line))
-        my_print('X``'+('`'*(self.width+2))+'``X')
-        my_print('X'*(self.width+8))
-        return max(len(arr) - self.height, 0)
-
-    def dumb_input(self, requested_refreshes=[]):
-        chars = list(self.orig_stdin.readline()[:-1])
-        while chars or requested_refreshes:
-            if requested_refreshes:
-                requested_refreshes.pop()
-                self.process_event(bpythonevents.RefreshRequestEvent())
-                continue
-            c = chars.pop(0)
-            if c in '/':
-                c = '\n'
-            elif c in '\\':
-                c = ''
-            elif c in '|':
-                def r():
-                    raise Exception('errors in other threads should look like this')
-                t = threading.Thread(target=r)
-                t.daemon = True
-                t.start()
-            elif c in '$':
-                c = key_dispatch[self.config.pastebin_key][0]
-            self.process_event(c)
-
     def __repr__(self):
         s = ''
-        s += '<Repl\n'
+        s += '<'+repr(type(self))+'\n'
         s += " cursor_offset:" + repr(self.cursor_offset) + '\n'
         s += " num display lines:" + repr(len(self.display_lines)) + '\n'
         s += " lines scrolled down:" + repr(self.scroll_offset) + '\n'
@@ -1685,23 +1673,3 @@ def is_simple_event(e):
         return False
     else:
         return True
-
-
-# TODO this needs some work to function again and be useful for embedding
-def simple_repl():
-    refreshes = []
-
-    def request_refresh():
-        refreshes.append(1)
-    with Repl(request_refresh=request_refresh) as r:
-        r.width = 50
-        r.height = 10
-        while True:
-            while importcompletion.find_coroutine():
-                pass
-            r.dumb_print_output()
-            r.dumb_input(refreshes)
-
-
-if __name__ == '__main__':
-    simple_repl()
