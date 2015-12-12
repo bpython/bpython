@@ -84,6 +84,10 @@ See {example_config_url} for an example config file.
 Press {config.edit_config_key} to edit this config file.
 """
 EXAMPLE_CONFIG_URL = 'https://raw.githubusercontent.com/bpython/bpython/master/bpython/sample-config'
+EDIT_SESSION_HEADER = ("### current bpython session - file will be "
+                       "reevaluated, ### lines will not be run\n"
+                       "### To return to bpython without reevaluating, "
+                       "exit without making changes.\n")
 MAX_EVENTS_POSSIBLY_NOT_PASTE = 20  # more than this many events will be assumed to
                                     # be a true paste event, i.e. control characters
                                     # like '<Ctrl-a>' will be stripped
@@ -837,8 +841,7 @@ class Repl(BpythonRepl):
         self.cursor_offset = len(self.current_line)
 
     def send_session_to_external_editor(self, filename=None):
-        for_editor = ("### current bpython session - file will be "
-                      "reevaluated, ### lines will not be run\n")
+        for_editor = EDIT_SESSION_HEADER
         for_editor += '\n'.join(line[len(self.ps1):]
                                 if line.startswith(self.ps1) else
                                 line[len(self.ps2):]
@@ -846,13 +849,18 @@ class Repl(BpythonRepl):
                                 '### '+line
                                 for line in self.getstdout().split('\n'))
         text = self.send_to_external_editor(for_editor)
+        if text == for_editor:
+            self.status_bar.message(
+                _('Session not reevaluated because it was not edited'))
+            return
         lines = text.split('\n')
-        from_editor = [line for line in lines if line[:4] != '### ']
+        from_editor = [line for line in lines if line[:3] != '###']
         source = preprocess('\n'.join(from_editor), self.interp.compile)
         self.history = source.split('\n')
         self.reevaluate(insert_into_history=True)
         self.current_line = lines[-1][4:]
         self.cursor_offset = len(self.current_line)
+        self.status_bar.message(_('Session edited and reevaluated'))
 
     def clear_modules_and_reevaluate(self):
         if self.watcher:
