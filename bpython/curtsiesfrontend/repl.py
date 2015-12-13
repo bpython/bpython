@@ -862,6 +862,10 @@ class Repl(BpythonRepl):
         else:
             current_line = ''
         from_editor = [line for line in lines if line[:3] != '###']
+        if all(not line.strip() for line in from_editor):
+            self.status_bar.message(
+                _('Session not reevaluated because saved file was blank'))
+            return
 
         source = preprocess('\n'.join(from_editor), self.interp.compile)
         lines = source.split('\n')
