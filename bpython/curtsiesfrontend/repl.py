@@ -84,10 +84,11 @@ See {example_config_url} for an example config file.
 Press {config.edit_config_key} to edit this config file.
 """
 EXAMPLE_CONFIG_URL = 'https://raw.githubusercontent.com/bpython/bpython/master/bpython/sample-config'
-EDIT_SESSION_HEADER = ("### current bpython session - file will be "
-                       "reevaluated, ### lines will not be run\n"
-                       "### To return to bpython without reevaluating, "
-                       "exit without making changes.\n")
+EDIT_SESSION_HEADER = """### current bpython session - make changes and save to reevaluate session.
+### lines beginning with ### will be ignored.
+### To return to bpython without reevaluating make no changes to this file
+### or save an empty file.
+"""
 MAX_EVENTS_POSSIBLY_NOT_PASTE = 20  # more than this many events will be assumed to
                                     # be a true paste event, i.e. control characters
                                     # like '<Ctrl-a>' will be stripped
@@ -854,11 +855,19 @@ class Repl(BpythonRepl):
                 _('Session not reevaluated because it was not edited'))
             return
         lines = text.split('\n')
+        if not lines[-1].strip():
+            lines.pop()  # strip last line if empty
+        if lines[-1].startswith('### '):
+            current_line = lines[-1][4:]
+        else:
+            current_line = ''
         from_editor = [line for line in lines if line[:3] != '###']
+
         source = preprocess('\n'.join(from_editor), self.interp.compile)
-        self.history = source.split('\n')
+        lines = source.split('\n')
+        self.history = lines
         self.reevaluate(insert_into_history=True)
-        self.current_line = lines[-1][4:]
+        self.current_line = current_line
         self.cursor_offset = len(self.current_line)
         self.status_bar.message(_('Session edited and reevaluated'))
 
