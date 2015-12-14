@@ -48,6 +48,14 @@ def paint_current_line(rows, columns, current_display_line):
     return fsarray(lines, width=columns)
 
 
+def paginate(rows, matches, current, words_wide):
+    if current not in matches:
+        current = matches[0]
+    per_page = rows * words_wide
+    current_page = matches.index(current) // per_page
+    return matches[per_page * current_page:per_page * (current_page + 1)]
+
+
 def matches_lines(rows, columns, matches, current, config, format):
     highlight_color = func_for_letter(config.color_scheme['operator'].lower())
 
@@ -59,6 +67,8 @@ def matches_lines(rows, columns, matches, current, config, format):
     matches = [format(m) for m in matches]
     if current:
         current = format(current)
+
+    matches = paginate(rows, matches, current, words_wide)
 
     matches_lines = [fmtstr(' ').join(color(m.ljust(max_match_width))
                                       if m != current
@@ -163,12 +173,15 @@ def paint_infobox(rows, columns, matches, funcprops, arg_pos, match, docstring,
     if not (rows and columns):
         return fsarray(0, 0)
     width = columns - 4
-    lines = ((formatted_argspec(funcprops, arg_pos, width, config)
-              if funcprops else []) +
-             (matches_lines(rows, width, matches, match, config, format)
-              if matches else []) +
-             (formatted_docstring(docstring, width, config)
-              if docstring else []))
+    from_argspec = (formatted_argspec(funcprops, arg_pos, width, config)
+                    if funcprops else [])
+    from_doc = (formatted_docstring(docstring, width, config)
+                if docstring else [])
+    from_matches = (matches_lines(max(1, rows - len(from_argspec) - 2),
+                                  width, matches, match, config, format)
+                    if matches else [])
+
+    lines = from_argspec + from_matches + from_doc
 
     def add_border(line):
         """Add colored borders left and right to a line."""
