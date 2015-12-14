@@ -222,6 +222,7 @@ class TestArgspec(unittest.TestCase):
         self.set_input_line("WonderfulSpam(")
         self.assertTrue(self.repl.get_args())
 
+    @unittest.skipIf(pypy, 'pypy pydoc doesn\'t have this')
     def test_issue583(self):
         self.repl = FakeRepl()
         self.repl.push("a = 1.2\n", False)
