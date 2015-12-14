@@ -55,6 +55,7 @@ def paginate(rows, matches, current, words_wide):
     current_page = matches.index(current) // per_page
     return matches[per_page * current_page:per_page * (current_page + 1)]
 
+
 def matches_lines(rows, columns, matches, current, config, format):
     highlight_color = func_for_letter(config.color_scheme['operator'].lower())
 
