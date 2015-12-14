@@ -88,9 +88,10 @@ EDIT_SESSION_HEADER = """### current bpython session - make changes and save to 
 ### To return to bpython without reevaluating make no changes to this file
 ### or save an empty file.
 """
-MAX_EVENTS_POSSIBLY_NOT_PASTE = 20  # more than this many events will be assumed to
-                                    # be a true paste event, i.e. control characters
-                                    # like '<Ctrl-a>' will be stripped
+
+# more than this many events will be assumed to be a true paste event,
+# i.e. control characters like '<Ctrl-a>' will be stripped
+MAX_EVENTS_POSSIBLY_NOT_PASTE = 20
 
 # This is needed for is_nop and should be removed once is_nop is fixed.
 if py3:
@@ -152,7 +153,7 @@ class FakeStdin(object):
             self.has_focus = False
             self.current_line = ''
             self.cursor_offset = 0
-            self.repl.run_code_and_maybe_finish(for_code=line+'\n')
+            self.repl.run_code_and_maybe_finish(for_code=line + '\n')
         else:  # add normal character
             self.add_input_character(e)
 
@@ -423,8 +424,8 @@ class BaseRepl(BpythonRepl):
 
         self.watcher = ModuleChangedEventHandler([], self.request_reload)
 
-    ### These methods should be overridden, but the default implementations below
-    ### can be used as well.
+    # The methods below should be overridden, but the default implementations
+    # below can be used as well.
 
     def get_cursor_vertical_diff(self):
         """Return how the cursor moved due to a window size change"""
@@ -449,7 +450,7 @@ class BaseRepl(BpythonRepl):
         is only having an out of date UI until the user enters input, a
         default NOP implementation is provided."""
 
-    ### These methods must be overridden in subclasses
+    # The methods below must be overridden in subclasses.
 
     def _request_refresh(self):
         """Arrange for the bpython display to be refreshed soon.
@@ -467,7 +468,7 @@ class BaseRepl(BpythonRepl):
         raise NotImplementedError
 
     def request_undo(self, n=1):
-        """ike request_refresh, but for undo request events."""
+        """Like request_refresh, but for undo request events."""
         raise NotImplementedError
 
     def on_suspend():
@@ -483,17 +484,17 @@ class BaseRepl(BpythonRepl):
         if not in the middle of a process_event call when suspend happened."""
         raise NotImplementedError
 
-    ### End methods that should be overridden in subclass
+    # end methods that should be overridden in subclass
 
     def request_refresh(self):
-        """Arrange for the bpython display to be refreshed soon."""
+        """Request that the bpython display to be refreshed soon."""
         if self.reevaluating or self.paste_mode:
             self.fake_refresh_requested = True
         else:
             self._request_refresh()
 
     def request_reload(self, files_modified=()):
-        """Arrange for the """
+        """Request that a ReloadEvent be passed next into process_event"""
         if self.watching_files:
             self._request_reload(files_modified=files_modified)
 
@@ -611,7 +612,6 @@ class BaseRepl(BpythonRepl):
                         else:
                             self.process_simple_keypress(ee)
 
-
         elif isinstance(e, bpythonevents.RunStartupFileEvent):
             try:
                 self.startup()
@@ -651,9 +651,9 @@ class BaseRepl(BpythonRepl):
 
         if (e in (key_dispatch[self.config.right_key] +
                   key_dispatch[self.config.end_of_line_key] +
-                  ("<RIGHT>",))
-                and self.config.curtsies_right_arrow_completion
-                and self.cursor_offset == len(self.current_line)):
+                  ("<RIGHT>",)) and
+                self.config.curtsies_right_arrow_completion and
+                self.cursor_offset == len(self.current_line)):
 
             self.current_line += self.current_suggestion
             self.cursor_offset = len(self.current_line)
@@ -669,8 +669,9 @@ class BaseRepl(BpythonRepl):
             self.incremental_search(reverse=True)
         elif e in key_dispatch[self.config.incremental_search_key]:
             self.incremental_search()
-        elif (e in ("<BACKSPACE>",) + key_dispatch[self.config.backspace_key]
-              and self.incremental_search_mode):
+        elif (e in (("<BACKSPACE>",) +
+                    key_dispatch[self.config.backspace_key]) and
+              self.incremental_search_mode):
             self.add_to_incremental_search(self, backspace=True)
         elif e in self.edit_keys.cut_buffer_edits:
             self.readline_kill(e)
@@ -730,7 +731,7 @@ class BaseRepl(BpythonRepl):
         self._set_current_line(line[:len(line) - len(previous_word)] + word,
                                reset_rl_history=False)
         self._set_cursor_offset(
-            self.cursor_offset-len(previous_word) + len(word),
+            self.cursor_offset - len(previous_word) + len(word),
             reset_rl_history=False)
 
     def incremental_search(self, reverse=False, include_current=False):
@@ -816,8 +817,8 @@ class BaseRepl(BpythonRepl):
                 self.list_win_visible = self.complete()
 
         elif self.matches_iter.matches:
-            self.current_match = (back and self.matches_iter.previous()
-                                  or next(self.matches_iter))
+            self.current_match = (back and self.matches_iter.previous() or
+                                  next(self.matches_iter))
             self._cursor_offset, self._current_line = self.matches_iter.cur_line()
             # using _current_line so we don't trigger a completion reset
             self.list_win_visible = True
@@ -827,7 +828,7 @@ class BaseRepl(BpythonRepl):
             raise SystemExit()
         else:
             self.current_line = (self.current_line[:self.cursor_offset] +
-                                 self.current_line[self.cursor_offset+1:])
+                                 self.current_line[(self.cursor_offset + 1):])
 
     def cut_to_buffer(self):
         self.cut_buffer = self.current_line[self.cursor_offset:]
@@ -886,7 +887,7 @@ class BaseRepl(BpythonRepl):
                                 if line.startswith(self.ps1) else
                                 line[len(self.ps2):]
                                 if line.startswith(self.ps2) else
-                                '### '+line
+                                '### ' + line
                                 for line in self.getstdout().split('\n'))
         text = self.send_to_external_editor(for_editor)
         if text == for_editor:
@@ -1056,7 +1057,7 @@ class BaseRepl(BpythonRepl):
                 self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width))
                 self.current_stdouterr_line = ''
 
-            self._set_current_line(' '*indent, update_completion=True)
+            self._set_current_line(' ' * indent, update_completion=True)
             self.cursor_offset = len(self.current_line)
 
     def keyboard_interrupt(self):
@@ -1226,7 +1227,7 @@ class BaseRepl(BpythonRepl):
         """
         # The hairiest function in the curtsies - a cleanup would be great.
         if about_to_exit:
-            self.clean_up_current_line_for_exit() # exception to not changing state!
+            self.clean_up_current_line_for_exit()  # exception to not changing state!
 
         width, min_height = self.width, self.height
         show_status_bar = ((bool(self.status_bar.should_show_message) or self.status_bar.has_focus)
@@ -1239,7 +1240,7 @@ class BaseRepl(BpythonRepl):
         current_line_start_row = len(self.lines_for_display) - max(0, self.scroll_offset)
         # TODO how is the situation of self.scroll_offset < 0 possible?
         # current_line_start_row = len(self.lines_for_display) - self.scroll_offset
-        if self.request_paint_to_clear_screen: # or show_status_bar and about_to_exit ?
+        if self.request_paint_to_clear_screen:  # or show_status_bar and about_to_exit ?
             self.request_paint_to_clear_screen = False
             arr = FSArray(min_height + current_line_start_row, width)
         elif self.request_paint_to_pad_bottom:
@@ -1275,9 +1276,11 @@ class BaseRepl(BpythonRepl):
             self.history_already_messed_up = True
             msg = INCONSISTENT_HISTORY_MSG
             arr[0, 0:min(len(msg), width)] = [msg[:width]]
-            current_line_start_row += 1 # for the message
-            self.scroll_offset -= 1     # to make up for the scroll we're going to receive
-                                        # after we render scrolls down a line
+            current_line_start_row += 1  # for the message
+
+            # to make up for the scroll that will be received after the
+            # scrolls are rendered down a line
+            self.scroll_offset -= 1
 
             current_line_start_row = move_screen_up(current_line_start_row)
             logger.debug('current_line_start_row: %r', current_line_start_row)
@@ -1313,7 +1316,7 @@ class BaseRepl(BpythonRepl):
 
         self.inconsistent_history = False
 
-        if user_quit: # quit() or exit() in interp
+        if user_quit:  # quit() or exit() in interp
             current_line_start_row = current_line_start_row - current_line.height
         logger.debug("---current line row slice %r, %r", current_line_start_row,
                      current_line_start_row + current_line.height)
@@ -1322,9 +1325,9 @@ class BaseRepl(BpythonRepl):
             0:current_line.width] = current_line
 
         if current_line.height > min_height:
-            return arr, (0, 0) # short circuit, no room for infobox
+            return arr, (0, 0)  # short circuit, no room for infobox
 
-        lines = paint.display_linize(self.current_cursor_line+'X', width)
+        lines = paint.display_linize(self.current_cursor_line + 'X', width)
         # extra character for space for the cursor
         current_line_end_row = current_line_start_row + len(lines) - 1
 
