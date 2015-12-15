@@ -1374,17 +1374,17 @@ class BaseRepl(BpythonRepl):
                     (len(self.current_cursor_line_without_suggestion) +
                      self.cursor_offset),
                     width)
-            assert (cursor_column >= 0,
-                    (cursor_column, len(self.current_cursor_line),
-                     len(self.current_line), self.cursor_offset))
+            assert cursor_column >= 0, (
+                       cursor_column, len(self.current_cursor_line),
+                       len(self.current_line), self.cursor_offset)
         else:
             cursor_row, cursor_column = divmod(
                     (len(self.current_cursor_line_without_suggestion) -
                      len(self.current_line) + self.cursor_offset),
                     width)
-            assert (cursor_column >= 0,
-                    (cursor_column, len(self.current_cursor_line),
-                     len(self.current_line), self.cursor_offset))
+            assert cursor_column >= 0, (
+                       cursor_column, len(self.current_cursor_line),
+                       len(self.current_line), self.cursor_offset)
         cursor_row += current_line_start_row
 
         if self.list_win_visible and not self.coderunner.running:
