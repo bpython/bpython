@@ -36,7 +36,9 @@ def indent_empty_lines(s, compiler):
 def leading_tabs_to_spaces(s):
     lines = s.split('\n')
     result_lines = []
-    tab_to_space = lambda m: len(m.group()) * 4 * ' '
+
+    def tab_to_space(m):
+        return len(m.group()) * 4 * ' '
     for line in lines:
         result_lines.append(tabs_to_spaces_re.sub(tab_to_space, line))
     return '\n'.join(result_lines)
