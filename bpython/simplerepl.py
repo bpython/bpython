@@ -21,11 +21,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
-from __future__ import unicode_literals, print_function, absolute_import
 """An example bpython repl without a nice UI for testing and to demonstrate
 the methods of bpython.curtsiesrepl.repl.BaseRepl that must be overridden.
 """
+
+from __future__ import unicode_literals, print_function, absolute_import
 
 import time
 import logging
