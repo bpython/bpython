@@ -328,8 +328,8 @@ class BaseRepl(BpythonRepl):
             interp.write = self.send_to_stderr
         if banner is None:
             if config.help_key:
-                banner = ' '.join((_('Welcome to bpython!'),
-                                   _('Press <%s> for help.') % config.help_key))
+                banner = (_('Welcome to bpython!') + ' ' +
+                          _('Press <%s> for help.') % config.help_key)
             else:
                 banner = None
         # only one implemented currently
@@ -411,9 +411,9 @@ class BaseRepl(BpythonRepl):
         self.watching_files = False    # whether auto reloading active
 
         # 'reverse_incremental_search', 'incremental_search' or None
-        self.incremental_search_mode = None
+        self.incr_search_mode = None
 
-        self.incremental_search_target = ''
+        self.incr_search_target = ''
 
         self.original_modules = set(sys.modules.keys())
 
@@ -671,7 +671,7 @@ class BaseRepl(BpythonRepl):
             self.incremental_search()
         elif (e in (("<BACKSPACE>",) +
                     key_dispatch[self.config.backspace_key]) and
-              self.incremental_search_mode):
+              self.incr_search_mode):
             self.add_to_incremental_search(self, backspace=True)
         elif e in self.edit_keys.cut_buffer_edits:
             self.readline_kill(e)
@@ -717,7 +717,7 @@ class BaseRepl(BpythonRepl):
         elif e in key_dispatch[self.config.edit_current_block_key]:
             self.send_current_block_to_external_editor()
         elif e in ["<ESC>"]:
-            self.incremental_search_mode = None
+            self.incr_search_mode = None
         elif e in ["<SPACE>"]:
             self.add_normal_character(' ')
         else:
@@ -735,19 +735,19 @@ class BaseRepl(BpythonRepl):
             reset_rl_history=False)
 
     def incremental_search(self, reverse=False, include_current=False):
-        if self.incremental_search_mode is None:
+        if self.incr_search_mode is None:
             self.rl_history.enter(self.current_line)
-            self.incremental_search_target = ''
+            self.incr_search_target = ''
         else:
-            if self.incremental_search_target:
+            if self.incr_search_target:
                 line = (self.rl_history.back(
                     False, search=True,
-                    target=self.incremental_search_target,
+                    target=self.incr_search_target,
                     include_current=include_current)
                     if reverse else
                     self.rl_history.forward(
                         False, search=True,
-                        target=self.incremental_search_target,
+                        target=self.incr_search_target,
                         include_current=include_current))
                 self._set_current_line(line,
                                        reset_rl_history=False,
@@ -756,9 +756,9 @@ class BaseRepl(BpythonRepl):
                                         reset_rl_history=False,
                                         clear_special_mode=False)
         if reverse:
-            self.incremental_search_mode = 'reverse_incremental_search'
+            self.incr_search_mode = 'reverse_incremental_search'
         else:
-            self.incremental_search_mode = 'incremental_search'
+            self.incr_search_mode = 'incremental_search'
 
     def readline_kill(self, e):
         func = self.edit_keys[e]
@@ -811,7 +811,8 @@ class BaseRepl(BpythonRepl):
 
         # 3. check to see if we can expand the current word
         if self.matches_iter.is_cseq():
-            self._cursor_offset, self._current_line = self.matches_iter.substitute_cseq()
+            cursor_and_line = self.matches_iter.substitute_cseq()
+            self._cursor_offset, self._current_line = cursor_and_line
             # using _current_line so we don't trigger a completion reset
             if not self.matches_iter.matches:
                 self.list_win_visible = self.complete()
@@ -819,7 +820,8 @@ class BaseRepl(BpythonRepl):
         elif self.matches_iter.matches:
             self.current_match = (back and self.matches_iter.previous() or
                                   next(self.matches_iter))
-            self._cursor_offset, self._current_line = self.matches_iter.cur_line()
+            cursor_and_line = self.matches_iter.cur_line()
+            self._cursor_offset, self._current_line = cursor_and_line
             # using _current_line so we don't trigger a completion reset
             self.list_win_visible = True
 
@@ -946,7 +948,7 @@ class BaseRepl(BpythonRepl):
     def add_normal_character(self, char):
         if len(char) > 1 or is_nop(char):
             return
-        if self.incremental_search_mode:
+        if self.incr_search_mode:
             self.add_to_incremental_search(char)
         else:
             self._set_current_line((self.current_line[:self.cursor_offset] +
@@ -969,21 +971,22 @@ class BaseRepl(BpythonRepl):
         if char is None and not backspace:
             raise ValueError("must provide a char or set backspace to True")
         if backspace:
-            self.incremental_search_target = self.incremental_search_target[:-1]
+            self.incr_search_target = self.incr_search_target[:-1]
         else:
-            self.incremental_search_target += char
-        if self.incremental_search_mode == 'reverse_incremental_search':
+            self.incr_search_target += char
+        if self.incr_search_mode == 'reverse_incremental_search':
             self.incremental_search(reverse=True, include_current=True)
-        elif self.incremental_search_mode == 'incremental_search':
+        elif self.incr_search_mode == 'incremental_search':
             self.incremental_search(include_current=True)
         else:
             raise ValueError('add_to_incremental_search not in a special mode')
 
     def update_completion(self, tab=False):
-        """Update visible docstring and matches, and possibly hide/show completion box"""
+        """Update visible docstring and matches and box visibility"""
         # Update autocomplete info; self.matches_iter and self.funcprops
-        # Should be called whenever the completion box might need to appear / dissapear
-        # when current line or cursor offset changes, unless via selecting a match
+        # Should be called whenever the completion box might need to appear
+        # or disappear; whenever current line or cursor offset changes,
+        # unless this happened via selecting a match
         self.current_match = None
         self.list_win_visible = BpythonRepl.complete(self, tab)
 
@@ -995,7 +998,8 @@ class BaseRepl(BpythonRepl):
             indent = max(0, indent + self.config.tab_length)
         elif line and line.count(' ') == len(line):
             indent = max(0, indent - self.config.tab_length)
-        elif line and ':' not in line and line.strip().startswith(('return', 'pass', 'raise', 'yield')):
+        elif (line and ':' not in line and line.strip().startswith(
+                ('return', 'pass', 'raise', 'yield'))):
             indent = max(0, indent - self.config.tab_length)
         logger.debug('indent we found was %s', indent)
         return indent
@@ -1011,10 +1015,12 @@ class BaseRepl(BpythonRepl):
             self.saved_indent = self.predicted_indent(line)
 
         if self.config.syntax:
-            display_line = bpythonparse(format(self.tokenize(line), self.formatter))
-            # careful: self.tokenize requires that the line not be in self.buffer yet!
+            display_line = bpythonparse(format(
+                self.tokenize(line), self.formatter))
+            # self.tokenize requires that the line not be in self.buffer yet
 
-            logger.debug('display line being pushed to buffer: %r -> %r', line, display_line)
+            logger.debug('display line being pushed to buffer: %r -> %r',
+                         line, display_line)
             self.display_buffer.append(display_line)
         else:
             self.display_buffer.append(fmtstr(line))
@@ -1054,7 +1060,8 @@ class BaseRepl(BpythonRepl):
             # TODO This should be printed ABOVE the error that just happened
             # instead or maybe just thrown away and not shown
             if self.current_stdouterr_line:
-                self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width))
+                self.display_lines.extend(paint.display_linize(
+                    self.current_stdouterr_line, self.width))
                 self.current_stdouterr_line = ''
 
             self._set_current_line(' ' * indent, update_completion=True)
@@ -1065,8 +1072,10 @@ class BaseRepl(BpythonRepl):
         self.cursor_offset = -1
         self.unhighlight_paren()
         self.display_lines.extend(self.display_buffer_lines)
-        self.display_lines.extend(paint.display_linize(self.current_cursor_line, self.width))
-        self.display_lines.extend(paint.display_linize("KeyboardInterrupt", self.width))
+        self.display_lines.extend(paint.display_linize(
+            self.current_cursor_line, self.width))
+        self.display_lines.extend(paint.display_linize(
+            "KeyboardInterrupt", self.width))
         self.clear_current_block(remove_from_history=False)
 
     def unhighlight_paren(self):
@@ -1084,7 +1093,9 @@ class BaseRepl(BpythonRepl):
             logger.debug('trying to unhighlight a paren on line %r', lineno)
             logger.debug('with these tokens: %r', saved_tokens)
             new = bpythonparse(format(saved_tokens, self.formatter))
-            self.display_buffer[lineno] = self.display_buffer[lineno].setslice_with_length(0, len(new), new, len(self.display_buffer[lineno]))
+            self.display_buffer[lineno] = self.display_buffer[lineno] \
+                .setslice_with_length(0, len(new), new,
+                                      len(self.display_buffer[lineno]))
 
     def clear_current_block(self, remove_from_history=True):
         self.display_buffer = []
@@ -1105,10 +1116,12 @@ class BaseRepl(BpythonRepl):
         logger.debug('display_lines: %r', self.display_lines)
         self.current_stdouterr_line += lines[0]
         if len(lines) > 1:
-            self.display_lines.extend(paint.display_linize(self.current_stdouterr_line, self.width, blank_line=True))
-            self.display_lines.extend(sum((paint.display_linize(line, self.width,
-                                                                blank_line=True)
-                                           for line in lines[1:-1]), []))
+            self.display_lines.extend(paint.display_linize(
+                self.current_stdouterr_line, self.width, blank_line=True))
+            self.display_lines.extend(
+                sum((paint.display_linize(line, self.width,
+                                          blank_line=True)
+                     for line in lines[1:-1]), []))
             self.current_stdouterr_line = lines[-1]
         logger.debug('display_lines: %r', self.display_lines)
 
@@ -1122,7 +1135,8 @@ class BaseRepl(BpythonRepl):
 
     def send_to_stdin(self, line):
         if line.endswith('\n'):
-            self.display_lines.extend(paint.display_linize(self.current_output_line, self.width))
+            self.display_lines.extend(
+                paint.display_linize(self.current_output_line, self.width))
             self.current_output_line = ''
 
     # formatting, output
@@ -1136,13 +1150,18 @@ class BaseRepl(BpythonRepl):
     def current_line_formatted(self):
         """The colored current line (no prompt, not wrapped)"""
         if self.config.syntax:
-            fs = bpythonparse(format(self.tokenize(self.current_line), self.formatter))
-            if self.incremental_search_mode:
-                if self.incremental_search_target in self.current_line:
-                    fs = fmtfuncs.on_magenta(self.incremental_search_target).join(fs.split(self.incremental_search_target))
-            elif self.rl_history.saved_line and self.rl_history.saved_line in self.current_line:
-                if self.config.curtsies_right_arrow_completion and self.rl_history.index != 0:
-                    fs = fmtfuncs.on_magenta(self.rl_history.saved_line).join(fs.split(self.rl_history.saved_line))
+            fs = bpythonparse(format(self.tokenize(self.current_line),
+                              self.formatter))
+            if self.incr_search_mode:
+                if self.incr_search_target in self.current_line:
+                    fs = fmtfuncs.on_magenta(self.incr_search_target).join(
+                        fs.split(self.incr_search_target))
+            elif (self.rl_history.saved_line and
+                    self.rl_history.saved_line in self.current_line):
+                if (self.config.curtsies_right_arrow_completion and
+                        self.rl_history.index != 0):
+                    fs = fmtfuncs.on_magenta(self.rl_history.saved_line).join(
+                        fs.split(self.rl_history.saved_line))
             logger.debug('Display line %r -> %r', self.current_line, fs)
         else:
             fs = fmtstr(self.current_line)
@@ -1158,12 +1177,13 @@ class BaseRepl(BpythonRepl):
 
     @property
     def display_buffer_lines(self):
-        """The display lines (wrapped, colored, with prompts) for the current buffer"""
+        """The display lines (wrapped, colored, +prompts) of current buffer"""
         lines = []
         for display_line in self.display_buffer:
-            display_line = (func_for_letter(self.config.color_scheme['prompt_more'])(self.ps2)
-                            if lines else
-                            func_for_letter(self.config.color_scheme['prompt'])(self.ps1)) + display_line
+            prompt = func_for_letter(self.config.color_scheme['prompt'])
+            more = func_for_letter(self.config.color_scheme['prompt_more'])
+            display_line = ((more(self.ps2) if lines else prompt(self.ps1)) +
+                            display_line)
             for line in paint.display_linize(display_line, self.width):
                 lines.append(line)
         return lines
@@ -1171,15 +1191,16 @@ class BaseRepl(BpythonRepl):
     @property
     def display_line_with_prompt(self):
         """colored line with prompt"""
-        if self.incremental_search_mode == 'reverse_incremental_search':
-            return func_for_letter(self.config.color_scheme['prompt'])(
-                '(reverse-i-search)`%s\': ' % (self.incremental_search_target,)) + self.current_line_formatted
-        elif self.incremental_search_mode == 'incremental_search':
-            return func_for_letter(self.config.color_scheme['prompt'])(
-                '(i-search)`%s\': ' % (self.incremental_search_target,)) + self.current_line_formatted
-        return (func_for_letter(self.config.color_scheme['prompt'])(self.ps1)
-                if self.done else
-                func_for_letter(self.config.color_scheme['prompt_more'])(self.ps2)) + self.current_line_formatted
+        prompt = func_for_letter(self.config.color_scheme['prompt'])
+        more = func_for_letter(self.config.color_scheme['prompt_more'])
+        if self.incr_search_mode == 'reverse_incremental_search':
+            return (prompt('(reverse-i-search)`{}\': '.format(
+                self.incr_search_target)) + self.current_line_formatted)
+        elif self.incr_search_mode == 'incremental_search':
+            return (prompt('(i-search)`%s\': '.format(
+                self.incr_search_target)) + self.current_line_formatted)
+        return ((prompt(self.ps1) if self.done else more(self.ps2)) +
+                self.current_line_formatted)
 
     @property
     def current_cursor_line_without_suggestion(self):
@@ -1193,8 +1214,10 @@ class BaseRepl(BpythonRepl):
     @property
     def current_cursor_line(self):
         if self.config.curtsies_right_arrow_completion:
+            suggest = func_for_letter(
+                self.config.color_scheme['right_arrow_suggestion'])
             return (self.current_cursor_line_without_suggestion +
-                func_for_letter(self.config.color_scheme['right_arrow_suggestion'])(self.current_suggestion))
+                    suggest(self.current_suggestion))
         else:
             return self.current_cursor_line_without_suggestion
 
@@ -1227,25 +1250,29 @@ class BaseRepl(BpythonRepl):
         """
         # The hairiest function in the curtsies - a cleanup would be great.
         if about_to_exit:
-            self.clean_up_current_line_for_exit()  # exception to not changing state!
+            # exception to not changing state!
+            self.clean_up_current_line_for_exit()
 
         width, min_height = self.width, self.height
-        show_status_bar = ((bool(self.status_bar.should_show_message) or self.status_bar.has_focus)
-                           and not self.request_paint_to_pad_bottom)
+        show_status_bar = ((bool(self.status_bar.should_show_message) or
+                            self.status_bar.has_focus) and
+                           not self.request_paint_to_pad_bottom)
         if show_status_bar:
             # because we're going to tack the status bar on at the end, shoot
             # for an array one less than the height of the screen
             min_height -= 1
 
-        current_line_start_row = len(self.lines_for_display) - max(0, self.scroll_offset)
+        current_line_start_row = (len(self.lines_for_display) -
+                                  max(0, self.scroll_offset))
         # TODO how is the situation of self.scroll_offset < 0 possible?
-        # current_line_start_row = len(self.lines_for_display) - self.scroll_offset
-        if self.request_paint_to_clear_screen:  # or show_status_bar and about_to_exit ?
+        # or show_status_bar and about_to_exit ?
+        if self.request_paint_to_clear_screen:
             self.request_paint_to_clear_screen = False
             arr = FSArray(min_height + current_line_start_row, width)
         elif self.request_paint_to_pad_bottom:
             # min_height - 1 for startup banner with python version
-            arr = FSArray(min(self.request_paint_to_pad_bottom, min_height - 1), width)
+            height = min(self.request_paint_to_pad_bottom, min_height - 1)
+            arr = FSArray(height, width)
             self.request_paint_to_pad_bottom = 0
         else:
             arr = FSArray(0, width)
@@ -1265,7 +1292,8 @@ class BaseRepl(BpythonRepl):
                              'was %s', self.scroll_offset,
                              current_line_start_row)
                 self.scroll_offset = self.scroll_offset - self.height
-                current_line_start_row = len(self.lines_for_display) - max(-1, self.scroll_offset)
+                current_line_start_row = (len(self.lines_for_display) -
+                                          max(-1, self.scroll_offset))
                 logger.debug('scroll_offset changed to %s, '
                              'current_line_start_row changed to %s',
                              self.scroll_offset, current_line_start_row)
@@ -1290,9 +1318,11 @@ class BaseRepl(BpythonRepl):
             arr[1:history.height + 1, :history.width] = history
 
             if arr.height <= min_height:
-                arr[min_height, 0] = ' '  # force scroll down to hide broken history message
+                # force scroll down to hide broken history message
+                arr[min_height, 0] = ' '
 
-        elif current_line_start_row < 0:  # if current line trying to be drawn off the top of the screen
+        elif current_line_start_row < 0:
+            # if current line trying to be drawn off the top of the screen
             logger.debug(CONTIGUITY_BROKEN_MSG)
             msg = CONTIGUITY_BROKEN_MSG
             arr[0, 0:min(len(msg), width)] = [msg[:width]]
@@ -1317,11 +1347,14 @@ class BaseRepl(BpythonRepl):
         self.inconsistent_history = False
 
         if user_quit:  # quit() or exit() in interp
-            current_line_start_row = current_line_start_row - current_line.height
-        logger.debug("---current line row slice %r, %r", current_line_start_row,
+            current_line_start_row = (current_line_start_row -
+                                      current_line.height)
+        logger.debug("---current line row slice %r, %r",
+                     current_line_start_row,
                      current_line_start_row + current_line.height)
         logger.debug("---current line col slice %r, %r", 0, current_line.width)
-        arr[current_line_start_row:current_line_start_row + current_line.height,
+        arr[current_line_start_row:(current_line_start_row +
+                                    current_line.height),
             0:current_line.width] = current_line
 
         if current_line.height > min_height:
@@ -1332,62 +1365,89 @@ class BaseRepl(BpythonRepl):
         current_line_end_row = current_line_start_row + len(lines) - 1
 
         if self.stdin.has_focus:
-            cursor_row, cursor_column = divmod(len(self.current_stdouterr_line) + self.stdin.cursor_offset, width)
+            cursor_row, cursor_column = divmod(
+                    len(self.current_stdouterr_line) +
+                    self.stdin.cursor_offset, width)
             assert cursor_column >= 0, cursor_column
         elif self.coderunner.running:  # TODO does this ever happen?
-            cursor_row, cursor_column = divmod(len(self.current_cursor_line_without_suggestion) + self.cursor_offset, width)
-            assert cursor_column >= 0, (cursor_column, len(self.current_cursor_line), len(self.current_line), self.cursor_offset)
+            cursor_row, cursor_column = divmod(
+                    (len(self.current_cursor_line_without_suggestion) +
+                     self.cursor_offset),
+                    width)
+            assert (cursor_column >= 0,
+                    (cursor_column, len(self.current_cursor_line),
+                     len(self.current_line), self.cursor_offset))
         else:
-            cursor_row, cursor_column = divmod(len(self.current_cursor_line_without_suggestion) - len(self.current_line) + self.cursor_offset, width)
-            assert cursor_column >= 0, (cursor_column, len(self.current_cursor_line), len(self.current_line), self.cursor_offset)
+            cursor_row, cursor_column = divmod(
+                    (len(self.current_cursor_line_without_suggestion) -
+                     len(self.current_line) + self.cursor_offset),
+                    width)
+            assert (cursor_column >= 0,
+                    (cursor_column, len(self.current_cursor_line),
+                     len(self.current_line), self.cursor_offset))
         cursor_row += current_line_start_row
 
         if self.list_win_visible and not self.coderunner.running:
             logger.debug('infobox display code running')
             visible_space_above = history.height
             potential_space_below = min_height - current_line_end_row - 1
-            visible_space_below = potential_space_below - self.get_top_usable_line()
+            visible_space_below = (potential_space_below -
+                                   self.get_top_usable_line())
 
             if self.config.curtsies_list_above:
                 info_max_rows = max(visible_space_above, visible_space_below)
             else:
-                minimum_possible_height = 30  # smallest an over-full completion box
-                info_max_rows = max(visible_space_below, minimum_possible_height)
-            infobox = paint.paint_infobox(info_max_rows,
-                                          int(width * self.config.cli_suggestion_width),
-                                          self.matches_iter.matches,
-                                          self.funcprops,
-                                          self.arg_pos,
-                                          self.current_match,
-                                          self.docstring,
-                                          self.config,
-                                          self.matches_iter.completer.format
-                                          if self.matches_iter.completer
-                                          else None)
+                # smallest allowed over-full completion box
+                minimum_possible_height = 30
+                info_max_rows = max(visible_space_below,
+                                    minimum_possible_height)
+            infobox = paint.paint_infobox(
+                    info_max_rows,
+                    int(width * self.config.cli_suggestion_width),
+                    self.matches_iter.matches,
+                    self.funcprops,
+                    self.arg_pos,
+                    self.current_match,
+                    self.docstring,
+                    self.config,
+                    self.matches_iter.completer.format
+                    if self.matches_iter.completer else None)
 
-            if visible_space_below >= infobox.height or not self.config.curtsies_list_above:
-                arr[current_line_end_row + 1:current_line_end_row + 1 + infobox.height, 0:infobox.width] = infobox
+            if (visible_space_below >= infobox.height or
+                    not self.config.curtsies_list_above):
+                arr[current_line_end_row + 1:(current_line_end_row + 1 +
+                                              infobox.height),
+                    0:infobox.width] = infobox
             else:
-                arr[current_line_start_row - infobox.height:current_line_start_row, 0:infobox.width] = infobox
-                logger.debug('slamming infobox of shape %r into arr of shape %r', infobox.shape, arr.shape)
+                arr[current_line_start_row - infobox.height:
+                    current_line_start_row, 0:infobox.width] = infobox
+                logger.debug('infobox of shape %r added to arr of shape %r',
+                             infobox.shape, arr.shape)
 
         logger.debug('about to exit: %r', about_to_exit)
         if show_status_bar:
-            statusbar_row = min_height if arr.height == min_height else arr.height
+            statusbar_row = (min_height
+                             if arr.height == min_height else arr.height)
             if about_to_exit:
                 arr[statusbar_row, :] = FSArray(1, width)
             else:
-                arr[statusbar_row, :] = paint.paint_statusbar(1, width, self.status_bar.current_line, self.config)
+                arr[statusbar_row, :] = paint.paint_statusbar(
+                    1, width, self.status_bar.current_line, self.config)
 
         if self.presentation_mode:
             rows = arr.height
             columns = arr.width
-            last_key_box = paint.paint_last_events(rows, columns, [events.pp_event(x) for x in self.last_events if x], self.config)
-            arr[arr.height-last_key_box.height:arr.height, arr.width-last_key_box.width:arr.width] = last_key_box
+            last_key_box = paint.paint_last_events(
+                    rows, columns,
+                    [events.pp_event(x) for x in self.last_events if x],
+                    self.config)
+            arr[arr.height-last_key_box.height:arr.height,
+                arr.width-last_key_box.width:arr.width] = last_key_box
 
         if self.config.color_scheme['background'] not in ('d', 'D'):
             for r in range(arr.height):
-                arr[r] = fmtstr(arr[r], bg=color_for_letter(self.config.color_scheme['background']))
+                bg = color_for_letter(self.config.color_scheme['background'])
+                arr[r] = fmtstr(arr[r], bg=bg)
         logger.debug('returning arr of size %r', arr.shape)
         logger.debug('cursor pos: %r', (cursor_row, cursor_column))
         return arr, (cursor_row, cursor_column)
@@ -1444,7 +1504,7 @@ class BaseRepl(BpythonRepl):
         if reset_rl_history:
             self.rl_history.reset()
         if clear_special_mode:
-            self.incremental_search_mode = None
+            self.incr_search_mode = None
         self._cursor_offset = offset
         if update_completion:
             self.update_completion()
@@ -1472,7 +1532,8 @@ class BaseRepl(BpythonRepl):
     def reprint_line(self, lineno, tokens):
         logger.debug("calling reprint line with %r %r", lineno, tokens)
         if self.config.syntax:
-            self.display_buffer[lineno] = bpythonparse(format(tokens, self.formatter))
+            self.display_buffer[lineno] = bpythonparse(
+                    format(tokens, self.formatter))
 
     def take_back_buffer_line(self):
         assert len(self.buffer) > 0
@@ -1529,15 +1590,22 @@ class BaseRepl(BpythonRepl):
         sys.stdin = self.stdin
         self.reevaluating = False
 
-        num_lines_onscreen = len(self.lines_for_display) - max(0, self.scroll_offset)
-        display_lines_offscreen = self.display_lines[:len(self.display_lines) - num_lines_onscreen]
-        old_display_lines_offscreen = old_display_lines[:len(self.display_lines) - num_lines_onscreen]
-        logger.debug('old_display_lines_offscreen %s', '|'.join(str(x) for x in old_display_lines_offscreen))
-        logger.debug('    display_lines_offscreen %s', '|'.join(str(x) for x in display_lines_offscreen))
-        if old_display_lines_offscreen[:len(display_lines_offscreen)] != display_lines_offscreen and not self.history_already_messed_up:
-            # self.scroll_offset = self.scroll_offset + (len(old_display_lines)-len(self.display_lines))
+        num_lines_onscreen = (len(self.lines_for_display) -
+                              max(0, self.scroll_offset))
+        display_lines_offscreen = self.display_lines[:len(self.display_lines) -
+                                                     num_lines_onscreen]
+        old_display_lines_offscreen = old_display_lines[:(
+            len(self.display_lines) - num_lines_onscreen)]
+        logger.debug('old_display_lines_offscreen %s', '|'.join(
+            str(x) for x in old_display_lines_offscreen))
+        logger.debug('    display_lines_offscreen %s', '|'.join(
+            str(x) for x in display_lines_offscreen))
+        if ((old_display_lines_offscreen[:len(display_lines_offscreen)] !=
+                display_lines_offscreen) and
+                not self.history_already_messed_up):
             self.inconsistent_history = True
-        logger.debug('after rewind, self.inconsistent_history is %r', self.inconsistent_history)
+        logger.debug('after rewind, self.inconsistent_history is %r',
+                     self.inconsistent_history)
 
         self._cursor_offset = 0
         self.current_line = ''
@@ -1603,9 +1671,11 @@ class BaseRepl(BpythonRepl):
         NOT_IMPLEMENTED = ('suspend', 'cut to buffer', 'search', 'last output',
                            'yank from buffer', 'cut to buffer')
         pairs = []
-        pairs.append(['complete history suggestion', 'right arrow at end of line'])
+        pairs.append(['complete history suggestion',
+                      'right arrow at end of line'])
         pairs.append(['previous match with current line', 'up arrow'])
-        for functionality, key in [(attr[:-4].replace('_', ' '), getattr(self.config, attr))
+        for functionality, key in [(attr[:-4].replace('_', ' '),
+                                    getattr(self.config, attr))
                                    for attr in self.config.__dict__
                                    if attr.endswith('key')]:
             if functionality in NOT_IMPLEMENTED:
@@ -1616,7 +1686,8 @@ class BaseRepl(BpythonRepl):
             pairs.append([functionality, key])
 
         max_func = max(len(func) for func, key in pairs)
-        return '\n'.join('%s : %s' % (func.rjust(max_func), key) for func, key in pairs)
+        return '\n'.join('%s : %s' % (func.rjust(max_func), key)
+                         for func, key in pairs)
 
 
 def is_nop(char):
