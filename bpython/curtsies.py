@@ -50,7 +50,7 @@ class FullCurtsiesRepl(BaseRepl):
         self._request_reload = self.input_generator.threadsafe_event_trigger(
             bpythonevents.ReloadEvent)
         self.interrupting_refresh = (self.input_generator
-            .threadsafe_event_trigger(lambda: None))
+                                     .threadsafe_event_trigger(lambda: None))
         self.request_undo = self.input_generator.event_trigger(
             bpythonevents.UndoEvent)
 
@@ -58,11 +58,11 @@ class FullCurtsiesRepl(BaseRepl):
             pass  # temp hack to get .original_stty
 
         BaseRepl.__init__(self,
-                      locals_=locals_,
-                      config=config,
-                      banner=banner,
-                      interp=interp,
-                      orig_tcattrs=self.input_generator.original_stty)
+                          locals_=locals_,
+                          config=config,
+                          banner=banner,
+                          interp=interp,
+                          orig_tcattrs=self.input_generator.original_stty)
 
     def get_term_hw(self):
         return self.window.get_term_hw()
@@ -131,6 +131,7 @@ class FullCurtsiesRepl(BaseRepl):
 
         for e in inputs:
             self.process_event(e)
+
 
 def main(args=None, locals_=None, banner=None, welcome_message=None):
     """
