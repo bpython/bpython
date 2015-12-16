@@ -44,6 +44,7 @@ if hasattr(ast, 'NameConstant'):
 else:
     _name_type_nodes = (ast.Name,)
 
+
 class EvaluationError(Exception):
     """Raised if an exception occurred in safe_eval."""
 
@@ -113,9 +114,9 @@ def simple_eval(node_or_string, namespace=None):
                     raise EvaluationError("can't lookup %s" % node.id)
 
         # unary + and - are allowed on any type
-        elif isinstance(node, ast.UnaryOp) and \
-             isinstance(node.op, (ast.UAdd, ast.USub)):
-             # ast.literal_eval does ast typechecks here, we use type checks
+        elif (isinstance(node, ast.UnaryOp) and
+              isinstance(node.op, (ast.UAdd, ast.USub))):
+            # ast.literal_eval does ast typechecks here, we use type checks
             operand = _convert(node.operand)
             if not type(operand) in _numeric_types:
                 raise ValueError("unary + and - only allowed on builtin nums")
@@ -123,12 +124,13 @@ def simple_eval(node_or_string, namespace=None):
                 return + operand
             else:
                 return - operand
-        elif isinstance(node, ast.BinOp) and \
-             isinstance(node.op, (ast.Add, ast.Sub)):
+        elif (isinstance(node, ast.BinOp) and
+              isinstance(node.op, (ast.Add, ast.Sub))):
             # ast.literal_eval does ast typechecks here, we use type checks
             left = _convert(node.left)
             right = _convert(node.right)
-            if not (type(left) in _numeric_types and type(right) in _numeric_types):
+            if not (type(left) in _numeric_types and
+                    type(right) in _numeric_types):
                 raise ValueError("binary + and - only allowed on builtin nums")
             if isinstance(node.op, ast.Add):
                 return left + right
@@ -136,8 +138,8 @@ def simple_eval(node_or_string, namespace=None):
                 return left - right
 
         # this is a deviation from literal_eval: we allow indexing
-        elif isinstance(node, ast.Subscript) and \
-             isinstance(node.slice, ast.Index):
+        elif (isinstance(node, ast.Subscript) and
+              isinstance(node.slice, ast.Index)):
             obj = _convert(node.value)
             index = _convert(node.slice.value)
             return safe_getitem(obj, index)
@@ -187,7 +189,7 @@ def evaluate_current_expression(cursor_offset, line, namespace=None):
     attr_before_cursor = temp_line[temp_attribute.start:temp_cursor]
 
     def parse_trees(cursor_offset, line):
-        for i in range(cursor_offset-1, -1, -1):
+        for i in range(cursor_offset - 1, -1, -1):
             try:
                 tree = ast.parse(line[i:cursor_offset])
                 yield tree
@@ -201,7 +203,8 @@ def evaluate_current_expression(cursor_offset, line, namespace=None):
             largest_ast = attribute_access.value
 
     if largest_ast is None:
-        raise EvaluationError("Corresponding ASTs to right of cursor are invalid")
+        raise EvaluationError(
+                "Corresponding ASTs to right of cursor are invalid")
     try:
         return simple_eval(largest_ast, namespace)
     except ValueError:
@@ -209,7 +212,7 @@ def evaluate_current_expression(cursor_offset, line, namespace=None):
 
 
 def evaluate_current_attribute(cursor_offset, line, namespace=None):
-    """Safely evaluates the expression attribute lookup currently occuring on"""
+    """Safely evaluates the expression having an attributed accesssed"""
     # this function runs user code in case of custom descriptors,
     # so could fail in any way
 
@@ -220,4 +223,5 @@ def evaluate_current_attribute(cursor_offset, line, namespace=None):
     try:
         return getattr(obj, attr.word)
     except AttributeError:
-        raise EvaluationError("can't lookup attribute %s on %r" % (attr.word, obj))
+        raise EvaluationError(
+                "can't lookup attribute %s on %r" % (attr.word, obj))
