@@ -82,11 +82,11 @@ class FullCurtsiesRepl(BaseRepl):
         self.window.__enter__()
         self.interrupting_refresh()
 
-    def process_event(self, e):
+    def process_event_and_paint(self, e):
         """If None is passed in, just paint the screen"""
         try:
             if e is not None:
-                BaseRepl.process_event(self, e)
+                self.process_event(e)
         except (SystemExitFromCodeGreenlet, SystemExit) as err:
             array, cursor_pos = self.paint(
                 about_to_exit=True,
@@ -122,15 +122,15 @@ class FullCurtsiesRepl(BaseRepl):
             self.process_event(paste)
 
         # do a display before waiting for first event
-        self.process_event(None)
+        self.process_event_and_paint(None)
         inputs = combined_events(self.input_generator)
         for unused in find_iterator:
             e = inputs.send(0)
             if e is not None:
-                self.process_event(e)
+                self.process_event_and_paint(e)
 
         for e in inputs:
-            self.process_event(e)
+            self.process_event_and_paint(e)
 
 
 def main(args=None, locals_=None, banner=None, welcome_message=None):
