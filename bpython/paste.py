@@ -103,9 +103,9 @@ class PasteHelper(object):
             raise PasteFailed(_('No output from helper program.'))
         else:
             parsed_url = urlparse(paste_url)
-            if (not parsed_url.scheme
-                    or any(unicodedata.category(c) == 'Cc'
-                           for c in paste_url)):
+            if (not parsed_url.scheme or
+                any(unicodedata.category(c) == 'Cc'
+                    for c in paste_url)):
                 raise PasteFailed(_('Failed to recognize the helper '
                                     'program\'s output as an URL.'))
 

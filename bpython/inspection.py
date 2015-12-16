@@ -41,7 +41,7 @@ if not py3:
 
     _name = LazyReCompile(r'[a-zA-Z_]\w*$')
 
-ArgSpec = namedtuple('ArgSpec', ['args', 'varargs', 'varkwargs',  'defaults',
+ArgSpec = namedtuple('ArgSpec', ['args', 'varargs', 'varkwargs', 'defaults',
                                  'kwonly', 'kwonly_defaults', 'annotations'])
 
 FuncProps = namedtuple('FuncProps', ['func', 'argspec', 'is_bound_method'])
@@ -229,11 +229,11 @@ def getfuncprops(func, f):
         func_name = None
 
     try:
-        is_bound_method = ((inspect.ismethod(f) and f.__self__ is not None)
-                           or (func_name == '__init__' and not
-                               func.endswith('.__init__'))
-                           or (func_name == '__new__' and not
-                               func.endswith('.__new__')))
+        is_bound_method = ((inspect.ismethod(f) and f.__self__ is not None) or
+                           (func_name == '__init__' and not
+                            func.endswith('.__init__')) or
+                           (func_name == '__new__' and not
+                            func.endswith('.__new__')))
     except:
         # if f is a method from a xmlrpclib.Server instance, func_name ==
         # '__init__' throws xmlrpclib.Fault (see #202)

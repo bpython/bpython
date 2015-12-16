@@ -539,14 +539,16 @@ class Repl(object):
             class_f = None
 
             if (hasattr(f, '__init__') and
-                f.__init__ is not object.__init__):
-                    class_f = f.__init__
+                    f.__init__ is not object.__init__):
+                class_f = f.__init__
             if ((not class_f or
-                not inspection.getfuncprops(func, class_f)) and
-                hasattr(f, '__new__') and
-                f.__new__ is not object.__new__ and
-                f.__new__.__class__ is not object.__new__.__class__):  # py3
-                    class_f = f.__new__
+                 not inspection.getfuncprops(func, class_f)) and
+                    hasattr(f, '__new__') and
+                    f.__new__ is not object.__new__ and
+                    # py3
+                    f.__new__.__class__ is not object.__new__.__class__):
+
+                class_f = f.__new__
 
             if class_f:
                 f = class_f
@@ -683,7 +685,8 @@ class Repl(object):
             indentation = next_indentation(self.buffer[-1],
                                            self.config.tab_length)
             if indentation and self.config.dedent_after > 0:
-                line_is_empty = lambda line: not line.strip()
+                def line_is_empty(line):
+                    return not line.strip()
                 empty_lines = takewhile(line_is_empty, reversed(self.buffer))
                 if sum(1 for _ in empty_lines) >= self.config.dedent_after:
                     indentation -= 1

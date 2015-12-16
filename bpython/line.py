@@ -92,7 +92,7 @@ def current_object(cursor_offset, line):
             s += m.group(1)
     if not s:
         return None
-    return LinePart(start, start+len(s), s)
+    return LinePart(start, start + len(s), s)
 
 
 current_object_attribute_re = LazyReCompile(r'([\w_][\w0-9_]*)[.]?')
@@ -100,7 +100,7 @@ current_object_attribute_re = LazyReCompile(r'([\w_][\w0-9_]*)[.]?')
 
 def current_object_attribute(cursor_offset, line):
     """If in attribute completion, the attribute being completed"""
-    #TODO replace with more general current_expression_attribute
+    # TODO replace with more general current_expression_attribute
     match = current_word(cursor_offset, line)
     if match is None:
         return None
@@ -216,12 +216,13 @@ def current_dotted_attribute(cursor_offset, line):
         return LinePart(start, end, word)
 
 
-current_expression_attribute_re = LazyReCompile(r'[.]\s*((?:[\w_][\w0-9_]*)|(?:))')
+current_expression_attribute_re = LazyReCompile(
+        r'[.]\s*((?:[\w_][\w0-9_]*)|(?:))')
 
 
 def current_expression_attribute(cursor_offset, line):
     """If after a dot, the attribute being completed"""
-    #TODO replace with more general current_expression_attribute
+    # TODO replace with more general current_expression_attribute
     matches = current_expression_attribute_re.finditer(line)
     for m in matches:
         if (m.start(1) <= cursor_offset and m.end(1) >= cursor_offset):
