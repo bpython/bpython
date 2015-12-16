@@ -74,6 +74,7 @@ else:
 def after_last_dot(name):
     return name.rstrip('.').rsplit('.')[-1]
 
+
 def few_enough_underscores(current, match):
     """Returns whether match should be shown based on current
 
@@ -139,8 +140,9 @@ class BaseCompletionType(object):
     def locate(self, cursor_offset, line):
         """Returns a Linepart namedtuple instance or None given cursor and line
 
-        A Linepart namedtuple contains a start, stop, and word. None is returned
-        if no target for this type of completion is found under the cursor."""
+        A Linepart namedtuple contains a start, stop, and word. None is
+        returned if no target for this type of completion is found under
+        the cursor."""
         raise NotImplementedError
 
     def format(self, word):
@@ -240,7 +242,7 @@ class FilenameCompletion(BaseCompletionType):
     def format(self, filename):
         filename.rstrip(os.sep).rsplit(os.sep)[-1]
         if os.sep in filename[:-1]:
-            return filename[filename.rindex(os.sep, 0, -1)+1:]
+            return filename[filename.rindex(os.sep, 0, -1) + 1:]
         else:
             return filename
 
@@ -474,12 +476,10 @@ class ExpressionAttributeCompletion(AttrCompletion):
         except EvaluationError:
             return set()
         with inspection.AttrCleaner(obj):
-                       # strips leading dot
+            #          strips leading dot
             matches = [m[1:] for m in self.attr_lookup(obj, '', attr.word)]
 
-
         return set(m for m in matches if few_enough_underscores(attr.word, m))
-        return matches
 
 
 try:
@@ -517,7 +517,7 @@ else:
                 self._orig_start = None
                 return None
 
-            first_letter = line[self._orig_start:self._orig_start+1]
+            first_letter = line[self._orig_start:self._orig_start + 1]
 
             matches = [c.name for c in completions]
             if any(not m.lower().startswith(matches[0][0].lower())
