@@ -250,7 +250,8 @@ class TestAttrCompletion(unittest.TestCase):
                                              locals_={'a': OldStyleFoo()}),
                             set(['a.method', 'a.a', 'a.b']))
         self.assertIn(u'a.__dict__',
-                      self.com.matches(4, 'a.__', locals_={'a': OldStyleFoo()}))
+                      self.com.matches(4, 'a.__',
+                                       locals_={'a': OldStyleFoo()}))
 
     @skip_old_style
     def test_att_matches_found_on_old_style_class_object(self):
@@ -274,7 +275,8 @@ class TestExpressionAttributeCompletion(unittest.TestCase):
         cls.com = autocomplete.ExpressionAttributeCompletion()
 
     def test_att_matches_found_on_instance(self):
-        self.assertSetEqual(self.com.matches(5, 'a[0].', locals_={'a': [Foo()]}),
+        self.assertSetEqual(self.com.matches(5, 'a[0].',
+                                             locals_={'a': [Foo()]}),
                             set(['method', 'a', 'b']))
 
     @skip_old_style
@@ -297,7 +299,8 @@ class TestExpressionAttributeCompletion(unittest.TestCase):
 
     @unittest.skip('TODO, subclasses do not complete yet')
     def test_list_subclasses_complete(self):
-        class ListSubclass(list): pass
+        class ListSubclass(list):
+            pass
         self.assertSetEqual(self.com.matches(5, 'a[0].',
                             locals_={'a': ListSubclass([Foo()])}),
                             set(['method', 'a', 'b']))
@@ -394,7 +397,7 @@ class TestGlobalCompletion(unittest.TestCase):
     @unittest.skipIf(py3, "in Python 3 invalid identifiers are passed through")
     def test_ignores_nonascii_encodable(self):
         self.assertEqual(self.com.matches(3, 'abc', locals_={'abcß': 10}),
-                            None)
+                         None)
 
     def test_mock_kwlist(self):
         with mock.patch.object(keyword, 'kwlist', new=['abcd']):

@@ -426,7 +426,8 @@ class TestRepl(unittest.TestCase):
 
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
-        self.assertEqual(self.repl.matches_iter.matches, ['abc=', 'abd=', 'abs('])
+        self.assertEqual(self.repl.matches_iter.matches,
+                         ['abc=', 'abd=', 'abs('])
 
 
 class TestCliRepl(unittest.TestCase):

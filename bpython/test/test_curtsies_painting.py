@@ -185,6 +185,7 @@ class TestCurtsiesRewindRedraw(CurtsiesPaintingTest):
 
     def setUp(self):
         self.refresh_requests = []
+
         class TestRepl(BaseRepl):
             def _request_refresh(inner_self):
                 self.refresh()
@@ -553,14 +554,14 @@ class TestCurtsiesRewindRedraw(CurtsiesPaintingTest):
             self.assertEqual(self.repl.rl_history.entries, [''])
             self.repl.process_event(')')
             self.assertEqual(self.repl.rl_history.entries, [''])
-        screen = fsarray([cyan(">>> ")+on_magenta(bold(red('('))),
-                         green("... ")+on_magenta(bold(red(')')))])
+        screen = fsarray([cyan(">>> ") + on_magenta(bold(red('('))),
+                         green("... ") + on_magenta(bold(red(')')))])
         self.assert_paint(screen, (1, 5))
 
         with output_to_repl(self.repl):
             self.repl.process_event(' ')
-        screen = fsarray([cyan(">>> ")+yellow('('),
-                         green("... ")+yellow(')')+bold(cyan(" "))])
+        screen = fsarray([cyan(">>> ") + yellow('('),
+                         green("... ") + yellow(')') + bold(cyan(" "))])
         self.assert_paint(screen, (1, 6))
 
     def send_key(self, key):

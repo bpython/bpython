@@ -32,13 +32,17 @@ class TestInterpreter(unittest.TestCase):
         i.runsource('1.1.1.1')
 
         if pypy:
-            expected = '  File ' + green('"%s"' % _last_console_filename()) + ', line ' + \
-                bold(magenta('1')) + '\n    1.1.1.1\n      ^\n' + \
-                bold(red('SyntaxError')) + ': ' + cyan('invalid syntax') + '\n'
+            expected = (
+                '  File ' + green('"%s"' % _last_console_filename()) +
+                ', line ' + bold(magenta('1')) + '\n    1.1.1.1\n      ^\n' +
+                bold(red('SyntaxError')) + ': ' + cyan('invalid syntax') +
+                '\n')
         else:
-            expected = '  File ' + green('"%s"' % _last_console_filename()) + ', line ' + \
-                bold(magenta('1')) + '\n    1.1.1.1\n        ^\n' + \
-                bold(red('SyntaxError')) + ': ' + cyan('invalid syntax') + '\n'
+            expected = (
+                '  File ' + green('"%s"' % _last_console_filename()) +
+                ', line ' + bold(magenta('1')) + '\n    1.1.1.1\n        ^\n' +
+                bold(red('SyntaxError')) + ': ' + cyan('invalid syntax') +
+                '\n')
 
         self.assertMultiLineEqual(str(plain('').join(a)), str(expected))
         self.assertEquals(plain('').join(a), expected)
@@ -65,10 +69,11 @@ class TestInterpreter(unittest.TestCase):
         else:
             global_not_found = "name 'g' is not defined"
 
-        expected = 'Traceback (most recent call last):\n  File ' + \
-            green('"%s"' % _last_console_filename()) + ', line ' + bold(magenta('1')) + ', in ' + \
-            cyan('<module>') + '\n    g()\n' + bold(red('NameError')) + ': ' + \
-            cyan(global_not_found) + '\n'
+        expected = (
+            'Traceback (most recent call last):\n  File ' +
+            green('"%s"' % _last_console_filename()) + ', line ' +
+            bold(magenta('1')) + ', in ' + cyan('<module>') + '\n    g()\n' +
+            bold(red('NameError')) + ': ' + cyan(global_not_found) + '\n')
 
         self.assertMultiLineEqual(str(plain('').join(a)), str(expected))
         self.assertEquals(plain('').join(a), expected)

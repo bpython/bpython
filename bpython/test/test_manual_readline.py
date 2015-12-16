@@ -203,19 +203,19 @@ class TestManualReadline(unittest.TestCase):
 
     def test_transpose_empty_line(self):
         self.assertEquals(transpose_character_before_cursor(0, ''),
-                (0,''))
+                          (0, ''))
 
     def test_transpose_first_character(self):
         self.assertEquals(transpose_character_before_cursor(0, 'a'),
-                (0, 'a'))
+                          (0, 'a'))
         self.assertEquals(transpose_character_before_cursor(0, 'as'),
-                (0, 'as'))
-    
+                          (0, 'as'))
+
     def test_transpose_end_of_line(self):
         self.assertEquals(transpose_character_before_cursor(1, 'a'),
-                (1, 'a'))
+                          (1, 'a'))
         self.assertEquals(transpose_character_before_cursor(2, 'as'),
-                (2, 'sa'))
+                          (2, 'sa'))
 
     def test_transpose_word_before_cursor(self):
         pass
@@ -245,7 +245,8 @@ class TestEdits(unittest.TestCase):
         self.edits = UnconfiguredEdits()
 
     def test_seq(self):
-        f = lambda cursor_offset, line: ('hi', 2)
+        def f(cursor_offset, line):
+            return ('hi', 2)
         self.edits.add('a', f)
         self.assertIn('a', self.edits)
         self.assertEqual(self.edits['a'], f)
@@ -257,24 +258,33 @@ class TestEdits(unittest.TestCase):
             self.edits.call('b')
 
     def test_functions_with_bad_signatures(self):
-        f = lambda something: (1, 2)
+        def f(something):
+            return (1, 2)
         with self.assertRaises(TypeError):
             self.edits.add('a', f)
-        g = lambda cursor_offset, line, something, something_else: (1, 2)
+
+        def g(cursor_offset, line, something, something_else):
+            return (1, 2)
         with self.assertRaises(TypeError):
             self.edits.add('a', g)
 
     def test_functions_with_bad_return_values(self):
-        f = lambda cursor_offset, line: ('hi',)
+        def f(cursor_offset, line):
+            return ('hi',)
         with self.assertRaises(ValueError):
             self.edits.add('a', f)
-        g = lambda cursor_offset, line: ('hi', 1, 2, 3)
+
+        def g(cursor_offset, line):
+            return ('hi', 1, 2, 3)
         with self.assertRaises(ValueError):
             self.edits.add('b', g)
 
     def test_config(self):
-        f = lambda cursor_offset, line: ('hi', 2)
-        g = lambda cursor_offset, line: ('hey', 3)
+        def f(cursor_offset, line):
+            return ('hi', 2)
+
+        def g(cursor_offset, line):
+            return ('hey', 3)
         self.edits.add_config_attr('att', f)
         self.assertNotIn('att', self.edits)
 

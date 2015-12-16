@@ -21,17 +21,17 @@ class TestSimpleEval(unittest.TestCase):
     def test_indexing(self):
         """Literals can be indexed into"""
         self.assertEqual(simple_eval('[1,2][0]'), 1)
-        self.assertEqual(simple_eval('a', {'a':1}), 1)
+        self.assertEqual(simple_eval('a', {'a': 1}), 1)
 
     def test_name_lookup(self):
         """Names can be lookup up in a namespace"""
-        self.assertEqual(simple_eval('a', {'a':1}), 1)
+        self.assertEqual(simple_eval('a', {'a': 1}), 1)
         self.assertEqual(simple_eval('map'), map)
-        self.assertEqual(simple_eval('a[b]', {'a':{'c':1}, 'b':'c'}), 1)
+        self.assertEqual(simple_eval('a[b]', {'a': {'c': 1}, 'b': 'c'}), 1)
 
     def test_allow_name_lookup(self):
         """Names can be lookup up in a namespace"""
-        self.assertEqual(simple_eval('a', {'a':1}), 1)
+        self.assertEqual(simple_eval('a', {'a': 1}), 1)
 
     def test_lookup_on_suspicious_types(self):
         class FakeDict(object):
@@ -72,7 +72,7 @@ class TestSimpleEval(unittest.TestCase):
     def test_operators_on_numbers(self):
         self.assertEqual(simple_eval('-2'), -2)
         self.assertEqual(simple_eval('1 + 1'), 2)
-        self.assertEqual(simple_eval('a - 2', {'a':1}), -1)
+        self.assertEqual(simple_eval('a - 2', {'a': 1}), -1)
         with self.assertRaises(ValueError):
             simple_eval('2 * 3')
         with self.assertRaises(ValueError):
@@ -85,6 +85,7 @@ class TestSimpleEval(unittest.TestCase):
     def test_nonexistant_names_raise(self):
         with self.assertRaises(EvaluationError):
             simple_eval('a')
+
 
 class TestEvaluateCurrentExpression(unittest.TestCase):
 
@@ -119,7 +120,7 @@ class TestEvaluateCurrentExpression(unittest.TestCase):
         self.assertEvaled('"asdf"[1].a|bc', 's')
 
     def test_with_namespace(self):
-        self.assertEvaled('a[1].a|bc', 'd', {'a':'adsf'})
+        self.assertEvaled('a[1].a|bc', 'd', {'a': 'adsf'})
         self.assertCannotEval('a[1].a|bc', {})
 
 if __name__ == '__main__':
