@@ -14,6 +14,7 @@ import curtsies.events
 
 from bpython.curtsiesfrontend.repl import BaseRepl
 from bpython.curtsiesfrontend.coderunner import SystemExitFromCodeGreenlet
+from bpython.curtsiesfrontend.interpreter import Interp
 from bpython import args as bpargs
 from bpython import translations
 from bpython.translations import _
@@ -174,7 +175,7 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
             paste.events.extend(sourcecode)
         else:
             try:
-                interp = code.InteractiveInterpreter(locals=locals_)
+                interp = Interp(locals=locals_)
                 bpargs.exec_code(interp, exec_args)
             except SystemExit as e:
                 exit_value = e.args
