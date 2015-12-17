@@ -19,13 +19,14 @@ New features:
 Fixes:
 
 * #484: Switch `bpython.embed` to the curtsies frontend.
-* #548 fix transpose character bug. Thanks to Wes E. Vial.
+* #548 Fix transpose character bug. Thanks to Wes E. Vial.
 * #527 -q disables version banner.
-* #544 fix Jedi completion error
-* #536 fix completion on old-style classes with custom __getattr__
-* #480 fix old-style class autocompletion. Thanks to Joe Jevnik.
+* #544 Fix Jedi completion error
+* #536 Fix completion on old-style classes with custom __getattr__
+* #480 Fix old-style class autocompletion. Thanks to Joe Jevnik.
 * #506 in python -i mod.py sys.modules[__name__] refers to module dict
-* Exceptions in autcompletion are now logged instead of crashing bpython.
+* #590 Fix "None" not being displayed
+* Exception line ntcompletion are now logged instead of crashing bpython.
 * Fix reload in Python 3. Thanks to sharow.
 * Fix keyword agument parameter name completion
 
