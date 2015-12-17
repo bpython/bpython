@@ -104,7 +104,7 @@ class Interpreter(code.InteractiveInterpreter):
         code.InteractiveInterpreter.runsource. If encode is True, the source
         will be encoded. On Python 3.X, encode will be ignored."""
         if not py3 and encode:
-            source = u'# coding: %s\n%s' % (self.encoding, source)
+            source = u'# coding: %s\n\n%s' % (self.encoding, source)
             source = source.encode(self.encoding)
         if filename is None:
             filename = filename_for_console_input(source)
@@ -132,7 +132,7 @@ class Interpreter(code.InteractiveInterpreter):
             else:
                 # Stuff in the right filename and right lineno
                 if not py3:
-                    lineno -= 1
+                    lineno -= 2
                 value = SyntaxError(msg, (filename, lineno, offset, line))
                 sys.last_value = value
         list = traceback.format_exception_only(type, value)
@@ -153,7 +153,7 @@ class Interpreter(code.InteractiveInterpreter):
             if not py3:
                 for i, (fname, lineno, module, something) in enumerate(tblist):
                     if fname == '<input>':
-                        tblist[i] = (fname, lineno - 1, module, something)
+                        tblist[i] = (fname, lineno - 2, module, something)
 
             l = traceback.format_list(tblist)
             if l:
