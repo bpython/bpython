@@ -39,7 +39,7 @@ if orig_reload:
             sys.stderr = orig_stderr
             sys.stdin = orig_stdin
         else:
-            builtins.reload(sys)
+            orig_reload(sys)
 
     functools.update_wrapper(reload, orig_reload)
 
