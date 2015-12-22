@@ -1561,9 +1561,16 @@ class BaseRepl(BpythonRepl):
         self.buffer.pop()
         self.history.pop()
 
+    def take_back_empty_line(self):
+        assert self.history and not self.history[-1]
+        self.history.pop()
+        self.display_lines.pop()
+
     def prompt_undo(self):
         if self.buffer:
             return self.take_back_buffer_line()
+        if self.history and not self.history[-1]:
+            return self.take_back_empty_line()
 
         def prompt_for_undo():
             n = BpythonRepl.prompt_undo(self)
