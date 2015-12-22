@@ -201,6 +201,13 @@ class FakeStdin(object):
         # others, so here's a hack to keep them happy
         raise IOError(errno.EBADF, "sys.stdin is read-only")
 
+    def close(self):
+        # hack to make closing stdin a nop
+        # This is useful for multiprocessing.Process, which does work
+        # for the most part, although output from other processes is
+        # discarded.
+        pass
+
     @property
     def encoding(self):
         return 'UTF8'
