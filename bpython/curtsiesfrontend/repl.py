@@ -1573,6 +1573,7 @@ class BaseRepl(BpythonRepl):
             self.interp = self.interp.__class__()
             self.interp.write = self.send_to_stderr
             self.coderunner.interp = self.interp
+            self.initialize_interp()
 
         self.buffer = []
         self.display_buffer = []
@@ -1609,6 +1610,16 @@ class BaseRepl(BpythonRepl):
 
         self._cursor_offset = 0
         self.current_line = ''
+
+    def initialize_interp(self):
+        self.coderunner.interp.locals['_repl'] = self
+        self.coderunner.interp.runsource(
+            'from bpython.curtsiesfrontend._internal '
+            'import _Helper')
+        self.coderunner.interp.runsource('help = _Helper(_repl)\n')
+
+        del self.coderunner.interp.locals['_repl']
+        del self.coderunner.interp.locals['_Helper']
 
     def getstdout(self):
         lines = self.lines_for_display + [self.current_line_formatted]

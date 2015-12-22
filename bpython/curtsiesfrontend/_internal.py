@@ -25,6 +25,18 @@ import pydoc
 import bpython._internal
 
 
+class NopPydocPager(object):
+    def __enter__(self):
+        self._orig_pager = pydoc.pager
+        pydoc.pager = self
+
+    def __exit__(self, *args):
+        pydoc.pager = self._orig_pager
+
+    def __call__(self, text):
+        return None
+
+
 class _Helper(bpython._internal._Helper):
 
     def __init__(self, repl=None):
@@ -35,5 +47,12 @@ class _Helper(bpython._internal._Helper):
 
     def pager(self, output):
         self._repl.pager(output)
+
+    def __call__(self, *args, **kwargs):
+        if self._repl.reevaluating:
+            with NopPydocPager():
+                return super(_Helper, self).__call__(*args, **kwargs)
+        else:
+            return super(_Helper, self).__call__(*args, **kwargs)
 
 # vim: sw=4 ts=4 sts=4 ai et

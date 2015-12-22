@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-import code
 import collections
 import io
 import logging
@@ -104,15 +103,7 @@ class FullCurtsiesRepl(BaseRepl):
         if interactive:
             # Add custom help command
             # TODO: add methods to run the code
-            self.coderunner.interp.locals['_repl'] = self
-
-            self.coderunner.interp.runsource(
-                'from bpython.curtsiesfrontend._internal '
-                'import _Helper')
-            self.coderunner.interp.runsource('help = _Helper(_repl)\n')
-
-            del self.coderunner.interp.locals['_repl']
-            del self.coderunner.interp.locals['_Helper']
+            self.initialize_interp()
 
             # run startup file
             self.process_event(bpythonevents.RunStartupFileEvent())
