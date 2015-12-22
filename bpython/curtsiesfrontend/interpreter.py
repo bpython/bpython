@@ -1,6 +1,6 @@
 import sys
 from codeop import CommandCompiler
-from six import iteritems
+from six import iteritems, text_type
 
 from pygments.token import Generic, Token, Keyword, Name, Comment, String
 from pygments.token import Error, Literal, Number, Operator, Punctuation
@@ -83,7 +83,14 @@ class Interp(ReplInterpreter):
         self.compile = CommandCompiler()
 
         # typically changed after being instantiated
-        self.write = lambda stuff: sys.stderr.write(stuff)
+        # but used when interpreter used corresponding REPL
+        def write(err_line):
+            """Default stderr handler for tracebacks
+
+            Accepts FmtStrs so interpreters can output them"""
+            sys.stderr.write(text_type(err_line))
+
+        self.write = write
         self.outfile = self
 
     def writetb(self, lines):

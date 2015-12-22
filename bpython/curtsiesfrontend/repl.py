@@ -1119,6 +1119,7 @@ class BaseRepl(BpythonRepl):
         return '\n'.join(self.buffer + [self.current_line])
 
     def send_to_stdout(self, output):
+        """Send unicode string to Repl stdout"""
         lines = output.split('\n')
         logger.debug('display_lines: %r', self.display_lines)
         self.current_stdouterr_line += lines[0]
@@ -1133,6 +1134,10 @@ class BaseRepl(BpythonRepl):
         logger.debug('display_lines: %r', self.display_lines)
 
     def send_to_stderr(self, error):
+        """Send unicode strings or FmtStr to Repl stderr
+
+        Must be able to handle FmtStrs because interepter pass in
+        tracebacks already formatted."""
         lines = error.split('\n')
         if lines[-1]:
             self.current_stdouterr_line += lines[-1]
