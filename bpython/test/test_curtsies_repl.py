@@ -341,7 +341,6 @@ class TestCurtsiesReevaluateWithImport(TestCase):
             with self.open(fullpath) as f:
                 f.write('a = 0\n')
             self.head(path)
-            print(sys.path)
             self.push('import %s' % (modname))
             self.push('a = %s.a' % (modname))
             self.assertIn('a', self.repl.interp.locals)
