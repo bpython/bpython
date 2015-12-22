@@ -29,6 +29,7 @@ import io
 import os
 import pkgutil
 import pydoc
+import re
 import shlex
 import subprocess
 import sys
@@ -133,6 +134,9 @@ class Interpreter(code.InteractiveInterpreter):
                 # Stuff in the right filename and right lineno
                 if not py3:
                     lineno -= 2
+                # strip linecache line number
+                if re.match(r'<bpython-input-\d+>', filename):
+                    filename = '<input>'
                 value = SyntaxError(msg, (filename, lineno, offset, line))
                 sys.last_value = value
         list = traceback.format_exception_only(type, value)
@@ -149,9 +153,14 @@ class Interpreter(code.InteractiveInterpreter):
             sys.last_traceback = tb
             tblist = traceback.extract_tb(tb)
             del tblist[:1]
-            # Set the right lineno (encoding header adds an extra line)
-            if not py3:
-                for i, (fname, lineno, module, something) in enumerate(tblist):
+
+            for i, (fname, lineno, module, something) in enumerate(tblist):
+                # strip linecache line number
+                if re.match(r'<bpython-input-\d+>', fname):
+                    fname = '<input>'
+                    tblist[i] = (fname, lineno, module, something)
+                # Set the right lineno (encoding header adds an extra line)
+                if not py3:
                     if fname == '<input>':
                         tblist[i] = (fname, lineno - 2, module, something)
 

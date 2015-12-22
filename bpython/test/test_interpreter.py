@@ -2,7 +2,6 @@
 
 from __future__ import unicode_literals
 
-import linecache
 import sys
 
 from curtsies.fmtfuncs import bold, green, magenta, cyan, red, plain
@@ -12,12 +11,6 @@ from bpython._py3compat import py3
 from bpython.test import mock, unittest
 
 pypy = 'PyPy' in sys.version
-
-
-def _last_console_filename():
-    """Returns the last 'filename' used for console input
-    (as will be displayed in a traceback)."""
-    return '<bpython-input-%s>' % (len(linecache.cache.bpython_history) - 1)
 
 
 class TestInterpreter(unittest.TestCase):
@@ -33,13 +26,13 @@ class TestInterpreter(unittest.TestCase):
 
         if pypy:
             expected = (
-                '  File ' + green('"%s"' % _last_console_filename()) +
+                '  File ' + green('"<input>"') +
                 ', line ' + bold(magenta('1')) + '\n    1.1.1.1\n      ^\n' +
                 bold(red('SyntaxError')) + ': ' + cyan('invalid syntax') +
                 '\n')
         else:
             expected = (
-                '  File ' + green('"%s"' % _last_console_filename()) +
+                '  File ' + green('"<input>"') +
                 ', line ' + bold(magenta('1')) + '\n    1.1.1.1\n        ^\n' +
                 bold(red('SyntaxError')) + ': ' + cyan('invalid syntax') +
                 '\n')
@@ -62,7 +55,7 @@ class TestInterpreter(unittest.TestCase):
         def g():
             return f()
 
-        i.runsource('g()', encode=False)
+        i.runsource('g()')
 
         if pypy:
             global_not_found = "global name 'g' is not defined"
@@ -71,7 +64,7 @@ class TestInterpreter(unittest.TestCase):
 
         expected = (
             'Traceback (most recent call last):\n  File ' +
-            green('"%s"' % _last_console_filename()) + ', line ' +
+            green('"<input>"') + ', line ' +
             bold(magenta('1')) + ', in ' + cyan('<module>') + '\n    g()\n' +
             bold(red('NameError')) + ': ' + cyan(global_not_found) + '\n')
 
