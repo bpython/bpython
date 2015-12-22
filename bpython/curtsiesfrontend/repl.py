@@ -1453,8 +1453,8 @@ class BaseRepl(BpythonRepl):
                     rows, columns,
                     [events.pp_event(x) for x in self.last_events if x],
                     self.config)
-            arr[arr.height-last_key_box.height:arr.height,
-                arr.width-last_key_box.width:arr.width] = last_key_box
+            arr[arr.height - last_key_box.height:arr.height,
+                arr.width - last_key_box.width:arr.width] = last_key_box
 
         if self.config.color_scheme['background'] not in ('d', 'D'):
             for r in range(arr.height):
@@ -1475,7 +1475,7 @@ class BaseRepl(BpythonRepl):
 
     def __repr__(self):
         s = ''
-        s += '<'+repr(type(self))+'\n'
+        s += '<' + repr(type(self)) + '\n'
         s += " cursor_offset:" + repr(self.cursor_offset) + '\n'
         s += " num display lines:" + repr(len(self.display_lines)) + '\n'
         s += " lines scrolled down:" + repr(self.scroll_offset) + '\n'
