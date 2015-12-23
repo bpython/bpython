@@ -1,5 +1,6 @@
-import sys
 import functools
+import imp
+import sys
 
 from six.moves import builtins
 
@@ -25,6 +26,8 @@ if py3:
     import importlib
     if hasattr(importlib, 'reload'):
         orig_reload = importlib.reload
+    elif hasattr(imp, 'reload'):
+        orig_reload = imp.reload
 else:
     orig_reload = builtins.reload
 
@@ -34,12 +37,13 @@ if orig_reload:
             orig_stdout = sys.stdout
             orig_stderr = sys.stderr
             orig_stdin = sys.stdin
-            orig_reload(sys)
+            r = orig_reload(sys)
             sys.stdout = orig_stdout
             sys.stderr = orig_stderr
             sys.stdin = orig_stdin
+            return r
         else:
-            orig_reload(sys)
+            return orig_reload(module)
 
     functools.update_wrapper(reload, orig_reload)
 
@@ -47,5 +51,7 @@ if orig_reload:
 def monkeypatch_reload():
     if py3 and hasattr(importlib, 'reload'):
         importlib.reload = reload
+    elif py3 and hasattr(imp, 'reload'):
+        imp.reload = reload
     else:
         builtins.reload = reload
