@@ -2,6 +2,7 @@ import sys
 import optparse
 
 from bpython.test import FixLanguageTestCase as TestCase
+from bpython._py3compat import py3
 
 from bpython.curtsiesfrontend import sitefix
 
@@ -39,4 +40,6 @@ class TestCurtsiesReevaluateWithImport(TestCase):
                     sitefix.reload(sys)
                     self.assertEqual(sys.a, 2)  # new attrs stick around
                     self.assertEqual(sys.stdin, 1)  # stdin stays
-                    self.assertNotEqual(sys.version, 3)  # others replaced
+                    if not py3:
+                        # In Python 3 sys attributes are not replaced on reload
+                        self.assertNotEqual(sys.version, 3)  # in Python 2
