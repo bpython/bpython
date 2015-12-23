@@ -24,9 +24,11 @@ Fixes:
 * #544 Fix Jedi completion error
 * #536 Fix completion on old-style classes with custom __getattr__
 * #480 Fix old-style class autocompletion. Thanks to Joe Jevnik.
-* #506 in python -i mod.py sys.modules[__name__] refers to module dict
+* #506 In python -i mod.py sys.modules[__name__] refers to module dict
 * #590 Fix "None" not being displayed
-* Exception line ntcompletion are now logged instead of crashing bpython.
+* #546 Paste detection uses events instead of bytes returned in a single
+  os.read call
+* Exceptions in autcompletion are now logged instead of crashing bpython.
 * Fix reload in Python 3. Thanks to sharow.
 * Fix keyword agument parameter name completion
 
