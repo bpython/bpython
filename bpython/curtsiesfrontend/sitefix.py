@@ -21,6 +21,7 @@ def monkeypatch_quit():
     if 'site' in sys.modules:
         resetquit(builtins)
 
+
 orig_reload = None
 if py3:
     import importlib
@@ -31,27 +32,23 @@ if py3:
 else:
     orig_reload = builtins.reload
 
-if orig_reload:
-    def reload(module):
-        if module is sys:
-            orig_stdout = sys.stdout
-            orig_stderr = sys.stderr
-            orig_stdin = sys.stdin
-            r = orig_reload(sys)
-            sys.stdout = orig_stdout
-            sys.stderr = orig_stderr
-            sys.stdin = orig_stdin
-            return r
-        else:
-            return orig_reload(module)
 
-    functools.update_wrapper(reload, orig_reload)
+def reload(module):
+    if module is sys:
+        orig_stdout = sys.stdout
+        orig_stderr = sys.stderr
+        orig_stdin = sys.stdin
+        r = orig_reload(sys)
+        sys.stdout = orig_stdout
+        sys.stderr = orig_stderr
+        sys.stdin = orig_stdin
+        return r
+    else:
+        return orig_reload(module)
+
+functools.update_wrapper(reload, orig_reload)
 
 
 def monkeypatch_reload():
-    if py3 and hasattr(importlib, 'reload'):
-        importlib.reload = reload
-    elif py3 and hasattr(imp, 'reload'):
-        imp.reload = reload
-    else:
+    if not py3:
         builtins.reload = reload
