@@ -21,7 +21,7 @@ usage).
 bpython does **not** aim to be a complete IDE - the focus is on implementing a
 few ideas in a practical, useful, and lightweight manner.
 
-bpython is a great replacement to any occassion where you would normally use the
+bpython is a great replacement to any occasion where you would normally use the
 vanilla Python interpreter - testing out solutions to people's problems on IRC,
 quickly testing a method of doing something without creating a temporary file,
 etc..
@@ -62,7 +62,7 @@ Features & Examples
 * Rewind.  This isn't called "Undo" because it would be misleading, but "Rewind"
   is probably as bad. The idea is that the code entered is kept in memory and
   when the Rewind function is called, the last line is popped and the entire
-  code is re-evaluated. 
+  code is re-evaluated.
 
 * Pastebin code/write to file.  Use the <F8> key to upload the screen's contents
   to pastebin, with a URL returned.
@@ -75,7 +75,7 @@ Features & Examples
 Configuration
 =============
 See the sample-config file for a list of available options.  You should save
-your config file as **~/.config/bpython/config** (i.e
+your config file as **~/.config/bpython/config** (i.e.
 ``$XDG_CONFIG_HOME/bpython/config``) or specify at the command line::
 
   bpython --config /path/to/bpython/config
@@ -95,7 +95,7 @@ Dependencies
 
 Python 2 before 2.7.7
 ---------------------
-If you are using Python 2 before 2.7.7, the followign dependency is also
+If you are using Python 2 before 2.7.7, the following dependency is also
 required:
 
 * requests[security]
@@ -120,7 +120,7 @@ For known bugs please see bpython's `known issues and FAQ`_ page.
 Contact & Contributing
 ======================
 I hope you find it useful and please feel free to submit any bugs/patches
-suggestions to `Robert`_ or place them on the github
+suggestions to `Robert`_ or place them on the GitHub
 `issues tracker`_.
 
 For any other ways of communicating with bpython users and devs you can find us
