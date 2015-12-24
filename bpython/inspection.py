@@ -69,7 +69,7 @@ class AttrCleaner(object):
         # original methods. :-(
         # The upshot being that introspecting on an object to display its
         # attributes will avoid unwanted side-effects.
-        if py3 or type_ != types.InstanceType:
+        if is_new_style(self.obj):
             __getattr__ = getattr(type_, '__getattr__', None)
             if __getattr__ is not None:
                 try:
@@ -96,6 +96,15 @@ class AttrCleaner(object):
         if __getattr__ is not None:
             setattr(type_, '__getattr__', __getattr__)
         # /Dark magic
+
+
+if py3:
+    def is_new_style(obj):
+        return True
+else:
+    def is_new_style(obj):
+        """Returns True if obj is a new-style class or object"""
+        return type(obj) != types.InstanceType
 
 
 class _Repr(object):

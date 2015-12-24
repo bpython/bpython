@@ -2,6 +2,7 @@
 
 import os
 
+from bpython._py3compat import py3
 from bpython import inspection
 from bpython.test import unittest
 from bpython.test.fodder import encoding_ascii
@@ -20,29 +21,35 @@ foo_non_ascii = u'''def foo():
 '''
 
 
+class OldCallable:
+    def __call__(self):
+        pass
+
+
+class Callable(object):
+    def __call__(self):
+        pass
+
+
+class OldNoncallable:
+    pass
+
+
+class Noncallable(object):
+    pass
+
+
+def spam():
+    pass
+
+
+class CallableMethod(object):
+    def method(self):
+        pass
+
+
 class TestInspection(unittest.TestCase):
     def test_is_callable(self):
-        class OldCallable:
-            def __call__(self):
-                pass
-
-        class Callable(object):
-            def __call__(self):
-                pass
-
-        class OldNoncallable:
-            pass
-
-        class Noncallable(object):
-            pass
-
-        def spam():
-            pass
-
-        class CallableMethod(object):
-            def method(self):
-                pass
-
         self.assertTrue(inspection.is_callable(spam))
         self.assertTrue(inspection.is_callable(Callable))
         self.assertTrue(inspection.is_callable(Callable()))
@@ -52,6 +59,25 @@ class TestInspection(unittest.TestCase):
         self.assertFalse(inspection.is_callable(OldNoncallable()))
         self.assertFalse(inspection.is_callable(None))
         self.assertTrue(inspection.is_callable(CallableMethod().method))
+
+    @unittest.skipIf(py3, 'old-style classes only exist in Python 2')
+    def test_is_new_style_py2(self):
+        self.assertTrue(inspection.is_new_style(spam))
+        self.assertTrue(inspection.is_new_style(Noncallable))
+        self.assertFalse(inspection.is_new_style(OldNoncallable))
+        self.assertTrue(inspection.is_new_style(Noncallable()))
+        self.assertFalse(inspection.is_new_style(OldNoncallable()))
+        self.assertTrue(inspection.is_new_style(None))
+
+    @unittest.skipUnless(py3, 'only in Python 3 are all classes new-style')
+    def test_is_new_style_py3(self):
+        self.assertTrue(inspection.is_new_style(spam))
+        self.assertTrue(inspection.is_new_style(Noncallable))
+        self.assertTrue(inspection.is_new_style(OldNoncallable))
+        self.assertTrue(inspection.is_new_style(Noncallable()))
+        self.assertTrue(inspection.is_new_style(OldNoncallable()))
+        self.assertTrue(inspection.is_new_style(None))
+
 
     def test_parsekeywordpairs(self):
         # See issue #109
