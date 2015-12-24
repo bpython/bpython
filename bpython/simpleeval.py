@@ -34,6 +34,7 @@ from six.moves import builtins
 
 from bpython import line as line_properties
 from bpython._py3compat import py3
+from bpython.inspection import is_new_style
 
 _string_type_nodes = (ast.Str, ast.Bytes) if py3 else (ast.Str,)
 _numeric_types = (int, float, complex) + (() if py3 else (long,))
@@ -72,7 +73,9 @@ def safe_eval(expr, namespace):
 def simple_eval(node_or_string, namespace=None):
     """
     Safely evaluate an expression node or a string containing a Python
-    expression.  The string or node provided may only consist of:
+    expression without triggering any user code.
+
+    The string or node provided may only consist of:
     * the following Python literal structures: strings, numbers, tuples,
         lists, and dicts
     * variable names causing lookups in the passed in namespace or builtins
@@ -143,6 +146,12 @@ def simple_eval(node_or_string, namespace=None):
             obj = _convert(node.value)
             index = _convert(node.slice.value)
             return safe_getitem(obj, index)
+
+        # this is a deviation from literal_eval: we allow attribute access
+        if isinstance(node, ast.Attribute):
+            obj = _convert(node.value)
+            attr = node.attr
+            return safe_get_attribute(obj, attr)
 
         raise ValueError('malformed string')
     return _convert(node_or_string)
@@ -225,3 +234,46 @@ def evaluate_current_attribute(cursor_offset, line, namespace=None):
     except AttributeError:
         raise EvaluationError(
                 "can't lookup attribute %s on %r" % (attr.word, obj))
+
+
+def safe_get_attribute(obj, attr):
+    """Gets attributes without triggering descriptors on new-style clases"""
+    if is_new_style(obj):
+        result = safe_get_attribute_new_style(obj, attr)
+        if isinstance(result, member_descriptor):
+            # will either be the same slot descriptor or the value
+            return getattr(obj, attr)
+        return result
+    return getattr(obj, attr)
+
+
+class _ClassWithSlots(object):
+    __slots__ = ['a']
+member_descriptor = type(_ClassWithSlots.a)
+
+
+def safe_get_attribute_new_style(obj, attr):
+    """Returns approximately the attribute returned by getattr(obj, attr)
+
+    The object returned ought to be callable if getattr(obj, attr) was.
+    Fake callable objects may be returned instead, in order to avoid executing
+    arbitrary code in descriptors.
+
+    If the object is an instance of a class that uses __slots__, will return
+    the member_descriptor object instead of the value.
+    """
+    if not is_new_style(obj):
+        raise ValueError("%r is not a new-style class or object" % obj)
+    to_look_through = (obj.mro()
+                       if hasattr(obj, 'mro')
+                       else [obj] + type(obj).mro())
+
+    found_in_slots = hasattr(obj, '__slots__') and attr in obj.__slots__
+    for cls in to_look_through:
+        if hasattr(cls, '__dict__') and attr in cls.__dict__:
+            return cls.__dict__[attr]
+
+    if found_in_slots:
+        return AttributeIsEmptySlot
+
+    raise AttributeError()

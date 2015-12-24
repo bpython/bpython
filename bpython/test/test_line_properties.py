@@ -11,7 +11,7 @@ from bpython.line import current_word, current_dict_key, current_dict, \
 def cursor(s):
     """'ab|c' -> (2, 'abc')"""
     cursor_offset = s.index('|')
-    line = s[:cursor_offset] + s[cursor_offset+1:]
+    line = s[:cursor_offset] + s[cursor_offset + 1:]
     return cursor_offset, line
 
 
@@ -53,11 +53,12 @@ def encode(cursor_offset, line, result):
     if start < cursor_offset:
         encoded_line = encoded_line[:start] + '<' + encoded_line[start:]
     else:
-        encoded_line = encoded_line[:start+1] + '<' + encoded_line[start+1:]
+        encoded_line = (encoded_line[:start + 1] + '<' +
+                        encoded_line[start + 1:])
     if end < cursor_offset:
-        encoded_line = encoded_line[:end+1] + '>' + encoded_line[end+1:]
+        encoded_line = encoded_line[:end + 1] + '>' + encoded_line[end + 1:]
     else:
-        encoded_line = encoded_line[:end+2] + '>' + encoded_line[end+2:]
+        encoded_line = encoded_line[:end + 2] + '>' + encoded_line[end + 2:]
     return encoded_line
 
 
