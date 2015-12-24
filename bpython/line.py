@@ -10,8 +10,11 @@ from collections import namedtuple
 
 from bpython.lazyre import LazyReCompile
 
-current_word_re = LazyReCompile(r'[\w_][\w0-9._]*[(]?')
 LinePart = namedtuple('LinePart', ['start', 'stop', 'word'])
+
+current_word_re = LazyReCompile(
+        r'(?<![)\]\w_.])'
+        r'([\w_][\w0-9._]*[(]?)')
 
 
 def current_word(cursor_offset, line):
@@ -22,10 +25,10 @@ def current_word(cursor_offset, line):
     end = pos
     word = None
     for m in matches:
-        if m.start() < pos and m.end() >= pos:
-            start = m.start()
-            end = m.end()
-            word = m.group()
+        if m.start(1) < pos and m.end(1) >= pos:
+            start = m.start(1)
+            end = m.end(1)
+            word = m.group(1)
     if word is None:
         return None
     return LinePart(start, end, word)
