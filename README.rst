@@ -44,15 +44,16 @@ If you have `pip`_ installed, you can simply run:
     $ pip install bpython
 
 Start bpython by typing ``bpython`` in your terminal. You can exit bpython by
-using the ``exit()`` command.
+using the ``exit()`` command or by pressing control-D like regular interactive
+Python.
 
 ===================
 Features & Examples
 ===================
-* In-line syntax highlighting.  This uses Pygments for lexing the code as you
-  type, and colours appropriately. 
+* Readline-like autocomplete, with suggestions displayed as you type.
 
-* Readline-like autocomplete.  Suggestions displayed as you type.
+* In-line syntax highlighting.  This uses Pygments for lexing the code as you
+  type, and colours appropriately.
 
 * Expected parameter list.  As in a lot of modern IDEs, bpython will attempt to
   display a list of parameters for any function you call. The inspect module is
@@ -62,14 +63,17 @@ Features & Examples
 * Rewind.  This isn't called "Undo" because it would be misleading, but "Rewind"
   is probably as bad. The idea is that the code entered is kept in memory and
   when the Rewind function is called, the last line is popped and the entire
-  code is re-evaluated.
+  session is re-evaluated.  Use <control-R> to rewind.
+
+* Edit the current line or your entire session in an editor. F7 opens the current
+  session in a text editor, and if modifications are made, the session is rerun
+  with these changes.
 
 * Pastebin code/write to file.  Use the <F8> key to upload the screen's contents
   to pastebin, with a URL returned.
 
-* Flush curses screen to stdout.  When you quit bpython, the screen data will be
-  flushed to stdout, so it basically looks the same as if you had quit the
-  vanilla interpreter.
+* Reload imported Python modules.  Use <F6> to clear sys.modules and rerun your
+  session to test changes to code in a module you're working on.
 
 =============
 Configuration
