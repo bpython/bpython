@@ -104,7 +104,7 @@ if py3:
 else:
     def is_new_style(obj):
         """Returns True if obj is a new-style class or object"""
-        return type(obj) != types.InstanceType
+        return type(obj) not in [types.InstanceType, types.ClassType]
 
 
 class _Repr(object):
