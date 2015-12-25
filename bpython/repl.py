@@ -479,41 +479,59 @@ class Repl(object):
 
     @classmethod
     def _funcname_and_argnum(cls, line):
-        """Name of the current function and where we are in args
+        # each list in stack:
+        # [full_expr, function_expr, arg_number, opening]
+        # empty string in num_commas means we've encountered a kwarg
+        # so we're done counting
 
-        Returns (None, None) if can't be found."""
-        stack = [['', 0, '']]
+        # new plan: do a full parse, then combine things
+        stack = [['', '', 0, '']]
         try:
             for (token, value) in PythonLexer().get_tokens(line):
                 if token is Token.Punctuation:
                     if value in '([{':
-                        stack.append(['', 0, value])
+                        stack.append(['', '', 0, value])
                     elif value in ')]}':
-                        stack.pop()
+                        full, _, _, start = stack.pop()
+                        expr = start + full + value
+                        stack[-1][1] += expr
+                        stack[-1][0] += expr
                     elif value == ',':
                         try:
-                            stack[-1][1] += 1
+                            stack[-1][2] += 1
                         except TypeError:
-                            stack[-1][1] = ''
-                        stack[-1][0] = ''
-                    elif value == ':' and stack[-1][2] == 'lambda':
-                        stack.pop()
+                            stack[-1][2] = ''
+                        stack[-1][1] = ''
+                        stack[-1][0] += value
+                    elif value == ':' and stack[-1][3] == 'lambda':
+                        expr = stack.pop()[0] + ':'
+                        stack[-1][1] += expr
+                        stack[-1][0] += expr
                     else:
-                        stack[-1][0] = ''
-                elif (token is Token.Name or token in Token.Name.subtypes or
+                        stack[-1][1] = ''
+                        stack[-1][0] += value
+                elif (token is Token.Number or
+                      token in Token.Number.subtypes or
+                      token is Token.Name or token in Token.Name.subtypes or
                       token is Token.Operator and value == '.'):
+                    stack[-1][1] += value
                     stack[-1][0] += value
                 elif token is Token.Operator and value == '=':
-                    stack[-1][1] = stack[-1][0]
-                    stack[-1][0] = ''
+                    stack[-1][2] = stack[-1][1]
+                    stack[-1][1] = ''
+                    stack[-1][0] += value
+                elif token is Token.Number or token in Token.Number.subtypes:
+                    stack[-1][1] = value
+                    stack[-1][0] += value
                 elif token is Token.Keyword and value == 'lambda':
-                    stack.append(['', 0, value])
+                    stack.append([value, '', 0, value])
                 else:
-                    stack[-1][0] = ''
-            while stack[-1][2] in '[{':
+                    stack[-1][1] = ''
+                    stack[-1][0] += value
+            while stack[-1][3] in '[{':
                 stack.pop()
-            _, arg_number, _ = stack.pop()
-            func, _, _ = stack.pop()
+            _, _, arg_number, _ = stack.pop()
+            _, func, _, _ = stack.pop()
             return func, arg_number
         except IndexError:
             return None, None
