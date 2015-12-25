@@ -477,22 +477,14 @@ class Repl(object):
                 obj = getattr(obj, attributes.pop(0))
         return obj
 
-    def get_args(self):
-        """Check if an unclosed parenthesis exists, then attempt to get the
-        argspec() for it. On success, update self.funcprops,self.arg_pos and
-        return True, otherwise set self.funcprops to None and return False"""
+    @classmethod
+    def _funcname_and_argnum(cls, line):
+        """Name of the current function and where we are in args
 
-        self.current_func = None
-
-        if not self.config.arg_spec:
-            return False
-
-        # Get the name of the current function and where we are in
-        # the arguments
+        Returns (None, None) if can't be found."""
         stack = [['', 0, '']]
         try:
-            for (token, value) in PythonLexer().get_tokens(
-                    self.current_line):
+            for (token, value) in PythonLexer().get_tokens(line):
                 if token is Token.Punctuation:
                     if value in '([{':
                         stack.append(['', 0, value])
@@ -522,8 +514,21 @@ class Repl(object):
                 stack.pop()
             _, arg_number, _ = stack.pop()
             func, _, _ = stack.pop()
+            return func, arg_number
         except IndexError:
+            return None, None
+
+    def get_args(self):
+        """Check if an unclosed parenthesis exists, then attempt to get the
+        argspec() for it. On success, update self.funcprops,self.arg_pos and
+        return True, otherwise set self.funcprops to None and return False"""
+
+        self.current_func = None
+
+        if not self.config.arg_spec:
             return False
+
+        func, arg_number = self._funcname_and_argnum(self.current_line)
         if not func:
             return False
 
