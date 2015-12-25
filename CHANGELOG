@@ -12,7 +12,8 @@ New features:
 * #538: Multi-line banners are allowed.
 * #229: inspect.getsource works on interactively defined functions.
   Thanks to Michael Mulley.
-* Attribute completion on items in lists and tuples
+* Attribute completion works on literals and some expressions containing
+  builtin objects.
 * Ctrl-e can be used to autocomplete current fish-style suggestion.
   Thanks to Amjith Ramanujam
 
