@@ -1375,6 +1375,7 @@ class BaseRepl(BpythonRepl):
         lines = paint.display_linize(self.current_cursor_line + 'X', width)
         # extra character for space for the cursor
         current_line_end_row = current_line_start_row + len(lines) - 1
+        current_line_height = current_line_end_row - current_line_start_row
 
         if self.stdin.has_focus:
             cursor_row, cursor_column = divmod(
@@ -1410,9 +1411,10 @@ class BaseRepl(BpythonRepl):
                 info_max_rows = max(visible_space_above, visible_space_below)
             else:
                 # smallest allowed over-full completion box
-                minimum_possible_height = 30
-                info_max_rows = max(visible_space_below,
-                                    minimum_possible_height)
+                minimum_possible_height = 20
+                info_max_rows = min(max(visible_space_below,
+                                        minimum_possible_height),
+                                    min_height - current_line_height - 1)
             infobox = paint.paint_infobox(
                     info_max_rows,
                     int(width * self.config.cli_suggestion_width),
