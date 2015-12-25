@@ -30,7 +30,9 @@ class TestExecArgs(unittest.TestCase):
                 sys.stderr.flush()"""))
             f.flush()
             p = subprocess.Popen(
-                [sys.executable, "-m", "bpython.curtsies", f.name],
+                [sys.executable] +
+                (['-W', 'ignore'] if sys.version_info[:2] == (2, 6) else []) +
+                ["-m", "bpython.curtsies", f.name],
                 stderr=subprocess.PIPE,
                 universal_newlines=True)
             (_, stderr) = p.communicate()
