@@ -479,12 +479,11 @@ class Repl(object):
 
     @classmethod
     def _funcname_and_argnum(cls, line):
+        """Parse out the current function name and arg from a line of code."""
         # each list in stack:
         # [full_expr, function_expr, arg_number, opening]
-        # empty string in num_commas means we've encountered a kwarg
-        # so we're done counting
-
-        # new plan: do a full parse, then combine things
+        # arg_number may be a string if we've encountered a keyword
+        # argument so we're done counting
         stack = [['', '', 0, '']]
         try:
             for (token, value) in PythonLexer().get_tokens(line):
