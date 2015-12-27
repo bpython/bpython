@@ -23,6 +23,8 @@
 import pydoc
 
 import bpython._internal
+from bpython._py3compat import py3
+from bpython.repl import getpreferredencoding
 
 
 class NopPydocPager(object):
@@ -46,6 +48,8 @@ class _Helper(bpython._internal._Helper):
         super(_Helper, self).__init__()
 
     def pager(self, output):
+        if not py3 and isinstance(output, str):
+            output = output.decode(getpreferredencoding())
         self._repl.pager(output)
 
     def __call__(self, *args, **kwargs):
