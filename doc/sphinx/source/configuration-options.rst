@@ -308,6 +308,14 @@ Brings up sincerely cheerful description of bpython features and current key bin
 
 .. versionadded:: 0.14
 
+incremental_search
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+Default: M-s
+
+Perform incremental search on all stored lines in the history.
+
+.. versionadded:: 0.15
+
 last_output
 ^^^^^^^^^^^
 Default: F9
@@ -333,6 +341,14 @@ Default: F6
 Reruns entire session, reloading all modules by clearing the sys.modules cache.
 
 .. versionadded:: 0.14
+
+reverse_incremental_search
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+Default: M-r
+
+Perform reverse incremental search on all stored lines in the history.
+
+.. versionadded:: 0.15
 
 right
 ^^^^^
