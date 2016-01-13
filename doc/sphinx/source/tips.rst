@@ -16,7 +16,7 @@ equivalent file.
 
 .. code-block:: bash
 
-  alias bpython2.6='PYTHONPATH=~/python/bpython python2.6 -m bpython.cli'
+  alias bpython3.5='PYTHONPATH=~/python/bpython python3.5 -m bpython.cli'
 
 Where the `~/python/bpython`-path is the path to where your bpython source code
 resides.
