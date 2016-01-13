@@ -21,8 +21,8 @@ equivalent file.
 Where the `~/python/bpython`-path is the path to where your bpython source code
 resides.
 
-You can of course add multiple aliases, so you can run bpython with 2.6, 2.7
-and the 3 series.
+You can of course add multiple aliases, so you can run bpython with 2.7 and the
+3 series.
 
 .. note::
 

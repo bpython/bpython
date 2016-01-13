@@ -436,7 +436,7 @@ class Repl(object):
             with io.open(filename, 'rt', encoding=encoding) as f:
                 source = f.read()
                 if not py3:
-                    # Python 2.6 and early 2.7.X need bytes.
+                    # Early Python 2.7.X need bytes.
                     source = source.encode(encoding)
                 self.interp.runsource(source, filename, 'exec', encode=False)
 

@@ -17,7 +17,7 @@ the time of day.
 Getting your development environment set up
 -------------------------------------------
 
-bpython supports Python 2.6, 2.7, 3.3 and 3.4. The code is compatible with all
+bpython supports Python 2.7, 3.3 and newer. The code is compatible with all
 supported versions without the need to run post processing like `2to3`.
 
 Using a virtual environment is probably a good idea. Create a virtual

@@ -17,7 +17,7 @@ if [[ $RUN == nosetests ]]; then
     pip install jedi
     # translation specific dependencies
     pip install babel
-    # Python 2.6 specific dependencies
+    # Python 2.7 specific dependencies
     if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then
       # dependencies for crasher tests
       pip install Twisted urwid
