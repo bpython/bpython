@@ -49,14 +49,6 @@ else:
     _name_type_nodes = (ast.Name,)
 
 
-# inspect.isclass is broken in Python 2.6
-if sys.version_info[:2] == (2, 6):
-    def isclass(obj):
-        return isinstance(obj, (type, types.ClassType))
-else:
-    isclass = inspect.isclass
-
-
 class EvaluationError(Exception):
     """Raised if an exception occurred in safe_eval."""
 
@@ -277,7 +269,7 @@ def safe_get_attribute_new_style(obj, attr):
     if not is_new_style(obj):
         raise ValueError("%r is not a new-style class or object" % obj)
     to_look_through = (obj.__mro__
-                       if isclass(obj)
+                       if inspect.isclass(obj)
                        else (obj,) + type(obj).__mro__)
 
     for cls in to_look_through:
