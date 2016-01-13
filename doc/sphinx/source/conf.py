@@ -205,7 +205,7 @@ htmlhelp_basename = 'bpythondoc'
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('man-bpython', 'bpython',
-     u'a fancy {curses, GTK+, urwid} interface to the Python interactive interpreter',
+     u'a fancy {curtsies, curses, urwid} interface to the Python interactive interpreter',
      [], 1),
     ('man-bpython-config', 'bpython-config',
      u'user configuration file for bpython',
