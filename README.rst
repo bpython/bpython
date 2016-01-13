@@ -143,21 +143,18 @@ Dependencies
 
 `pyreadline`_ Use the version in the cheeseshop.
 
-===========
 Recommended
-===========
+-----------
 Obtain the less program from GnuUtils. This makes the pager work as intended.
 It can be obtained from cygwin or GnuWin32 or msys
 
-==============================
 Current version is tested with
-==============================
+------------------------------
 * Curses 2.2
 * pyreadline 1.7
 
-============
 Curses Notes
-============
+------------
 The curses used has a bug where the colours are displayed incorrectly:
 
 * red  is swapped with blue
