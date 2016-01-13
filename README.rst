@@ -91,6 +91,7 @@ Dependencies
 * requests
 * curtsies >= 0.1.18
 * greenlet
+* six >= 1.5
 * Sphinx != 1.1.2 (optional, for the documentation)
 * mock (optional, for the testsuite)
 * babel (optional, for internationalization)
