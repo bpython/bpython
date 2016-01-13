@@ -1,6 +1,6 @@
 |ImageLink|_
 
-.. |ImageLink| image:: https://travis-ci.org/bpython/bpython.svg?branch=master
+.. |ImageLink| image:: https://travis-ci.org/bpython/bpython.svg?branch=0.15-bugfix
 .. _ImageLink: https://travis-ci.org/bpython/bpython
 
 ***********************************************************************
