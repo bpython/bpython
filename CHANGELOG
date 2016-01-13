@@ -4,6 +4,14 @@ Changelog
 0.16
 ----
 
+New features:
+
+Fixes:
+
+
+
+Support for Python 2.6 has been dropped.
+
 0.15
 ----
 
