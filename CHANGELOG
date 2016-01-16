@@ -4,6 +4,8 @@ Changelog
 0.15
 ----
 
+This release contains new features and plenty of bug fixes.
+
 New features:
 
 * #425: Added curtsies 0.2.x support.
@@ -15,24 +17,31 @@ New features:
 * Attribute completion works on literals and some expressions containing
   builtin objects.
 * Ctrl-e can be used to autocomplete current fish-style suggestion.
-  Thanks to Amjith Ramanujam
+  Thanks to Amjith Ramanujam.
 
 Fixes:
 
 * #484: Switch `bpython.embed` to the curtsies frontend.
-* #548 Fix transpose character bug. Thanks to Wes E. Vial.
+* #548 Fix transpose character bug.
+  Thanks to Wes E. Vial.
 * #527 -q disables version banner.
-* #544 Fix Jedi completion error
-* #536 Fix completion on old-style classes with custom __getattr__
-* #480 Fix old-style class autocompletion. Thanks to Joe Jevnik.
-* #506 In python -i mod.py sys.modules[__name__] refers to module dict
-* #590 Fix "None" not being displayed
+* #544 Fix Jedi completion error.
+* #536 Fix completion on old-style classes with custom __getattr__.
+* #480 Fix old-style class autocompletion.
+  Thanks to Joe Jevnik.
+* #506 In python -i mod.py sys.modules[__name__] refers to module dict.
+* #590 Fix "None" not being displayed.
 * #546 Paste detection uses events instead of bytes returned in a single
-  os.read call
-* Exceptions in autcompletion are now logged instead of crashing bpython.
-* Fix reload in Python 3. Thanks to sharow.
-* Fix keyword agument parameter name completion
+  os.read call.
+* Exceptions in autocompletion are now logged instead of crashing bpython.
+* Fix reload in Python 3.
+  Thanks to sharow.
+* Fix keyword argument parameter name completion.
 
+Changes to dependencies:
+
+* requests[security] has been changed to pyOpenSSL, pyasn1, and ndg-httpsclient.
+  These dependencies are required before Python 2.7.7.
 
 0.14.2
 ------
@@ -43,7 +52,6 @@ Fixes:
 * #509: Fixed fcntl usage.
 * #523, #524: Fix conditional dependencies for SNI support again.
 * Fix binary name of bpdb.
-
 
 0.14.1
 ------
