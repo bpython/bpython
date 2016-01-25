@@ -281,7 +281,7 @@ def make_colors(config):
     }
 
     if platform.system() == 'Windows':
-        c = dict(c.items() |
+        c = dict(list(c.items()) +
             [
             ('K', 8),
             ('R', 9),
