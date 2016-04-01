@@ -165,6 +165,20 @@ To correct this I have provided a windows.theme file.
 This curses implementation has 16 colors (dark and light versions of the
 colours)
 
+
+============
+Alternatives
+============
+
+`ptpython`_
+
+`IPython`_
+
+Feel free to get in touch if you know of any other alternatives that people
+may be interested to try.
+
+.. _ptpython: https://github.com/jonathanslenders/ptpython
+.. _ipython: https://ipython.org/
 .. _homepage: http://www.bpython-interpreter.org
 .. _full documentation: http://docs.bpython-interpreter.org/
 .. _cffi docs: https://cffi.readthedocs.org/en/release-0.8/#macos-x
