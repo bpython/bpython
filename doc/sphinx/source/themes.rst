@@ -2,7 +2,7 @@
 
 Themes
 ======
-This chapter is about bpython's theming capabalities.
+This chapter is about bpython's theming capabilities.
 
 bpython uses .theme files placed in your ``$XDG_CONFIG_HOME/bpython`` directory
 [#f1]_.  You can set the theme in the :ref:`configuration_color_scheme` option
@@ -20,7 +20,7 @@ Available Colors
 * w = white
 * d = default, this will make the switch default to the bpython default theme
 
-Any letter writting uppercase will make the switch bold.
+Any letter writing uppercase will make the switch bold.
 
 Available Switches
 ------------------

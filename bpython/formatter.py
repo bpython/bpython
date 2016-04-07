@@ -31,7 +31,7 @@ from six import iteritems
 
 """These format strings are pretty ugly.
 \x01 represents a colour marker, which
-    can be proceded by one or two of
+    can be preceded by one or two of
     the following letters:
     k, r, g, y, b, m, c, w, d
     Which represent:

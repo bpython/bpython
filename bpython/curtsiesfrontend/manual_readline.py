@@ -56,7 +56,7 @@ class AbstractEdits(object):
 
     def add_config_attr(self, config_attr, func):
         if config_attr in self.awaiting_config:
-            raise ValueError('config attrribute %r already has a mapping' %
+            raise ValueError('config attribute %r already has a mapping' %
                              (config_attr,))
         self.awaiting_config[config_attr] = func
 

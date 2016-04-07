@@ -101,7 +101,7 @@ New features:
 * #354: Edit config file from within bpython.
 * #382: Partial support for pasting in text with blank lines.
 * #410: Startup banner that shows Python and bpython version
-* #426: Experimental mutliline autocompletion.
+* #426: Experimental multiline autocompletion.
 * fish style last history completion with Arrow Right. Thanks to Nicholas
   Sweeting.
 * fish style automatic reverse history search with Arrow Up.
@@ -377,7 +377,7 @@ As always, please submit any bugs you might find to our bugtracker.
 
 * #87: Add a closed attribute to Repl to fix mercurial.ui.ui expecting stderr
   to have this attribute.
-* #108: Unicode characters in docsrting crash bpython
+* #108: Unicode characters in docstring crash bpython
 * #118: Load_theme is not defined.
 * #99: Configurable font now documented.
 * #123: <F8> Pastebin can't handle 'ESC' key
@@ -522,7 +522,7 @@ Probably some other things, but I hate changelogs. :)
 0.8.0
 ------
 
-It's been a long while since the last release and there've been numerous little
+It's been a long while since the last release and there have been numerous little
 bugfixes and extras here and there so I'm putting this out as 0.8.0. Check the
 hg commit history if you want more info:
 http://bitbucket.org/bobf/bpython/

@@ -24,7 +24,7 @@
 
 # Modified by Brandon Navra
 # Notes for Windows
-# Prerequsites
+# Prerequisites
 #  - Curses
 #  - pyreadline
 #
@@ -434,7 +434,7 @@ class CLIRepl(repl.Repl):
 
     def clear_current_line(self):
         """Called when a SyntaxError occurred in the interpreter. It is
-        used to prevent autoindentation from occuring after a
+        used to prevent autoindentation from occurring after a
         traceback."""
         repl.Repl.clear_current_line(self)
         self.s = ''
@@ -449,7 +449,7 @@ class CLIRepl(repl.Repl):
             self.scr.clrtoeol()
 
     def complete(self, tab=False):
-        """Get Autcomplete list and window.
+        """Get Autocomplete list and window.
 
         Called whenever these should be updated, and called
         with tab
@@ -1375,7 +1375,7 @@ class CLIRepl(repl.Repl):
                                  get_colpair(self.config, 'comment'))
             # XXX: After all the trouble I had with sizing the list box (I'm not very good
             # at that type of thing) I decided to do this bit of tidying up here just to
-            # make sure there's no unnececessary blank lines, it makes things look nicer.
+            # make sure there's no unnecessary blank lines, it makes things look nicer.
 
         y = self.list_win.getyx()[0]
         self.list_win.resize(y + 2, w)
@@ -1396,7 +1396,7 @@ class CLIRepl(repl.Repl):
 
     def size(self):
         """Set instance attributes for x and y top left corner coordinates
-        and width and heigth for the window."""
+        and width and height for the window."""
         global stdscr
         h, w = stdscr.getmaxyx()
         self.y = 0
@@ -1566,7 +1566,7 @@ class Statusbar(object):
 
     def size(self):
         """Set instance attributes for x and y top left corner coordinates
-        and width and heigth for the window."""
+        and width and height for the window."""
         h, w = gethw()
         self.y = h - 1
         self.w = w

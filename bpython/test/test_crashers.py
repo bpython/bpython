@@ -49,7 +49,7 @@ class CrashersTest(object):
         enter the given input. Uses a test config that disables the
         paste detection.
 
-        Retuns bpython's output.
+        Returns bpython's output.
         """
         result = Deferred()
 

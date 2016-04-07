@@ -539,7 +539,7 @@ class TestCurtsiesRewindRedraw(CurtsiesPaintingTest):
         self.assert_paint_ignoring_formatting(screen, (2, 4))
 
     def test_unhighlight_paren_bugs(self):
-        """two previous bugs, paren did't highlight until next render
+        """two previous bugs, parent didn't highlight until next render
         and paren didn't unhighlight until enter"""
         self.assertEqual(self.repl.rl_history.entries, [''])
         self.enter('(')

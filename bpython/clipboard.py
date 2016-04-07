@@ -60,7 +60,7 @@ def command_exists(command):
 
 
 def get_clipboard():
-    """Get best clipboard handling implemention for current system."""
+    """Get best clipboard handling implementation for current system."""
 
     if platform.system() == 'Darwin':
         if command_exists('pbcopy'):
