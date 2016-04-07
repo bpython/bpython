@@ -224,7 +224,7 @@ def evaluate_current_expression(cursor_offset, line, namespace=None):
 
 
 def evaluate_current_attribute(cursor_offset, line, namespace=None):
-    """Safely evaluates the expression having an attributed accesssed"""
+    """Safely evaluates the expression having an attributed accessed"""
     # this function runs user code in case of custom descriptors,
     # so could fail in any way
 
