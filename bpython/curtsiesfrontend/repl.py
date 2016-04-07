@@ -1136,7 +1136,7 @@ class BaseRepl(BpythonRepl):
     def send_to_stderr(self, error):
         """Send unicode strings or FmtStr to Repl stderr
 
-        Must be able to handle FmtStrs because interepter pass in
+        Must be able to handle FmtStrs because interpreter pass in
         tracebacks already formatted."""
         lines = error.split('\n')
         if lines[-1]:
