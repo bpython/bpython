@@ -12,7 +12,7 @@
       bpython is a fancy interface to the Python interpreter. It has the
       following features:
       <ul>
-        <li>In-line syntac highlighting.</li>
+        <li>In-line syntax highlighting.</li>
         <li>Readline-like autocomplete with suggestion displayed as you type.</li>
         <li>Expected parameter list for any Python function.</li>
         <li>"Rewind" function to pop the last line of code from memory and re-evaluate.</li>
