@@ -33,7 +33,7 @@ def can_encode(c):
 
 
 def supports_box_chars():
-    """Check if the encoding suppors Unicode box characters."""
+    """Check if the encoding supports Unicode box characters."""
     return all(map(can_encode, u'│─└┘┌┐'))
 
 
