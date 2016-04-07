@@ -1375,7 +1375,7 @@ class CLIRepl(repl.Repl):
                                  get_colpair(self.config, 'comment'))
             # XXX: After all the trouble I had with sizing the list box (I'm not very good
             # at that type of thing) I decided to do this bit of tidying up here just to
-            # make sure there's no unnececessary blank lines, it makes things look nicer.
+            # make sure there's no unnecessary blank lines, it makes things look nicer.
 
         y = self.list_win.getyx()[0]
         self.list_win.resize(y + 2, w)
