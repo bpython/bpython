@@ -162,19 +162,19 @@ class SlotsSubclass(Slots):
         raise AssertionError('Property __get__ executed')
 
 
-class OverridenGetattr(object):
+class OverriddenGetattr(object):
     def __getattr__(self, attr):
         raise AssertionError('custom __getattr__ executed')
     a = 1
 
 
-class OverridenGetattribute(object):
+class OverriddenGetattribute(object):
     def __getattribute__(self, attr):
         raise AssertionError('custom __getattribute__ executed')
     a = 1
 
 
-class OverridenMRO(object):
+class OverriddenMRO(object):
     def __mro__(self):
         raise AssertionError('custom mro executed')
     a = 1
@@ -236,17 +236,17 @@ class TestSafeGetAttribute(unittest.TestCase):
                           Slots.__dict__['s3'])
         self.assertIsInstance(sga(SlotsSubclass, 's3'), property)
 
-    def test_lookup_on_overriden_methods(self):
+    def test_lookup_on_overridden_methods(self):
         sga = safe_get_attribute
-        self.assertEqual(sga(OverridenGetattr(), 'a'), 1)
-        self.assertEqual(sga(OverridenGetattribute(), 'a'), 1)
-        self.assertEqual(sga(OverridenMRO(), 'a'), 1)
+        self.assertEqual(sga(OverriddenGetattr(), 'a'), 1)
+        self.assertEqual(sga(OverriddenGetattribute(), 'a'), 1)
+        self.assertEqual(sga(OverriddenMRO(), 'a'), 1)
         with self.assertRaises(AttributeError):
-            sga(OverridenGetattr(), 'b')
+            sga(OverriddenGetattr(), 'b')
         with self.assertRaises(AttributeError):
-            sga(OverridenGetattribute(), 'b')
+            sga(OverriddenGetattribute(), 'b')
         with self.assertRaises(AttributeError):
-            sga(OverridenMRO(), 'b')
+            sga(OverriddenMRO(), 'b')
 
 if __name__ == '__main__':
     unittest.main()
