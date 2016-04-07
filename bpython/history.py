@@ -3,7 +3,7 @@
 # The MIT License
 #
 # Copyright (c) 2009 the bpython authors.
-# Copyirhgt (c) 2012,2015 Sebastian Ramacher
+# Copyright (c) 2012,2015 Sebastian Ramacher
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
