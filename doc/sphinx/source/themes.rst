@@ -20,7 +20,7 @@ Available Colors
 * w = white
 * d = default, this will make the switch default to the bpython default theme
 
-Any letter writting uppercase will make the switch bold.
+Any letter writing uppercase will make the switch bold.
 
 Available Switches
 ------------------
