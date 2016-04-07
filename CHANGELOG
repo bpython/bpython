@@ -101,7 +101,7 @@ New features:
 * #354: Edit config file from within bpython.
 * #382: Partial support for pasting in text with blank lines.
 * #410: Startup banner that shows Python and bpython version
-* #426: Experimental mutliline autocompletion.
+* #426: Experimental multiline autocompletion.
 * fish style last history completion with Arrow Right. Thanks to Nicholas
   Sweeting.
 * fish style automatic reverse history search with Arrow Up.
