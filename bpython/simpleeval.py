@@ -240,7 +240,7 @@ def evaluate_current_attribute(cursor_offset, line, namespace=None):
 
 
 def safe_get_attribute(obj, attr):
-    """Gets attributes without triggering descriptors on new-style clases"""
+    """Gets attributes without triggering descriptors on new-style classes"""
     if is_new_style(obj):
         with AttrCleaner(obj):
             result = safe_get_attribute_new_style(obj, attr)
