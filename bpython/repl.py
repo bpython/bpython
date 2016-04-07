@@ -1026,7 +1026,7 @@ class Repl(object):
         It prevents autoindentation from occurring after a traceback."""
 
     def send_to_external_editor(self, text, filename=None):
-        """Returns modified text from an editor, or the oriignal text if editor
+        """Returns modified text from an editor, or the original text if editor
         exited with non-zero"""
 
         encoding = getpreferredencoding()
