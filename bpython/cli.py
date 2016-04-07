@@ -24,7 +24,7 @@
 
 # Modified by Brandon Navra
 # Notes for Windows
-# Prerequsites
+# Prerequisites
 #  - Curses
 #  - pyreadline
 #
