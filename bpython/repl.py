@@ -1023,7 +1023,7 @@ class Repl(object):
 
     def clear_current_line(self):
         """This is used as the exception callback for the Interpreter instance.
-        It prevents autoindentation from occuring after a traceback."""
+        It prevents autoindentation from occurring after a traceback."""
 
     def send_to_external_editor(self, text, filename=None):
         """Returns modified text from an editor, or the oriignal text if editor

@@ -434,7 +434,7 @@ class CLIRepl(repl.Repl):
 
     def clear_current_line(self):
         """Called when a SyntaxError occurred in the interpreter. It is
-        used to prevent autoindentation from occuring after a
+        used to prevent autoindentation from occurring after a
         traceback."""
         repl.Repl.clear_current_line(self)
         self.s = ''
