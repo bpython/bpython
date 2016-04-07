@@ -170,7 +170,7 @@ class OverridenGetattr(object):
 
 class OverridenGetattribute(object):
     def __getattribute__(self, attr):
-        raise AssertionError('custom __getattrribute__ executed')
+        raise AssertionError('custom __getattribute__ executed')
     a = 1
 
 
