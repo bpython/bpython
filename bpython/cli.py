@@ -1396,7 +1396,7 @@ class CLIRepl(repl.Repl):
 
     def size(self):
         """Set instance attributes for x and y top left corner coordinates
-        and width and heigth for the window."""
+        and width and height for the window."""
         global stdscr
         h, w = stdscr.getmaxyx()
         self.y = 0
@@ -1566,7 +1566,7 @@ class Statusbar(object):
 
     def size(self):
         """Set instance attributes for x and y top left corner coordinates
-        and width and heigth for the window."""
+        and width and height for the window."""
         h, w = gethw()
         self.y = h - 1
         self.w = w
