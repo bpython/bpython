@@ -449,7 +449,7 @@ class CLIRepl(repl.Repl):
             self.scr.clrtoeol()
 
     def complete(self, tab=False):
-        """Get Autcomplete list and window.
+        """Get Autocomplete list and window.
 
         Called whenever these should be updated, and called
         with tab
