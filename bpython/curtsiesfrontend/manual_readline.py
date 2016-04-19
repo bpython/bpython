@@ -212,7 +212,7 @@ def back_word(cursor_offset, line):
     return (last_word_pos(line[:cursor_offset]), line)
 
 
-@edit_keys.on('<PADDELETE>')
+@edit_keys.on('<DELETE>')
 def delete(cursor_offset, line):
     return (cursor_offset,
             line[:cursor_offset] + line[cursor_offset+1:])
