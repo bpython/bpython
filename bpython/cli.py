@@ -974,7 +974,7 @@ class CLIRepl(repl.Repl):
             try:
                 source = self.get_source_of_current_name()
             except repl.SourceNotFound as e:
-                self.statusbar.message(_(e))
+                self.statusbar.message(str(e))
             else:
                 if config.highlight_show_source:
                     source = format(PythonLexer().get_tokens(source),
