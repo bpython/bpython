@@ -389,8 +389,9 @@ class BaseRepl(BpythonRepl):
         self.orig_tcattrs = orig_tcattrs
 
         self.coderunner = CodeRunner(self.interp, self.request_refresh)
-        self.stdout = FakeOutput(self.coderunner, self.send_to_stdout)
-        self.stderr = FakeOutput(self.coderunner, self.send_to_stderr)
+        # Added explicit fileno definitions to reflect to backend device
+        self.stdout = FakeOutput(self.coderunner, self.send_to_stdout, fileno=1)
+        self.stderr = FakeOutput(self.coderunner, self.send_to_stderr, fileno=2)
         self.stdin = FakeStdin(self.coderunner, self, self.edit_keys)
 
         # next paint should clear screen
