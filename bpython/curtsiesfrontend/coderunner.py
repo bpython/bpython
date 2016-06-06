@@ -195,19 +195,29 @@ class CodeRunner(object):
 
 
 class FakeOutput(object):
-    def __init__(self, coderunner, on_write):
+    def __init__(self, coderunner, on_write, fileno=1):
         """Fakes sys.stdout or sys.stderr
 
         on_write should always take unicode
+
+        fileno should be the fileno that on_write will
+                output to (e.g. 1 for standard output).
         """
         self.coderunner = coderunner
         self.on_write = on_write
+        self.real_fileno = fileno
 
     def write(self, s, *args, **kwargs):
         if not py3 and isinstance(s, str):
             s = s.decode(getpreferredencoding(), 'ignore')
         self.on_write(s, *args, **kwargs)
         return self.coderunner.request_from_main_greenlet(force_refresh=True)
+
+    # Some applications which use curses require that sys.stdout
+    # have a method called fileno. One example is pwntools. This
+    # is not a widespread issue, but is annoying.
+    def fileno(self):
+        return self.real_fileno
 
     def writelines(self, l):
         for s in l:
