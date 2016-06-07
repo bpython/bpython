@@ -1410,10 +1410,21 @@ class BaseRepl(BpythonRepl):
             if self.config.curtsies_list_above:
                 info_max_rows = max(visible_space_above, visible_space_below)
             else:
+                # Logic for determining size of completion box
                 # smallest allowed over-full completion box
-                minimum_possible_height = 20
+                minimum_possible_height = 4
+                # smallest amount of history that must be visible
+                try_preserve_history_height = 40
+                preferred_height = max(
+                        # always make infobox at least this height
+                        minimum_possible_height,
+
+                        # there's so much space that we can preserve
+                        # this much history and still expand the infobox
+                        min_height - try_preserve_history_height)
+
                 info_max_rows = min(max(visible_space_below,
-                                        minimum_possible_height),
+                                        preferred_height),
                                     min_height - current_line_height - 1)
             infobox = paint.paint_infobox(
                     info_max_rows,
