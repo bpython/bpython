@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+import re
 import subprocess
 import sys
 import tempfile
@@ -66,7 +67,11 @@ class TestExecArgs(unittest.TestCase):
                 universal_newlines=True)
             (_, stderr) = p.communicate()
 
-            self.assertIn('line 3', stderr)
+            self.assertIn('line 3', clean_colors(stderr))
+
+
+def clean_colors(s):
+    return re.sub(r'\x1b[^m]*m', '', s)
 
 
 class TestParse(TestCase):
