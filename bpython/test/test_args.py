@@ -36,7 +36,6 @@ class TestExecArgs(unittest.TestCase):
 
             self.assertEquals(stderr.strip(), f.name)
 
-
     def test_exec_nonascii_file(self):
         with tempfile.NamedTemporaryFile(mode="w") as f:
             f.write(dedent('''\
@@ -51,6 +50,23 @@ class TestExecArgs(unittest.TestCase):
                     f.name])
             except subprocess.CalledProcessError:
                 self.fail('Error running module with nonascii characters')
+
+    def test_exec_nonascii_file_linenums(self):
+        with tempfile.NamedTemporaryFile(mode="w") as f:
+            f.write(dedent("""\
+                #!/usr/bin/env python2
+                # coding: utf-8
+                1/0
+                """))
+            f.flush()
+            p = subprocess.Popen(
+                [sys.executable, "-m", "bpython.curtsies",
+                    f.name],
+                stderr=subprocess.PIPE,
+                universal_newlines=True)
+            (_, stderr) = p.communicate()
+
+            self.assertIn('line 3', stderr)
 
 
 class TestParse(TestCase):

@@ -104,21 +104,23 @@ class Interpreter(code.InteractiveInterpreter):
         self.running_time = 0
 
     def runsource(self, source, filename=None, symbol='single',
-                  encode=True):
+                  encode='auto'):
         """Execute Python code.
 
         source, filename and symbol are passed on to
-        code.InteractiveInterpreter.runsource. If encode is True, the source
-        will be encoded. On Python 3.X, encode will be ignored.
+        code.InteractiveInterpreter.runsource. If encode is True,
+        an encoding comment will be added to the source.
+        On Python 3.X, encode will be ignored.
 
-        encode doesn't encode the source, it just adds an encoding comment
-        that specifies the encoding of the source.
         encode should only be used for interactive interpreter input,
-        files should always have an encoding comment or be ASCII.
+        files should always already have an encoding comment or be ASCII.
+        By default an encoding line will be added if no filename is given.
 
         In Python 3, source must be a unicode string
         In Python 2, source may be latin-1 bytestring or unicode string,
         following the interface of code.InteractiveInterpreter"""
+        if encode == 'auto':
+            encode = filename is None
         if encode and not py3:
             if isinstance(source, str):
                 # encoding only makes sense for bytestrings
