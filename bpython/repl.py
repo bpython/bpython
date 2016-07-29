@@ -85,7 +85,13 @@ class Interpreter(code.InteractiveInterpreter):
         necessarily must be with the current factoring) and then an exception
         callback can be added to the Interpreter instance afterwards - more
         specifically, this is so that autoindentation does not occur after a
-        traceback."""
+        traceback.
+
+        encoding is only used in Python 2, where it may be necessary to add an
+        encoding comment to a source bytestring before running it.
+        encoding must be a bytestring in Python 2 because it will be templated
+        into a bytestring source as part of an encoding comment.
+        """
 
         self.encoding = encoding or sys.getdefaultencoding()
         self.syntaxerror_callback = None
