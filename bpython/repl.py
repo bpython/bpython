@@ -109,10 +109,30 @@ class Interpreter(code.InteractiveInterpreter):
 
         source, filename and symbol are passed on to
         code.InteractiveInterpreter.runsource. If encode is True, the source
-        will be encoded. On Python 3.X, encode will be ignored."""
-        if not py3 and encode:
-            source = u'# coding: %s\n\n%s' % (self.encoding, source)
-            source = source.encode(self.encoding)
+        will be encoded. On Python 3.X, encode will be ignored.
+
+        encode doesn't encode the source, it just adds an encoding comment
+        that specifies the encoding of the source.
+        encode should only be used for interactive interpreter input,
+        files should always have an encoding comment or be ASCII.
+
+        In Python 3, source must be a unicode string
+        In Python 2, source may be latin-1 bytestring or unicode string,
+        following the interface of code.InteractiveInterpreter"""
+        if encode and not py3:
+            if isinstance(source, str):
+                # encoding only makes sense for bytestrings
+                assert isinstance(source, str)
+                source = b'# coding: %s\n\n%s' % (self.encoding, source)
+            else:
+                # 2 blank lines still need to be added because this
+                # interpreter always adds 2 lines to stack trace line
+                # numbers in Python 2
+                comment = inspection.get_encoding_comment(source)
+                if comment:
+                    source = source.replace(comment, u'%s\n\n' % comment, 1)
+                else:
+                    source = u'\n\n' + source
         if filename is None:
             filename = filename_for_console_input(source)
         with self.timer:
@@ -138,11 +158,11 @@ class Interpreter(code.InteractiveInterpreter):
                 pass
             else:
                 # Stuff in the right filename and right lineno
-                if not py3:
-                    lineno -= 2
                 # strip linecache line number
                 if re.match(r'<bpython-input-\d+>', filename):
                     filename = '<input>'
+                if filename == '<input>' and not py3:
+                    lineno -= 2
                 value = SyntaxError(msg, (filename, lineno, offset, line))
                 sys.last_value = value
         list = traceback.format_exception_only(type, value)
@@ -166,8 +186,7 @@ class Interpreter(code.InteractiveInterpreter):
                     fname = '<input>'
                     tblist[i] = (fname, lineno, module, something)
                 # Set the right lineno (encoding header adds an extra line)
-                if not py3:
-                    if fname == '<input>':
+                if fname == '<input>' and not py3:
                         tblist[i] = (fname, lineno - 2, module, something)
 
             l = traceback.format_list(tblist)

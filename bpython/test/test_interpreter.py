@@ -50,7 +50,7 @@ class TestInterpreter(unittest.TestCase):
         i.write = append_to_a
 
         def f():
-            return 1/0
+            return 1 / 0
 
         def g():
             return f()
@@ -73,7 +73,7 @@ class TestInterpreter(unittest.TestCase):
 
     @unittest.skipIf(py3, "runsource() accepts only unicode in Python 3")
     def test_runsource_bytes(self):
-        i = interpreter.Interp(encoding='latin-1')
+        i = interpreter.Interp(encoding=b'latin-1')
 
         i.runsource("a = b'\xfe'".encode('latin-1'), encode=False)
         self.assertIsInstance(i.locals['a'], str)
@@ -85,7 +85,7 @@ class TestInterpreter(unittest.TestCase):
 
     @unittest.skipUnless(py3, "Only a syntax error in Python 3")
     def test_runsource_bytes_over_128_syntax_error_py3(self):
-        i = interpreter.Interp(encoding='latin-1')
+        i = interpreter.Interp(encoding=b'latin-1')
         i.showsyntaxerror = mock.Mock(return_value=None)
 
         i.runsource("a = b'\xfe'", encode=True)
@@ -93,15 +93,15 @@ class TestInterpreter(unittest.TestCase):
 
     @unittest.skipIf(py3, "encode is Python 2 only")
     def test_runsource_bytes_over_128_syntax_error_py2(self):
-        i = interpreter.Interp(encoding='latin-1')
+        i = interpreter.Interp(encoding=b'latin-1')
 
-        i.runsource("a = b'\xfe'", encode=True)
+        i.runsource(b"a = b'\xfe'", encode=True)
         self.assertIsInstance(i.locals['a'], type(b''))
         self.assertEqual(i.locals['a'], b"\xfe")
 
     @unittest.skipIf(py3, "encode is Python 2 only")
     def test_runsource_unicode(self):
-        i = interpreter.Interp(encoding='latin-1')
+        i = interpreter.Interp(encoding=b'latin-1')
 
         i.runsource("a = u'\xfe'", encode=True)
         self.assertIsInstance(i.locals['a'], type(u''))
