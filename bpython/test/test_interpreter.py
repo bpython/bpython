@@ -28,13 +28,10 @@ class TestInterpreter(unittest.TestCase):
 
     def err_lineno(self, a):
         strings = [x.__unicode__() for x in a]
-        print('looking for lineno')
         for line in reversed(strings):
             clean_line = remove_ansi(line)
-            print(clean_line)
             m = re.search(r'line (\d+)[,]', clean_line)
             if m:
-                print('found!', m.group(1))
                 return int(m.group(1))
         return None
 
@@ -150,8 +147,9 @@ class TestInterpreter(unittest.TestCase):
             i, a = self.interp_errlog()
             i.runsource(u'#encoding: utf-8\nabc',
                         filename='x.py', encode=encode)
-            self.assertIn('SyntaxError: encoding',
-                          ''.join(''.join(remove_ansi(x.__unicode__()) for x in a)))
+            self.assertIn('SyntaxError:',
+                          ''.join(''.join(remove_ansi(x.__unicode__())
+                                          for x in a)))
 
     @unittest.skipIf(py3, "encode only does anything in Python 2")
     def test_runsource_unicode_encode(self):
