@@ -118,23 +118,41 @@ class Interpreter(code.InteractiveInterpreter):
 
         In Python 3, source must be a unicode string
         In Python 2, source may be latin-1 bytestring or unicode string,
-        following the interface of code.InteractiveInterpreter"""
-        if encode == 'auto':
-            encode = filename is None
-        if encode and not py3:
-            if isinstance(source, str):
-                # encoding only makes sense for bytestrings
-                assert isinstance(source, str)
-                source = b'# coding: %s\n\n%s' % (self.encoding, source)
-            else:
-                # 2 blank lines still need to be added because this
-                # interpreter always adds 2 lines to stack trace line
+        following the interface of code.InteractiveInterpreter.
+
+        Because adding an encoding comment to a unicode string in Python 2
+        would cause a syntax error to be thrown which would reference code
+        the user did not write, setting encoding to True when source is a
+        unicode string in Python 2 will throw a ValueError."""
+        # str means bytestring in Py2
+        if encode and not py3 and isinstance(source, unicode):
+            if encode != 'auto':
+                raise ValueError("can't add encoding line to unicode input")
+            encode = False
+        if encode and filename is not None:
+            # files have encoding comments or implicit encoding of ASCII
+            if encode != 'auto':
+                raise ValueError("shouldn't add encoding line to file contents")
+            encode = False
+
+        if encode and not py3 and isinstance(source, str):
+            # encoding makes sense for bytestrings, so long as there
+            # isn't already an encoding comment
+            comment = inspection.get_encoding_comment(source)
+            if comment:
+                # keep the existing encoding comment, but add two lines
+                # because this interp always adds 2 to stack trace line
                 # numbers in Python 2
-                comment = inspection.get_encoding_comment(source)
-                if comment:
-                    source = source.replace(comment, u'%s\n\n' % comment, 1)
-                else:
-                    source = u'\n\n' + source
+                source = source.replace(comment, b'%s\n\n' % comment, 1)
+            else:
+                source = b'# coding: %s\n\n%s' % (self.encoding, source)
+        elif not py3 and filename is None:
+            # 2 blank lines still need to be added
+            # because this interpreter always adds 2 to stack trace line
+            # numbers in Python 2 when the filename is "<input>"
+            newlines = u'\n\n' if isinstance(source, unicode) else b'\n\n'
+            source = newlines + source
+            # we know we're in Python 2 here, so ok to reference unicode
         if filename is None:
             filename = filename_for_console_input(source)
         with self.timer:
