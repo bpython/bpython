@@ -1,7 +1,9 @@
 # coding: utf8
 from __future__ import unicode_literals
-import sys
+import itertools
+import string
 import os
+import sys
 from contextlib import contextmanager
 
 from curtsies.formatstringarray import FormatStringTest, fsarray
@@ -21,6 +23,7 @@ from bpython.test import FixLanguageTestCase as TestCase
 def setup_config():
     config_struct = config.Struct()
     config.loadini(config_struct, os.devnull)
+    config_struct.cli_suggestion_width = 1
     return config_struct
 
 
@@ -48,13 +51,18 @@ class CurtsiesPaintingTest(FormatStringTest, ClearEnviron):
         self.repl.rl_history = History()
         self.repl.height, self.repl.width = (5, 10)
 
+    @property
+    def locals(self):
+        return self.repl.coderunner.interp.locals
+
     def assert_paint(self, screen, cursor_row_col):
         array, cursor_pos = self.repl.paint()
         self.assertFSArraysEqual(array, screen)
         self.assertEqual(cursor_pos, cursor_row_col)
 
-    def assert_paint_ignoring_formatting(self, screen, cursor_row_col=None):
-        array, cursor_pos = self.repl.paint()
+    def assert_paint_ignoring_formatting(self, screen, cursor_row_col=None,
+                                         **paint_kwargs):
+        array, cursor_pos = self.repl.paint(**paint_kwargs)
         self.assertFSArraysEqualIgnoringFormatting(array, screen)
         if cursor_row_col is not None:
             self.assertEqual(cursor_pos, cursor_row_col)
@@ -96,15 +104,15 @@ class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
         self.cursor_offset = 2
         if config.supports_box_chars():
             screen = ['>>> an',
-                      '┌───────────────────────┐',
-                      '│ and  any(             │',
-                      '└───────────────────────┘',
+                      '┌──────────────────────────────┐',
+                      '│ and  any(                    │',
+                      '└──────────────────────────────┘',
                       'Welcome to bpython! Press <F1> f']
         else:
             screen = ['>>> an',
-                      '+-----------------------+',
-                      '| and  any(             |',
-                      '+-----------------------+',
+                      '+------------------------------+',
+                      '| and  any(                    |',
+                      '+------------------------------+',
                       'Welcome to bpython! Press <F1> f']
         self.assert_paint_ignoring_formatting(screen, (0, 4))
 
@@ -155,7 +163,7 @@ def output_to_repl(repl):
         sys.stdout, sys.stderr = old_out, old_err
 
 
-class TestCurtsiesRewindRedraw(CurtsiesPaintingTest):
+class HigherLevelCurtsiesPaintingTest(CurtsiesPaintingTest):
     def refresh(self):
         self.refresh_requests.append(RefreshRequestEvent())
 
@@ -194,6 +202,12 @@ class TestCurtsiesRewindRedraw(CurtsiesPaintingTest):
         self.repl.rl_history = History()
         self.repl.height, self.repl.width = (5, 32)
 
+    def send_key(self, key):
+        self.repl.process_event('<SPACE>' if key == ' ' else key)
+        self.repl.paint()  # has some side effects we need to be wary of
+
+
+class TestCurtsiesRewindRedraw(HigherLevelCurtsiesPaintingTest):
     def test_rewind(self):
         self.repl.current_line = '1 + 1'
         self.enter()
@@ -564,10 +578,6 @@ class TestCurtsiesRewindRedraw(CurtsiesPaintingTest):
                          green("... ") + yellow(')') + bold(cyan(" "))])
         self.assert_paint(screen, (1, 6))
 
-    def send_key(self, key):
-        self.repl.process_event('<SPACE>' if key == ' ' else key)
-        self.repl.paint()  # has some side effects we need to be wary of
-
     def test_472(self):
         [self.send_key(c) for c in "(1, 2, 3)"]
         with output_to_repl(self.repl):
@@ -586,3 +596,128 @@ class TestCurtsiesRewindRedraw(CurtsiesPaintingTest):
                   '(1, 4, 3)',
                   '>>> ']
         self.assert_paint_ignoring_formatting(screen, (4, 4))
+
+
+def completion_target(num_names, chars_in_first_name=1):
+    class Class(object):
+        pass
+
+    if chars_in_first_name < 1:
+        raise ValueError('need at least one char in each name')
+    elif chars_in_first_name == 1 and num_names > len(string.ascii_letters):
+        raise ValueError('need more chars to make so many names')
+
+    names = gen_names()
+    if num_names > 0:
+        setattr(Class, 'a' * chars_in_first_name, 1)
+        next(names)  # use the above instead of first name
+    for _, name in zip(range(num_names - 1), names):
+        setattr(Class, name, 0)
+
+    return Class()
+
+
+def gen_names():
+    for letters in itertools.chain(
+            itertools.combinations_with_replacement(string.ascii_letters, 1),
+            itertools.combinations_with_replacement(string.ascii_letters, 2)):
+        yield ''.join(letters)
+
+
+class TestCompletionHelpers(TestCase):
+    def test_gen_names(self):
+        self.assertEqual(list(zip([1, 2, 3], gen_names())),
+                         [(1, 'a'), (2, 'b'), (3, 'c')])
+
+    def test_completion_target(self):
+        target = completion_target(14)
+        self.assertEqual(len([x for x in dir(target)
+                              if not x.startswith('_')]),
+                         14)
+
+
+class TestCurtsiesInfoboxPaint(HigherLevelCurtsiesPaintingTest):
+    def test_simple(self):
+        self.repl.width, self.repl.height = (20, 30)
+        self.locals['abc'] = completion_target(3, 50)
+        self.repl.current_line = 'abc'
+        self.repl.cursor_offset = 3
+        self.repl.process_event('.')
+        screen = ['>>> abc.',
+                  '+------------------+',
+                  '| aaaaaaaaaaaaaaaa |',
+                  '| b                |',
+                  '| c                |',
+                  '+------------------+']
+        self.assert_paint_ignoring_formatting(screen, (0, 8))
+
+    def test_fill_screen(self):
+        self.repl.width, self.repl.height = (20, 15)
+        self.locals['abc'] = completion_target(20, 100)
+        self.repl.current_line = 'abc'
+        self.repl.cursor_offset = 3
+        self.repl.process_event('.')
+        screen = ['>>> abc.',
+                  '+------------------+',
+                  '| aaaaaaaaaaaaaaaa |',
+                  '| b                |',
+                  '| c                |',
+                  '| d                |',
+                  '| e                |',
+                  '| f                |',
+                  '| g                |',
+                  '| h                |',
+                  '| i                |',
+                  '| j                |',
+                  '| k                |',
+                  '| l                |',
+                  '+------------------+']
+        self.assert_paint_ignoring_formatting(screen, (0, 8))
+
+    def test_lower_on_screen(self):
+        self.repl.get_top_usable_line = lambda: 10  # halfway down terminal
+        self.repl.width, self.repl.height = (20, 15)
+        self.locals['abc'] = completion_target(20, 100)
+        self.repl.current_line = 'abc'
+        self.repl.cursor_offset = 3
+        self.repl.process_event('.')
+        screen = ['>>> abc.',
+                  '+------------------+',
+                  '| aaaaaaaaaaaaaaaa |',
+                  '| b                |',
+                  '| c                |',
+                  '| d                |',
+                  '| e                |',
+                  '| f                |',
+                  '| g                |',
+                  '| h                |',
+                  '| i                |',
+                  '| j                |',
+                  '| k                |',
+                  '| l                |',
+                  '+------------------+']
+        self.assert_paint_ignoring_formatting(screen, (0, 8))
+
+    def test_at_bottom_of_screen(self):
+        self.repl.get_top_usable_line = lambda: 17  # two lines from bottom
+        self.repl.width, self.repl.height = (20, 15)
+        self.locals['abc'] = completion_target(20, 100)
+        self.repl.current_line = 'abc'
+        self.repl.cursor_offset = 3
+        self.repl.process_event('.')
+        screen = ['>>> abc.',
+                  '+------------------+',
+                  '| aaaaaaaaaaaaaaaa |',
+                  '| b                |',
+                  '| c                |',
+                  '| d                |',
+                  '| e                |',
+                  '| f                |',
+                  '| g                |',
+                  '| h                |',
+                  '| i                |',
+                  '| j                |',
+                  '| k                |',
+                  '| l                |',
+                  '+------------------+']
+        self.assert_paint_ignoring_formatting(screen, (0, 8))

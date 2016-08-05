@@ -1260,7 +1260,7 @@ class BaseRepl(BpythonRepl):
         the idea is that we don't need to worry about that here, instead every
         frame is completely redrawn because less state is cool!
         """
-        # The hairiest function in the curtsies - a cleanup would be great.
+        # The hairiest function in the curtsies
         if about_to_exit:
             # exception to not changing state!
             self.clean_up_current_line_for_exit()
@@ -1501,6 +1501,7 @@ class BaseRepl(BpythonRepl):
         if clear_special_mode:
             self.special_mode = None
         self.unhighlight_paren()
+
     current_line = property(_get_current_line, _set_current_line, None,
                             "The current line")
 
