@@ -1252,8 +1252,8 @@ class BaseRepl(BpythonRepl):
         self.stdin.current_line = '\n'
 
     def paint(self, about_to_exit=False, user_quit=False,
-              try_preserve_history_height=40,
-              min_infobox_height=4):
+              try_preserve_history_height=30,
+              min_infobox_height=5):
         """Returns an array of min_height or more rows and width columns, plus
         cursor position
 

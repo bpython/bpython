@@ -696,7 +696,19 @@ class TestCurtsiesInfoboxPaint(HigherLevelCurtsiesPaintingTest):
                   '| k                |',
                   '| l                |',
                   '+------------------+']
-        self.assert_paint_ignoring_formatting(screen, (0, 8))
+        # behavior before issue #466
+        self.assert_paint_ignoring_formatting(
+                screen, try_preserve_history_height=0)
+        self.assert_paint_ignoring_formatting(
+                screen, min_infobox_height=100)
+        # behavior after issue #466
+        screen = ['>>> abc.',
+                  '+------------------+',
+                  '| aaaaaaaaaaaaaaaa |',
+                  '| b                |',
+                  '| c                |',
+                  '+------------------+']
+        self.assert_paint_ignoring_formatting(screen)
 
     def test_at_bottom_of_screen(self):
         self.repl.get_top_usable_line = lambda: 17  # two lines from bottom
@@ -720,4 +732,16 @@ class TestCurtsiesInfoboxPaint(HigherLevelCurtsiesPaintingTest):
                   '| k                |',
                   '| l                |',
                   '+------------------+']
-        self.assert_paint_ignoring_formatting(screen, (0, 8))
+        # behavior before issue #466
+        self.assert_paint_ignoring_formatting(
+                screen, try_preserve_history_height=0)
+        self.assert_paint_ignoring_formatting(
+                screen, min_infobox_height=100)
+        # behavior after issue #466
+        screen = ['>>> abc.',
+                  '+------------------+',
+                  '| aaaaaaaaaaaaaaaa |',
+                  '| b                |',
+                  '| c                |',
+                  '+------------------+']
+        self.assert_paint_ignoring_formatting(screen)
