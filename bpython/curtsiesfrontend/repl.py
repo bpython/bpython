@@ -220,7 +220,7 @@ class FakeStdin(object):
 
     @property
     def encoding(self):
-        return "UTF8"
+        return sys.__stdin__.encoding
 
     # TODO write a read() method?
 
