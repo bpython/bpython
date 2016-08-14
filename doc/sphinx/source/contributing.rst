@@ -64,7 +64,7 @@ Next install the install your development copy of bpython and its dependencies:
         $ sudo apt-get install python-watchdog python-urwid
         $ sudo apt-get install python-sphinx python-mock python-nose
 
-    Rememeber to replace ``python`` with ``python3`` in every package name if
+    Remember to replace ``python`` with ``python3`` in every package name if
     you intend to develop with Python 3. You also need to run `virtualenv` with
     `--system-site-packages` packages, if you want to use the packages provided
     by your distribution.
