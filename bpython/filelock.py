@@ -25,6 +25,7 @@
 
 try:
     import fcntl
+    import errno
     has_fcntl = True
 except ImportError:
     has_fcntl = False
@@ -42,14 +43,20 @@ class FileLock(object):
 
         self.fd = fd
         self.mode = mode
+        self.locked = False
 
     def __enter__(self):
         if has_fcntl:
-            fcntl.flock(self.fd, self.mode)
+            try:
+                fcntl.flock(self.fd, self.mode)
+                self.locked = True
+            except IOError as e:
+                if e.errno != errno.ENOLCK:
+                    raise e
         return self
 
     def __exit__(self, *args):
-        if has_fcntl:
+        if has_fcntl and self.locked:
             fcntl.flock(self.fd, fcntl.LOCK_UN)
 
 # vim: sw=4 ts=4 sts=4 ai et
