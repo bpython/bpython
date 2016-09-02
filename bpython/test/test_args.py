@@ -1,15 +1,13 @@
+# encoding: utf-8
+
+import re
 import subprocess
 import sys
 import tempfile
 from textwrap import dedent
 
 from bpython import args
-from bpython.test import FixLanguageTestCase as TestCase
-
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
+from bpython.test import (FixLanguageTestCase as TestCase, unittest)
 
 try:
     from nose.plugins.attrib import attr
@@ -38,6 +36,42 @@ class TestExecArgs(unittest.TestCase):
             (_, stderr) = p.communicate()
 
             self.assertEquals(stderr.strip(), f.name)
+
+    def test_exec_nonascii_file(self):
+        with tempfile.NamedTemporaryFile(mode="w") as f:
+            f.write(dedent('''\
+                #!/usr/bin/env python2
+                # coding: utf-8
+                "你好 # nonascii"
+                '''))
+            f.flush()
+            try:
+                subprocess.check_call([
+                    'python', '-m', 'bpython.curtsies',
+                    f.name])
+            except subprocess.CalledProcessError:
+                self.fail('Error running module with nonascii characters')
+
+    def test_exec_nonascii_file_linenums(self):
+        with tempfile.NamedTemporaryFile(mode="w") as f:
+            f.write(dedent("""\
+                #!/usr/bin/env python2
+                # coding: utf-8
+                1/0
+                """))
+            f.flush()
+            p = subprocess.Popen(
+                [sys.executable, "-m", "bpython.curtsies",
+                    f.name],
+                stderr=subprocess.PIPE,
+                universal_newlines=True)
+            (_, stderr) = p.communicate()
+
+            self.assertIn('line 3', clean_colors(stderr))
+
+
+def clean_colors(s):
+    return re.sub(r'\x1b[^m]*m', '', s)
 
 
 class TestParse(TestCase):

@@ -283,16 +283,25 @@ def is_callable(obj):
     return callable(obj)
 
 
-get_encoding_re = LazyReCompile(r'coding[:=]\s*([-\w.]+)')
+get_encoding_line_re = LazyReCompile(r'^.*coding[:=]\s*([-\w.]+).*$')
 
 
 def get_encoding(obj):
     """Try to obtain encoding information of the source of an object."""
     for line in inspect.findsource(obj)[0][:2]:
-        m = get_encoding_re.search(line)
+        m = get_encoding_line_re.search(line)
         if m:
             return m.group(1)
     return 'ascii'
+
+
+def get_encoding_comment(source):
+    """Returns encoding line without the newline, or None is not found"""
+    for line in source.splitlines()[:2]:
+        m = get_encoding_line_re.search(line)
+        if m:
+            return m.group(0)
+    return None
 
 
 def get_encoding_file(fname):
@@ -300,7 +309,7 @@ def get_encoding_file(fname):
     with io.open(fname, 'rt', encoding='ascii', errors='ignore') as f:
         for unused in range(2):
             line = f.readline()
-            match = get_encoding_re.search(line)
+            match = get_encoding_line_re.search(line)
             if match:
                 return match.group(1)
     return 'ascii'
