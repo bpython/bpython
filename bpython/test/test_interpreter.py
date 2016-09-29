@@ -62,20 +62,20 @@ class TestInterpreter(unittest.TestCase):
         def f():
             return 1 / 0
 
-        def g():
+        def gfunc():
             return f()
 
-        i.runsource('g()')
+        i.runsource('gfunc()')
 
         if pypy:
-            global_not_found = "global name 'g' is not defined"
+            global_not_found = "global name 'gfunc' is not defined"
         else:
-            global_not_found = "name 'g' is not defined"
+            global_not_found = "name 'gfunc' is not defined"
 
         expected = (
             'Traceback (most recent call last):\n  File ' +
             green('"<input>"') + ', line ' +
-            bold(magenta('1')) + ', in ' + cyan('<module>') + '\n    g()\n' +
+            bold(magenta('1')) + ', in ' + cyan('<module>') + '\n    gfunc()\n' +
             bold(red('NameError')) + ': ' + cyan(global_not_found) + '\n')
 
         self.assertMultiLineEqual(str(plain('').join(a)), str(expected))
@@ -133,19 +133,19 @@ class TestInterpreter(unittest.TestCase):
         # for auto and False, run the same tests
         for encode in ['auto', False]:
             i, a = self.interp_errlog()
-            i.runsource(u'[1 + 1,\nabc]', encode=encode)
+            i.runsource(u'[1 + 1,\nabcd]', encode=encode)
             self.assertEqual(self.err_lineno(a), 2)
 
             i, a = self.interp_errlog()
-            i.runsource(u'[1 + 1,\nabc]', encode=encode)
+            i.runsource(u'[1 + 1,\nabcd]', encode=encode)
             self.assertEqual(self.err_lineno(a), 2)
 
             i, a = self.interp_errlog()
-            i.runsource(u'#encoding: utf-8\nabc', encode=encode)
+            i.runsource(u'#encoding: utf-8\nabcd', encode=encode)
             self.assertEqual(self.err_lineno(a), 2)
 
             i, a = self.interp_errlog()
-            i.runsource(u'#encoding: utf-8\nabc',
+            i.runsource(u'#encoding: utf-8\nabcd',
                         filename='x.py', encode=encode)
             self.assertIn('SyntaxError:',
                           ''.join(''.join(remove_ansi(x.__unicode__())
@@ -164,11 +164,11 @@ class TestInterpreter(unittest.TestCase):
     @unittest.skipIf(py3, "encode only does anything in Python 2")
     def test_runsource_bytestring_noencode(self):
         i, a = self.interp_errlog()
-        i.runsource(b'[1 + 1,\nabc]', encode=False)
+        i.runsource(b'[1 + 1,\nabcd]', encode=False)
         self.assertEqual(self.err_lineno(a), 2)
 
         i, a = self.interp_errlog()
-        i.runsource(b'[1 + 1,\nabc]', filename='x.py', encode=False)
+        i.runsource(b'[1 + 1,\nabcd]', filename='x.py', encode=False)
         self.assertEqual(self.err_lineno(a), 2)
 
         i, a = self.interp_errlog()
@@ -176,7 +176,7 @@ class TestInterpreter(unittest.TestCase):
                     #encoding: utf-8
 
                     ["%s",
-                    abc]''' % (u'åß∂ƒ'.encode('utf8'),)), encode=False)
+                    abcd]''' % (u'åß∂ƒ'.encode('utf8'),)), encode=False)
         self.assertEqual(self.err_lineno(a), 4)
 
         i, a = self.interp_errlog()
@@ -184,26 +184,26 @@ class TestInterpreter(unittest.TestCase):
                     #encoding: utf-8
 
                     ["%s",
-                    abc]''' % (u'åß∂ƒ'.encode('utf8'),)),
+                    abcd]''' % (u'åß∂ƒ'.encode('utf8'),)),
                     filename='x.py', encode=False)
         self.assertEqual(self.err_lineno(a), 4)
 
     @unittest.skipIf(py3, "encode only does anything in Python 2")
     def test_runsource_bytestring_encode(self):
         i, a = self.interp_errlog()
-        i.runsource(b'[1 + 1,\nabc]', encode=True)
+        i.runsource(b'[1 + 1,\nabcd]', encode=True)
         self.assertEqual(self.err_lineno(a), 2)
 
         i, a = self.interp_errlog()
         with self.assertRaises(ValueError):
-            i.runsource(b'[1 + 1,\nabc]', filename='x.py', encode=True)
+            i.runsource(b'[1 + 1,\nabcd]', filename='x.py', encode=True)
 
         i, a = self.interp_errlog()
         i.runsource(dedent(b'''\
                     #encoding: utf-8
 
                     [u"%s",
-                    abc]''' % (u'åß∂ƒ'.encode('utf8'),)), encode=True)
+                    abcd]''' % (u'åß∂ƒ'.encode('utf8'),)), encode=True)
         self.assertEqual(self.err_lineno(a), 4)
 
         i, a = self.interp_errlog()
@@ -212,18 +212,18 @@ class TestInterpreter(unittest.TestCase):
                         #encoding: utf-8
 
                         [u"%s",
-                        abc]''' % (u'åß∂ƒ'.encode('utf8'),)),
+                        abcd]''' % (u'åß∂ƒ'.encode('utf8'),)),
                         filename='x.py',
                         encode=True)
 
     @unittest.skipIf(py3, "encode only does anything in Python 2")
     def test_runsource_bytestring_autoencode(self):
         i, a = self.interp_errlog()
-        i.runsource(b'[1 + 1,\n abc]')
+        i.runsource(b'[1 + 1,\n abcd]')
         self.assertEqual(self.err_lineno(a), 2)
 
         i, a = self.interp_errlog()
-        i.runsource(b'[1 + 1,\nabc]', filename='x.py')
+        i.runsource(b'[1 + 1,\nabcd]', filename='x.py')
         self.assertEqual(self.err_lineno(a), 2)
 
         i, a = self.interp_errlog()
@@ -231,7 +231,7 @@ class TestInterpreter(unittest.TestCase):
                     #encoding: utf-8
 
                     [u"%s",
-                    abc]''' % (u'åß∂ƒ'.encode('utf8'),)))
+                    abcd]''' % (u'åß∂ƒ'.encode('utf8'),)))
         self.assertEqual(self.err_lineno(a), 4)
 
         i, a = self.interp_errlog()
@@ -239,5 +239,5 @@ class TestInterpreter(unittest.TestCase):
                     #encoding: utf-8
 
                     [u"%s",
-                    abc]''' % (u'åß∂ƒ'.encode('utf8'),)))
+                    abcd]''' % (u'åß∂ƒ'.encode('utf8'),)))
         self.assertEqual(self.err_lineno(a), 4)
