@@ -61,6 +61,21 @@ class BPythonFormatter(Formatter):
         outfile.write(parse(o.rstrip()))
 
 
+class CrazyLocals(dict):
+    def __getitem__(self, name):
+        try:
+            return super(CrazyLocals, self).__getitem__(name)
+        except KeyError:
+            import sys
+            try:
+                return sys.modules[name]
+            except KeyError:
+                for mod in sys.modules.values():
+                    if hasattr(mod, name):
+                        return getattr(mod, name)
+                raise
+
+
 class Interp(ReplInterpreter):
     def __init__(self, locals=None, encoding=None):
         """Constructor.
@@ -75,6 +90,9 @@ class Interp(ReplInterpreter):
         """
         if locals is None:
             locals = {"__name__": "__console__", "__doc__": None}
+
+        locals = CrazyLocals(locals)
+
         if encoding is None:
             encoding = getpreferredencoding()
         ReplInterpreter.__init__(self, locals, encoding)
