@@ -91,7 +91,7 @@ def parse(args, extras=None, ignore_stdin=False):
     if options.version:
         print('bpython version', __version__, end=" ")
         print('on top of Python', sys.version.split()[0])
-        print('(C) 2008-2015 Bob Farrell, Andreas Stuehrk et al. '
+        print('(C) 2008-2016 Bob Farrell, Andreas Stuehrk, Sebastian Ramacher, Thomas Ballinger, et al. '
               'See AUTHORS for detail.')
         raise SystemExit
 
