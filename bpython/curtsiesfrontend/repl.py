@@ -1702,7 +1702,7 @@ class BaseRepl(BpythonRepl):
         try:
             source = self.get_source_of_current_name()
         except SourceNotFound as e:
-            self.status_bar.message(str(e))
+            self.status_bar.message('%s' % (e, ))
         else:
             if self.config.highlight_show_source:
                 source = format(PythonLexer().get_tokens(source),
