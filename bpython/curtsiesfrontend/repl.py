@@ -1256,7 +1256,9 @@ class BaseRepl(BpythonRepl):
         self.current_stdouterr_line = ''
         self.stdin.current_line = '\n'
 
-    def paint(self, about_to_exit=False, user_quit=False):
+    def paint(self, about_to_exit=False, user_quit=False,
+              try_preserve_history_height=30,
+              min_infobox_height=5):
         """Returns an array of min_height or more rows and width columns, plus
         cursor position
 
@@ -1264,8 +1266,12 @@ class BaseRepl(BpythonRepl):
         a diff and only write to the screen in portions that have changed, but
         the idea is that we don't need to worry about that here, instead every
         frame is completely redrawn because less state is cool!
+
+        try_preserve_history_height is the the number of rows of content that
+        must be visible before the suggestion box scrolls the terminal in order
+        to display more than min_infobox_height rows of suggestions, docs etc.
         """
-        # The hairiest function in the curtsies - a cleanup would be great.
+        # The hairiest function in the curtsies
         if about_to_exit:
             # exception to not changing state!
             self.clean_up_current_line_for_exit()
@@ -1415,10 +1421,18 @@ class BaseRepl(BpythonRepl):
             if self.config.curtsies_list_above:
                 info_max_rows = max(visible_space_above, visible_space_below)
             else:
+                # Logic for determining size of completion box
                 # smallest allowed over-full completion box
-                minimum_possible_height = 20
+                preferred_height = max(
+                        # always make infobox at least this height
+                        min_infobox_height,
+
+                        # use this value if there's so much space that we can
+                        # preserve this try_preserve_history_height rows history
+                        min_height - try_preserve_history_height)
+
                 info_max_rows = min(max(visible_space_below,
-                                        minimum_possible_height),
+                                        preferred_height),
                                     min_height - current_line_height - 1)
             infobox = paint.paint_infobox(
                     info_max_rows,
@@ -1506,6 +1520,7 @@ class BaseRepl(BpythonRepl):
         if clear_special_mode:
             self.special_mode = None
         self.unhighlight_paren()
+
     current_line = property(_get_current_line, _set_current_line, None,
                             "The current line")
 
