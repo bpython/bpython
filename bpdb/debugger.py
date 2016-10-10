@@ -29,8 +29,8 @@ import bpython
 class BPdb(pdb.Pdb):
     """ PDB with BPython support. """
 
-    def __init__(self):
-        pdb.Pdb.__init__(self)
+    def __init__(self, *args, **kwargs):
+        pdb.Pdb.__init__(self, *args, **kwargs)
         self.rcLines = []
         self.prompt = '(BPdb) '
         self.intro = 'Use "B" to enter bpython, Ctrl-d to exit it.'
