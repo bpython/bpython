@@ -10,6 +10,7 @@ None
 Fixes:
 * Fix various spelling mistakes.
   Thanks to Josh Soref and Simeon Visser.
+* #466: Better handle height of completion boxes.
 * #601: Fix Python 2 issues on Windows.
   Thanks to Aditya Gupta.
 * #614: Fix issues when view source.
