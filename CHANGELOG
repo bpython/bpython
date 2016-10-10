@@ -5,10 +5,18 @@ Changelog
 ----
 
 New features:
+None
 
 Fixes:
-
-
+* Fix various spelling mistakes.
+  Thanks to Josh Soref and Simeon Visser.
+* #601: Fix Python 2 issues on Windows.
+  Thanks to Aditya Gupta.
+* #614: Fix issues when view source.
+  Thanks to Daniel Hahler.
+* #625: Fix issues when runnings scripts with non-ASCII characters.
+* #639: Fix compatbility issues with pdb++.
+  Thanks to Daniel Hahler.
 
 Support for Python 2.6 has been dropped.
 
