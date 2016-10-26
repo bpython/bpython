@@ -110,4 +110,3 @@ class PasteHelper(object):
                                     'program\'s output as an URL.'))
 
         return paste_url, None
-    
