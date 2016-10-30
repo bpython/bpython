@@ -109,4 +109,4 @@ class PasteHelper(object):
                 raise PasteFailed(_('Failed to recognize the helper '
                                     'program\'s output as an URL.'))
 
-        return paste_url,
+        return paste_url, None
