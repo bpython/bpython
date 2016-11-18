@@ -74,7 +74,7 @@ def matches_lines(rows, columns, matches, current, config, format):
                                       if m != current
                                       else highlight_color(
                                           m.ljust(max_match_width))
-                                      for m in matches[i:i+words_wide])
+                                      for m in matches[i:i + words_wide])
                      for i in range(0, len(matches), words_wide)]
 
     logger.debug('match: %r' % current)
@@ -161,6 +161,12 @@ def formatted_argspec(funcprops, arg_pos, columns, config):
 
 
 def formatted_docstring(docstring, columns, config):
+    if isinstance(docstring, bytes):
+        docstring = docstring.decode('utf8')
+    elif isinstance(docstring, str if py3 else unicode):
+        pass
+    else:
+        return []
     color = func_for_letter(config.color_scheme['comment'])
     return sum(([color(x) for x in (display_linize(line, columns) if line else
                                     fmtstr(''))]
@@ -211,7 +217,7 @@ def paint_last_events(rows, columns, names, config):
         return fsarray([])
     width = min(max(len(name) for name in names), columns - 2)
     output_lines = []
-    output_lines.append(config.left_top_corner+config.top_border * width +
+    output_lines.append(config.left_top_corner + config.top_border * width +
                         config.right_top_corner)
     for name in reversed(names[max(0, len(names) - (rows - 2)):]):
         output_lines.append(config.left_border + name[:width].center(width) +
