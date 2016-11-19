@@ -1,8 +1,9 @@
 # coding: utf8
 from __future__ import unicode_literals
 import itertools
-import string
 import os
+import pydoc
+import string
 import sys
 from contextlib import contextmanager
 
@@ -134,6 +135,43 @@ class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
             40, config=setup_config())
         expected = fsarray(['Returns the results', '',
                             'Also has side effects'])
+        self.assertFSArraysEqualIgnoringFormatting(actual, expected)
+
+    def test_unicode_docstrings(self):
+        "A bit of a special case in Python 2"
+        # issue 653
+
+        def foo():
+            u"åß∂ƒ"
+
+        actual = replpainter.formatted_docstring(
+                     foo.__doc__, 40, config=setup_config())
+        expected = fsarray([u'åß∂ƒ'])
+        self.assertFSArraysEqualIgnoringFormatting(actual, expected)
+
+    def test_nonsense_docstrings(self):
+        for docstring in [123, {}, [], ]:
+            try:
+                replpainter.formatted_docstring(
+                    docstring, 40, config=setup_config())
+            except Exception:
+                self.fail('bad docstring caused crash: {!r}'.format(docstring))
+
+    def test_weird_boto_docstrings(self):
+        # Boto does something like this.
+        # botocore: botocore/docs/docstring.py
+        class WeirdDocstring(str):
+            # a mighty hack. See botocore/docs/docstring.py
+            def expandtabs(self, tabsize=8):
+                return u'asdfåß∂ƒ'.expandtabs(tabsize)
+
+        def foo():
+            pass
+
+        foo.__doc__ = WeirdDocstring()
+        wd = pydoc.getdoc(foo)
+        actual = replpainter.formatted_docstring(wd, 40, config=setup_config())
+        expected = fsarray([u'asdfåß∂ƒ'])
         self.assertFSArraysEqualIgnoringFormatting(actual, expected)
 
     def test_paint_lasts_events(self):
