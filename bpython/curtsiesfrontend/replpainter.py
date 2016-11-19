@@ -166,6 +166,7 @@ def formatted_docstring(docstring, columns, config):
     elif isinstance(docstring, str if py3 else unicode):
         pass
     else:
+        # TODO: fail properly here and catch possible exceptions in callers.
         return []
     color = func_for_letter(config.color_scheme['comment'])
     return sum(([color(x) for x in (display_linize(line, columns) if line else
