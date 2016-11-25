@@ -536,6 +536,7 @@ class BaseRepl(BpythonRepl):
             sys.meta_path = [ImportFinder(self.watcher, self.orig_meta_path)]
 
         sitefix.monkeypatch_quit()
+        sitefix.monkeypatch_reload()
         return self
 
     def __exit__(self, *args):
