@@ -967,15 +967,12 @@ class BaseRepl(BpythonRepl):
 
     # Handler Helpers
     def add_normal_character(self, char):
-        print("Char is :" + str(char))
         if len(char) > 1 or is_nop(char):
             return
         if self.incr_search_mode:
             print("Incr search mode")
             self.add_to_incremental_search(char)
         else:
-            print("In here current line: " + self.current_line)
-
             self._set_current_line((self.current_line[:self.cursor_offset] +
                                     char +
                                     self.current_line[self.cursor_offset:]),
@@ -983,8 +980,6 @@ class BaseRepl(BpythonRepl):
                                    reset_rl_history=False,
                                    clear_special_mode=False)
             self.cursor_offset += 1
-
-            print("but here: " + self.current_line)
         if (self.config.cli_trim_prompts and
                 self.current_line.startswith(self.ps1)):
             self.current_line = self.current_line[4:]
@@ -1036,7 +1031,6 @@ class BaseRepl(BpythonRepl):
 
         If the interpreter successfully runs the code, clear the buffer
         """
-
         if self.paste_mode:
             self.saved_indent = 0
         else:
@@ -1202,7 +1196,6 @@ class BaseRepl(BpythonRepl):
             pass
         self.old_fs = fs
         return fs
-
 
     @property
     def lines_for_display(self):
