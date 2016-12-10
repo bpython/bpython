@@ -483,13 +483,13 @@ class BaseRepl(BpythonRepl):
         """Like request_refresh, but for undo request events."""
         raise NotImplementedError
 
-    def on_suspend():
+    def on_suspend(self):
         """Will be called on sigtstp.
 
         Do whatever cleanup would allow the user to use other programs."""
         raise NotImplementedError
 
-    def after_suspend():
+    def after_suspend(self):
         """Will be called when process foregrounded after suspend.
 
         See to it that process_event is called with None to trigger a refresh
@@ -675,6 +675,8 @@ class BaseRepl(BpythonRepl):
             self.down_one_line()
         elif e in ("<Ctrl-d>",):
             self.on_control_d()
+        elif e in ("<Ctrl-o>",):
+            self.on_control_o()
         elif e in ("<Esc+.>",):
             self.get_last_word()
         elif e in key_dispatch[self.config.reverse_incremental_search_key]:
@@ -844,6 +846,13 @@ class BaseRepl(BpythonRepl):
             self.current_line = (self.current_line[:self.cursor_offset] +
                                  self.current_line[(self.cursor_offset + 1):])
 
+    def on_control_o(self):
+        next_idx = -self.rl_history.index + 1
+        next = self.rl_history.entries[next_idx]
+        self.on_enter()
+        print("Next is : " + next)
+        self._set_current_line(next)
+
     def cut_to_buffer(self):
         self.cut_buffer = self.current_line[self.cursor_offset:]
         self.current_line = self.current_line[:self.cursor_offset]
@@ -958,11 +967,15 @@ class BaseRepl(BpythonRepl):
 
     # Handler Helpers
     def add_normal_character(self, char):
+        print("Char is :" + str(char))
         if len(char) > 1 or is_nop(char):
             return
         if self.incr_search_mode:
+            print("Incr search mode")
             self.add_to_incremental_search(char)
         else:
+            print("In here current line: " + self.current_line)
+
             self._set_current_line((self.current_line[:self.cursor_offset] +
                                     char +
                                     self.current_line[self.cursor_offset:]),
@@ -970,6 +983,8 @@ class BaseRepl(BpythonRepl):
                                    reset_rl_history=False,
                                    clear_special_mode=False)
             self.cursor_offset += 1
+
+            print("but here: " + self.current_line)
         if (self.config.cli_trim_prompts and
                 self.current_line.startswith(self.ps1)):
             self.current_line = self.current_line[4:]
@@ -1021,6 +1036,7 @@ class BaseRepl(BpythonRepl):
 
         If the interpreter successfully runs the code, clear the buffer
         """
+
         if self.paste_mode:
             self.saved_indent = 0
         else:
@@ -1186,6 +1202,7 @@ class BaseRepl(BpythonRepl):
             pass
         self.old_fs = fs
         return fs
+
 
     @property
     def lines_for_display(self):
