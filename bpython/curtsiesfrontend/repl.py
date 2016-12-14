@@ -676,7 +676,7 @@ class BaseRepl(BpythonRepl):
         elif e in ("<Ctrl-d>",):
             self.on_control_d()
         elif e in ("<Ctrl-o>",):
-            self.on_control_o()
+            self.operate_and_get_next()
         elif e in ("<Esc+.>",):
             self.get_last_word()
         elif e in key_dispatch[self.config.reverse_incremental_search_key]:
@@ -846,19 +846,24 @@ class BaseRepl(BpythonRepl):
             self.current_line = (self.current_line[:self.cursor_offset] +
                                  self.current_line[(self.cursor_offset + 1):])
 
-    def on_control_o(self):
-        next_idx = -self.rl_history.index + 1
-        next = self.rl_history.entries[next_idx]
-        self.on_enter()
-        print("Next is : " + next)
-        self._set_current_line(next)
-
     def cut_to_buffer(self):
         self.cut_buffer = self.current_line[self.cursor_offset:]
         self.current_line = self.current_line[:self.cursor_offset]
 
     def yank_from_buffer(self):
         pass
+
+    def operate_and_get_next(self):
+        # If we have not navigated back in history
+        # ctrl+o will have the same effect as enter
+        if self.rl_history.index == 0 or self.rl_history.index == 1:
+            self.on_enter()
+            return
+
+        index = self.rl_history.index
+        self.on_enter()
+        self.rl_history.index = index
+        self._set_current_line(self.rl_history.entries[-index], reset_rl_history=False)
 
     def up_one_line(self):
         self.rl_history.enter(self.current_line)
