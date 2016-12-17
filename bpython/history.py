@@ -138,6 +138,9 @@ class History(object):
                 return idx + (0 if include_current else 1)
         return self.index
 
+    def get_current_hist_index(self):
+        return self.index
+
     def find_partial_match_forward(self, search_term, include_current=False):
         add = 0 if include_current else 1
         end = max(0, self.index - (1 - add))

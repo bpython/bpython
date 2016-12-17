@@ -1086,10 +1086,10 @@ class BaseRepl(BpythonRepl):
                     self.current_stdouterr_line, self.width))
                 self.current_stdouterr_line = ''
 
-            if self.rl_history.index == 0:
+            if self.rl_history.get_current_hist_index() == 0:
                 self._set_current_line(' ' * indent, update_completion=True)
             else:
-                self._set_current_line(self.rl_history.entries[-self.rl_history.index],
+                self._set_current_line(self.rl_history.entry,
                                        reset_rl_history = False)
 
             self.cursor_offset = len(self.current_line)
