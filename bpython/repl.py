@@ -899,8 +899,9 @@ class Repl(object):
         return more
 
     def insert_into_history(self, s):
+        pythonhist = os.path.expanduser(self.config.hist_file)
         try:
-            self.rl_history.append_reload_and_write(s, self.config.hist_file,
+            self.rl_history.append_reload_and_write(s, pythonhist,
                                                     getpreferredencoding())
         except RuntimeError as e:
             self.interact.notify(u"%s" % (e, ))
