@@ -11,7 +11,7 @@ import tempfile
 from bpython._py3compat import py3
 from bpython import config, repl, cli, autocomplete
 from bpython.test import MagicIterMock, mock, FixLanguageTestCase as TestCase
-from bpython.test import unittest
+from bpython.test import unittest, TEST_CONFIG
 
 
 pypy = 'PyPy' in sys.version
@@ -19,7 +19,7 @@ pypy = 'PyPy' in sys.version
 
 def setup_config(conf):
     config_struct = config.Struct()
-    config.loadini(config_struct, os.devnull)
+    config.loadini(config_struct, TEST_CONFIG)
     if 'autocomplete_mode' in conf:
         config_struct.autocomplete_mode = conf['autocomplete_mode']
     return config_struct

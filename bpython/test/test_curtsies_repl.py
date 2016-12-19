@@ -18,7 +18,7 @@ from bpython import config
 from bpython import args
 from bpython._py3compat import py3
 from bpython.test import (FixLanguageTestCase as TestCase, MagicIterMock, mock,
-                          unittest)
+                          unittest, TEST_CONFIG)
 
 from curtsies import events
 
@@ -31,7 +31,7 @@ else:
 
 def setup_config(conf):
     config_struct = config.Struct()
-    config.loadini(config_struct, os.devnull)
+    config.loadini(config_struct, TEST_CONFIG)
     for key, value in conf.items():
         if not hasattr(config_struct, key):
             raise ValueError("%r is not a valid config attribute" % (key, ))

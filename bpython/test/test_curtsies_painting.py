@@ -18,12 +18,12 @@ from bpython.curtsiesfrontend import replpainter
 from bpython.repl import History
 from bpython.curtsiesfrontend.repl import INCONSISTENT_HISTORY_MSG, \
     CONTIGUITY_BROKEN_MSG
-from bpython.test import FixLanguageTestCase as TestCase
+from bpython.test import FixLanguageTestCase as TestCase, TEST_CONFIG
 
 
 def setup_config():
     config_struct = config.Struct()
-    config.loadini(config_struct, os.devnull)
+    config.loadini(config_struct, TEST_CONFIG)
     config_struct.cli_suggestion_width = 1
     return config_struct
 
