@@ -40,8 +40,8 @@ class StatusBar(BpythonInteraction):
         self.permanent_stack = []
         if permanent_text:
             self.permanent_stack.append(permanent_text)
-        self.main_greenlet = greenlet.getcurrent()
-        self.request_greenlet = None
+        self.main_context = greenlet.getcurrent()
+        self.request_context = None
         self.request_refresh = request_refresh
         self.schedule_refresh = schedule_refresh
 
@@ -76,13 +76,13 @@ class StatusBar(BpythonInteraction):
         assert self.in_prompt or self.in_confirm or self.waiting_for_refresh
         if isinstance(e, RefreshRequestEvent):
             self.waiting_for_refresh = False
-            self.request_greenlet.switch()
+            self.request_context.switch()
         elif isinstance(e, events.PasteEvent):
             for ee in e.events:
                 # strip control seq
                 self.add_normal_character(ee if len(ee) == 1 else ee[-1])
         elif e in ['<ESC>'] or isinstance(e, events.SigIntEvent):
-            self.request_greenlet.switch(False)
+            self.request_context.switch(False)
             self.escape()
         elif e in edit_keys:
             self.cursor_offset_in_line, self._current_line = edit_keys[e](
@@ -94,12 +94,12 @@ class StatusBar(BpythonInteraction):
         elif self.in_prompt and e in ("\n", "\r", "<Ctrl-j>", "Ctrl-m>"):
             line = self._current_line
             self.escape()
-            self.request_greenlet.switch(line)
+            self.request_context.switch(line)
         elif self.in_confirm:
             if e in ('y', 'Y'):
-                self.request_greenlet.switch(True)
+                self.request_context.switch(True)
             else:
-                self.request_greenlet.switch(False)
+                self.request_context.switch(False)
             self.escape()
         else:  # add normal character
             self.add_normal_character(e)
@@ -140,26 +140,26 @@ class StatusBar(BpythonInteraction):
 
     # interaction interface - should be called from other greenlets
     def notify(self, msg, n=3, wait_for_keypress=False):
-        self.request_greenlet = greenlet.getcurrent()
+        self.request_context = greenlet.getcurrent()
         self.message_time = n
         self.message(msg, schedule_refresh=wait_for_keypress)
         self.waiting_for_refresh = True
         self.request_refresh()
-        self.main_greenlet.switch(msg)
+        self.main_context.switch(msg)
 
     # below Really ought to be called from greenlets other than main because
     # they block
     def confirm(self, q):
         """Expected to return True or False, given question prompt q"""
-        self.request_greenlet = greenlet.getcurrent()
+        self.request_context = greenlet.getcurrent()
         self.prompt = q
         self.in_confirm = True
-        return self.main_greenlet.switch(q)
+        return self.main_context.switch(q)
 
     def file_prompt(self, s):
         """Expected to return a file name, given """
-        self.request_greenlet = greenlet.getcurrent()
+        self.request_context = greenlet.getcurrent()
         self.prompt = s
         self.in_prompt = True
-        result = self.main_greenlet.switch(s)
+        result = self.main_context.switch(s)
         return result

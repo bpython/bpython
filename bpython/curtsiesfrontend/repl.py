@@ -128,7 +128,7 @@ class FakeStdin(object):
             self.cursor_offset, self.current_line = self.rl_char_sequences[e](
                 self.cursor_offset, self.current_line)
         elif isinstance(e, events.SigIntEvent):
-            self.coderunner.sigint_happened_in_main_greenlet = True
+            self.coderunner.sigint_happened_in_main_context = True
             self.has_focus = False
             self.current_line = ''
             self.cursor_offset = 0
@@ -179,7 +179,7 @@ class FakeStdin(object):
     def readline(self):
         self.has_focus = True
         self.repl.send_to_stdin(self.current_line)
-        value = self.coderunner.request_from_main_greenlet()
+        value = self.coderunner.request_from_main_context()
         self.readline_results.append(value)
         return value
 

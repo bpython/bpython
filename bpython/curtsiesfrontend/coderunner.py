@@ -61,13 +61,13 @@ class CodeRunner(object):
     """Runs user code in an interpreter.
 
     Running code requests a refresh by calling
-    request_from_main_greenlet(force_refresh=True), which
+    request_from_main_context(force_refresh=True), which
     suspends execution of the code and switches back to the main greenlet
 
     After load_code() is called with the source code to be run,
     the run_code() method should be called to start running the code.
     The running code may request screen refreshes and user input
-    by calling request_from_main_greenlet.
+    by calling request_from_main_context.
     When this are called, the running source code cedes
     control, and the current run_code() method call returns.
 
@@ -93,32 +93,32 @@ class CodeRunner(object):
         """
         self.interp = interp or code.InteractiveInterpreter()
         self.source = None
-        self.main_greenlet = greenlet.getcurrent()
-        self.code_greenlet = None
+        self.main_context = greenlet.getcurrent()
+        self.code_context = None
         self.request_refresh = request_refresh
         # waiting for response from main thread
         self.code_is_waiting = False
         # sigint happened while in main thread
-        self.sigint_happened_in_main_greenlet = False
+        self.sigint_happened_in_main_context = False
         self.orig_sigint_handler = None
 
     @property
     def running(self):
         """Returns greenlet if code has been loaded greenlet has been
         started"""
-        return self.source and self.code_greenlet
+        return self.source and self.code_context
 
     def load_code(self, source):
         """Prep code to be run"""
         assert self.source is None, "you shouldn't load code when some is " \
             "already running"
         self.source = source
-        self.code_greenlet = None
+        self.code_context = None
 
     def _unload_code(self):
         """Called when done running code"""
         self.source = None
-        self.code_greenlet = None
+        self.code_context = None
         self.code_is_waiting = False
 
     def run_code(self, for_code=None):
@@ -128,21 +128,21 @@ class CodeRunner(object):
         if source code is complete, returns "done"
         if source code is incomplete, returns "unfinished"
         """
-        if self.code_greenlet is None:
+        if self.code_context is None:
             assert self.source is not None
-            self.code_greenlet = greenlet.greenlet(self._blocking_run_code)
+            self.code_context = greenlet.greenlet(self._blocking_run_code)
             self.orig_sigint_handler = signal.getsignal(signal.SIGINT)
             signal.signal(signal.SIGINT, self.sigint_handler)
-            request = self.code_greenlet.switch()
+            request = self.code_context.switch()
         else:
             assert self.code_is_waiting
             self.code_is_waiting = False
             signal.signal(signal.SIGINT, self.sigint_handler)
-            if self.sigint_happened_in_main_greenlet:
-                self.sigint_happened_in_main_greenlet = False
-                request = self.code_greenlet.switch(SigintHappened)
+            if self.sigint_happened_in_main_context:
+                self.sigint_happened_in_main_context = False
+                request = self.code_context.switch(SigintHappened)
             else:
-                request = self.code_greenlet.switch(for_code)
+                request = self.code_context.switch(for_code)
 
         logger.debug('request received from code was %r', request)
         if not isinstance(request, RequestFromCodeRunner):
@@ -165,13 +165,13 @@ class CodeRunner(object):
     def sigint_handler(self, *args):
         """SIGINT handler to use while code is running or request being
         fulfilled"""
-        if greenlet.getcurrent() is self.code_greenlet:
+        if greenlet.getcurrent() is self.code_context:
             logger.debug('sigint while running user code!')
             raise KeyboardInterrupt()
         else:
             logger.debug('sigint while fulfilling code request sigint handler '
                          'running!')
-            self.sigint_happened_in_main_greenlet = True
+            self.sigint_happened_in_main_context = True
 
     def _blocking_run_code(self):
         try:
@@ -180,15 +180,15 @@ class CodeRunner(object):
             return SystemExitRequest(e.args)
         return Unfinished() if unfinished else Done()
 
-    def request_from_main_greenlet(self, force_refresh=False):
+    def request_from_main_context(self, force_refresh=False):
         """Return the argument passed in to .run_code(for_code)
 
         Nothing means calls to run_code must be... ???
         """
         if force_refresh:
-            value = self.main_greenlet.switch(Refresh())
+            value = self.main_context.switch(Refresh())
         else:
-            value = self.main_greenlet.switch(Wait())
+            value = self.main_context.switch(Wait())
         if value is SigintHappened:
             raise KeyboardInterrupt()
         return value
@@ -211,7 +211,7 @@ class FakeOutput(object):
         if not py3 and isinstance(s, str):
             s = s.decode(getpreferredencoding(), 'ignore')
         self.on_write(s, *args, **kwargs)
-        return self.coderunner.request_from_main_greenlet(force_refresh=True)
+        return self.coderunner.request_from_main_context(force_refresh=True)
 
     # Some applications which use curses require that sys.stdout
     # have a method called fileno. One example is pwntools. This
