@@ -6,7 +6,7 @@ import sys
 import termios
 import textwrap
 
-from bpython.test import unittest
+from bpython.test import unittest, TEST_CONFIG
 
 try:
     from twisted.internet import reactor
@@ -31,8 +31,6 @@ except ImportError:
         def identity(func):
             return func
         return identity
-
-TEST_CONFIG = os.path.join(os.path.dirname(__file__), "test.config")
 
 
 def set_win_size(fd, rows, columns):
