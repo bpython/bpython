@@ -24,12 +24,9 @@ except ImportError:
 try:
     import sphinx
     from sphinx.setup_command import BuildDoc
-    if sphinx.__version__ >= '1.1.3':
-        # Sphinx 1.1.2 is buggy and building bpython with that version fails.
-        # See #241.
-        using_sphinx = False
-    else:
-        using_sphinx = True
+    # Sphinx 1.1.2 is buggy and building bpython with that version fails.
+    # See #241.
+    using_sphinx = sphinx.__version__ >= '1.1.3'
 except ImportError:
     using_sphinx = False
 
