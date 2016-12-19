@@ -403,7 +403,7 @@ class BaseRepl(BpythonRepl):
 
         self.request_paint_to_pad_bottom = 0
 
-        # offscreen command yields results different from scrollback bufffer
+        # offscreen command yields results different from scrollback buffer
         self.inconsistent_history = False
 
         # history error message has already been displayed

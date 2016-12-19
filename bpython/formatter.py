@@ -49,7 +49,7 @@ from six import iteritems
 \x04 represents the end of the string; this is
     necessary because the strings are all joined
     together at the end so the parser needs them
-    as delimeters
+    as delimiters
 
 """
 

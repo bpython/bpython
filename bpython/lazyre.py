@@ -26,8 +26,8 @@ import re
 class LazyReCompile(object):
     """Compile regular expressions on first use
 
-    This class allows to store regular expressions and compiles them on first
-    use."""
+    This class allows one to store regular expressions and compiles them on
+    first use."""
 
     def __init__(self, regex, flags=0):
         self.regex = regex
