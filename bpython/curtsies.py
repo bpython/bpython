@@ -12,7 +12,7 @@ import curtsies.input
 import curtsies.events
 
 from bpython.curtsiesfrontend.repl import BaseRepl
-from bpython.curtsiesfrontend.coderunner import SystemExitFromCodeGreenlet
+from bpython.curtsiesfrontend.coderunner import SystemExitFromCodeRunner
 from bpython.curtsiesfrontend.interpreter import Interp
 from bpython import args as bpargs
 from bpython import translations
@@ -87,11 +87,11 @@ class FullCurtsiesRepl(BaseRepl):
         try:
             if e is not None:
                 self.process_event(e)
-        except (SystemExitFromCodeGreenlet, SystemExit) as err:
+        except (SystemExitFromCodeRunner, SystemExit) as err:
             array, cursor_pos = self.paint(
                 about_to_exit=True,
                 user_quit=isinstance(err,
-                                     SystemExitFromCodeGreenlet))
+                                     SystemExitFromCodeRunner))
             scrolled = self.window.render_to_terminal(array, cursor_pos)
             self.scroll_offset += scrolled
             raise
@@ -188,7 +188,7 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
                 with repl:
                     repl.height, repl.width = win.t.height, win.t.width
                     exit_value = repl.mainloop()
-    except (SystemExitFromCodeGreenlet, SystemExit) as e:
+    except (SystemExitFromCodeRunner, SystemExit) as e:
         exit_value = e.args
     return extract_exit_value(exit_value)
 

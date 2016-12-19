@@ -25,32 +25,32 @@ class SigintHappened(object):
     """If this class is returned, a SIGINT happened while the main greenlet"""
 
 
-class SystemExitFromCodeGreenlet(SystemExit):
+class SystemExitFromCodeRunner(SystemExit):
     """If this class is returned, a SystemExit happened while in the code
     greenlet"""
 
 
-class RequestFromCodeGreenlet(object):
-    """Message from the code greenlet"""
+class RequestFromCodeRunner(object):
+    """Message from the code runner"""
 
 
-class Wait(RequestFromCodeGreenlet):
+class Wait(RequestFromCodeRunner):
     """Running code would like the main loop to run for a bit"""
 
 
-class Refresh(RequestFromCodeGreenlet):
+class Refresh(RequestFromCodeRunner):
     """Running code would like the main loop to refresh the display"""
 
 
-class Done(RequestFromCodeGreenlet):
+class Done(RequestFromCodeRunner):
     """Running code is done running"""
 
 
-class Unfinished(RequestFromCodeGreenlet):
+class Unfinished(RequestFromCodeRunner):
     """Source code wasn't executed because it wasn't fully formed"""
 
 
-class SystemExitRequest(RequestFromCodeGreenlet):
+class SystemExitRequest(RequestFromCodeRunner):
     """Running code raised a SystemExit"""
 
     def __init__(self, args):
@@ -145,7 +145,7 @@ class CodeRunner(object):
                 request = self.code_greenlet.switch(for_code)
 
         logger.debug('request received from code was %r', request)
-        if not isinstance(request, RequestFromCodeGreenlet):
+        if not isinstance(request, RequestFromCodeRunner):
             raise ValueError("Not a valid value from code greenlet: %r" %
                              request)
         if isinstance(request, (Wait, Refresh)):
@@ -160,7 +160,7 @@ class CodeRunner(object):
             return request
         elif isinstance(request, SystemExitRequest):
             self._unload_code()
-            raise SystemExitFromCodeGreenlet(request.args)
+            raise SystemExitFromCodeRunner(request.args)
 
     def sigint_handler(self, *args):
         """SIGINT handler to use while code is running or request being
