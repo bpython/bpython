@@ -2,7 +2,7 @@
 
 # The MIT License
 #
-# Copyright (c) 2015 Sebastian Ramacher
+# Copyright (c) 2015-2016 Sebastian Ramacher
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,33 +30,86 @@ try:
 except ImportError:
     has_fcntl = False
 
+try:
+    import msvcrt
+    has_msvcrt = True
+except ImportError:
+    has_msvcrt = False
 
-class FileLock(object):
-    """Simple file locking
 
-    On platforms without fcntl, all operations in this class are no-ops.
+class BaseLock(object):
+    """Base class for file locking
+    """
+
+    def __init__(self, fd):
+        self.fd = fd
+        self.locked = False
+
+    def acquire(self):
+        pass
+
+    def release(self):
+        pass
+
+    def __enter__(self):
+        self.acquire()
+
+    def __exit__(self, *args):
+        if self.locked:
+            self.release()
+
+    def __del__(self):
+        if self.locked:
+            self.release()
+
+
+class UnixFileLock(BaseLock):
+    """Simple file locking for Unix using fcntl
     """
 
     def __init__(self, fd, mode=None):
-        if has_fcntl and mode is None:
+        super(UnixFileLock, self).__init__(fd)
+
+        if mode is None:
             mode = fcntl.LOCK_EX
-
-        self.fd = fd
         self.mode = mode
-        self.locked = False
 
-    def __enter__(self):
-        if has_fcntl:
-            try:
-                fcntl.flock(self.fd, self.mode)
-                self.locked = True
-            except IOError as e:
-                if e.errno != errno.ENOLCK:
-                    raise e
+    def acquire(self):
+        try:
+            fcntl.flock(self.fd, self.mode)
+            self.locked = True
+        except IOError as e:
+            if e.errno != errno.ENOLCK:
+                raise e
         return self
 
-    def __exit__(self, *args):
-        if has_fcntl and self.locked:
-            fcntl.flock(self.fd, fcntl.LOCK_UN)
+    def release(self):
+        fcntl.flock(self.fd, fcntl.LOCK_UN)
+        self.locked = False
+
+
+class WindowsFileLock(BaseLock):
+    """Simple file locking for Windows using msvcrt
+    """
+
+    def __init__(self, fd, mode=None):
+        super(WindowsFileLock, self).__init__(fd)
+
+    def acquire(self):
+        msvcrt.locking(self.fd, msvcrt.LK_NBLCK, 1)
+        self.locked = True
+        return self
+
+    def release(self):
+        msvcrt.locking(self.fd, msvcrt.LK_UNLCK, 1)
+        self.locked = False
+
+
+if has_fcntl:
+    FileLock = UnixFileLock
+elif has_msvcrt:
+    FileLock = WindowsFileLock
+else:
+    FileLock = BaseLock
 
 # vim: sw=4 ts=4 sts=4 ai et
