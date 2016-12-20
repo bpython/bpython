@@ -970,7 +970,6 @@ class BaseRepl(BpythonRepl):
         if len(char) > 1 or is_nop(char):
             return
         if self.incr_search_mode:
-            print("Incr search mode")
             self.add_to_incremental_search(char)
         else:
             self._set_current_line((self.current_line[:self.cursor_offset] +
