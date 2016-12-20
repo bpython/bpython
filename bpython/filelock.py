@@ -53,6 +53,7 @@ class BaseLock(object):
 
     def __enter__(self):
         self.acquire()
+        return self
 
     def __exit__(self, *args):
         if self.locked:
@@ -81,7 +82,6 @@ class UnixFileLock(BaseLock):
         except IOError as e:
             if e.errno != errno.ENOLCK:
                 raise e
-        return self
 
     def release(self):
         fcntl.flock(self.fd, fcntl.LOCK_UN)
@@ -98,7 +98,6 @@ class WindowsFileLock(BaseLock):
     def acquire(self):
         msvcrt.locking(self.fd, msvcrt.LK_NBLCK, 1)
         self.locked = True
-        return self
 
     def release(self):
         msvcrt.locking(self.fd, msvcrt.LK_UNLCK, 1)
