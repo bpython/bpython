@@ -185,7 +185,7 @@ class History(object):
         entries = []
         for line in fd:
             self.append_to(entries, line)
-        return entries
+        return entries if len(entries) else ['']
 
     def save(self, filename, encoding, lines=0):
         fd = os.open(filename, os.O_WRONLY | os.O_CREAT | os.TRUNC,
