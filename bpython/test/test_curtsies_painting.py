@@ -15,7 +15,6 @@ from bpython.test import mock
 from bpython import config, inspection
 from bpython.curtsiesfrontend.repl import BaseRepl
 from bpython.curtsiesfrontend import replpainter
-from bpython.repl import History
 from bpython.curtsiesfrontend.repl import INCONSISTENT_HISTORY_MSG, \
     CONTIGUITY_BROKEN_MSG
 from bpython.test import FixLanguageTestCase as TestCase, TEST_CONFIG
@@ -48,8 +47,6 @@ class CurtsiesPaintingTest(FormatStringTest, ClearEnviron):
             def _request_refresh(inner_self):
                 pass
         self.repl = TestRepl(config=setup_config())
-        # clear history
-        self.repl.rl_history = History()
         self.repl.height, self.repl.width = (5, 10)
 
     @property
@@ -236,8 +233,6 @@ class HigherLevelCurtsiesPaintingTest(CurtsiesPaintingTest):
             def _request_refresh(inner_self):
                 self.refresh()
         self.repl = TestRepl(banner='', config=setup_config())
-        # clear history
-        self.repl.rl_history = History()
         self.repl.height, self.repl.width = (5, 32)
 
     def send_key(self, key):
