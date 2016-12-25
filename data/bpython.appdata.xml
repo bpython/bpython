@@ -11,16 +11,16 @@
     <p>
       bpython is a fancy interface to the Python interpreter. It has the
       following features:
-      <ul>
-        <li>In-line syntax highlighting.</li>
-        <li>Readline-like autocomplete with suggestion displayed as you type.</li>
-        <li>Expected parameter list for any Python function.</li>
-        <li>"Rewind" function to pop the last line of code from memory and re-evaluate.</li>
-        <li>Send the code you've entered off to a pastebin.</li>
-        <li>Save the code you've entered to a file.</li>
-        <li>Auto-indentation.</li>
-      </ul>
     </p>
+    <ul>
+      <li>In-line syntax highlighting.</li>
+      <li>Readline-like autocomplete with suggestion displayed as you type.</li>
+      <li>Expected parameter list for any Python function.</li>
+      <li>"Rewind" function to pop the last line of code from memory and re-evaluate.</li>
+      <li>Send the code you've entered off to a pastebin.</li>
+      <li>Save the code you've entered to a file.</li>
+      <li>Auto-indentation.</li>
+    </ul>
   </description>
   <url type="homepage">http://www.bpython-interpreter.org/</url>
   <url type="bugtracker">https://github.com/bpython/bpython/issues</url>
