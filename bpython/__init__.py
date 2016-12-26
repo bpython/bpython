@@ -21,6 +21,7 @@
 # THE SOFTWARE.
 
 import os.path
+import sys
 
 try:
     from bpython._version import __version__ as version
@@ -31,6 +32,21 @@ __version__ = version
 package_dir = os.path.abspath(os.path.dirname(__file__))
 
 
-def embed(locals_=None, args=['-i', '-q'], banner=None):
+def embed(locals_=None, args=['-i', '-q'], banner=None, globals_=None):
+    """Run bpython in something like the surrounding environment
+
+    locals_ and globals_ are copied and merged to create a new
+    locals_ dict so everything in scope at the call site will be
+    in scope in the embedded bpython session.
+    """
     from bpython.curtsies import main
-    return main(args, locals_, banner)
+    if locals_ is None:
+        f = sys._getframe(1)
+        locals_ = f.f_locals
+    if globals_ is None:
+        f = sys._getframe(1)
+
+    globals_ = f.f_globals.copy()
+    globals_.update(locals_)
+
+    return main(args, globals_, banner)
