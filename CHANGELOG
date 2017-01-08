@@ -7,6 +7,10 @@ Changelog
 New features:
 
 Fixes:
+* #648: Fix paste helper.
+  Thanks to Jakob Bowyer.
+* #653: Handle docstrings more carefully.
+* #654: Do not modify history file during tests.
 
 0.16
 ----
