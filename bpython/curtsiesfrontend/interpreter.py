@@ -64,11 +64,6 @@ class Interp(ReplInterpreter):
     def __init__(self, locals=None, encoding=None):
         """Constructor.
 
-        The optional 'locals' argument specifies the dictionary in
-        which code will be executed; it defaults to a newly created
-        dictionary with key "__name__" set to "__console__" and key
-        "__doc__" set to None.
-
         We include an argument for the outfile to pass to the formatter for it
         to write to.
         """

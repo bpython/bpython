@@ -58,7 +58,6 @@ if platform.system() != 'Windows':
 import unicodedata
 import errno
 
-from types import ModuleType
 from six.moves import range
 
 # These are used for syntax highlighting
@@ -1891,9 +1890,6 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     curses.raw(True)
     main_win, statusbar = init_wins(scr, config)
 
-    if locals_ is None:
-        sys.modules['__main__'] = ModuleType('__main__')
-        locals_ = sys.modules['__main__'].__dict__
     interpreter = repl.Interpreter(locals_, getpreferredencoding())
 
     clirepl = CLIRepl(main_win, interpreter, statusbar, config, idle)

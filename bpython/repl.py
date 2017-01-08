@@ -39,6 +39,7 @@ import time
 import traceback
 from itertools import takewhile
 from six import itervalues
+from types import ModuleType
 
 from pygments.token import Token
 
@@ -77,9 +78,16 @@ class RuntimeTimer(object):
 
 
 class Interpreter(code.InteractiveInterpreter):
+    """Source code interpreter for use in bpython."""
 
     def __init__(self, locals=None, encoding=None):
-        """The syntaxerror callback can be set at any time and will be called
+        """Constructor.
+
+        The optional 'locals' argument specifies the dictionary in which code
+        will be executed; it defaults to a newly created dictionary with key
+        "__name__" set to "__main__".
+
+        The syntaxerror callback can be set at any time and will be called
         on a caught syntax error. The purpose for this in bpython is so that
         the repl can be instantiated after the interpreter (which it
         necessarily must be with the current factoring) and then an exception
@@ -95,6 +103,13 @@ class Interpreter(code.InteractiveInterpreter):
 
         self.encoding = encoding or sys.getdefaultencoding()
         self.syntaxerror_callback = None
+
+        if locals is None:
+            # instead of messing with sys.modules, we should modify sys.modules
+            # in the interpreter instance
+            sys.modules['__main__'] = main_mod = ModuleType('__main__')
+            locals = main_mod.__dict__
+
         # Unfortunately code.InteractiveInterpreter is a classic class, so no
         # super()
         code.InteractiveInterpreter.__init__(self, locals)

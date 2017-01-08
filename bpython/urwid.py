@@ -40,7 +40,6 @@ import os
 import time
 import locale
 import signal
-from types import ModuleType
 from optparse import Option
 from six.moves import range
 from six import iteritems, string_types
@@ -1192,11 +1191,7 @@ def main(args=None, locals_=None, banner=None):
         event_loop = None
     # TODO: there is also a glib event loop. Do we want that one?
 
-    # __main__ construction from bpython.cli
-    if locals_ is None:
-        main_mod = sys.modules['__main__'] = ModuleType('__main__')
-        locals_ = main_mod.__dict__
-
+    extend_locals = {}
     if options.plugin:
         try:
             from twisted import plugin
@@ -1215,10 +1210,12 @@ def main(args=None, locals_=None, banner=None):
         plugopts = plug.options()
         plugopts.parseOptions(exec_args)
         serv = plug.makeService(plugopts)
-        locals_['service'] = serv
+        extend_locals['service'] = serv
         reactor.callWhenRunning(serv.startService)
         exec_args = []
     interpreter = repl.Interpreter(locals_, locale.getpreferredencoding())
+    # TODO: replace with something less hack-ish
+    interpreter.locals.update(extend_locals)
 
     # This nabs sys.stdin/out via urwid.MainLoop
     myrepl = URWIDRepl(event_loop, palette, interpreter, config)
