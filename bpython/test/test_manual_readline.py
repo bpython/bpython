@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 from bpython.curtsiesfrontend.manual_readline import \
     left_arrow, right_arrow, beginning_of_line, forward_word, back_word, \
     end_of_line, delete, last_word_pos, backspace, delete_from_cursor_back, \

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 import sys
 
 from six.moves import builtins

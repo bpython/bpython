@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 # The MIT License
 #
 # Copyright (c) 2008 Simon de Vlieger

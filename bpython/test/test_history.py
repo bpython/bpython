@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 from six.moves import range
 
 from bpython.history import History

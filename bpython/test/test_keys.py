@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 from bpython import keys
 from bpython.test import unittest
 

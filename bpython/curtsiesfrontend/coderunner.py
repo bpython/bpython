@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 """For running Python code that could interrupt itself at any time in order to,
 for example, ask for a read on stdin, or a write on stdout
 
