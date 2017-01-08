@@ -238,7 +238,7 @@ class History(object):
         """Move forward to the end of the history."""
         if not self.is_at_start:
             self.index = 0
-        return self.entries[0]
+        return self.entries[0] if self.entries else ''
 
     @property
     def is_at_end(self):

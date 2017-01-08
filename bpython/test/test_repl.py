@@ -74,6 +74,13 @@ class TestHistory(unittest.TestCase):
         self.assertTrue(self.history.is_at_start)
         self.assertFalse(self.history.is_at_end)
 
+    def test_last_with_no_history_doesnt_throw_error(self):
+        self.history = repl.History([])
+        try:
+            self.history.last()
+        except IndexError:
+            self.fail("should not throw error if history is empty")
+
     def test_back(self):
         self.assertEqual(self.history.back(), '#999')
         self.assertNotEqual(self.history.back(), '#999')
