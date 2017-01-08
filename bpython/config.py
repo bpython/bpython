@@ -10,8 +10,7 @@ from six import iterkeys, iteritems
 from six.moves.configparser import ConfigParser
 
 from bpython.keys import cli_key_dispatch as key_dispatch
-from bpython.autocomplete import SIMPLE as default_completion
-import bpython.autocomplete
+from bpython.autocomplete import SIMPLE as default_completion, ALL_MODES
 
 
 class Struct(object):
@@ -273,7 +272,7 @@ def loadini(struct, configfile):
     struct.hist_file = os.path.expanduser(struct.hist_file)
 
     # verify completion mode
-    if struct.autocomplete_mode not in bpython.autocomplete.ALL_MODES:
+    if struct.autocomplete_mode not in ALL_MODES:
         struct.autocomplete_mode = default_completion
 
     # set box drawing characters
