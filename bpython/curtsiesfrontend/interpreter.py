@@ -73,8 +73,6 @@ class Interp(ReplInterpreter):
         We include an argument for the outfile to pass to the formatter for it
         to write to.
         """
-        if locals is None:
-            locals = {"__name__": "__console__", "__doc__": None}
         if encoding is None:
             encoding = getpreferredencoding()
         ReplInterpreter.__init__(self, locals, encoding)
