@@ -73,8 +73,6 @@ class Interp(ReplInterpreter):
         We include an argument for the outfile to pass to the formatter for it
         to write to.
         """
-        if encoding is None:
-            encoding = getpreferredencoding()
         ReplInterpreter.__init__(self, locals, encoding)
 
         self.compile = CommandCompiler()
