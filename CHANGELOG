@@ -418,7 +418,7 @@ A quick bugfix release (this should not become a habit).
 A bugfix/feature release (and a start at gtk). Happy Christmas everyone!
 
 * #67: Make pastebin URL really configurable. 
-* #68: Set a__main__ module and set interpreter's namespace to that module.
+* #68: Set a __main__ module and set interpreter's namespace to that module.
 * #70: Implement backward completion on backward tab. 
 * #62: Hide matches starting with a _ unless explicitly typed.
 * #72: Auto dedentation
