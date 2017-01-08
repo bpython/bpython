@@ -79,7 +79,6 @@ class Interp(ReplInterpreter):
             encoding = getpreferredencoding()
         ReplInterpreter.__init__(self, locals, encoding)
 
-        self.locals = locals
         self.compile = CommandCompiler()
 
         # typically changed after being instantiated
