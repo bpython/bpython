@@ -1,5 +1,4 @@
 import sys
-from codeop import CommandCompiler
 from six import iteritems, text_type
 
 from pygments.token import Generic, Token, Keyword, Name, Comment, String
@@ -74,8 +73,6 @@ class Interp(ReplInterpreter):
         to write to.
         """
         ReplInterpreter.__init__(self, locals, encoding)
-
-        self.compile = CommandCompiler()
 
         # typically changed after being instantiated
         # but used when interpreter used corresponding REPL
