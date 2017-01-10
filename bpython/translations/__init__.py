@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 import gettext
 import locale
 import os.path
