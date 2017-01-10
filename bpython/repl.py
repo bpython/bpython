@@ -23,6 +23,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import absolute_import
+
 import code
 import inspect
 import io
@@ -43,17 +45,17 @@ from types import ModuleType
 
 from pygments.token import Token
 
-from bpython import autocomplete
-from bpython import inspection
-from bpython._py3compat import PythonLexer, py3, prepare_for_exec
-from bpython.clipboard import get_clipboard, CopyFailed
-from bpython.config import getpreferredencoding
-from bpython.formatter import Parenthesis
-from bpython.history import History
-from bpython.paste import PasteHelper, PastePinnwand, PasteFailed
-from bpython.patch_linecache import filename_for_console_input
-from bpython.translations import _, ngettext
-from bpython import simpleeval
+from . import autocomplete
+from . import inspection
+from ._py3compat import PythonLexer, py3, prepare_for_exec
+from .clipboard import get_clipboard, CopyFailed
+from .config import getpreferredencoding
+from .formatter import Parenthesis
+from .history import History
+from .paste import PasteHelper, PastePinnwand, PasteFailed
+from .patch_linecache import filename_for_console_input
+from .translations import _, ngettext
+from . import simpleeval
 
 
 class RuntimeTimer(object):
@@ -101,7 +103,7 @@ class Interpreter(code.InteractiveInterpreter):
         into a bytestring source as part of an encoding comment.
         """
 
-        self.encoding = encoding or sys.getdefaultencoding()
+        self.encoding = encoding or getpreferredencoding()
         self.syntaxerror_callback = None
 
         if locals is None:

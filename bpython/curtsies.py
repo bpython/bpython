@@ -13,16 +13,16 @@ import curtsies.window
 import curtsies.input
 import curtsies.events
 
-from bpython.curtsiesfrontend.repl import BaseRepl
-from bpython.curtsiesfrontend.coderunner import SystemExitFromCodeRunner
-from bpython.curtsiesfrontend.interpreter import Interp
-from bpython import args as bpargs
-from bpython import translations
-from bpython.translations import _
-from bpython.importcompletion import find_iterator
-from bpython.curtsiesfrontend import events as bpythonevents
-from bpython import inspection
-from bpython.repl import extract_exit_value
+from .curtsiesfrontend.repl import BaseRepl
+from .curtsiesfrontend.coderunner import SystemExitFromCodeRunner
+from .curtsiesfrontend.interpreter import Interp
+from . import args as bpargs
+from . import translations
+from .translations import _
+from .importcompletion import find_iterator
+from .curtsiesfrontend import events as bpythonevents
+from . import inspection
+from .repl import extract_exit_value
 
 logger = logging.getLogger(__name__)
 

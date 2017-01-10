@@ -30,10 +30,10 @@ from __future__ import unicode_literals, print_function, absolute_import
 import time
 import logging
 
-from bpython.curtsiesfrontend.repl import BaseRepl
-from bpython.curtsiesfrontend import events as bpythonevents
-from bpython import translations
-from bpython import importcompletion
+from .curtsiesfrontend.repl import BaseRepl
+from .curtsiesfrontend import events as bpythonevents
+from . import translations
+from . import importcompletion
 
 from curtsies.configfile_keynames import keymap as key_dispatch
 

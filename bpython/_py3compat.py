@@ -34,6 +34,8 @@
     - py3: True if the hosting Python runtime is of Python version 3 or later
 """
 
+from __future__ import absolute_import
+
 import sys
 
 py3 = (sys.version_info[0] == 3)

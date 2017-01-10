@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 
 import os
 import sys
@@ -9,8 +9,8 @@ from itertools import chain
 from six import iterkeys, iteritems
 from six.moves.configparser import ConfigParser
 
-from bpython.keys import cli_key_dispatch as key_dispatch
-from bpython.autocomplete import SIMPLE as default_completion, ALL_MODES
+from .autocomplete import SIMPLE as default_completion, ALL_MODES
+from .keys import cli_key_dispatch as cli_key_dispatch
 
 
 class Struct(object):

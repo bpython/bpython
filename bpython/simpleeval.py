@@ -28,6 +28,8 @@ In order to provide fancy completion, some code can be executed safely.
 
 """
 
+from __future__ import absolute_import
+
 import ast
 import inspect
 from six import string_types
@@ -35,9 +37,9 @@ from six.moves import builtins
 import sys
 import types
 
-from bpython import line as line_properties
-from bpython._py3compat import py3
-from bpython.inspection import is_new_style, AttrCleaner
+from . import line as line_properties
+from ._py3compat import py3
+from .inspection import is_new_style, AttrCleaner
 
 _string_type_nodes = (ast.Str, ast.Bytes) if py3 else (ast.Str,)
 _numeric_types = (int, float, complex) + (() if py3 else (long,))

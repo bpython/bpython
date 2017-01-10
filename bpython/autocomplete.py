@@ -23,7 +23,7 @@
 # THE SOFTWARE.
 #
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 
 import __main__
 import abc
@@ -37,14 +37,14 @@ import sys
 from six.moves import range, builtins
 from six import string_types, iteritems
 
-from bpython import inspection
-from bpython import importcompletion
-from bpython import line as lineparts
-from bpython.line import LinePart
-from bpython._py3compat import py3, try_decode
-from bpython.lazyre import LazyReCompile
-from bpython.simpleeval import (safe_eval, evaluate_current_expression,
-                                EvaluationError)
+from . import inspection
+from . import importcompletion
+from . import line as lineparts
+from .line import LinePart
+from ._py3compat import py3, try_decode
+from .lazyre import LazyReCompile
+from .simpleeval import (safe_eval, evaluate_current_expression,
+                         EvaluationError)
 
 if not py3:
     from types import InstanceType, ClassType

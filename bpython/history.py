@@ -23,15 +23,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 import io
 import os
 import stat
 from itertools import islice
 from six.moves import range
 
-from bpython.translations import _
-from bpython.filelock import FileLock
+from .translations import _
+from .filelock import FileLock
 
 
 class History(object):

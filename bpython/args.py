@@ -4,16 +4,17 @@
 Module to handle command line argument parsing, for all front-ends.
 """
 
-from __future__ import print_function
+from __future__ import print_function, absolute_import
+
 import code
 import imp
 import os
 import sys
 from optparse import OptionParser, OptionGroup
 
-from bpython import __version__
-from bpython.config import default_config_path, loadini, Struct
-from bpython.translations import _
+from . import __version__
+from .config import default_config_path, loadini, Struct
+from .translations import _
 
 
 class OptionParserFailed(ValueError):

@@ -26,6 +26,8 @@
 # Pygments really kicks ass, it made it really easy to
 # get the exact behaviour I wanted, thanks Pygments.:)
 
+from __future__ import absolute_import
+
 from pygments.formatter import Formatter
 from pygments.token import Keyword, Name, Comment, String, Error, \
     Number, Operator, Token, Whitespace, Literal, Punctuation

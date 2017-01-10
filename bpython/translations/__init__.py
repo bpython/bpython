@@ -1,12 +1,14 @@
 # encoding: utf-8
 
+from __future__ import absolute_import
+
 import gettext
 import locale
 import os.path
 import sys
 
-from bpython import package_dir
-from bpython._py3compat import py3
+from .. import package_dir
+from .._py3compat import py3
 
 translator = None
 

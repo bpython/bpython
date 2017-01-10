@@ -6,7 +6,7 @@ pip install setuptools
 
 if [[ $RUN == nosetests ]]; then
     # core dependencies
-    pop install -r requirements.txt
+    pip install -r requirements.txt
     # filewatch specific dependencies
     pip install watchdog
     # jedi specific dependencies

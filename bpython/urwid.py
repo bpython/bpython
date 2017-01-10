@@ -47,13 +47,14 @@ from six import iteritems, string_types
 
 from pygments.token import Token
 
-from bpython import args as bpargs, repl, translations
-from bpython._py3compat import py3
-from bpython.formatter import theme_map
-from bpython.importcompletion import find_coroutine
-from bpython.translations import _
+from . import args as bpargs, repl, translations
+from ._py3compat import py3
+from .config import getpreferredencoding
+from .formatter import theme_map
+from .importcompletion import find_coroutine
+from .translations import _
 
-from bpython.keys import urwid_key_dispatch as key_dispatch
+from .keys import urwid_key_dispatch as key_dispatch
 
 import urwid
 
@@ -81,10 +82,6 @@ COLORMAP = {
     'w': 'white',
     'd': 'default',
     }
-
-
-def getpreferredencoding():
-    return locale.getpreferredencoding() or "ascii"
 
 
 try:

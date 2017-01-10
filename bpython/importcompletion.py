@@ -22,9 +22,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from bpython._py3compat import py3, try_decode
-from bpython.line import current_word, current_import, \
-    current_from_import_from, current_from_import_import
+from __future__ import absolute_import
+
+from ._py3compat import py3, try_decode
+from .line import (current_word, current_import, current_from_import_from,
+                   current_from_import_import)
 
 import imp
 import os

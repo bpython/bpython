@@ -5,12 +5,12 @@
 All functions take cursor offset from the beginning of the line and the line of
 Python code, and return None, or a tuple of the start index, end index, and the
 word."""
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 
 from itertools import chain
 from collections import namedtuple
 
-from bpython.lazyre import LazyReCompile
+from .lazyre import LazyReCompile
 
 LinePart = namedtuple('LinePart', ['start', 'stop', 'word'])
 

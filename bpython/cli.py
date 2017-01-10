@@ -39,7 +39,7 @@
 # - Instead the suspend key exits the program
 # - View source doesn't work on windows unless you install the less program (From GnuUtils or Cygwin)
 
-from __future__ import division
+from __future__ import division, absolute_import
 
 import platform
 import os
@@ -63,27 +63,27 @@ from six.moves import range
 # These are used for syntax highlighting
 from pygments import format
 from pygments.formatters import TerminalFormatter
-from bpython._py3compat import PythonLexer
+from ._py3compat import PythonLexer
 from pygments.token import Token
-from bpython.formatter import BPythonFormatter
+from .formatter import BPythonFormatter
 
 # This for completion
-from bpython import importcompletion
+from . import importcompletion
 
 # This for config
-from bpython.config import Struct, getpreferredencoding
+from .config import Struct, getpreferredencoding
 
 # This for keys
-from bpython.keys import cli_key_dispatch as key_dispatch
+from .keys import cli_key_dispatch as key_dispatch
 
 # This for i18n
-from bpython import translations
-from bpython.translations import _
+from . import translations
+from .translations import _
 
-from bpython import repl
-from bpython._py3compat import py3
-from bpython.pager import page
-import bpython.args
+from . import repl
+from ._py3compat import py3
+from .pager import page
+from .args import parse as argsparse
 
 if not py3:
     import inspect
@@ -1946,7 +1946,7 @@ def main(args=None, locals_=None, banner=None):
     translations.init()
 
 
-    config, options, exec_args = bpython.args.parse(args)
+    config, options, exec_args = argsparse(args)
 
     # Save stdin, stdout and stderr for later restoration
     orig_stdin = sys.stdin

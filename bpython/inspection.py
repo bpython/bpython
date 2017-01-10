@@ -22,7 +22,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
+
+from __future__ import absolute_import
 
 import inspect
 import io
@@ -33,8 +34,8 @@ from six.moves import range
 
 from pygments.token import Token
 
-from bpython._py3compat import PythonLexer, py3
-from bpython.lazyre import LazyReCompile
+from ._py3compat import PythonLexer, py3
+from .lazyre import LazyReCompile
 
 if not py3:
     import types
