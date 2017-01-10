@@ -255,7 +255,7 @@ if (sys.version_info[0] == 2 or
     tests_require.append('mock')
 
 # translations
-mo_files = list()
+mo_files = []
 for language in os.listdir(translations_dir):
     mo_subpath = os.path.join(language, 'LC_MESSAGES', 'bpython.mo')
     if os.path.exists(os.path.join(translations_dir, mo_subpath)):
