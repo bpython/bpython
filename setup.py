@@ -250,8 +250,7 @@ entry_points = {
 }
 
 tests_require = []
-if (sys.version_info[0] == 2 or
-        (sys.version_info[0] == 3 and sys.version_info[0] < 3)):
+if sys.version_info[0] == 2:
     tests_require.append('mock')
 
 # translations
