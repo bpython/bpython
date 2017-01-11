@@ -1,27 +1,29 @@
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
-# The MIT License
-#
-# Copyright (c) 2009-2011 the bpython authors.
-# Copyright (c) 2012-2013,2015 Sebastian Ramacher
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+"""
+The MIT License
+
+Copyright (c) 2009-2011 the bpython authors.
+Copyright (c) 2012-2013,2015 Sebastian Ramacher
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+"""
 
 from __future__ import absolute_import
 
@@ -59,6 +61,7 @@ from . import simpleeval
 
 
 class RuntimeTimer(object):
+    """Calculate running time"""
     def __init__(self):
         self.reset_timer()
         self.time = time.monotonic if hasattr(time, 'monotonic') else time.time
@@ -224,7 +227,7 @@ class Interpreter(code.InteractiveInterpreter):
                     tblist[i] = (fname, lineno, module, something)
                 # Set the right lineno (encoding header adds an extra line)
                 if fname == '<input>' and not py3:
-                        tblist[i] = (fname, lineno - 2, module, something)
+                    tblist[i] = (fname, lineno - 2, module, something)
 
             l = traceback.format_list(tblist)
             if l:
@@ -618,7 +621,7 @@ class Repl(object):
                 try:
                     fake_cursor = self.current_line.index(func) + len(func)
                     f = simpleeval.evaluate_current_attribute(
-                            fake_cursor, self.current_line, self.interp.locals)
+                        fake_cursor, self.current_line, self.interp.locals)
                 except simpleeval.EvaluationError:
                     return False
         except Exception:
@@ -787,13 +790,13 @@ class Repl(object):
             indentation = 0
         return indentation
 
-    def formatforfile(self, s):
+    def formatforfile(self, stdout):
         """Format the stdout buffer to something suitable for writing to disk,
         i.e. without >>> and ... at input lines and with "# OUT: " prepended to
         output lines."""
 
         def process():
-            for line in s.split('\n'):
+            for line in stdout.split('\n'):
                 if line.startswith(self.ps1):
                     yield line[len(self.ps1):]
                 elif line.startswith(self.ps2):
@@ -834,11 +837,11 @@ class Repl(object):
                 self.interact.notify(_('Save cancelled.'))
                 return
 
-        s = self.formatforfile(self.getstdout())
+        stdout_text = self.formatforfile(self.getstdout())
 
         try:
             with open(fn, mode) as f:
-                f.write(s)
+                f.write(stdout_text)
         except IOError as e:
             self.interact.notify(_("Error writing file '%s': %s") % (fn, e))
         else:
@@ -876,8 +879,8 @@ class Repl(object):
         if s == self.prev_pastebin_content:
             self.interact.notify(_('Duplicate pastebin. Previous URL: %s. '
                                    'Removal URL: %s') %
-                                  (self.prev_pastebin_url,
-                                   self.prev_removal_url), 10)
+                                 (self.prev_pastebin_url,
+                                  self.prev_removal_url), 10)
             return self.prev_pastebin_url
 
         self.interact.notify(_('Posting data to pastebin...'))
@@ -1087,8 +1090,9 @@ class Repl(object):
     def clear_current_line(self):
         """This is used as the exception callback for the Interpreter instance.
         It prevents autoindentation from occurring after a traceback."""
+        # XXX: Empty function
 
-    def send_to_external_editor(self, text, filename=None):
+    def send_to_external_editor(self, text):
         """Returns modified text from an editor, or the original text if editor
         exited with non-zero"""
 
@@ -1117,7 +1121,7 @@ class Repl(object):
         return subprocess.call(args) == 0
 
     def edit_config(self):
-        if not (os.path.isfile(self.config.config_path)):
+        if not os.path.isfile(self.config.config_path):
             if self.interact.confirm(_("Config file does not exist - create "
                                        "new from default? (y/N)")):
                 try:
@@ -1125,7 +1129,7 @@ class Repl(object):
                                                       'sample-config')
                     if py3:  # py3 files need unicode
                         default_config = default_config.decode('ascii')
-                    bpython_dir, script_name = os.path.split(__file__)
+                    #bpython_dir, script_name = os.path.split(__file__)
                     containing_dir = os.path.dirname(
                         os.path.abspath(self.config.config_path))
                     if not os.path.exists(containing_dir):
@@ -1159,10 +1163,10 @@ def next_indentation(line, tab_length):
     return indentation
 
 
-def next_token_inside_string(s, inside_string):
+def next_token_inside_string(code_string, inside_string):
     """Given a code string s and an initial state inside_string, return
     whether the next token will be inside a string or not."""
-    for token, value in PythonLexer().get_tokens(s):
+    for token, value in PythonLexer().get_tokens(code_string):
         if token is Token.String:
             value = value.lstrip('bBrRuU')
             if value in ['"""', "'''", '"', "'"]:
