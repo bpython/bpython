@@ -788,9 +788,11 @@ class BaseRepl(BpythonRepl):
         else:
             self.cut_buffer = cut
 
-    def on_enter(self, insert_into_history=True):
+    def on_enter(self, insert_into_history=True, reset_rl_history=True):
         # so the cursor isn't touching a paren TODO: necessary?
         self._set_cursor_offset(-1, update_completion=False)
+        if reset_rl_history:
+            self.rl_history.reset()
 
         self.history.append(self.current_line)
         self.push(self.current_line, insert_into_history=insert_into_history)
@@ -856,14 +858,7 @@ class BaseRepl(BpythonRepl):
     def operate_and_get_next(self):
         # If we have not navigated back in history
         # ctrl+o will have the same effect as enter
-        if self.rl_history.index == 0 or self.rl_history.index == 1:
-            self.on_enter()
-            return
-
-        index = self.rl_history.index
-        self.on_enter()
-        self.rl_history.index = index
-        self._set_current_line(self.rl_history.entries[-index], reset_rl_history=False)
+        self.on_enter(reset_rl_history=False)
 
     def up_one_line(self):
         self.rl_history.enter(self.current_line)
@@ -1091,7 +1086,11 @@ class BaseRepl(BpythonRepl):
                     self.current_stdouterr_line, self.width))
                 self.current_stdouterr_line = ''
 
-            self._set_current_line(' ' * indent, update_completion=True)
+            if self.rl_history.index == 0:
+                self._set_current_line(' ' * indent, update_completion=True)
+            else:
+                self._set_current_line(self.rl_history.entries[-self.rl_history.index],
+                                       reset_rl_history=False)
             self.cursor_offset = len(self.current_line)
 
     def keyboard_interrupt(self):
