@@ -808,7 +808,7 @@ class URWIDRepl(repl.Repl):
                                        (color, arg)])
                         if arg in kwonly_defaults:
                             markup.extend([('punctuation', '='),
-                                           ('token', kwonly_defaults[arg])])
+                                           ('token', repr(kwonly_defaults[arg]))])
 
                 if varkw:
                     if args or varargs or kwonly:
