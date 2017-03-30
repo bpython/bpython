@@ -483,13 +483,13 @@ class BaseRepl(BpythonRepl):
         """Like request_refresh, but for undo request events."""
         raise NotImplementedError
 
-    def on_suspend():
+    def on_suspend(self):
         """Will be called on sigtstp.
 
         Do whatever cleanup would allow the user to use other programs."""
         raise NotImplementedError
 
-    def after_suspend():
+    def after_suspend(self):
         """Will be called when process foregrounded after suspend.
 
         See to it that process_event is called with None to trigger a refresh
@@ -675,6 +675,8 @@ class BaseRepl(BpythonRepl):
             self.down_one_line()
         elif e in ("<Ctrl-d>",):
             self.on_control_d()
+        elif e in ("<Ctrl-o>",):
+            self.operate_and_get_next()
         elif e in ("<Esc+.>",):
             self.get_last_word()
         elif e in key_dispatch[self.config.reverse_incremental_search_key]:
@@ -786,9 +788,11 @@ class BaseRepl(BpythonRepl):
         else:
             self.cut_buffer = cut
 
-    def on_enter(self, insert_into_history=True):
+    def on_enter(self, insert_into_history=True, reset_rl_history=True):
         # so the cursor isn't touching a paren TODO: necessary?
         self._set_cursor_offset(-1, update_completion=False)
+        if reset_rl_history:
+            self.rl_history.reset()
 
         self.history.append(self.current_line)
         self.push(self.current_line, insert_into_history=insert_into_history)
@@ -850,6 +854,11 @@ class BaseRepl(BpythonRepl):
 
     def yank_from_buffer(self):
         pass
+
+    def operate_and_get_next(self):
+        # If we have not navigated back in history
+        # ctrl+o will have the same effect as enter
+        self.on_enter(reset_rl_history=False)
 
     def up_one_line(self):
         self.rl_history.enter(self.current_line)
@@ -1076,7 +1085,12 @@ class BaseRepl(BpythonRepl):
                     self.current_stdouterr_line, self.width))
                 self.current_stdouterr_line = ''
 
-            self._set_current_line(' ' * indent, update_completion=True)
+            if self.rl_history.get_current_hist_index() == 0:
+                self._set_current_line(' ' * indent, update_completion=True)
+            else:
+                self._set_current_line(self.rl_history.entry,
+                                       reset_rl_history = False)
+
             self.cursor_offset = len(self.current_line)
 
     def keyboard_interrupt(self):
