@@ -37,7 +37,7 @@ Fork bpython in the GitHub web interface, then clone the repo:
     $ git clone git@github.com:YOUR_GITHUB_USERNAME/bpython.git
     # or "git clone https://github.com/YOUR_GITHUB_USERNAME/bpython.git"
 
-Next install the install your development copy of bpython and its dependencies:
+Next install your development copy of bpython and its dependencies:
 
 .. code-block:: bash
 
