@@ -10,10 +10,15 @@ from bpython.lazyre import LazyReCompile
 
 import inspect
 from six import iteritems
+from bpython._py3compat import py3
 
 INDENT = 4
 
 # TODO Allow user config of keybindings for these actions
+if not py3:
+    getargspec = lambda func: inspect.getargspec(func)[0]
+else:
+    getargspec = lambda func: inspect.signature(func).parameters
 
 
 class AbstractEdits(object):
@@ -38,7 +43,7 @@ class AbstractEdits(object):
                 del self[key]
             else:
                 raise ValueError('key %r already has a mapping' % (key,))
-        params = inspect.getargspec(func)[0]
+        params = getargspec(func)
         args = dict((k, v) for k, v in iteritems(self.default_kwargs)
                     if k in params)
         r = func(**args)
@@ -64,7 +69,7 @@ class AbstractEdits(object):
 
     def call(self, key, **kwargs):
         func = self[key]
-        params = inspect.getargspec(func)[0]
+        params = getargspec(func)
         args = dict((k, v) for k, v in kwargs.items() if k in params)
         return func(**args)
 
