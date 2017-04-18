@@ -531,8 +531,12 @@ class BaseRepl(BpythonRepl):
         sys.stdin = self.stdin
         self.orig_sigwinch_handler = signal.getsignal(signal.SIGWINCH)
         self.orig_sigtstp_handler = signal.getsignal(signal.SIGTSTP)
-        signal.signal(signal.SIGWINCH, self.sigwinch_handler)
-        signal.signal(signal.SIGTSTP, self.sigtstp_handler)
+
+        try:
+            signal.signal(signal.SIGWINCH, self.sigwinch_handler)
+            signal.signal(signal.SIGTSTP, self.sigtstp_handler)
+        except ValueError:
+          pass # Ignore "signal only works in main thread"
 
         self.orig_meta_path = sys.meta_path
         if self.watcher:
@@ -545,8 +549,13 @@ class BaseRepl(BpythonRepl):
         sys.stdin = self.orig_stdin
         sys.stdout = self.orig_stdout
         sys.stderr = self.orig_stderr
-        signal.signal(signal.SIGWINCH, self.orig_sigwinch_handler)
-        signal.signal(signal.SIGTSTP, self.orig_sigtstp_handler)
+
+        try:
+            signal.signal(signal.SIGWINCH, self.orig_sigwinch_handler)
+            signal.signal(signal.SIGTSTP, self.orig_sigtstp_handler)
+        except ValueError:
+          pass # Ignore "signal only works in main thread"
+
         sys.meta_path = self.orig_meta_path
 
     def sigwinch_handler(self, signum, frame):
