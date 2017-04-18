@@ -15,7 +15,7 @@ from bpython._py3compat import py3
 INDENT = 4
 
 # TODO Allow user config of keybindings for these actions
-if py3:
+if not py3:
     getargspec = lambda func: inspect.getargspec(func)[0]
 else:
     getargspec = lambda func: inspect.signature(func).parameters
