@@ -33,7 +33,6 @@ class BPdb(pdb.Pdb):
 
     def __init__(self, *args, **kwargs):
         pdb.Pdb.__init__(self, *args, **kwargs)
-        self.rcLines = []
         self.prompt = '(BPdb) '
         self.intro = 'Use "B" to enter bpython, Ctrl-d to exit it.'
 
