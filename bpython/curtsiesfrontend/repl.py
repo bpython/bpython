@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 import contextlib
 import errno
-import greenlet
+import threading
 import logging
 import os
 import re
@@ -778,15 +778,15 @@ class BaseRepl(BpythonRepl):
         elif e in key_dispatch[self.config.redo_key]:  # ctrl-g for redo
             self.redo()
         elif e in key_dispatch[self.config.save_key]:  # ctrl-s for save
-            greenlet.greenlet(self.write2file).switch()
+            self.switch(self.write2file)
         elif e in key_dispatch[self.config.pastebin_key]:  # F8 for pastebin
-            greenlet.greenlet(self.pastebin).switch()
+            self.switch(self.pastebin)
         elif e in key_dispatch[self.config.copy_clipboard_key]:
-            greenlet.greenlet(self.copy2clipboard).switch()
+            self.switch(self.copy2clipboard)
         elif e in key_dispatch[self.config.external_editor_key]:
             self.send_session_to_external_editor()
         elif e in key_dispatch[self.config.edit_config_key]:
-            greenlet.greenlet(self.edit_config).switch()
+            self.switch(self.edit_config)
         # TODO add PAD keys hack as in bpython.cli
         elif e in key_dispatch[self.config.edit_current_block_key]:
             self.send_current_block_to_external_editor()
@@ -796,6 +796,14 @@ class BaseRepl(BpythonRepl):
             self.add_normal_character(" ")
         else:
             self.add_normal_character(e)
+
+    def switch(self, task):
+        """Runs task in another thread"""
+        t = threading.Thread(target=task)
+        t.daemon = True
+        logging.debug('starting task thread')
+        t.start()
+        self.interact.wait_for_request_or_notify()
 
     def get_last_word(self):
 
@@ -1814,7 +1822,7 @@ class BaseRepl(BpythonRepl):
             if n > 0:
                 self.request_undo(n=n)
 
-        greenlet.greenlet(prompt_for_undo).switch()
+        self.switch(prompt_for_undo)
 
     def redo(self):
         if (self.redo_stack):

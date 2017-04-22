@@ -226,7 +226,6 @@ install_requires = [
     "pygments",
     "requests",
     "curtsies >=0.1.18",
-    "greenlet",
     "six >=1.5",
 ]
 

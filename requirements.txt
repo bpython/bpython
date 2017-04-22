@@ -1,6 +1,5 @@
 Pygments
 curtsies >=0.1.18
-greenlet
 requests
 setuptools
 six >=1.5

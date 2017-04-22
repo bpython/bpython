@@ -2,7 +2,7 @@
 
 from __future__ import unicode_literals
 
-import greenlet
+from six.moves import queue
 import time
 import curtsies.events as events
 
@@ -46,8 +46,8 @@ class StatusBar(BpythonInteraction):
         self.permanent_stack = []
         if permanent_text:
             self.permanent_stack.append(permanent_text)
-        self.main_context = greenlet.getcurrent()
-        self.request_context = None
+        self.response_queue = queue.Queue()
+        self.request_or_notify_queue = queue.Queue()
         self.request_refresh = request_refresh
         self.schedule_refresh = schedule_refresh
 
@@ -105,12 +105,12 @@ class StatusBar(BpythonInteraction):
         elif self.in_prompt and e in ("\n", "\r", "<Ctrl-j>", "Ctrl-m>"):
             line = self._current_line
             self.escape()
-            self.request_context.switch(line)
+            self.response_queue.put(line)
         elif self.in_confirm:
             if e in ("y", "Y"):
-                self.request_context.switch(True)
+                self.request_queue.put(True)
             else:
-                self.request_context.switch(False)
+                self.request_queue.put(False)
             self.escape()
         else:  # add normal character
             self.add_normal_character(e)
@@ -129,6 +129,7 @@ class StatusBar(BpythonInteraction):
 
     def escape(self):
         """unfocus from statusbar, clear prompt state, wait for notify call"""
+        self.wait_for_request_or_notify()
         self.in_prompt = False
         self.in_confirm = False
         self.prompt = ""
@@ -151,28 +152,34 @@ class StatusBar(BpythonInteraction):
     def should_show_message(self):
         return bool(self.current_line)
 
-    # interaction interface - should be called from other greenlets
+    def wait_for_request_or_notify(self):
+        try:
+            r = self.request_or_notify_queue.get(True, 1)
+        except queue.Empty:
+            raise Exception('Main thread blocked because task thread not calling back')
+        return r
+
+    # interaction interface - should be called from other threads
     def notify(self, msg, n=3, wait_for_keypress=False):
-        self.request_context = greenlet.getcurrent()
         self.message_time = n
         self.message(msg, schedule_refresh=wait_for_keypress)
         self.waiting_for_refresh = True
         self.request_refresh()
-        self.main_context.switch(msg)
+        self.request_or_notify_queue.push(msg)
 
-    # below Really ought to be called from greenlets other than main because
-    # they block
+    ###################################
+    # These methods should be called from threads other than main because
+    # they block.
     def confirm(self, q):
         """Expected to return True or False, given question prompt q"""
-        self.request_context = greenlet.getcurrent()
         self.prompt = q
         self.in_confirm = True
-        return self.main_context.switch(q)
+        self.request_or_notify_queue.put(q)
+        return self.response_queue.get()
 
     def file_prompt(self, s):
         """Expected to return a file name, given """
-        self.request_context = greenlet.getcurrent()
         self.prompt = s
         self.in_prompt = True
-        result = self.main_context.switch(s)
-        return result
+        self.request_or_notify_queue.put(s)
+        return self.response_queue.get()

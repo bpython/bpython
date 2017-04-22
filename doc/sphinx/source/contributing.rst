@@ -60,7 +60,7 @@ Next install your development copy of bpython and its dependencies:
 
     .. code-block:: bash
 
-        $ sudp apt-get install python-greenlet python-pygments python-requests
+        $ sudp apt-get install python-pygments python-requests
         $ sudo apt-get install python-watchdog python-urwid
         $ sudo apt-get install python-sphinx python-mock python-nose
 

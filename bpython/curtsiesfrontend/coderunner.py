@@ -3,18 +3,15 @@
 """For running Python code that could interrupt itself at any time in order to,
 for example, ask for a read on stdin, or a write on stdout
 
-The CodeRunner spawns a greenlet to run code in, and that code can suspend its
-own execution to ask the main greenlet to refresh the display or get
+The CodeRunner spawns a thread to run code in, and that code can block
+on a queue to ask the main (UI) thread to refresh the display or get
 information.
-
-Greenlets are basically threads that can explicitly switch control to each
-other.  You can replace the word "greenlet" with "thread" in these docs if that
-makes more sense to you.
 """
 
 import code
 import signal
-import greenlet
+from six.moves import queue
+import threading
 import logging
 
 from bpython._py3compat import py3, is_main_thread
@@ -24,12 +21,12 @@ logger = logging.getLogger(__name__)
 
 
 class SigintHappened(object):
-    """If this class is returned, a SIGINT happened while the main greenlet"""
+    """If this class is returned, a SIGINT happened while the main thread"""
 
 
 class SystemExitFromCodeRunner(SystemExit):
     """If this class is returned, a SystemExit happened while in the code
-    greenlet"""
+    thread"""
 
 
 class RequestFromCodeRunner(object):
@@ -64,7 +61,8 @@ class CodeRunner(object):
 
     Running code requests a refresh by calling
     request_from_main_context(force_refresh=True), which
-    suspends execution of the code and switches back to the main greenlet
+    suspends execution of the code by blocking on a queue
+    that the main thread was blocked on.
 
     After load_code() is called with the source code to be run,
     the run_code() method should be called to start running the code.
@@ -80,10 +78,10 @@ class CodeRunner(object):
     has been gathered, run_code() should be called again, passing in any
     requested user input. This continues until run_code returns Done.
 
-    The code greenlet is responsible for telling the main greenlet
+    The code thread is responsible for telling the main thread
     what it wants returned in the next run_code call - CodeRunner
     just passes whatever is passed in to run_code(for_code) to the
-    code greenlet
+    code thread.
     """
 
     def __init__(self, interp=None, request_refresh=lambda: None):
@@ -96,20 +94,20 @@ class CodeRunner(object):
         """
         self.interp = interp or code.InteractiveInterpreter()
         self.source = None
-        self.main_context = greenlet.getcurrent()
-        self.code_context = None
+        self.code_thread = None
+        self.requests_from_code_thread = queue.Queue(maxsize=0)
+        self.responses_for_code_thread = queue.Queue()
         self.request_refresh = request_refresh
         # waiting for response from main thread
         self.code_is_waiting = False
         # sigint happened while in main thread
-        self.sigint_happened_in_main_context = False
+        self.sigint_happened_in_main_context = False  # TODO rename context to thread
         self.orig_sigint_handler = None
 
     @property
     def running(self):
-        """Returns greenlet if code has been loaded greenlet has been
-        started"""
-        return self.source and self.code_context
+        """Returns the running thread if code has been loaded and started."""
+        return self.source and self.code_thread
 
     def load_code(self, source):
         """Prep code to be run"""
@@ -117,28 +115,31 @@ class CodeRunner(object):
             "you shouldn't load code when some is " "already running"
         )
         self.source = source
-        self.code_context = None
+        self.code_thread = None
 
     def _unload_code(self):
         """Called when done running code"""
         self.source = None
-        self.code_context = None
+        self.code_thread = None
         self.code_is_waiting = False
 
     def run_code(self, for_code=None):
         """Returns Truthy values if code finishes, False otherwise
 
-        if for_code is provided, send that value to the code greenlet
+        if for_code is provided, send that value to the code thread
         if source code is complete, returns "done"
         if source code is incomplete, returns "unfinished"
         """
-        if self.code_context is None:
+        if self.code_thread is None:
             assert self.source is not None
-            self.code_context = greenlet.greenlet(self._blocking_run_code)
+            self.code_thread = threading.Thread(
+                target=self._blocking_run_code,
+                name='codethread')
+            self.code_thread.daemon = True
             if is_main_thread():
                 self.orig_sigint_handler = signal.getsignal(signal.SIGINT)
                 signal.signal(signal.SIGINT, self.sigint_handler)
-            request = self.code_context.switch()
+            self.code_thread.start()
         else:
             assert self.code_is_waiting
             self.code_is_waiting = False
@@ -146,14 +147,15 @@ class CodeRunner(object):
                 signal.signal(signal.SIGINT, self.sigint_handler)
             if self.sigint_happened_in_main_context:
                 self.sigint_happened_in_main_context = False
-                request = self.code_context.switch(SigintHappened)
+                self.responses_for_code_thread.put(SigintHappened)
             else:
-                request = self.code_context.switch(for_code)
+                self.responses_for_code_thread.put(for_code)
 
+        request = self.requests_from_code_thread.get()
         logger.debug("request received from code was %r", request)
         if not isinstance(request, RequestFromCodeRunner):
             raise ValueError(
-                "Not a valid value from code greenlet: %r" % request
+                "Not a valid value from code thread: %r" % request
             )
         if isinstance(request, (Wait, Refresh)):
             self.code_is_waiting = True
@@ -173,7 +175,7 @@ class CodeRunner(object):
     def sigint_handler(self, *args):
         """SIGINT handler to use while code is running or request being
         fulfilled"""
-        if greenlet.getcurrent() is self.code_context:
+        if threading.current_thread() is self.code_thread:
             logger.debug("sigint while running user code!")
             raise KeyboardInterrupt()
         else:
@@ -187,8 +189,11 @@ class CodeRunner(object):
         try:
             unfinished = self.interp.runsource(self.source)
         except SystemExit as e:
-            return SystemExitRequest(*e.args)
-        return Unfinished() if unfinished else Done()
+            self.requests_from_code_thread.push(SystemExitRequest(*e.args))
+            return
+        self.requests_from_code_thread.put(Unfinished()
+                                           if unfinished
+                                           else Done())
 
     def request_from_main_context(self, force_refresh=False):
         """Return the argument passed in to .run_code(for_code)
@@ -196,9 +201,11 @@ class CodeRunner(object):
         Nothing means calls to run_code must be... ???
         """
         if force_refresh:
-            value = self.main_context.switch(Refresh())
+            self.requests_from_code_thread.put(Refresh())
+            value = self.responses_for_code_thread.get()
         else:
-            value = self.main_context.switch(Wait())
+            self.requests_from_code_thread.put(Wait())
+            value = self.responses_for_code_thread.get()
         if value is SigintHappened:
             raise KeyboardInterrupt()
         return value
