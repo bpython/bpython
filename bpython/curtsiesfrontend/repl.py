@@ -533,7 +533,8 @@ class BaseRepl(BpythonRepl):
             signal.signal(signal.SIGWINCH, self.sigwinch_handler)
             signal.signal(signal.SIGTSTP, self.sigtstp_handler)
         except ValueError:
-          pass # Ignore "signal only works in main thread"
+            pass # Ignore "signal only works in main thread"
+            # This turns off resize detection and ctrl-z suspension.
 
         self.orig_meta_path = sys.meta_path
         if self.watcher:
@@ -551,7 +552,8 @@ class BaseRepl(BpythonRepl):
             signal.signal(signal.SIGWINCH, self.orig_sigwinch_handler)
             signal.signal(signal.SIGTSTP, self.orig_sigtstp_handler)
         except ValueError:
-          pass # Ignore "signal only works in main thread"
+            pass # Ignore "signal only works in main thread"
+            # This turns off resize detection and ctrl-z suspension.
 
         sys.meta_path = self.orig_meta_path
 
