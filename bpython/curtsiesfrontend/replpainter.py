@@ -27,12 +27,13 @@ def display_linize(msg, columns, blank_line=False):
     Warning: if msg is empty, returns an empty list of lines"""
     msg = fmtstr(msg)
     try:
-        display_lines = [msg.width_aware_slice(slice(start, end))
+        display_lines = ([msg.width_aware_slice(slice(start, end))
                           for start, end in zip(
                               range(0, msg.width, columns),
                               range(columns, msg.width + columns, columns))]
+                          if msg else ([''] if blank_line else []))
     except ValueError:
-        display_lines = ([''] if blank_line else [])
+        display_lines = ['']
     return display_lines
 
 
