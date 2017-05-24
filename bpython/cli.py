@@ -453,6 +453,8 @@ class CLIRepl(repl.Repl):
         Called whenever these should be updated, and called
         with tab
         """
+        super(CLIRepl,self).complete(tab)
+
         if self.paste_mode:
             self.scr.touchwin() #TODO necessary?
             return
