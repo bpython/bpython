@@ -78,6 +78,10 @@ def parse(args, extras=None, ignore_stdin=False):
                       help=_("Don't flush the output to stdout."))
     parser.add_option('--version', '-V', action='store_true',
                       help=_('Print version and exit.'))
+    parser.add_option('--virtualenv', action='store_true', default=True,
+	    help=_('Load virtualenv if found (default: %default).'))
+    parser.add_option('--no-virtualenv', dest='virtualenv',
+	    action='store_false', help=_('Do *not* load virtualenv if found.'))
 
     if extras is not None:
         extras_group = OptionGroup(parser, extras[0], extras[1])
@@ -96,6 +100,14 @@ def parse(args, extras=None, ignore_stdin=False):
         print('(C) 2008-2016 Bob Farrell, Andreas Stuehrk, Sebastian Ramacher, Thomas Ballinger, et al. '
               'See AUTHORS for detail.')
         raise SystemExit
+
+    if options.virtualenv and os.environ.get('VIRTUAL_ENV'):
+        virtualenv_init = os.path.join(os.environ['VIRTUAL_ENV'], 'bin/activate_this.py')
+        try:
+            execfile(virtualenv_init, dict(__file__=virtualenv_init))
+        except Exception:
+            sys.stderr.write('Unable to load virtualenv %r\n' % os.path.basename(os.environ['VIRTUAL_ENV']))
+            raise
 
     if not ignore_stdin and not (sys.stdin.isatty() and sys.stdout.isatty()):
         interpreter = code.InteractiveInterpreter()
