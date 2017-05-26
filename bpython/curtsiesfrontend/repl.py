@@ -1079,13 +1079,6 @@ class BaseRepl(BpythonRepl):
             if err:
                 indent = 0
 
-            # TODO This should be printed ABOVE the error that just happened
-            # instead or maybe just thrown away and not shown
-            if self.current_stdouterr_line:
-                self.display_lines.extend(paint.display_linize(
-                    self.current_stdouterr_line, self.width))
-                self.current_stdouterr_line = ''
-
             if self.rl_history.index == 0:
                 self._set_current_line(' ' * indent, update_completion=True)
             else:
@@ -1137,11 +1130,26 @@ class BaseRepl(BpythonRepl):
     def get_current_block(self):
         return '\n'.join(self.buffer + [self.current_line])
 
+    def move_current_stdouterr_line_up(self):
+        """Append self.current_stdouterr_line to self.display_lines
+        then clean it."""
+        self.display_lines.extend(paint.display_linize(
+            self.current_stdouterr_line, self.width))
+        self.current_stdouterr_line = ''
+
     def send_to_stdout(self, output):
         """Send unicode string to Repl stdout"""
+        if not output: return
         lines = output.split('\n')
+        if output == len(output) * '\n':
+            # If the string consist only of newline characters,
+            # str.split returns one more empty strings.
+            lines = lines[:-1]
         logger.debug('display_lines: %r', self.display_lines)
-        self.current_stdouterr_line += lines[0]
+        if lines[0]:
+            self.current_stdouterr_line += lines[0]
+        else:
+            self.move_current_stdouterr_line_up()
         if len(lines) > 1:
             self.display_lines.extend(paint.display_linize(
                 self.current_stdouterr_line, self.width, blank_line=True))
@@ -1157,9 +1165,16 @@ class BaseRepl(BpythonRepl):
 
         Must be able to handle FmtStrs because interpreter pass in
         tracebacks already formatted."""
+        if not error: return
         lines = error.split('\n')
+        if error == len(error) * '\n':
+            # If the string consist only of newline characters,
+            # str.split returns one more empty strings.
+            lines = lines[:-1]
         if lines[-1]:
             self.current_stdouterr_line += lines[-1]
+        else:
+            self.move_current_stdouterr_line_up()
         self.display_lines.extend(sum((paint.display_linize(line, self.width,
                                                             blank_line=True)
                                        for line in lines[:-1]), []))
