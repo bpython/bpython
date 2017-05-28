@@ -184,10 +184,10 @@ class Interpreter(code.InteractiveInterpreter):
         if self.syntaxerror_callback is not None:
             self.syntaxerror_callback()
 
-        type, value, sys.last_traceback = sys.exc_info()
-        sys.last_type = type
+        exc_type, value, sys.last_traceback = sys.exc_info()
+        sys.last_type = exc_type
         sys.last_value = value
-        if filename and type is SyntaxError:
+        if filename and exc_type is SyntaxError:
             # Work hard to stuff the correct filename in the exception
             try:
                 msg, (dummy_filename, lineno, offset, line) = value.args
@@ -203,8 +203,8 @@ class Interpreter(code.InteractiveInterpreter):
                     lineno -= 2
                 value = SyntaxError(msg, (filename, lineno, offset, line))
                 sys.last_value = value
-        list = traceback.format_exception_only(type, value)
-        self.writetb(list)
+        exc_formatted = traceback.format_exception_only(exc_type, value)
+        self.writetb(exc_formatted)
 
     def showtraceback(self):
         """This needs to override the default traceback thing
