@@ -1139,9 +1139,10 @@ class BaseRepl(BpythonRepl):
 
     def send_to_stdout(self, output):
         """Send unicode string to Repl stdout"""
-        if not output: return
+        if not output:
+            return
         lines = output.split('\n')
-        if output == len(output) * '\n':
+        if all(not line for line in lines):
             # If the string consist only of newline characters,
             # str.split returns one more empty strings.
             lines = lines[:-1]
@@ -1165,9 +1166,10 @@ class BaseRepl(BpythonRepl):
 
         Must be able to handle FmtStrs because interpreter pass in
         tracebacks already formatted."""
-        if not error: return
+        if not error:
+            return
         lines = error.split('\n')
-        if error == len(error) * '\n':
+        if all(not line for line in lines):
             # If the string consist only of newline characters,
             # str.split returns one more empty strings.
             lines = lines[:-1]
