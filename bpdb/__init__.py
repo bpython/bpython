@@ -78,6 +78,10 @@ def main():
               'See AUTHORS for detail.')
         return 0
 
+    if len(args) < 2:
+        print('usage: bpdb scriptfile [arg] ...')
+        return 2
+
     # The following code is based on Python's pdb.py.
     mainpyfile = args[1]
     if not os.path.exists(mainpyfile):
