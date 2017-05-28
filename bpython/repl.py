@@ -52,6 +52,7 @@ from .clipboard import get_clipboard, CopyFailed
 from .config import getpreferredencoding
 from .formatter import Parenthesis
 from .history import History
+from .lazyre import LazyReCompile
 from .paste import PasteHelper, PastePinnwand, PasteFailed
 from .patch_linecache import filename_for_console_input
 from .translations import _, ngettext
@@ -82,6 +83,8 @@ class RuntimeTimer(object):
 
 class Interpreter(code.InteractiveInterpreter):
     """Source code interpreter for use in bpython."""
+
+    bpython_input_re = LazyReCompile(r'<bpython-input-\d+>')
 
     def __init__(self, locals=None, encoding=None):
         """Constructor.
@@ -197,7 +200,7 @@ class Interpreter(code.InteractiveInterpreter):
             else:
                 # Stuff in the right filename and right lineno
                 # strip linecache line number
-                if re.match(r'<bpython-input-\d+>', filename):
+                if self.bpython_input_re.match(filename):
                     filename = '<input>'
                 if filename == '<input>' and not py3:
                     lineno -= 2
@@ -220,7 +223,7 @@ class Interpreter(code.InteractiveInterpreter):
 
             for i, (fname, lineno, module, something) in enumerate(tblist):
                 # strip linecache line number
-                if re.match(r'<bpython-input-\d+>', fname):
+                if self.bpython_input_re.match(fname):
                     fname = '<input>'
                     tblist[i] = (fname, lineno, module, something)
                 # Set the right lineno (encoding header adds an extra line)
