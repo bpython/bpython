@@ -22,8 +22,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import absolute_import
+
 import sys
 
 if __name__ == '__main__':
-    from bpdb import main
+    from . import main
     sys.exit(main())

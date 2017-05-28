@@ -23,14 +23,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 
 import os
 import sys
 import traceback
 
 import bpython
-from bpdb.debugger import BPdb
+from .debugger import BPdb
 from optparse import OptionParser
 from pdb import Restart
 
