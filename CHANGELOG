@@ -5,7 +5,7 @@ Changelog
 ----
 
 New features:
-* #641: Implement Ctrol+O.
+* #641: Implement Ctrl+O.
 
 Fixes:
 * Fix deprecation warnings.
