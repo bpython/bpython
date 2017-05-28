@@ -5,12 +5,16 @@ Changelog
 ----
 
 New features:
+* #641: Implement Ctrol+O.
 
 Fixes:
+* Fix deprecation warnings.
 * #648: Fix paste helper.
   Thanks to Jakob Bowyer.
 * #653: Handle docstrings more carefully.
 * #654: Do not modify history file during tests.
+* #658: Fix newline handling.
+* #670: Fix handlign of ANSI escape codes.
 
 0.16
 ----
