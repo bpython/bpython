@@ -121,5 +121,5 @@ def exec_code(interpreter, args):
     sys.modules['__console__'] = mod
     interpreter.locals = mod.__dict__
     interpreter.locals['__file__'] = args[0]
-    interpreter.runsource(source, args[0], 'exec')
+    interpreter.runsource(source, args[0], 'exec', False)
     sys.argv = old_argv
