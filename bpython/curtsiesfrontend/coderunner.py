@@ -230,3 +230,8 @@ class FakeOutput(object):
 
     def isatty(self):
         return True
+        
+    @property
+    def encoding(self):
+        return 'UTF-8'
+ 
