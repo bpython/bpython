@@ -117,8 +117,8 @@ def exec_code(interpreter, args):
         source = sourcefile.read()
     old_argv, sys.argv = sys.argv, args
     sys.path.insert(0, os.path.abspath(os.path.dirname(args[0])))
-    mod = imp.new_module('__console__')
-    sys.modules['__console__'] = mod
+    mod = imp.new_module('__main__')
+    sys.modules['__main__'] = mod
     interpreter.locals = mod.__dict__
     interpreter.locals['__file__'] = args[0]
     interpreter.runsource(source, args[0], 'exec')
