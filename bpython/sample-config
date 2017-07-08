@@ -53,6 +53,9 @@
 # always prompt.
 # single_undo_time = 1.0
 
+# Enable autoreload feature by default (default: False).
+# default_autoreload = False
+
 [keyboard]
 
 # All key bindings are shown commented out with their default binding

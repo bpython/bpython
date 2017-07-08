@@ -71,6 +71,7 @@ def loadini(struct, configfile):
             'color_scheme': 'default',
             'complete_magic_methods': True,
             'dedent_after': 1,
+            'default_autoreload': False,
             'editor': os.environ.get('VISUAL', os.environ.get('EDITOR', 'vi')),
             'flush_output': True,
             'highlight_show_source': True,
@@ -176,6 +177,7 @@ def loadini(struct, configfile):
     struct.hist_length = config.getint('general', 'hist_length')
     struct.hist_duplicates = config.getboolean('general', 'hist_duplicates')
     struct.flush_output = config.getboolean('general', 'flush_output')
+    struct.default_autoreload = config.getboolean('general', 'default_autoreload')
 
     struct.pastebin_key = get_key_no_doublebind('pastebin')
     struct.copy_clipboard_key = get_key_no_doublebind('copy_clipboard')
