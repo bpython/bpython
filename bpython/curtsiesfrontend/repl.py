@@ -420,7 +420,8 @@ class BaseRepl(BpythonRepl):
         self.paste_mode = False
         self.current_match = None
         self.list_win_visible = False
-        self.watching_files = False    # whether auto reloading active
+        # whether auto reloading active
+        self.watching_files = config.default_autoreload
 
         # 'reverse_incremental_search', 'incremental_search' or None
         self.incr_search_mode = None
@@ -435,6 +436,8 @@ class BaseRepl(BpythonRepl):
         self.status_bar.message(banner)
 
         self.watcher = ModuleChangedEventHandler([], self.request_reload)
+        if self.watcher and config.default_autoreload:
+            self.watcher.activate()
 
     # The methods below should be overridden, but the default implementations
     # below can be used as well.
