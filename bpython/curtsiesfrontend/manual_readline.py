@@ -323,7 +323,7 @@ def titlecase_next_word(cursor_offset, line):
     return cursor_offset, line  # TODO Not implemented
 
 
-delete_word_from_cursor_back_re = LazyReCompile(r'\b\w')
+delete_word_from_cursor_back_re = LazyReCompile(r'^|\b\w')
 
 
 @edit_keys.on('<Esc+BACKSPACE>')

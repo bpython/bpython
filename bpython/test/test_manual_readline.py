@@ -240,6 +240,12 @@ class TestManualReadline(unittest.TestCase):
             "|"],
             delete_word_from_cursor_back)
 
+        self.try_stages_kill([
+            " (( asdf |",
+            " (( |",
+            "|"],
+            delete_word_from_cursor_back)
+
 
 class TestEdits(unittest.TestCase):
 
