@@ -99,6 +99,14 @@ if py3:
     unicode = str
 
 
+if sys.version_info >= (3, 4):
+    def is_main_thread():
+        return threading.main_thread() == threading.current_thread()
+else:
+    def is_main_thread():
+        return isinstance(threading.current_thread(), threading._MainThread)
+
+
 class FakeStdin(object):
     """The stdin object user code will reference
 
@@ -533,7 +541,7 @@ class BaseRepl(BpythonRepl):
         self.orig_sigwinch_handler = signal.getsignal(signal.SIGWINCH)
         self.orig_sigtstp_handler = signal.getsignal(signal.SIGTSTP)
 
-        if isinstance(threading.current_thread(), threading._MainThread):
+        if is_main_thread():
             # This turns off resize detection and ctrl-z suspension.
             signal.signal(signal.SIGWINCH, self.sigwinch_handler)
             signal.signal(signal.SIGTSTP, self.sigtstp_handler)
@@ -550,7 +558,7 @@ class BaseRepl(BpythonRepl):
         sys.stdout = self.orig_stdout
         sys.stderr = self.orig_stderr
 
-        if isinstance(threading.current_thread(), threading._MainThread):
+        if is_main_thread():
             # This turns off resize detection and ctrl-z suspension.
             signal.signal(signal.SIGWINCH, self.orig_sigwinch_handler)
             signal.signal(signal.SIGTSTP, self.orig_sigtstp_handler)
