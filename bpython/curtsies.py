@@ -182,7 +182,7 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
     if banner is not None:
         print(banner)
     global repl
-    repl = FullCurtsiesRepl(config, locals_, welcome_message, interp, paste)
+    repl = FullCurtsiesRepl(config, locals_, welcome_message, interp)
     try:
         with repl.input_generator:
             with repl.window as win:
