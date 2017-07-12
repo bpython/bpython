@@ -32,8 +32,7 @@ repl = None  # global for `from bpython.curtsies import repl`
 
 
 class FullCurtsiesRepl(BaseRepl):
-    def __init__(self, config, locals_, banner, interp=None,
-                 paste=None):
+    def __init__(self, config, locals_, banner, interp=None):
         self.input_generator = curtsies.input.Input(
             keynames='curtsies',
             sigint_event=True,
@@ -189,7 +188,7 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
             with repl.window as win:
                 with repl:
                     repl.height, repl.width = win.t.height, win.t.width
-                    exit_value = repl.mainloop()
+                    exit_value = repl.mainloop(True, paste)
     except (SystemExitFromCodeRunner, SystemExit) as e:
         exit_value = e.args
     return extract_exit_value(exit_value)
