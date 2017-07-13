@@ -1029,7 +1029,7 @@ class BaseRepl(BpythonRepl):
         # or disappear; whenever current line or cursor offset changes,
         # unless this happened via selecting a match
         self.current_match = None
-        self.list_win_visible = BpythonRepl.complete(self, tab)
+        self.list_win_visible = self.complete(tab)
 
     def predicted_indent(self, line):
         # TODO get rid of this! It's repeated code! Combine with Repl.
