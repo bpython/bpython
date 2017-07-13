@@ -6,15 +6,24 @@ Changelog
 
 New features:
 * #641: Implement Ctrl+O.
+* Add default_autoreload config option.
+  Thanks to Alex Frieder.
 
 Fixes:
 * Fix deprecation warnings.
+* Do not call signal outside of main thread.
+  Thanks to Max Nordlund.
+* Fix option-backspace behavior.
+  Thanks to Alex Frieder.
 * #648: Fix paste helper.
   Thanks to Jakob Bowyer.
 * #653: Handle docstrings more carefully.
 * #654: Do not modify history file during tests.
 * #658: Fix newline handling.
+  Thanks to Attila Szöllősi.
 * #670: Fix handlign of ANSI escape codes.
+  Thanks to Attila Szöllősi.
+* #687: Fix encoding of jedi completions.
 
 0.16
 ----
