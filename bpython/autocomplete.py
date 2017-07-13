@@ -519,7 +519,7 @@ else:
 
             first_letter = line[self._orig_start:self._orig_start + 1]
 
-            matches = [c.name for c in completions]
+            matches = [try_decode(c.name, 'ascii') for c in completions]
             if any(not m.lower().startswith(matches[0][0].lower())
                    for m in matches):
                 # Too general - giving completions starting with multiple
