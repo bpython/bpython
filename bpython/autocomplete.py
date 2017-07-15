@@ -33,7 +33,6 @@ import logging
 import os
 import re
 import rlcompleter
-import sys
 from six.moves import range, builtins
 from six import string_types, iteritems
 
@@ -210,7 +209,7 @@ class FilenameCompletion(BaseCompletionType):
     def __init__(self, mode=SIMPLE):
         super(FilenameCompletion, self).__init__(False, mode)
 
-    if sys.version_info[:2] >= (3, 4):
+    if py3:
         def safe_glob(self, pathname):
             return glob.iglob(glob.escape(pathname) + '*')
     else:

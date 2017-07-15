@@ -99,7 +99,7 @@ if py3:
     unicode = str
 
 
-if sys.version_info >= (3, 4):
+if py3:
     def is_main_thread():
         return threading.main_thread() == threading.current_thread()
 else:
