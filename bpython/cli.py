@@ -330,7 +330,7 @@ class CLIRepl(repl.Repl):
         repl.Repl.__init__(self, interp, config)
         self.interp.writetb = self.writetb
         self.scr = scr
-        self.stdout_hist = ''
+        self.stdout_hist = ''  # str (bytes in Py2, unicode in Py3)
         self.list_win = newwin(get_colpair(config, 'background'), 1, 1, 1, 1)
         self.cpos = 0
         self.do_exit = False
@@ -1066,13 +1066,19 @@ class CLIRepl(repl.Repl):
         """Show the appropriate Python prompt"""
         if not more:
             self.echo("\x01%s\x03%s" % (self.config.color_scheme['prompt'], self.ps1))
-            self.stdout_hist += self.ps1
+            if py3:
+                self.stdout_hist += self.ps1
+            else:
+                self.stdout_hist += self.ps1.encode(getpreferredencoding())
             self.s_hist.append('\x01%s\x03%s\x04' %
                                (self.config.color_scheme['prompt'], self.ps1))
         else:
             prompt_more_color = self.config.color_scheme['prompt_more']
             self.echo("\x01%s\x03%s" % (prompt_more_color, self.ps2))
-            self.stdout_hist += self.ps2
+            if py3:
+                self.stdout_hist += self.ps2
+            else:
+                self.stdout_hist += self.ps2.encode(getpreferredencoding())
             self.s_hist.append('\x01%s\x03%s\x04' % (prompt_more_color, self.ps2))
 
     def push(self, s, insert_into_history=True):
