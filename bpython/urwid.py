@@ -596,7 +596,7 @@ class URWIDRepl(repl.Repl):
         self.tooltip = urwid.ListBox(urwid.SimpleListWalker([]))
         self.tooltip.grid = None
         self.overlay = Tooltip(self.listbox, self.tooltip)
-        self.stdout_hist = ''  # str (bytes in Py2, unicode in Py3)
+        self.stdout_hist = ''  # native str (bytes in Py2, unicode in Py3)
 
         self.frame = urwid.Frame(self.overlay)
 

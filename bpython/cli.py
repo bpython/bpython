@@ -330,7 +330,7 @@ class CLIRepl(repl.Repl):
         repl.Repl.__init__(self, interp, config)
         self.interp.writetb = self.writetb
         self.scr = scr
-        self.stdout_hist = ''  # str (bytes in Py2, unicode in Py3)
+        self.stdout_hist = ''  # native str (bytes in Py2, unicode in Py3)
         self.list_win = newwin(get_colpair(config, 'background'), 1, 1, 1, 1)
         self.cpos = 0
         self.do_exit = False
