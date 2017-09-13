@@ -34,7 +34,7 @@ from bpython.config import (Struct, loadini, default_config_path,
 from bpython.formatter import BPythonFormatter
 from bpython import autocomplete
 from bpython.translations import _
-from bpython._py3compat import py3
+from bpython._py3compat import py3, is_main_thread
 from bpython.pager import get_pager_command
 
 from bpython.curtsiesfrontend import replpainter as paint
@@ -97,14 +97,6 @@ MAX_EVENTS_POSSIBLY_NOT_PASTE = 20
 # This is needed for is_nop and should be removed once is_nop is fixed.
 if py3:
     unicode = str
-
-
-if py3:
-    def is_main_thread():
-        return threading.main_thread() == threading.current_thread()
-else:
-    def is_main_thread():
-        return isinstance(threading.current_thread(), threading._MainThread)
 
 
 class FakeStdin(object):
