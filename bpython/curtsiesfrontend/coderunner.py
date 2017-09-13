@@ -13,6 +13,7 @@ makes more sense to you.
 """
 
 import code
+import threading
 import signal
 import greenlet
 import logging
@@ -130,16 +131,19 @@ class CodeRunner(object):
         if source code is complete, returns "done"
         if source code is incomplete, returns "unfinished"
         """
+        is_main_thread = isinstance(threading.current_thread(), threading._MainThread)
         if self.code_context is None:
             assert self.source is not None
             self.code_context = greenlet.greenlet(self._blocking_run_code)
-            self.orig_sigint_handler = signal.getsignal(signal.SIGINT)
-            signal.signal(signal.SIGINT, self.sigint_handler)
+            if is_main_thread:
+                self.orig_sigint_handler = signal.getsignal(signal.SIGINT)
+                signal.signal(signal.SIGINT, self.sigint_handler)
             request = self.code_context.switch()
         else:
             assert self.code_is_waiting
             self.code_is_waiting = False
-            signal.signal(signal.SIGINT, self.sigint_handler)
+            if is_main_thread:
+                signal.signal(signal.SIGINT, self.sigint_handler)
             if self.sigint_happened_in_main_context:
                 self.sigint_happened_in_main_context = False
                 request = self.code_context.switch(SigintHappened)
@@ -157,7 +161,8 @@ class CodeRunner(object):
             return False
         elif isinstance(request, (Done, Unfinished)):
             self._unload_code()
-            signal.signal(signal.SIGINT, self.orig_sigint_handler)
+            if is_main_thread:
+                signal.signal(signal.SIGINT, self.orig_sigint_handler)
             self.orig_sigint_handler = None
             return request
         elif isinstance(request, SystemExitRequest):
