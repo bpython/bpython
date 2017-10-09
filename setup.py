@@ -199,7 +199,7 @@ data_files = [
     # desktop shortcut
     (os.path.join('share', 'applications'), ['data/bpython.desktop']),
     # AppData
-    (os.path.join('share', 'appdata'), ['data/bpython.appdata.xml']),
+    (os.path.join('share', 'appinfo'), ['data/bpython.appdata.xml']),
     # icon
     (os.path.join('share', 'pixmaps'), ['data/bpython.png'])
 ]
