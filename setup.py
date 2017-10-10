@@ -205,6 +205,10 @@ data_files = [
 ]
 data_files.extend(man_pages)
 
+classifiers = [
+    'Programming Language :: Python :: 3',
+]
+
 install_requires = [
     'pygments',
     'requests',
@@ -270,6 +274,7 @@ setup(
     url="http://www.bpython-interpreter.org/",
     long_description="""bpython is a fancy interface to the Python
     interpreter for Unix-like operating systems.""",
+    classifiers=classifiers,
     install_requires=install_requires,
     extras_require=extras_require,
     tests_require=tests_require,
