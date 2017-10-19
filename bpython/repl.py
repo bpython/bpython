@@ -838,7 +838,7 @@ class Repl(object):
                 self.interact.notify(_('Save cancelled.'))
                 return
 
-        session_test = self.formatforfile(self.getstdout())
+        stdout_text = self.formatforfile(self.getstdout())
 
         try:
             with open(fn, mode) as f:
