@@ -35,7 +35,7 @@ class TestExecArgs(unittest.TestCase):
                 universal_newlines=True)
             (_, stderr) = p.communicate()
 
-            self.assertEquals(stderr.strip(), f.name)
+            self.assertEqual(stderr.strip(), f.name)
 
     def test_exec_nonascii_file(self):
         with tempfile.NamedTemporaryFile(mode="w") as f:

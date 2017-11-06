@@ -82,10 +82,10 @@ class TestCurtsiesRepl(TestCase):
         self.assertEqual(self.repl.current_line, 'abcde3')
 
     def test_last_word(self):
-        self.assertEquals(curtsiesrepl._last_word(''), '')
-        self.assertEquals(curtsiesrepl._last_word(' '), '')
-        self.assertEquals(curtsiesrepl._last_word('a'), 'a')
-        self.assertEquals(curtsiesrepl._last_word('a b'), 'b')
+        self.assertEqual(curtsiesrepl._last_word(''), '')
+        self.assertEqual(curtsiesrepl._last_word(' '), '')
+        self.assertEqual(curtsiesrepl._last_word('a'), 'a')
+        self.assertEqual(curtsiesrepl._last_word('a b'), 'b')
 
     # this is the behavior of bash - not currently implemented
     @unittest.skip

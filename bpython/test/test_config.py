@@ -30,13 +30,13 @@ class TestConfig(unittest.TestCase):
         struct.color_scheme = dict()
         config.load_theme(struct, TEST_THEME_PATH, struct.color_scheme, dict())
         expected = {"keyword": "y"}
-        self.assertEquals(struct.color_scheme, expected)
+        self.assertEqual(struct.color_scheme, expected)
 
         defaults = {"name": "c"}
         expected.update(defaults)
         config.load_theme(struct, TEST_THEME_PATH, struct.color_scheme,
                           defaults)
-        self.assertEquals(struct.color_scheme, expected)
+        self.assertEqual(struct.color_scheme, expected)
 
     def test_keybindings_default_contains_no_duplicates(self):
         struct = self.load_temp_config("")
