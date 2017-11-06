@@ -596,7 +596,7 @@ class URWIDRepl(repl.Repl):
         self.tooltip = urwid.ListBox(urwid.SimpleListWalker([]))
         self.tooltip.grid = None
         self.overlay = Tooltip(self.listbox, self.tooltip)
-        self.stdout_hist = ''
+        self.stdout_hist = ''  # native str (bytes in Py2, unicode in Py3)
 
         self.frame = urwid.Frame(self.overlay)
 
@@ -976,17 +976,17 @@ class URWIDRepl(repl.Repl):
         # input to be the same type, using ascii as encoding. If the
         # caption is bytes this breaks typing non-ascii into bpython.
         if not more:
+            caption = ('prompt', self.ps1)
             if py3:
-                caption = ('prompt', self.ps1)
+                self.stdout_hist += self.ps1
             else:
-                caption = ('prompt', self.ps1.decode(getpreferredencoding()))
-            self.stdout_hist += self.ps1
+                self.stdout_hist += self.ps1.encode(getpreferredencoding())
         else:
+            caption = ('prompt_more', self.ps2)
             if py3:
-                caption = ('prompt_more', self.ps2)
+                self.stdout_hist += self.ps2
             else:
-                caption = ('prompt_more', self.ps2.decode(getpreferredencoding()))
-            self.stdout_hist += self.ps2
+                self.stdout_hist += self.ps2.encode(getpreferredencoding())
         self.edit = BPythonEdit(self.config, caption=caption)
 
         urwid.connect_signal(self.edit, 'change', self.on_input_change)
