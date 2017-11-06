@@ -47,7 +47,7 @@ class TestExecArgs(unittest.TestCase):
             f.flush()
             try:
                 subprocess.check_call([
-                    'python', '-m', 'bpython.curtsies',
+                    sys.executable, '-m', 'bpython.curtsies',
                     f.name])
             except subprocess.CalledProcessError:
                 self.fail('Error running module with nonascii characters')
