@@ -54,7 +54,7 @@ class TestInterpreter(unittest.TestCase):
                 '\n')
 
         self.assertMultiLineEqual(str(plain('').join(a)), str(expected))
-        self.assertEquals(plain('').join(a), expected)
+        self.assertEqual(plain('').join(a), expected)
 
     def test_traceback(self):
         i, a = self.interp_errlog()
@@ -79,7 +79,7 @@ class TestInterpreter(unittest.TestCase):
             bold(red('NameError')) + ': ' + cyan(global_not_found) + '\n')
 
         self.assertMultiLineEqual(str(plain('').join(a)), str(expected))
-        self.assertEquals(plain('').join(a), expected)
+        self.assertEqual(plain('').join(a), expected)
 
     @unittest.skipIf(py3, "runsource() accepts only unicode in Python 3")
     def test_runsource_bytes(self):
@@ -123,7 +123,7 @@ class TestInterpreter(unittest.TestCase):
         i.runsource(source)
         import inspect
         inspected_source = inspect.getsource(i.locals['foo'])
-        self.assertEquals(inspected_source, source)
+        self.assertEqual(inspected_source, source)
 
     @unittest.skipIf(py3, "encode only does anything in Python 2")
     def test_runsource_unicode_autoencode_and_noencode(self):

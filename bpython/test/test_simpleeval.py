@@ -188,17 +188,17 @@ class TestSafeGetAttribute(unittest.TestCase):
     def test_lookup_on_object(self):
         a = A()
         a.x = 1
-        self.assertEquals(safe_get_attribute_new_style(a, 'x'), 1)
-        self.assertEquals(safe_get_attribute_new_style(a, 'a'), 'a')
+        self.assertEqual(safe_get_attribute_new_style(a, 'x'), 1)
+        self.assertEqual(safe_get_attribute_new_style(a, 'a'), 'a')
         b = B()
         b.y = 2
-        self.assertEquals(safe_get_attribute_new_style(b, 'y'), 2)
-        self.assertEquals(safe_get_attribute_new_style(b, 'a'), 'a')
-        self.assertEquals(safe_get_attribute_new_style(b, 'b'), 'b')
+        self.assertEqual(safe_get_attribute_new_style(b, 'y'), 2)
+        self.assertEqual(safe_get_attribute_new_style(b, 'a'), 'a')
+        self.assertEqual(safe_get_attribute_new_style(b, 'b'), 'b')
 
     def test_avoid_running_properties(self):
         p = Property()
-        self.assertEquals(safe_get_attribute_new_style(p, 'prop'),
+        self.assertEqual(safe_get_attribute_new_style(p, 'prop'),
                           Property.prop)
 
     @unittest.skipIf(py3, 'Old-style classes not in Python 3')
@@ -211,7 +211,7 @@ class TestSafeGetAttribute(unittest.TestCase):
     def test_lookup_with_slots(self):
         s = Slots()
         s.s1 = 's1'
-        self.assertEquals(safe_get_attribute(s, 's1'), 's1')
+        self.assertEqual(safe_get_attribute(s, 's1'), 's1')
         self.assertIsInstance(safe_get_attribute_new_style(s, 's1'),
                               member_descriptor)
         with self.assertRaises(AttributeError):
@@ -232,7 +232,7 @@ class TestSafeGetAttribute(unittest.TestCase):
         sga = safe_get_attribute
         s = SlotsSubclass()
         self.assertIsInstance(sga(Slots, 's3'), property)
-        self.assertEquals(safe_get_attribute(s, 's3'),
+        self.assertEqual(safe_get_attribute(s, 's3'),
                           Slots.__dict__['s3'])
         self.assertIsInstance(sga(SlotsSubclass, 's3'), property)
 

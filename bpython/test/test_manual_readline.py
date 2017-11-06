@@ -20,7 +20,7 @@ class TestManualReadline(unittest.TestCase):
         pos = 0
         expected = (pos, self._line)
         result = left_arrow(pos, self._line)
-        self.assertEquals(expected, result)
+        self.assertEqual(expected, result)
 
     def test_left_arrow_at_non_zero(self):
         for i in range(1, len(self._line)):
@@ -32,25 +32,25 @@ class TestManualReadline(unittest.TestCase):
         pos = len(self._line)
         expected = (pos, self._line)
         result = right_arrow(pos, self._line)
-        self.assertEquals(expected, result)
+        self.assertEqual(expected, result)
 
     def test_right_arrow_at_non_end(self):
         for i in range(len(self._line) - 1):
             expected = (i + 1, self._line)
             result = right_arrow(i, self._line)
-            self.assertEquals(expected, result)
+            self.assertEqual(expected, result)
 
     def test_beginning_of_line(self):
         expected = (0, self._line)
         for i in range(len(self._line)):
             result = beginning_of_line(i, self._line)
-            self.assertEquals(expected, result)
+            self.assertEqual(expected, result)
 
     def test_end_of_line(self):
         expected = (len(self._line), self._line)
         for i in range(len(self._line)):
             result = end_of_line(i, self._line)
-            self.assertEquals(expected, result)
+            self.assertEqual(expected, result)
 
     def test_forward_word(self):
         line = "going from here to_here"
@@ -58,12 +58,12 @@ class TestManualReadline(unittest.TestCase):
         next_word_pos = 15
         expected = (next_word_pos, line)
         result = forward_word(start_pos, line)
-        self.assertEquals(expected, result)
+        self.assertEqual(expected, result)
         start_pos = 15
         next_word_pos = 23
         expected = (next_word_pos, line)
         result = forward_word(start_pos, line)
-        self.assertEquals(expected, result)
+        self.assertEqual(expected, result)
 
     def test_forward_word_tabs(self):
         line = "going from here      to_here"
@@ -71,12 +71,12 @@ class TestManualReadline(unittest.TestCase):
         next_word_pos = 15
         expected = (next_word_pos, line)
         result = forward_word(start_pos, line)
-        self.assertEquals(expected, result)
+        self.assertEqual(expected, result)
         start_pos = 15
         next_word_pos = 28
         expected = (next_word_pos, line)
         result = forward_word(start_pos, line)
-        self.assertEquals(expected, result)
+        self.assertEqual(expected, result)
 
     def test_forward_word_end(self):
         line = "going from here to_here"
@@ -84,17 +84,17 @@ class TestManualReadline(unittest.TestCase):
         next_word_pos = 23
         expected = (next_word_pos, line)
         result = forward_word(start_pos, line)
-        self.assertEquals(expected, result)
+        self.assertEqual(expected, result)
         start_pos = 22
         next_word_pos = 23
         expected = (next_word_pos, line)
         result = forward_word(start_pos, line)
-        self.assertEquals(expected, result)
+        self.assertEqual(expected, result)
         start_pos = 23
         next_word_pos = 23
         expected = (next_word_pos, line)
         result = forward_word(start_pos, line)
-        self.assertEquals(expected, result)
+        self.assertEqual(expected, result)
 
     def test_forward_word_empty(self):
         line = ""
@@ -102,50 +102,50 @@ class TestManualReadline(unittest.TestCase):
         next_word_pos = 0
         expected = (next_word_pos, line)
         result = forward_word(start_pos, line)
-        self.assertEquals(expected, result)
+        self.assertEqual(expected, result)
 
     def test_back_word(self):
         line = "going to here from_here"
         start_pos = 14
         prev_word_pos = 9
-        self.assertEquals(line[start_pos], 'f')
-        self.assertEquals(line[prev_word_pos], 'h')
+        self.assertEqual(line[start_pos], 'f')
+        self.assertEqual(line[prev_word_pos], 'h')
         expected = (prev_word_pos, line)
         result = back_word(start_pos, line)
-        self.assertEquals(expected, result)
+        self.assertEqual(expected, result)
 
     def test_last_word_pos(self):
         line = "a word"
         expected = 2
         result = last_word_pos(line)
-        self.assertEquals(expected, result)
+        self.assertEqual(expected, result)
 
     def test_last_word_pos_single_word(self):
         line = "word"
         expected = 0
         result = last_word_pos(line)
-        self.assertEquals(expected, result)
+        self.assertEqual(expected, result)
 
     def test_delete(self):
         line = "deletion line"
         pos = 3
         expected = (3, "deltion line")
         result = delete(pos, line)
-        self.assertEquals(expected, result)
+        self.assertEqual(expected, result)
 
     def test_delete_from_cursor_back(self):
         line = "everything before this will be deleted"
         expected = (0, "this will be deleted")
         result = delete_from_cursor_back(line.find("this"), line)
-        self.assertEquals(expected, result)
+        self.assertEqual(expected, result)
 
     def test_delete_from_cursor_forward(self):
         line = "everything after this will be deleted"
         pos = line.find("this")
         expected = (pos, "everything after ")
         result = delete_from_cursor_forward(line.find("this"), line)[:-1]
-        self.assertEquals(expected, result)
-        self.assertEquals(delete_from_cursor_forward(0, ''), (0, '', ''))
+        self.assertEqual(expected, result)
+        self.assertEqual(delete_from_cursor_forward(0, ''), (0, '', ''))
 
     def test_delete_rest_of_word(self):
         self.try_stages_kill([
@@ -184,7 +184,7 @@ class TestManualReadline(unittest.TestCase):
         stages = [(s.index('|'), s.replace('|', '')) for s in strings]
         for (initial_pos, initial), (final_pos, final) in zip(stages[:-1],
                                                               stages[1:]):
-            self.assertEquals(func(initial_pos, initial), (final_pos, final))
+            self.assertEqual(func(initial_pos, initial), (final_pos, final))
 
     def try_stages_kill(self, strings, func):
         if not all('|' in s for s in strings):
@@ -193,7 +193,7 @@ class TestManualReadline(unittest.TestCase):
         stages = [(s.index('|'), s.replace('|', '')) for s in strings]
         for (initial_pos, initial), (final_pos, final) in zip(stages[:-1],
                                                               stages[1:]):
-            self.assertEquals(func(initial_pos, initial)[:-1],
+            self.assertEqual(func(initial_pos, initial)[:-1],
                               (final_pos, final))
 
     def test_transpose_character_before_cursor(self):
@@ -204,27 +204,27 @@ class TestManualReadline(unittest.TestCase):
                          "adf as|sdf"], transpose_character_before_cursor)
 
     def test_transpose_empty_line(self):
-        self.assertEquals(transpose_character_before_cursor(0, ''),
+        self.assertEqual(transpose_character_before_cursor(0, ''),
                           (0, ''))
 
     def test_transpose_first_character(self):
-        self.assertEquals(transpose_character_before_cursor(0, 'a'),
+        self.assertEqual(transpose_character_before_cursor(0, 'a'),
                           (0, 'a'))
-        self.assertEquals(transpose_character_before_cursor(0, 'as'),
+        self.assertEqual(transpose_character_before_cursor(0, 'as'),
                           (0, 'as'))
 
     def test_transpose_end_of_line(self):
-        self.assertEquals(transpose_character_before_cursor(1, 'a'),
+        self.assertEqual(transpose_character_before_cursor(1, 'a'),
                           (1, 'a'))
-        self.assertEquals(transpose_character_before_cursor(2, 'as'),
+        self.assertEqual(transpose_character_before_cursor(2, 'as'),
                           (2, 'sa'))
 
     def test_transpose_word_before_cursor(self):
         pass
 
     def test_backspace(self):
-        self.assertEquals(backspace(2, 'as'), (1, 'a'))
-        self.assertEquals(backspace(3, 'as '), (2, 'as'))
+        self.assertEqual(backspace(2, 'as'), (1, 'a'))
+        self.assertEqual(backspace(3, 'as '), (2, 'as'))
 
     def test_delete_word_from_cursor_back(self):
         self.try_stages_kill([
