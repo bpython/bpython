@@ -40,7 +40,7 @@ class TestExecArgs(unittest.TestCase):
     def test_exec_nonascii_file(self):
         with tempfile.NamedTemporaryFile(mode="w") as f:
             f.write(dedent('''\
-                #!/usr/bin/env python2
+                #!/usr/bin/env python
                 # coding: utf-8
                 "你好 # nonascii"
                 '''))
@@ -55,7 +55,7 @@ class TestExecArgs(unittest.TestCase):
     def test_exec_nonascii_file_linenums(self):
         with tempfile.NamedTemporaryFile(mode="w") as f:
             f.write(dedent("""\
-                #!/usr/bin/env python2
+                #!/usr/bin/env python
                 # coding: utf-8
                 1/0
                 """))
