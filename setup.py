@@ -206,6 +206,7 @@ data_files = [
 data_files.extend(man_pages)
 
 classifiers = [
+    'Programming Language :: Python :: 2',
     'Programming Language :: Python :: 3',
 ]
 
