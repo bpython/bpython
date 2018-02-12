@@ -25,15 +25,11 @@ def display_linize(msg, columns, blank_line=False):
     """Returns lines obtained by splitting msg over multiple lines.
 
     Warning: if msg is empty, returns an empty list of lines"""
-    msg = fmtstr(msg)
-    try:
-        display_lines = ([msg.width_aware_slice(slice(start, end))
-                          for start, end in zip(
-                              range(0, msg.width, columns),
-                              range(columns, msg.width + columns, columns))]
-                          if msg else ([''] if blank_line else []))
-    except ValueError:
-        display_lines = ['']
+    display_lines = ([msg[start:end]
+                      for start, end in zip(
+                          range(0, len(msg), columns),
+                          range(columns, len(msg) + columns, columns))]
+                     if msg else ([''] if blank_line else []))
     return display_lines
 
 
