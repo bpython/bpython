@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.17.1
+------
+
+Fixes:
+* Reverted #670 temporarily due to performance impact
+  on large strings being output.
+
 0.17
 ----
 
