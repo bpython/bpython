@@ -5,10 +5,18 @@ Changelog
 ----
 
 New features:
+* #713 expose globals in bpdb debugging.
+  Thanks to toejough.
 
 
 Fixes:
 
+0.17.1
+------
+
+Fixes:
+* Reverted #670 temporarily due to performance impact
+  on large strings being output.
 
 0.17
 ----
