@@ -8,6 +8,10 @@ New features:
 * #713 expose globals in bpdb debugging.
   Thanks to toejough.
 
+Fixes:
+
+
+Support for Python 3.3 has been dropped.
 
 Fixes:
 
