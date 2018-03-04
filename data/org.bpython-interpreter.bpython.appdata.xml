@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2014-2015 bpython authors -->
-
-<component type="desktop">
-  <id>bpython.desktop</id>
+<!-- Copyright 2014-2018 bpython authors -->
+<component type="desktop-application">
+  <id>org.bpython-interpreter.bpython</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <name>bpython interpreter</name>
@@ -22,6 +21,7 @@
       <li>Auto-indentation.</li>
     </ul>
   </description>
+  <launchable type="desktop-id">org.bpython-interpreter.bpython.desktop</launchable>
   <url type="homepage">http://www.bpython-interpreter.org/</url>
   <url type="bugtracker">https://github.com/bpython/bpython/issues</url>
   <screenshots>
