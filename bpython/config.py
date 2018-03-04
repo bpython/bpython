@@ -137,13 +137,19 @@ def loadini(struct, configfile):
                                     in iteritems(defaults['keyboard']))
 
     fill_config_with_default_values(config, defaults)
-    if not config.read(config_path):
-        # No config file. If the user has it in the old place then complain
-        if os.path.isfile(os.path.expanduser('~/.bpython.ini')):
-            sys.stderr.write("Error: It seems that you have a config file at "
-                             "~/.bpython.ini. Please move your config file to "
-                             "%s\n" % default_config_path())
-            sys.exit(1)
+    try:
+        if not config.read(config_path):
+            # No config file. If the user has it in the old place then complain
+            if os.path.isfile(os.path.expanduser('~/.bpython.ini')):
+                sys.stderr.write("Error: It seems that you have a config file at "
+                                 "~/.bpython.ini. Please move your config file to "
+                                 "%s\n" % default_config_path())
+                sys.exit(1)
+    except UnicodeDecodeError as e:
+        sys.stderr.write("Error: Unable to parse config file at '{}' due to an "
+                         "encoding issue. Please make sure to fix the encoding "
+                         "of the file or remove it and then try again.\n".format(config_path))
+        sys.exit(1)
 
     def get_key_no_doublebind(command):
         default_commands_to_keys = defaults['keyboard']
