@@ -3,8 +3,8 @@ include AUTHORS
 include CHANGELOG
 include LICENSE
 include data/bpython.png
-include data/bpython.desktop
-include data/bpython.appdata.xml
+include data/org.bpython-interpreter.bpython.desktop
+include data/org.bpython-interpreter.bpython.appdata.xml
 include doc/sphinx/source/conf.py
 include doc/sphinx/source/*.rst
 include doc/sphinx/source/logo.png
