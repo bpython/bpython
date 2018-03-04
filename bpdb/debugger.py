@@ -44,7 +44,8 @@ class BPdb(pdb.Pdb):
     # cmd.Cmd commands
 
     def do_Bpython(self, arg):
-        locals_ = dict(**self.curframe.f_globals, **self.curframe.f_locals)
+        locals_ = self.curframe.f_globals.copy()
+        locals_.update(self.curframe.f_locals)
         bpython.embed(locals_, ['-i'])
 
 
