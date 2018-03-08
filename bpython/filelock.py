@@ -42,8 +42,8 @@ class BaseLock(object):
     """Base class for file locking
     """
 
-    def __init__(self, fd):
-        self.fd = fd
+    def __init__(self, fileobj):
+        self.fileobj = fileobj
         self.locked = False
 
     def acquire(self):
@@ -69,8 +69,8 @@ class UnixFileLock(BaseLock):
     """Simple file locking for Unix using fcntl
     """
 
-    def __init__(self, fd, mode=None):
-        super(UnixFileLock, self).__init__(fd)
+    def __init__(self, fileobj, mode=None):
+        super(UnixFileLock, self).__init__(fileobj)
 
         if mode is None:
             mode = fcntl.LOCK_EX
@@ -78,14 +78,14 @@ class UnixFileLock(BaseLock):
 
     def acquire(self):
         try:
-            fcntl.flock(self.fd, self.mode)
+            fcntl.flock(self.fileobj, self.mode)
             self.locked = True
         except IOError as e:
             if e.errno != errno.ENOLCK:
                 raise e
 
     def release(self):
-        fcntl.flock(self.fd, fcntl.LOCK_UN)
+        fcntl.flock(self.fileobj, fcntl.LOCK_UN)
         self.locked = False
 
 
@@ -93,15 +93,15 @@ class WindowsFileLock(BaseLock):
     """Simple file locking for Windows using msvcrt
     """
 
-    def __init__(self, fd, mode=None):
-        super(WindowsFileLock, self).__init__(fd)
+    def __init__(self, fileobj, mode=None):
+        super(WindowsFileLock, self).__init__(fileobj)
 
     def acquire(self):
-        msvcrt.locking(self.fd, msvcrt.LK_NBLCK, 1)
+        msvcrt.locking(self.fileobj.fileno(), msvcrt.LK_NBLCK, 1)
         self.locked = True
 
     def release(self):
-        msvcrt.locking(self.fd, msvcrt.LK_UNLCK, 1)
+        msvcrt.locking(self.fileobj.fileno(), msvcrt.LK_UNLCK, 1)
         self.locked = False
 
 
