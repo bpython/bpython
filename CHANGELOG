@@ -9,7 +9,8 @@ New features:
   Thanks to toejough.
 
 Fixes:
-
+* Fix file locking on Windows.
+* Exit gracefully if config file fails to be loaded due to encoding errors.
 
 Support for Python 3.3 has been dropped.
 
