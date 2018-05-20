@@ -15,8 +15,8 @@ from .lazyre import LazyReCompile
 LinePart = namedtuple('LinePart', ['start', 'stop', 'word'])
 
 current_word_re = LazyReCompile(
-        r'(?<![)\]\w_.])'
-        r'([\w_][\w0-9._]*[(]?)')
+    r'(?<![)\]\w_.])'
+    r'([\w_][\w0-9._]*[(]?)')
 
 
 def current_word(cursor_offset, line):
@@ -222,7 +222,7 @@ def current_dotted_attribute(cursor_offset, line):
 
 
 current_expression_attribute_re = LazyReCompile(
-        r'[.]\s*((?:[\w_][\w0-9_]*)|(?:))')
+    r'[.]\s*((?:[\w_][\w0-9_]*)|(?:))')
 
 
 def current_expression_attribute(cursor_offset, line):

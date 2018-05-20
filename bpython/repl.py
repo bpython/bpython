@@ -61,6 +61,7 @@ from . import simpleeval
 
 class RuntimeTimer(object):
     """Calculate running time"""
+
     def __init__(self):
         self.reset_timer()
         self.time = time.monotonic if hasattr(time, 'monotonic') else time.time
@@ -153,7 +154,8 @@ class Interpreter(code.InteractiveInterpreter):
         if encode and filename is not None:
             # files have encoding comments or implicit encoding of ASCII
             if encode != 'auto':
-                raise ValueError("shouldn't add encoding line to file contents")
+                raise ValueError(
+                    "shouldn't add encoding line to file contents")
             encode = False
 
         if encode and not py3 and isinstance(source, str):
@@ -622,7 +624,7 @@ class Repl(object):
                 try:
                     fake_cursor = self.current_line.index(func) + len(func)
                     f = simpleeval.evaluate_current_attribute(
-                            fake_cursor, self.current_line, self.interp.locals)
+                        fake_cursor, self.current_line, self.interp.locals)
                 except simpleeval.EvaluationError:
                     return False
         except Exception:

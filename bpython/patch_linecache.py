@@ -34,7 +34,7 @@ class BPythonLinecache(dict):
         a fake filename to use to retrieve it later."""
         filename = '<bpython-input-%s>' % len(self.bpython_history)
         self.bpython_history.append((len(source), None,
-                                    source.splitlines(True), filename))
+                                     source.splitlines(True), filename))
         return filename
 
     def __getitem__(self, key):

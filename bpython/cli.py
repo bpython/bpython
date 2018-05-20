@@ -52,9 +52,9 @@ import functools
 
 import struct
 if platform.system() != 'Windows':
-    import signal      #Windows does not have job control
-    import termios     #Windows uses curses
-    import fcntl       #Windows uses curses
+    import signal  # Windows does not have job control
+    import termios  # Windows uses curses
+    import fcntl  # Windows uses curses
 import unicodedata
 import errno
 
@@ -111,6 +111,7 @@ def calculate_screen_lines(tokens, width, cursor=0):
             lines += pos // width
             pos %= width
     return lines
+
 
 def forward_if_not_current(func):
     @functools.wraps(func)
@@ -202,7 +203,7 @@ class FakeStdin(object):
                     # C-d
                     return ''
                 elif (key not in ('\n', '\r') and
-                    (len(key) > 1 or unicodedata.category(key) == 'Cc')):
+                      (len(key) > 1 or unicodedata.category(key) == 'Cc')):
                     continue
                 sys.stdout.write(key)
                 # Include the \n in the buffer - raw_input() seems to deal with trailing
@@ -281,7 +282,7 @@ def make_colors(config):
 
     if platform.system() == 'Windows':
         c = dict(list(c.items()) +
-            [
+                 [
             ('K', 8),
             ('R', 9),
             ('G', 10),
@@ -290,8 +291,8 @@ def make_colors(config):
             ('M', 13),
             ('C', 14),
             ('W', 15),
-            ]
-         )
+        ]
+        )
 
     for i in range(63):
         if i > 7:
@@ -315,7 +316,6 @@ class CLIInteraction(repl.Interaction):
             return False
 
         return reply.lower() in (_('y'), _('yes'))
-
 
     def notify(self, s, n=10, wait_for_keypress=False):
         return self.statusbar.message(s, n)
@@ -350,6 +350,7 @@ class CLIRepl(repl.Repl):
 
     def _get_cursor_offset(self):
         return len(self.s) - self.cpos
+
     def _set_cursor_offset(self, offset):
         self.cpos = len(self.s) - offset
     cursor_offset = property(_get_cursor_offset, _set_cursor_offset, None,
@@ -427,7 +428,7 @@ class CLIRepl(repl.Repl):
         it and force syntax highlighting."""
 
         if (self.paste_mode
-            and time.time() - self.last_key_press > self.config.paste_time):
+                and time.time() - self.last_key_press > self.config.paste_time):
             self.paste_mode = False
             self.print_line(self.s)
 
@@ -454,7 +455,7 @@ class CLIRepl(repl.Repl):
         with tab
         """
         if self.paste_mode:
-            self.scr.touchwin() #TODO necessary?
+            self.scr.touchwin()  # TODO necessary?
             return
 
         list_win_visible = repl.Repl.complete(self, tab)
@@ -489,6 +490,7 @@ class CLIRepl(repl.Repl):
 
     def _get_current_line(self):
         return self.s
+
     def _set_current_line(self, line):
         self.s = line
     current_line = property(_get_current_line, _set_current_line, None,
@@ -716,7 +718,7 @@ class CLIRepl(repl.Repl):
 
         self.list_win.addstr('\n  ')
         self.list_win.addstr(fn,
-            get_colpair(self.config, 'name') | curses.A_BOLD)
+                             get_colpair(self.config, 'name') | curses.A_BOLD)
         self.list_win.addstr(': (', get_colpair(self.config, 'name'))
         maxh = self.scr.getmaxyx()[0]
 
@@ -765,7 +767,7 @@ class CLIRepl(repl.Repl):
             if kw is not None:
                 self.list_win.addstr('=', punctuation_colpair)
                 self.list_win.addstr(kw, get_colpair(self.config, 'token'))
-            if k != len(args) -1:
+            if k != len(args) - 1:
                 self.list_win.addstr(', ', punctuation_colpair)
 
         if _args:
@@ -854,7 +856,7 @@ class CLIRepl(repl.Repl):
             key = '\n'
             # Don't return; let it get handled
 
-        if key == chr(27): #Escape Key
+        if key == chr(27):  # Escape Key
             return ''
 
         if key in (BACKSP, 'KEY_BACKSPACE'):
@@ -894,7 +896,7 @@ class CLIRepl(repl.Repl):
             self.fwd()
             return ''
 
-        elif key in ("KEY_LEFT",' ^B', chr(2)):  # Cursor Left or ^B
+        elif key in ("KEY_LEFT", ' ^B', chr(2)):  # Cursor Left or ^B
             self.mvc(1)
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
@@ -914,11 +916,11 @@ class CLIRepl(repl.Repl):
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif key in ("KEY_NPAGE", '\T'): # page_down or \T
+        elif key in ("KEY_NPAGE", '\T'):  # page_down or \T
             self.hend()
             self.print_line(self.s)
 
-        elif key in ("KEY_PPAGE", '\S'): # page_up or \S
+        elif key in ("KEY_PPAGE", '\S'):  # page_up or \S
             self.hbegin()
             self.print_line(self.s)
 
@@ -1065,7 +1067,8 @@ class CLIRepl(repl.Repl):
     def prompt(self, more):
         """Show the appropriate Python prompt"""
         if not more:
-            self.echo("\x01%s\x03%s" % (self.config.color_scheme['prompt'], self.ps1))
+            self.echo("\x01%s\x03%s" %
+                      (self.config.color_scheme['prompt'], self.ps1))
             if py3:
                 self.stdout_hist += self.ps1
             else:
@@ -1079,7 +1082,8 @@ class CLIRepl(repl.Repl):
                 self.stdout_hist += self.ps2
             else:
                 self.stdout_hist += self.ps2.encode(getpreferredencoding())
-            self.s_hist.append('\x01%s\x03%s\x04' % (prompt_more_color, self.ps2))
+            self.s_hist.append('\x01%s\x03%s\x04' %
+                               (prompt_more_color, self.ps2))
 
     def push(self, s, insert_into_history=True):
         # curses.raw(True) prevents C-c from causing a SIGINT
@@ -1103,7 +1107,7 @@ class CLIRepl(repl.Repl):
             self.iy, self.ix = self.scr.getyx()
             for i in s.split('\x04'):
                 self.echo(i, redraw=False)
-            if k < len(self.s_hist) -1:
+            if k < len(self.s_hist) - 1:
                 self.scr.addstr('\n')
         self.iy, self.ix = self.scr.getyx()
         self.print_line(self.s)
@@ -1186,13 +1190,11 @@ class CLIRepl(repl.Repl):
         self.statusbar.resize(refresh=False)
         self.redraw()
 
-
     def getstdout(self):
         """This method returns the 'spoofed' stdout buffer, for writing to a
         file or sending to a pastebin or whatever."""
 
         return self.stdout_hist + '\n'
-
 
     def reevaluate(self):
         """Clear the buffer, redraw the screen and re-evaluate the history"""
@@ -1234,7 +1236,7 @@ class CLIRepl(repl.Repl):
 
         self.evaluating = False
         #map(self.push, self.history)
-        #^-- That's how simple this method was at first :(
+        # ^-- That's how simple this method was at first :(
 
     def write(self, s):
         """For overriding stdout defaults"""
@@ -1257,7 +1259,6 @@ class CLIRepl(repl.Repl):
 
         self.echo(s)
         self.s_hist.append(s.rstrip())
-
 
     def show_list(self, items, arg_pos, topline=None, formatter=None, current_item=None):
 
@@ -1345,7 +1346,7 @@ class CLIRepl(repl.Repl):
             self.list_win.resize(rows + 2, w)
         else:
             docstring = self.format_docstring(self.docstring, max_w - 2,
-                max_h - height_offset)
+                                              max_h - height_offset)
             docstring_string = ''.join(docstring)
             rows += len(docstring)
             self.list_win.resize(rows, max_w)
@@ -1445,7 +1446,7 @@ class CLIRepl(repl.Repl):
 
         # 3. check to see if we can expand the current word
         if self.matches_iter.is_cseq():
-            #TODO resolve this error-prone situation:
+            # TODO resolve this error-prone situation:
             # can't assign at same time to self.s and self.cursor_offset
             # because for cursor_offset
             # property to work correctly, self.s must already be set
@@ -1458,7 +1459,7 @@ class CLIRepl(repl.Repl):
         # 4. swap current word for a match list item
         elif self.matches_iter.matches:
             current_match = back and self.matches_iter.previous() \
-                                  or next(self.matches_iter)
+                or next(self.matches_iter)
             try:
                 self.show_list(self.matches_iter.matches, self.arg_pos,
                                topline=self.funcprops,
@@ -1500,7 +1501,7 @@ class CLIRepl(repl.Repl):
             return ''
 
         self.f_string = ''
-        self.cpos = -1 # Set cursor position to -1 to prevent paren matching
+        self.cpos = -1  # Set cursor position to -1 to prevent paren matching
 
         self.iy, self.ix = self.scr.getyx()
         self.evaluating = True
@@ -1530,6 +1531,7 @@ class CLIRepl(repl.Repl):
         self.print_line(self.s)
         self.scr.redrawwin()
         return ''
+
 
 class Statusbar(object):
     """This class provides the status bar at the bottom of the screen.
@@ -1687,7 +1689,7 @@ class Statusbar(object):
 def init_wins(scr, config):
     """Initialise the two windows (the main repl interface and the little
     status bar at the bottom with some stuff in it)"""
-    #TODO: Document better what stuff is on the status bar.
+    # TODO: Document better what stuff is on the status bar.
 
     background = get_colpair(config, 'background')
     h, w = gethw()
@@ -1719,10 +1721,12 @@ def sigwinch(unused_scr):
     global DO_RESIZE
     DO_RESIZE = True
 
+
 def sigcont(unused_scr):
     sigwinch(unused_scr)
     # Forces the redraw
     curses.ungetch('\x00')
+
 
 def gethw():
     """I found this code on a usenet post, and snipped out the bit I needed,
@@ -1761,7 +1765,8 @@ def gethw():
             sizex = right - left + 1
             sizey = bottom - top + 1
         else:
-            sizex, sizey = stdscr.getmaxyx()# can't determine actual size - return default values
+            # can't determine actual size - return default values
+            sizex, sizey = stdscr.getmaxyx()
 
         h, w = sizey, sizex
     return h, w
@@ -1796,7 +1801,7 @@ def do_resize(caller):
     global DO_RESIZE
     h, w = gethw()
     if not h:
-    # Hopefully this shouldn't happen. :)
+        # Hopefully this shouldn't happen. :)
         return
 
     curses.endwin()
@@ -1878,7 +1883,8 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
         old_sigwinch_handler = signal.signal(signal.SIGWINCH,
                                              lambda *_: sigwinch(scr))
         # redraw window after being suspended
-        old_sigcont_handler = signal.signal(signal.SIGCONT, lambda *_: sigcont(scr))
+        old_sigcont_handler = signal.signal(
+            signal.SIGCONT, lambda *_: sigcont(scr))
 
     stdscr = scr
     try:
@@ -1951,7 +1957,6 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
 def main(args=None, locals_=None, banner=None):
     translations.init()
 
-
     config, options, exec_args = argsparse(args)
 
     # Save stdin, stdout and stderr for later restoration
@@ -1974,6 +1979,7 @@ def main(args=None, locals_=None, banner=None):
     if hasattr(sys.stdout, 'flush'):
         sys.stdout.flush()
     return repl.extract_exit_value(exit_value)
+
 
 if __name__ == '__main__':
     sys.exit(main())

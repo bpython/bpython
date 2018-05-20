@@ -76,4 +76,3 @@ if py3:
 else:
     def is_main_thread():
         return isinstance(threading.current_thread(), threading._MainThread)
-

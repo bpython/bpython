@@ -197,7 +197,7 @@ def evaluate_current_expression(cursor_offset, line, namespace=None):
     temp_line = line[:cursor_offset] + 'xxx' + line[cursor_offset:]
     temp_cursor = cursor_offset + 3
     temp_attribute = line_properties.current_expression_attribute(
-            temp_cursor, temp_line)
+        temp_cursor, temp_line)
     if temp_attribute is None:
         raise EvaluationError("No current attribute")
     attr_before_cursor = temp_line[temp_attribute.start:temp_cursor]
@@ -218,7 +218,7 @@ def evaluate_current_expression(cursor_offset, line, namespace=None):
 
     if largest_ast is None:
         raise EvaluationError(
-                "Corresponding ASTs to right of cursor are invalid")
+            "Corresponding ASTs to right of cursor are invalid")
     try:
         return simple_eval(largest_ast, namespace)
     except ValueError:
@@ -238,7 +238,7 @@ def evaluate_current_attribute(cursor_offset, line, namespace=None):
         return getattr(obj, attr.word)
     except AttributeError:
         raise EvaluationError(
-                "can't lookup attribute %s on %r" % (attr.word, obj))
+            "can't lookup attribute %s on %r" % (attr.word, obj))
 
 
 def safe_get_attribute(obj, attr):
@@ -255,6 +255,8 @@ def safe_get_attribute(obj, attr):
 
 class _ClassWithSlots(object):
     __slots__ = ['a']
+
+
 member_descriptor = type(_ClassWithSlots.a)
 
 
