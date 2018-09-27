@@ -67,7 +67,7 @@ class TestInterpreter(unittest.TestCase):
 
         i.runsource('gfunc()')
 
-        if pypy:
+        if pypy and not py3:
             global_not_found = "global name 'gfunc' is not defined"
         else:
             global_not_found = "name 'gfunc' is not defined"
