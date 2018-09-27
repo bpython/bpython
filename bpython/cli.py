@@ -81,6 +81,7 @@ from . import translations
 from .translations import _
 
 from . import repl
+from . import args as bpargs
 from ._py3compat import py3
 from .pager import page
 from .args import parse as argsparse
@@ -1914,7 +1915,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None,
     if args:
         exit_value = ()
         try:
-            bpython.args.exec_code(interpreter, args)
+            bpargs.exec_code(interpreter, args)
         except SystemExit as e:
             # The documentation of code.InteractiveInterpreter.runcode claims
             # that it reraises SystemExit. However, I can't manage to trigger
