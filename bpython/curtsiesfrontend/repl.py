@@ -229,7 +229,7 @@ class ReevaluateFakeStdin(object):
             value = self.readline_results.pop(0)
         else:
             value = 'no saved input available'
-        self.repl.send_to_stdout(value)
+        self.repl.send_to_stdouterr(value)
         return value
 
 
@@ -333,7 +333,7 @@ class BaseRepl(BpythonRepl):
 
         if interp is None:
             interp = Interp(locals=locals_)
-            interp.write = self.send_to_stderr
+            interp.write = self.send_to_stdouterr
         if banner is None:
             if config.help_key:
                 banner = (_('Welcome to bpython!') + ' ' +
@@ -393,9 +393,9 @@ class BaseRepl(BpythonRepl):
 
         # filenos match the backing device for libs that expect it,
         # but writing to them will do weird things to the display
-        self.stdout = FakeOutput(self.coderunner, self.send_to_stdout,
+        self.stdout = FakeOutput(self.coderunner, self.send_to_stdouterr,
                                  fileno=sys.__stdout__.fileno())
-        self.stderr = FakeOutput(self.coderunner, self.send_to_stderr,
+        self.stderr = FakeOutput(self.coderunner, self.send_to_stdouterr,
                                  fileno=sys.__stderr__.fileno())
         self.stdin = FakeStdin(self.coderunner, self, self.edit_keys)
 
@@ -1140,27 +1140,16 @@ class BaseRepl(BpythonRepl):
     def get_current_block(self):
         return '\n'.join(self.buffer + [self.current_line])
 
-    def move_current_stdouterr_line_up(self):
-        """Append self.current_stdouterr_line to self.display_lines
-        then clean it."""
-        self.display_lines.extend(paint.display_linize(
-            self.current_stdouterr_line, self.width))
-        self.current_stdouterr_line = ''
+    def send_to_stdouterr(self, output):
+        """Send unicode strings or FmtStr to Repl stdout or stderr
 
-    def send_to_stdout(self, output):
-        """Send unicode string to Repl stdout"""
+        Must be able to handle FmtStrs because interpreter pass in
+        tracebacks already formatted."""
         if not output:
             return
         lines = output.split('\n')
-        if all(not line for line in lines):
-            # If the string consist only of newline characters,
-            # str.split returns one more empty strings.
-            lines = lines[:-1]
         logger.debug('display_lines: %r', self.display_lines)
-        if lines[0]:
-            self.current_stdouterr_line += lines[0]
-        else:
-            self.move_current_stdouterr_line_up()
+        self.current_stdouterr_line += lines[0]
         if len(lines) > 1:
             self.display_lines.extend(paint.display_linize(
                 self.current_stdouterr_line, self.width, blank_line=True))
@@ -1170,26 +1159,6 @@ class BaseRepl(BpythonRepl):
                      for line in lines[1:-1]), []))
             self.current_stdouterr_line = lines[-1]
         logger.debug('display_lines: %r', self.display_lines)
-
-    def send_to_stderr(self, error):
-        """Send unicode strings or FmtStr to Repl stderr
-
-        Must be able to handle FmtStrs because interpreter pass in
-        tracebacks already formatted."""
-        if not error:
-            return
-        lines = error.split('\n')
-        if all(not line for line in lines):
-            # If the string consist only of newline characters,
-            # str.split returns one more empty strings.
-            lines = lines[:-1]
-        if lines[-1]:
-            self.current_stdouterr_line += lines[-1]
-        else:
-            self.move_current_stdouterr_line_up()
-        self.display_lines.extend(sum((paint.display_linize(line, self.width,
-                                                            blank_line=True)
-                                       for line in lines[:-1]), []))
 
     def send_to_stdin(self, line):
         if line.endswith('\n'):
@@ -1653,7 +1622,7 @@ class BaseRepl(BpythonRepl):
 
         if not self.weak_rewind:
             self.interp = self.interp.__class__()
-            self.interp.write = self.send_to_stderr
+            self.interp.write = self.send_to_stdouterr
             self.coderunner.interp = self.interp
             self.initialize_interp()
 

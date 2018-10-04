@@ -264,6 +264,34 @@ class TestFutureImports(TestCase):
         self.assertEqual(out.getvalue(), '0.5\n0.5\n')
 
 
+class TestStdOutErr(TestCase):
+    def setUp(self):
+        self.repl = create_repl()
+
+    def test_newline(self):
+        self.repl.send_to_stdouterr('\n\n')
+        self.assertEqual(self.repl.display_lines[-2], '')
+        self.assertEqual(self.repl.display_lines[-1], '')
+        self.assertEqual(self.repl.current_stdouterr_line, '')
+
+    def test_leading_newline(self):
+        self.repl.send_to_stdouterr('\nfoo\n')
+        self.assertEqual(self.repl.display_lines[-2], '')
+        self.assertEqual(self.repl.display_lines[-1], 'foo')
+        self.assertEqual(self.repl.current_stdouterr_line, '')
+
+    def test_no_trailing_newline(self):
+        self.repl.send_to_stdouterr('foo')
+        self.assertEqual(self.repl.current_stdouterr_line, 'foo')
+
+    def test_print_without_newline_then_print_with_leading_newline(self):
+        self.repl.send_to_stdouterr('foo')
+        self.repl.send_to_stdouterr('\nbar\n')
+        self.assertEqual(self.repl.display_lines[-2], 'foo')
+        self.assertEqual(self.repl.display_lines[-1], 'bar')
+        self.assertEqual(self.repl.current_stdouterr_line, '')
+
+
 class TestPredictedIndent(TestCase):
     def setUp(self):
         self.repl = create_repl()
