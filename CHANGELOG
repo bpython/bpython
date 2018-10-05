@@ -11,10 +11,10 @@ New features:
 Fixes:
 * Fix file locking on Windows.
 * Exit gracefully if config file fails to be loaded due to encoding errors.
+* #744: Fix newline handling.
+  Thanks to Attila Szöllősi.
 
 Support for Python 3.3 has been dropped.
-
-Fixes:
 
 0.17.1
 ------
@@ -43,7 +43,7 @@ Fixes:
 * #654: Do not modify history file during tests.
 * #658: Fix newline handling.
   Thanks to Attila Szöllősi.
-* #670: Fix handlign of ANSI escape codes.
+* #670: Fix handling of ANSI escape codes.
   Thanks to Attila Szöllősi.
 * #687: Fix encoding of jedi completions.
 
@@ -60,8 +60,8 @@ Fixes:
   Thanks to Aditya Gupta.
 * #614: Fix issues when view source.
   Thanks to Daniel Hahler.
-* #625: Fix issues when runnings scripts with non-ASCII characters.
-* #639: Fix compatbility issues with pdb++.
+* #625: Fix issues when running scripts with non-ASCII characters.
+* #639: Fix compatibility issues with pdb++.
   Thanks to Daniel Hahler.
 
 Support for Python 2.6 has been dropped.
