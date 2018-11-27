@@ -21,7 +21,6 @@ env:
 
 matrix:
     allow_failures:
-        - python: "3.7"
         - python: "3.8-dev"
         - python: "pypy"
         - python: "pypy3"
