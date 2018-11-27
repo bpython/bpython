@@ -1,5 +1,6 @@
 language: python
 sudo: false
+dist: xenial
 notifications:
     webhooks:
         - secure: "QXcEHVnOi5mZpONkHSu1tydj8EK3G7xJ7Wv/WYhJ5soNUpEJgi6YwR1WcxSjo7qyi8hTL+4jc+ID0TpKDeS1lpXF41kG9xf5kdxw5OL0EnMkrP9okUN0Ip8taEhd8w+6+dGmfZrx2nXOg1kBU7W5cE90XYqEtNDVXXgNeilT+ik="
