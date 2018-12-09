@@ -33,6 +33,9 @@ __version__ = version
 package_dir = os.path.abspath(os.path.dirname(__file__))
 
 
-def embed(locals_=None, args=['-i', '-q'], banner=None):
+def embed(locals_=None, args=None, banner=None):
+    if args is None:
+        args = ['-i', '-q']
+
     from .curtsies import main
     return main(args, locals_, banner)
