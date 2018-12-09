@@ -141,7 +141,6 @@ if urwid.VERSION < (1, 0, 0) and hasattr(urwid, 'TwistedEventLoop'):
                 except:
                     # This is the same as in urwid.
                     # We are obviously not supposed to ever hit this.
-                    import sys
                     print(sys.exc_info())
                     self._exc_info = sys.exc_info()
                     self.reactor.crash()
