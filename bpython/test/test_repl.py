@@ -22,7 +22,7 @@ pypy = 'PyPy' in sys.version
 def setup_config(conf):
     config_struct = config.Struct()
     config.loadini(config_struct, TEST_CONFIG)
-    if 'autocomplete_mode' in conf:
+    if conf is not None and 'autocomplete_mode' in conf:
         config_struct.autocomplete_mode = conf['autocomplete_mode']
     return config_struct
 
@@ -37,7 +37,7 @@ class FakeHistory(repl.History):
 
 
 class FakeRepl(repl.Repl):
-    def __init__(self, conf={}):
+    def __init__(self, conf=None):
         repl.Repl.__init__(self, repl.Interpreter(), setup_config(conf))
         self.current_line = ""
         self.cursor_offset = 0
