@@ -31,7 +31,6 @@ import io
 import os
 import pkgutil
 import pydoc
-import re
 import shlex
 import subprocess
 import sys
