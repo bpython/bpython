@@ -165,12 +165,6 @@ class History(object):
         if self.index == 0:
             self.saved_line = line
 
-    @classmethod
-    def from_filename(cls, filename):
-        history = cls()
-        history.load(filename)
-        return history
-
     def reset(self):
         self.index = 0
         self.saved_line = ''
