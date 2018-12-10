@@ -56,7 +56,7 @@ def paginate(rows, matches, current, words_wide):
     return matches[per_page * current_page:per_page * (current_page + 1)]
 
 
-def matches_lines(rows, columns, matches, current, config, format):
+def matches_lines(rows, columns, matches, current, config, match_format):
     highlight_color = func_for_letter(config.color_scheme['operator'].lower())
 
     if not matches:
@@ -64,22 +64,22 @@ def matches_lines(rows, columns, matches, current, config, format):
     color = func_for_letter(config.color_scheme['main'])
     max_match_width = max(len(m) for m in matches)
     words_wide = max(1, (columns - 1) // (max_match_width + 1))
-    matches = [format(m) for m in matches]
+    matches = [match_format(m) for m in matches]
     if current:
-        current = format(current)
+        current = match_format(current)
 
     matches = paginate(rows, matches, current, words_wide)
 
-    matches_lines = [fmtstr(' ').join(color(m.ljust(max_match_width))
-                                      if m != current
-                                      else highlight_color(
-                                          m.ljust(max_match_width))
-                                      for m in matches[i:i + words_wide])
+    result = [fmtstr(' ').join(color(m.ljust(max_match_width))
+                                     if m != current
+                                     else highlight_color(
+                                         m.ljust(max_match_width))
+                                     for m in matches[i:i + words_wide])
                      for i in range(0, len(matches), words_wide)]
 
     logger.debug('match: %r' % current)
-    logger.debug('matches_lines: %r' % matches_lines)
-    return matches_lines
+    logger.debug('matches_lines: %r' % result)
+    return result
 
 
 def formatted_argspec(funcprops, arg_pos, columns, config):
@@ -175,7 +175,7 @@ def formatted_docstring(docstring, columns, config):
 
 
 def paint_infobox(rows, columns, matches, funcprops, arg_pos, match, docstring,
-                  config, format):
+                  config, match_format):
     """Returns painted completions, funcprops, match, docstring etc."""
     if not (rows and columns):
         return fsarray(0, 0)
@@ -185,7 +185,7 @@ def paint_infobox(rows, columns, matches, funcprops, arg_pos, match, docstring,
     from_doc = (formatted_docstring(docstring, width, config)
                 if docstring else [])
     from_matches = (matches_lines(max(1, rows - len(from_argspec) - 2),
-                                  width, matches, match, config, format)
+                                  width, matches, match, config, match_format)
                     if matches else [])
 
     lines = from_argspec + from_matches + from_doc
