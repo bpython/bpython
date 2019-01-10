@@ -183,7 +183,7 @@ class CodeRunner(object):
         try:
             unfinished = self.interp.runsource(self.source)
         except SystemExit as e:
-            return SystemExitRequest(e.args)
+            return SystemExitRequest(*e.args)
         return Unfinished() if unfinished else Done()
 
     def request_from_main_context(self, force_refresh=False):
