@@ -250,11 +250,10 @@ def getfuncprops(func, f):
         return None
     try:
         if py3:
-            argspec = inspect.getfullargspec(f)
+            argspec = get_argspec_from_signature(f)
         else:
-            argspec = inspect.getargspec(f)
+            argspec = list(inspect.getargspec(f))
 
-        argspec = list(argspec)
         fixlongargs(f, argspec)
         if len(argspec) == 4:
             argspec = argspec + [list(), dict(), None]
@@ -282,6 +281,55 @@ def is_eval_safe_name(string):
 
 def is_callable(obj):
     return callable(obj)
+
+
+def get_argspec_from_signature(f):
+    """Get callable signature from inspect.signature in argspec format.
+
+    inspect.signature is a Python 3 only function that returns the signature of
+    a function.  Its advantage over inspect.getfullargspec is that it returns
+    the signature of a decorated function, if the wrapper function itself is
+    decorated with functools.wraps.
+
+    """
+    args = []
+    varargs = varkwargs = None
+    defaults = []
+    kwonly = []
+    kwonly_defaults = {}
+    annotations = {}
+
+    signature = inspect.signature(f)
+    for parameter in signature.parameters.values():
+        if parameter.annotation is not inspect._empty:
+            annotations[parameter.name] = parameter.annotation
+
+        if parameter.kind == inspect._ParameterKind.POSITIONAL_OR_KEYWORD:
+            args.append(parameter.name)
+            if parameter.default is not inspect._empty:
+                defaults.append(parameter.default)
+        elif parameter.kind == inspect._ParameterKind.POSITIONAL_ONLY:
+            args.append(parameter.name)
+        elif parameter.kind == inspect._ParameterKind.VAR_POSITIONAL:
+            varargs = parameter.name
+        elif parameter.kind == inspect._ParameterKind.KEYWORD_ONLY:
+            kwonly.append(parameter.name)
+            kwonly_defaults[parameter.name] = parameter.default
+        elif parameter.kind == inspect._ParameterKind.VAR_KEYWORD:
+            varkwargs = parameter.name
+
+    # inspect.getfullargspec returns None for 'defaults', 'kwonly_defaults' and
+    # 'annotations' if there are no values for them.
+    if not defaults:
+        defaults = None
+
+    if not kwonly_defaults:
+        kwonly_defaults = None
+
+    if not annotations:
+        annotations = None
+
+    return [args, varargs, varkwargs, defaults, kwonly, kwonly_defaults, annotations]
 
 
 get_encoding_line_re = LazyReCompile(r'^.*coding[:=]\s*([-\w.]+).*$')
