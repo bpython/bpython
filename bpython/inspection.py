@@ -304,18 +304,18 @@ def get_argspec_from_signature(f):
         if parameter.annotation is not inspect._empty:
             annotations[parameter.name] = parameter.annotation
 
-        if parameter.kind == inspect._ParameterKind.POSITIONAL_OR_KEYWORD:
+        if parameter.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD:
             args.append(parameter.name)
             if parameter.default is not inspect._empty:
                 defaults.append(parameter.default)
-        elif parameter.kind == inspect._ParameterKind.POSITIONAL_ONLY:
+        elif parameter.kind == inspect.Parameter.POSITIONAL_ONLY:
             args.append(parameter.name)
-        elif parameter.kind == inspect._ParameterKind.VAR_POSITIONAL:
+        elif parameter.kind == inspect.Parameter.VAR_POSITIONAL:
             varargs = parameter.name
-        elif parameter.kind == inspect._ParameterKind.KEYWORD_ONLY:
+        elif parameter.kind == inspect.Parameter.KEYWORD_ONLY:
             kwonly.append(parameter.name)
             kwonly_defaults[parameter.name] = parameter.default
-        elif parameter.kind == inspect._ParameterKind.VAR_KEYWORD:
+        elif parameter.kind == inspect.Parameter.VAR_KEYWORD:
             varkwargs = parameter.name
 
     # inspect.getfullargspec returns None for 'defaults', 'kwonly_defaults' and
