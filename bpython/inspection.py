@@ -259,7 +259,7 @@ def getfuncprops(func, f):
             argspec = argspec + [list(), dict(), None]
         argspec = ArgSpec(*argspec)
         fprops = FuncProps(func, argspec, is_bound_method)
-    except (TypeError, KeyError):
+    except (TypeError, KeyError, ValueError):
         with AttrCleaner(f):
             argspec = getpydocspec(f, func)
         if argspec is None:
