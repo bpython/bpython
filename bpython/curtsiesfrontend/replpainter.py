@@ -5,7 +5,7 @@ import logging
 import itertools
 from six.moves import range
 
-from curtsies import fsarray, fmtstr
+from curtsies import fsarray, fmtstr, FSArray
 from curtsies.formatstring import linesplit
 from curtsies.fmtfuncs import bold
 
@@ -178,7 +178,7 @@ def paint_infobox(rows, columns, matches, funcprops, arg_pos, match, docstring,
                   config, match_format):
     """Returns painted completions, funcprops, match, docstring etc."""
     if not (rows and columns):
-        return fsarray(0, 0)
+        return FSArray(0, 0)
     width = columns - 4
     from_argspec = (formatted_argspec(funcprops, arg_pos, width, config)
                     if funcprops else [])
