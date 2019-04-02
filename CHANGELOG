@@ -13,6 +13,9 @@ Fixes:
 * Exit gracefully if config file fails to be loaded due to encoding errors.
 * #744: Fix newline handling.
   Thanks to Attila Szöllősi.
+* #731: Fix exit code.
+  Thanks to benkrig.
+* #767: Fix crash when matching certain lines in history.
 
 Support for Python 3.3 has been dropped.
 
