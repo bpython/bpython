@@ -77,7 +77,7 @@ def loadini(struct, configfile):
             'highlight_show_source': True,
             'hist_duplicates': True,
             'hist_file': '~/.pythonhist',
-            'hist_length': 100,
+            'hist_length': 1000,
             'paste_time': 0.02,
             'pastebin_confirm': True,
             'pastebin_expiry': '1week',
