@@ -7,25 +7,26 @@ msgstr ""
 "Project-Id-Version: bpython 0.13-442\n"
 "Report-Msgid-Bugs-To: http://github.com/bpython/bpython/issues\n"
 "POT-Creation-Date: 2019-09-22 22:17+0200\n"
-"PO-Revision-Date: 2015-03-24 00:29+0100\n"
+"PO-Revision-Date: 2019-09-22 22:58+0200\n"
 "Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language: fr_FR\n"
 "Language-Team: bpython developers\n"
-"Plural-Forms: nplurals=2; plural=(n > 1)\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.6.0\n"
+"X-Generator: Poedit 2.2.3\n"
 
 #: bpython/args.py:63
 msgid ""
 "Usage: %prog [options] [file [args]]\n"
-"NOTE: If bpython sees an argument it does not know, execution falls back "
-"to the regular Python interpreter."
+"NOTE: If bpython sees an argument it does not know, execution falls back to the "
+"regular Python interpreter."
 msgstr ""
 "Utilisation: %prog [options] [fichier [arguments]]\n"
-"NOTE: Si bpython ne reconnaît pas un des arguments fournis, "
-"l'interpréteur Python classique sera lancé"
+"NOTE: Si bpython ne reconnaît pas un des arguments fournis, l'interpréteur "
+"Python classique sera lancé"
 
 #: bpython/args.py:73
 msgid "Use CONFIG instead of default config file."
@@ -34,8 +35,7 @@ msgstr "Utiliser CONFIG à la place du fichier de configuration par défaut."
 #: bpython/args.py:75
 msgid "Drop to bpython shell after running file instead of exiting."
 msgstr ""
-"Aller dans le shell bpython après l'exécution du fichier au lieu de "
-"quitter."
+"Aller dans le shell bpython après l'exécution du fichier au lieu de quitter."
 
 #: bpython/args.py:78
 msgid "Don't flush the output to stdout."
@@ -226,16 +226,16 @@ msgid "bpython config file edited. Restart bpython for changes to take effect."
 msgstr ""
 
 #: bpython/repl.py:1151
-#, fuzzy, python-format
+#, python-format
 msgid "Error editing config file: %s"
-msgstr "Une erreur s'est produite pendant l'écriture du fichier '%s': %s"
+msgstr ""
 
 #: bpython/urwid.py:622
 #, python-format
 msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
 msgstr ""
-"  <%s> Rebobiner  <%s> Sauvegarder  <%s> Pastebin  <%s> Pager  <%s> "
-"Montrer Source "
+"  <%s> Rebobiner  <%s> Sauvegarder  <%s> Pastebin  <%s> Pager  <%s> Montrer "
+"Source "
 
 #: bpython/urwid.py:1136
 msgid "Run twisted reactor."
@@ -251,11 +251,11 @@ msgstr "Lister les reactors disponibles pour -r."
 
 #: bpython/urwid.py:1143
 msgid ""
-"twistd plugin to run (use twistd for a list). Use \"--\" to pass further "
-"options to the plugin."
+"twistd plugin to run (use twistd for a list). Use \"--\" to pass further options "
+"to the plugin."
 msgstr ""
-"plugin twistd à lancer (utiliser twistd pour une list). Utiliser \"--\" "
-"pour donner plus d'options au plugin."
+"plugin twistd à lancer (utiliser twistd pour une list). Utiliser \"--\" pour "
+"donner plus d'options au plugin."
 
 #: bpython/urwid.py:1146
 msgid "Port to run an eval server on (forces Twisted)."
@@ -308,7 +308,3 @@ msgstr ""
 #: bpython/curtsiesfrontend/repl.py:976
 msgid "Auto-reloading not available because watchdog not installed."
 msgstr ""
-
-#~ msgid "Error editing config file."
-#~ msgstr ""
-

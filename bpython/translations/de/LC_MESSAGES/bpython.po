@@ -8,22 +8,26 @@ msgstr ""
 "Project-Id-Version: bpython mercurial\n"
 "Report-Msgid-Bugs-To: http://github.com/bpython/bpython/issues\n"
 "POT-Creation-Date: 2019-09-22 22:17+0200\n"
-"PO-Revision-Date: 2019-09-22 22:21+0200\n"
+"PO-Revision-Date: 2019-09-22 22:54+0200\n"
 "Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language: de\n"
 "Language-Team: de <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.6.0\n"
+"X-Generator: Poedit 2.2.3\n"
 
 #: bpython/args.py:63
 msgid ""
 "Usage: %prog [options] [file [args]]\n"
-"NOTE: If bpython sees an argument it does not know, execution falls back "
-"to the regular Python interpreter."
+"NOTE: If bpython sees an argument it does not know, execution falls back to the "
+"regular Python interpreter."
 msgstr ""
+"Verwendung: %prog [Optionen] [Datei [Argumente]]\n"
+"Hinweis: Wenn bpython Argumente übergeben bekommt, die nicht verstanden werden, "
+"wird der normale Python Interpreter ausgeführt."
 
 #: bpython/args.py:73
 msgid "Use CONFIG instead of default config file."
@@ -216,14 +220,13 @@ msgstr[1] ""
 #: bpython/repl.py:1126
 msgid "Config file does not exist - create new from default? (y/N)"
 msgstr ""
-"Konfigurationsdatei existiert nicht. Soll eine neue Datei erstellt "
-"werden? (j/N)"
+"Konfigurationsdatei existiert nicht. Soll eine neue Datei erstellt werden? (j/N)"
 
 #: bpython/repl.py:1148
 msgid "bpython config file edited. Restart bpython for changes to take effect."
 msgstr ""
-"bpython Konfigurationsdatei bearbeitet. Starte bpython neu damit die "
-"Änderungen übernommen werden."
+"bpython Konfigurationsdatei bearbeitet. Starte bpython neu damit die Änderungen "
+"übernommen werden."
 
 #: bpython/repl.py:1151
 #, python-format
@@ -237,21 +240,23 @@ msgstr ""
 
 #: bpython/urwid.py:1136
 msgid "Run twisted reactor."
-msgstr ""
+msgstr "Führe twisted reactor aus."
 
 #: bpython/urwid.py:1138
 msgid "Select specific reactor (see --help-reactors). Implies --twisted."
-msgstr ""
+msgstr "Wähle reactor aus (siehe --help-reactors). Impliziert --twisted."
 
 #: bpython/urwid.py:1141
 msgid "List available reactors for -r."
-msgstr ""
+msgstr "Liste verfügbare reactors für -r auf."
 
 #: bpython/urwid.py:1143
 msgid ""
-"twistd plugin to run (use twistd for a list). Use \"--\" to pass further "
-"options to the plugin."
+"twistd plugin to run (use twistd for a list). Use \"--\" to pass further options "
+"to the plugin."
 msgstr ""
+"Auszuführendes twistd Plugin (starte twistd für eine Liste). Verwende \"--\" um "
+"Optionen an das Plugin zu übergeben."
 
 #: bpython/urwid.py:1146
 msgid "Port to run an eval server on (forces Twisted)."
@@ -274,7 +279,7 @@ msgstr "Fehler beim Ausführen von PYTHONSTARTUP: %s"
 #: bpython/curtsiesfrontend/repl.py:660
 #, python-format
 msgid "Reloaded at %s because %s modified."
-msgstr ""
+msgstr "Bei %s neugeladen, da %s modifiziert wurde."
 
 #: bpython/curtsiesfrontend/repl.py:929
 msgid "Session not reevaluated because it was not edited"
@@ -295,13 +300,13 @@ msgstr "Bei %s vom Benutzer neu geladen."
 
 #: bpython/curtsiesfrontend/repl.py:966
 msgid "Auto-reloading deactivated."
-msgstr ""
+msgstr "Automatisches Neuladen deaktiviert."
 
 #: bpython/curtsiesfrontend/repl.py:971
 msgid "Auto-reloading active, watching for file changes..."
-msgstr ""
+msgstr "Automatisches Neuladen ist aktiv; beobachte Dateiänderungen..."
 
 #: bpython/curtsiesfrontend/repl.py:976
 msgid "Auto-reloading not available because watchdog not installed."
 msgstr ""
-
+"Automatisches Neuladen ist nicht verfügbar da watchdog nicht installiert ist."
