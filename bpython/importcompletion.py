@@ -32,7 +32,6 @@ import imp
 import os
 import sys
 import warnings
-from warnings import catch_warnings
 from six.moves import filter
 
 if py3:
@@ -146,7 +145,7 @@ def find_modules(path):
             # Workaround for issue #166
             continue
         try:
-            with catch_warnings():
+            with warnings.catch_warnings():
                 warnings.simplefilter("ignore", ImportWarning)
                 fo, pathname, _ = imp.find_module(name, [path])
         except (ImportError, IOError, SyntaxError):

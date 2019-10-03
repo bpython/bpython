@@ -34,8 +34,6 @@ import ast
 import inspect
 from six import string_types
 from six.moves import builtins
-import sys
-import types
 
 from . import line as line_properties
 from ._py3compat import py3

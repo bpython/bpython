@@ -11,7 +11,6 @@ from pygments.lexers import get_lexer_by_name
 
 from bpython.curtsiesfrontend.parse import parse
 from bpython.repl import Interpreter as ReplInterpreter
-from bpython.config import getpreferredencoding
 
 
 default_colors = {

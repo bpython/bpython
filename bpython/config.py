@@ -10,7 +10,6 @@ from six import iterkeys, iteritems
 from six.moves.configparser import ConfigParser
 
 from .autocomplete import SIMPLE as default_completion, ALL_MODES
-from .keys import cli_key_dispatch as cli_key_dispatch
 
 
 class Struct(object):
