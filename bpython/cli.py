@@ -1298,7 +1298,6 @@ class CLIRepl(repl.Repl):
                 rows += 1
 
             if rows + 2 >= max_h:
-                rows = max_h - 2
                 return False
 
             shared.rows = rows

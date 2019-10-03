@@ -1103,8 +1103,6 @@ class URWIDRepl(repl.Repl):
                 cw = self.current_string() or self.cw()
                 if not cw:
                     return True
-            else:
-                cw = self.matches_iter.current_word
 
             if self.matches_iter.is_cseq():
                 cursor, text = self.matches_iter.substitute_cseq()

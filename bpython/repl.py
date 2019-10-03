@@ -236,7 +236,7 @@ class Interpreter(code.InteractiveInterpreter):
                 l.insert(0, "Traceback (most recent call last):\n")
             l[len(l):] = traceback.format_exception_only(t, v)
         finally:
-            tblist = tb = None
+            pass
 
         self.writetb(l)
 
