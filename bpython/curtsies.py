@@ -58,12 +58,12 @@ class FullCurtsiesRepl(BaseRepl):
         with self.input_generator:
             pass  # temp hack to get .original_stty
 
-        BaseRepl.__init__(self,
-                          locals_=locals_,
-                          config=config,
-                          banner=banner,
-                          interp=interp,
-                          orig_tcattrs=self.input_generator.original_stty)
+        super(FullCurtsiesRepl, self).__init__(
+            locals_=locals_,
+            config=config,
+            banner=banner,
+            interp=interp,
+            orig_tcattrs=self.input_generator.original_stty)
 
     def get_term_hw(self):
         return self.window.get_term_hw()

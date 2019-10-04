@@ -96,7 +96,7 @@ class BPythonFormatter(Formatter):
                 # FIXME: Find a way to make this the inverse of the current
                 # background colour
                 self.f_strings[k] += 'I'
-        Formatter.__init__(self, **options)
+        super(BPythonFormatter, self).__init__(**options)
 
     def format(self, tokensource, outfile):
         o = ''

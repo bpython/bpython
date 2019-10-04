@@ -49,7 +49,7 @@ class BPythonFormatter(Formatter):
         self.f_strings = {}
         for k, v in iteritems(color_scheme):
             self.f_strings[k] = '\x01%s' % (v,)
-        Formatter.__init__(self, **options)
+        super(BPythonFormatter, self).__init__(**options)
 
     def format(self, tokensource, outfile):
         o = ''
@@ -68,7 +68,7 @@ class Interp(ReplInterpreter):
         We include an argument for the outfile to pass to the formatter for it
         to write to.
         """
-        ReplInterpreter.__init__(self, locals, encoding)
+        super(Interp, self).__init__(locals, encoding)
 
         # typically changed after being instantiated
         # but used when interpreter used corresponding REPL
