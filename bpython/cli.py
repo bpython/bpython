@@ -307,7 +307,7 @@ def make_colors(config):
 
 class CLIInteraction(repl.Interaction):
     def __init__(self, config, statusbar=None):
-        repl.Interaction.__init__(self, config, statusbar)
+        super(CLIInteraction, self).__init__(config, statusbar)
 
     def confirm(self, q):
         """Ask for yes or no and return boolean"""
@@ -328,7 +328,7 @@ class CLIInteraction(repl.Interaction):
 class CLIRepl(repl.Repl):
 
     def __init__(self, scr, interp, statusbar, config, idle=None):
-        repl.Repl.__init__(self, interp, config)
+        super(CLIRepl, self).__init__(interp, config)
         self.interp.writetb = self.writetb
         self.scr = scr
         self.stdout_hist = ''  # native str (bytes in Py2, unicode in Py3)

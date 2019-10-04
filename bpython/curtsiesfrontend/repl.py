@@ -348,7 +348,7 @@ class BaseRepl(BpythonRepl):
         self.reevaluating = False
         self.fake_refresh_requested = False
 
-        self.status_bar = StatusBar('',
+        self.status_bar = StatusBar(config, '',
                                     request_refresh=self.request_refresh,
                                     schedule_refresh=self.schedule_refresh)
         self.edit_keys = edit_keys.mapping_with_config(config, key_dispatch)

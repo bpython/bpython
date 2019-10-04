@@ -27,6 +27,7 @@ class StatusBar(BpythonInteraction):
     bpython.Repl code.
     """
     def __init__(self,
+                 config,
                  permanent_text="",
                  request_refresh=lambda: None,
                  schedule_refresh=lambda when: None):
@@ -46,6 +47,8 @@ class StatusBar(BpythonInteraction):
         self.request_context = None
         self.request_refresh = request_refresh
         self.schedule_refresh = schedule_refresh
+
+        super(StatusBar, self).__init__(config)
 
     def push_permanent_message(self, msg):
         self._message = ''
