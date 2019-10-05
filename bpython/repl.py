@@ -81,7 +81,7 @@ class RuntimeTimer(object):
         return self.running_time - self.last_command
 
 
-class Interpreter(code.InteractiveInterpreter):
+class Interpreter(code.InteractiveInterpreter, object):
     """Source code interpreter for use in bpython."""
 
     bpython_input_re = LazyReCompile(r'<bpython-input-\d+>')
