@@ -626,30 +626,30 @@ class Repl(object):
                         fake_cursor, self.current_line, self.interp.locals)
                 except simpleeval.EvaluationError:
                     return False
+
+            if inspect.isclass(f):
+                class_f = None
+
+                if (hasattr(f, '__init__') and
+                        f.__init__ is not object.__init__):
+                    class_f = f.__init__
+                if ((not class_f or
+                     not inspection.getfuncprops(func, class_f)) and
+                        hasattr(f, '__new__') and
+                        f.__new__ is not object.__new__ and
+                        # py3
+                        f.__new__.__class__ is not object.__new__.__class__):
+
+                    class_f = f.__new__
+
+                if class_f:
+                    f = class_f
         except Exception:
             # another case of needing to catch every kind of error
             # since user code is run in the case of descriptors
             # XXX: Make sure you raise here if you're debugging the completion
             # stuff !
             return False
-
-        if inspect.isclass(f):
-            class_f = None
-
-            if (hasattr(f, '__init__') and
-                    f.__init__ is not object.__init__):
-                class_f = f.__init__
-            if ((not class_f or
-                 not inspection.getfuncprops(func, class_f)) and
-                    hasattr(f, '__new__') and
-                    f.__new__ is not object.__new__ and
-                    # py3
-                    f.__new__.__class__ is not object.__new__.__class__):
-
-                class_f = f.__new__
-
-            if class_f:
-                f = class_f
 
         self.current_func = f
         self.funcprops = inspection.getfuncprops(func, f)
