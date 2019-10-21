@@ -182,7 +182,7 @@ class History(object):
         return entries if len(entries) else ['']
 
     def save(self, filename, encoding, lines=0):
-        fd = os.open(filename, os.O_WRONLY | os.O_CREAT | os.TRUNC,
+        fd = os.open(filename, os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
                      stat.S_IRUSR | stat.S_IWUSR)
         with io.open(fd, 'w', encoding=encoding,
                      errors='ignore') as hfile:
