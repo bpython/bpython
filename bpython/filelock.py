@@ -85,8 +85,8 @@ class UnixFileLock(BaseLock):
                 raise e
 
     def release(self):
-        fcntl.flock(self.fileobj, fcntl.LOCK_UN)
         self.locked = False
+        fcntl.flock(self.fileobj, fcntl.LOCK_UN)
 
 
 class WindowsFileLock(BaseLock):
@@ -101,8 +101,8 @@ class WindowsFileLock(BaseLock):
         self.locked = True
 
     def release(self):
-        msvcrt.locking(self.fileobj.fileno(), msvcrt.LK_UNLCK, 1)
         self.locked = False
+        msvcrt.locking(self.fileobj.fileno(), msvcrt.LK_UNLCK, 1)
 
 
 if has_fcntl:
