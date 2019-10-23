@@ -2,7 +2,7 @@
 
 # The MIT License
 #
-# Copyright (c) 2015-2016 Sebastian Ramacher
+# Copyright (c) 2015-2019 Sebastian Ramacher
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@ except ImportError:
 
 try:
     import msvcrt
+    import os
     has_msvcrt = True
 except ImportError:
     has_msvcrt = False
@@ -42,7 +43,7 @@ class BaseLock(object):
     """Base class for file locking
     """
 
-    def __init__(self, fileobj):
+    def __init__(self, fileobj, mode=None, filename=None):
         self.fileobj = fileobj
         self.locked = False
 
@@ -69,7 +70,7 @@ class UnixFileLock(BaseLock):
     """Simple file locking for Unix using fcntl
     """
 
-    def __init__(self, fileobj, mode=None):
+    def __init__(self, fileobj, mode=None, filename=None):
         super(UnixFileLock, self).__init__(fileobj)
 
         if mode is None:
@@ -93,16 +94,29 @@ class WindowsFileLock(BaseLock):
     """Simple file locking for Windows using msvcrt
     """
 
-    def __init__(self, fileobj, mode=None):
-        super(WindowsFileLock, self).__init__(fileobj)
+    def __init__(self, fileobj, mode=None, filename=None):
+        super(WindowsFileLock, self).__init__(None)
+        self.filename = "{}.lock".format(filename)
 
     def acquire(self):
-        msvcrt.locking(self.fileobj.fileno(), msvcrt.LK_NBLCK, 1)
+        # create a lock file and lock it
+        self.fileobj = os.open(self.filename, os.O_RDWR | os.O_CREAT | os.O_TRUNC)
+        msvcrt.locking(self.fileobj, msvcrt.LK_NBLCK, 1)
+
         self.locked = True
 
     def release(self):
         self.locked = False
-        msvcrt.locking(self.fileobj.fileno(), msvcrt.LK_UNLCK, 1)
+
+        # unlock lock file and remove it
+        msvcrt.locking(self.fileobj, msvcrt.LK_UNLCK, 1)
+        self.fileobj.close()
+        self.fileobj = None
+
+        try:
+            os.remove(self.filename)
+        except OSError:
+            pass
 
 
 if has_fcntl:

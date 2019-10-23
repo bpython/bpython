@@ -172,7 +172,7 @@ class History(object):
     def load(self, filename, encoding):
         with io.open(filename, 'r', encoding=encoding,
                      errors='ignore') as hfile:
-            with FileLock(hfile):
+            with FileLock(hfile, filename=filename):
                 self.entries = self.load_from(hfile)
 
     def load_from(self, fd):
@@ -186,7 +186,7 @@ class History(object):
                      stat.S_IRUSR | stat.S_IWUSR)
         with io.open(fd, 'w', encoding=encoding,
                      errors='ignore') as hfile:
-            with FileLock(hfile):
+            with FileLock(hfile, filename=filename):
                 self.save_to(hfile, self.entries, lines)
 
     def save_to(self, fd, entries=None, lines=0):
@@ -205,7 +205,7 @@ class History(object):
                          stat.S_IRUSR | stat.S_IWUSR)
             with io.open(fd, 'a+', encoding=encoding,
                          errors='ignore') as hfile:
-                with FileLock(hfile):
+                with FileLock(hfile, filename=filename):
                     # read entries
                     hfile.seek(0, os.SEEK_SET)
                     entries = self.load_from(hfile)
