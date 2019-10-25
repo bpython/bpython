@@ -1,7 +1,11 @@
 # encoding: utf-8
 
+import io
+import os
+
 from six.moves import range
 
+from bpython.config import getpreferredencoding
 from bpython.history import History
 from bpython.test import unittest
 
@@ -81,3 +85,46 @@ class TestHistory(unittest.TestCase):
 
         self.assertEqual(self.history.back(), '#999')
         self.assertEqual(self.history.forward(), '')
+
+
+class TestHistoryFileAccess(unittest.TestCase):
+    def setUp(self):
+        self.filename = 'history_temp_file'
+        self.encoding = getpreferredencoding()
+
+        with io.open(self.filename, 'w', encoding=self.encoding,
+                     errors='ignore') as f:
+            f.write('#1\n#2\n')
+
+    def test_load(self):
+        history = History()
+
+        history.load(self.filename, self.encoding)
+        self.assertEqual(history.entries, ['#1', '#2'])
+
+    def test_append_reload_and_write(self):
+        history = History()
+
+        history.append_reload_and_write('#3', self.filename, self.encoding)
+        self.assertEqual(history.entries, ['#1', '#2', '#3'])
+
+        history.append_reload_and_write('#4', self.filename, self.encoding)
+        self.assertEqual(history.entries, ['#1', '#2', '#3', '#4'])
+
+    def test_save(self):
+        history = History(['#1', '#2', '#3', '#4'])
+
+        # save only last 2 lines
+        history.save(self.filename, self.encoding, lines=2)
+
+        # empty the list of entries and load again from the file
+        history.entries = ['']
+        history.load(self.filename, self.encoding)
+
+        self.assertEqual(history.entries, ['#3', '#4'])
+
+    def tearDown(self):
+        try:
+            os.remove(self.filename)
+        except OSError:
+            pass
