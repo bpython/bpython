@@ -110,7 +110,7 @@ class WindowsFileLock(BaseLock):
 
         # unlock lock file and remove it
         msvcrt.locking(self.fileobj, msvcrt.LK_UNLCK, 1)
-        self.fileobj.close()
+        os.close(self.fileobj)
         self.fileobj = None
 
         try:
