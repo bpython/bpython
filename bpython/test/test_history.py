@@ -94,7 +94,7 @@ class TestHistoryFileAccess(unittest.TestCase):
 
         with io.open(self.filename, 'w', encoding=self.encoding,
                      errors='ignore') as f:
-            f.write('#1\n#2\n')
+            f.write(b'#1\n#2\n'.decode())
 
     def test_load(self):
         history = History()
