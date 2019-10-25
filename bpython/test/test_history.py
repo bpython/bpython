@@ -112,7 +112,10 @@ class TestHistoryFileAccess(unittest.TestCase):
         self.assertEqual(history.entries, ['#1', '#2', '#3', '#4'])
 
     def test_save(self):
-        history = History(['#1', '#2', '#3', '#4'])
+        history = History()
+        history.entries = []
+        for line in ['#1', '#2', '#3', '#4']:
+            history.append_to(history.entries, line)
 
         # save only last 2 lines
         history.save(self.filename, self.encoding, lines=2)
