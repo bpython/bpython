@@ -17,38 +17,47 @@ preproc = partial(preprocess, compiler=compiler)
 
 
 def get_fodder_source(test_name):
-    pattern = r'#StartTest-%s\n(.*?)#EndTest' % (test_name,)
-    orig, xformed = [re.search(pattern, inspect.getsource(module), re.DOTALL)
-                     for module in [original, processed]]
+    pattern = r"#StartTest-%s\n(.*?)#EndTest" % (test_name,)
+    orig, xformed = [
+        re.search(pattern, inspect.getsource(module), re.DOTALL)
+        for module in [original, processed]
+    ]
 
     if not orig:
-        raise ValueError("Can't locate test %s in original fodder file" %
-                         (test_name,))
+        raise ValueError(
+            "Can't locate test %s in original fodder file" % (test_name,)
+        )
     if not xformed:
-        raise ValueError("Can't locate test %s in processed fodder file" %
-                         (test_name,))
+        raise ValueError(
+            "Can't locate test %s in processed fodder file" % (test_name,)
+        )
     return orig.group(1), xformed.group(1)
 
 
 class TestPreprocessing(unittest.TestCase):
-
     def assertCompiles(self, source):
         finished, parsable = code_finished_will_parse(source, compiler)
         return finished and parsable
 
     def test_indent_empty_lines_nops(self):
-        self.assertEqual(preproc('hello'), 'hello')
-        self.assertEqual(preproc('hello\ngoodbye'), 'hello\ngoodbye')
-        self.assertEqual(preproc('a\n    b\nc\n'), 'a\n    b\nc\n')
+        self.assertEqual(preproc("hello"), "hello")
+        self.assertEqual(preproc("hello\ngoodbye"), "hello\ngoodbye")
+        self.assertEqual(preproc("a\n    b\nc\n"), "a\n    b\nc\n")
 
     def assertShowWhitespaceEqual(self, a, b):
         self.assertEqual(
-            a, b,
-            ''.join(difflib.context_diff(a.replace(' ', '~').splitlines(True),
-                                         b.replace(' ', '~').splitlines(True),
-                                         fromfile='actual',
-                                         tofile='expected',
-                                         n=5)))
+            a,
+            b,
+            "".join(
+                difflib.context_diff(
+                    a.replace(" ", "~").splitlines(True),
+                    b.replace(" ", "~").splitlines(True),
+                    fromfile="actual",
+                    tofile="expected",
+                    n=5,
+                )
+            ),
+        )
 
     def assertDefinitionIndented(self, obj):
         name = obj.__name__
@@ -76,20 +85,24 @@ class TestPreprocessing(unittest.TestCase):
         self.assertIndented(original.BlankLineInFunction)
 
     def test_blank_lines_in_for_loop(self):
-        self.assertIndented('blank_lines_in_for_loop')
+        self.assertIndented("blank_lines_in_for_loop")
 
-    @skip("More advanced technique required: need to try compiling and "
-          "backtracking")
+    @skip(
+        "More advanced technique required: need to try compiling and "
+        "backtracking"
+    )
     def test_blank_line_in_try_catch(self):
-        self.assertIndented('blank_line_in_try_catch')
+        self.assertIndented("blank_line_in_try_catch")
 
-    @skip("More advanced technique required: need to try compiling and "
-          "backtracking")
+    @skip(
+        "More advanced technique required: need to try compiling and "
+        "backtracking"
+    )
     def test_blank_line_in_try_catch_else(self):
-        self.assertIndented('blank_line_in_try_catch_else')
+        self.assertIndented("blank_line_in_try_catch_else")
 
     def test_blank_trailing_line(self):
-        self.assertIndented('blank_trailing_line')
+        self.assertIndented("blank_trailing_line")
 
     def test_tabs(self):
         self.assertIndented(original.tabs)

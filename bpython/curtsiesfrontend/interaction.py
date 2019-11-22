@@ -26,18 +26,21 @@ class StatusBar(BpythonInteraction):
     functionality in a evented or callback style, but trying to integrate
     bpython.Repl code.
     """
-    def __init__(self,
-                 config,
-                 permanent_text="",
-                 request_refresh=lambda: None,
-                 schedule_refresh=lambda when: None):
-        self._current_line = ''
+
+    def __init__(
+        self,
+        config,
+        permanent_text="",
+        request_refresh=lambda: None,
+        schedule_refresh=lambda when: None,
+    ):
+        self._current_line = ""
         self.cursor_offset_in_line = 0
         self.in_prompt = False
         self.in_confirm = False
         self.waiting_for_refresh = False
-        self.prompt = ''
-        self._message = ''
+        self.prompt = ""
+        self._message = ""
         self.message_start_time = time.time()
         self.message_time = 3
         self.permanent_stack = []
@@ -51,7 +54,7 @@ class StatusBar(BpythonInteraction):
         super(StatusBar, self).__init__(config)
 
     def push_permanent_message(self, msg):
-        self._message = ''
+        self._message = ""
         self.permanent_stack.append(msg)
 
     def pop_permanent_message(self, msg):
@@ -72,9 +75,11 @@ class StatusBar(BpythonInteraction):
             self.schedule_refresh(time.time() + self.message_time)
 
     def _check_for_expired_message(self):
-        if (self._message and
-                time.time() > self.message_start_time + self.message_time):
-            self._message = ''
+        if (
+            self._message
+            and time.time() > self.message_start_time + self.message_time
+        ):
+            self._message = ""
 
     def process_event(self, e):
         """Returns True if shutting down"""
@@ -86,12 +91,13 @@ class StatusBar(BpythonInteraction):
             for ee in e.events:
                 # strip control seq
                 self.add_normal_character(ee if len(ee) == 1 else ee[-1])
-        elif e in ['<ESC>'] or isinstance(e, events.SigIntEvent):
+        elif e in ["<ESC>"] or isinstance(e, events.SigIntEvent):
             self.request_context.switch(False)
             self.escape()
         elif e in edit_keys:
             self.cursor_offset_in_line, self._current_line = edit_keys[e](
-                self.cursor_offset_in_line, self._current_line)
+                self.cursor_offset_in_line, self._current_line
+            )
         elif e == "<Ctrl-c>":  # TODO can this be removed?
             raise KeyboardInterrupt()
         elif e == "<Ctrl-d>":  # TODO this isn't a very intuitive behavior
@@ -101,7 +107,7 @@ class StatusBar(BpythonInteraction):
             self.escape()
             self.request_context.switch(line)
         elif self.in_confirm:
-            if e in ('y', 'Y'):
+            if e in ("y", "Y"):
                 self.request_context.switch(True)
             else:
                 self.request_context.switch(False)
@@ -110,21 +116,23 @@ class StatusBar(BpythonInteraction):
             self.add_normal_character(e)
 
     def add_normal_character(self, e):
-        if e == '<SPACE>':
-            e = ' '
+        if e == "<SPACE>":
+            e = " "
         if len(e) > 1:
             return
-        self._current_line = (self._current_line[:self.cursor_offset_in_line] +
-                              e +
-                              self._current_line[self.cursor_offset_in_line:])
+        self._current_line = (
+            self._current_line[: self.cursor_offset_in_line]
+            + e
+            + self._current_line[self.cursor_offset_in_line :]
+        )
         self.cursor_offset_in_line += 1
 
     def escape(self):
         """unfocus from statusbar, clear prompt state, wait for notify call"""
         self.in_prompt = False
         self.in_confirm = False
-        self.prompt = ''
-        self._current_line = ''
+        self.prompt = ""
+        self._current_line = ""
 
     @property
     def current_line(self):
@@ -137,7 +145,7 @@ class StatusBar(BpythonInteraction):
             return self._message
         if self.permanent_stack:
             return self.permanent_stack[-1]
-        return ''
+        return ""
 
     @property
     def should_show_message(self):

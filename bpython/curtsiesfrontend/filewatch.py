@@ -9,9 +9,13 @@ try:
     from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler
 except ImportError:
+
     def ModuleChangedEventHandler(*args):
         return None
+
+
 else:
+
     class ModuleChangedEventHandler(FileSystemEventHandler):
         def __init__(self, paths, on_change):
             self.dirs = defaultdict(set)
@@ -35,7 +39,7 @@ else:
             path = os.path.abspath(path)
             for suff in importcompletion.SUFFIXES:
                 if path.endswith(suff):
-                    path = path[:-len(suff)]
+                    path = path[: -len(suff)]
                     break
             dirname = os.path.dirname(path)
             if dirname not in self.dirs:
@@ -75,6 +79,6 @@ else:
 
         def on_any_event(self, event):
             dirpath = os.path.dirname(event.src_path)
-            paths = [path + '.py' for path in self.dirs[dirpath]]
+            paths = [path + ".py" for path in self.dirs[dirpath]]
             if event.src_path in paths:
                 self.on_change(files_modified=[event.src_path])

@@ -39,14 +39,14 @@ class History(object):
 
     def __init__(self, entries=None, duplicates=True, hist_size=100):
         if entries is None:
-            self.entries = ['']
+            self.entries = [""]
         else:
             self.entries = list(entries)
         # how many lines back in history is currently selected where 0 is the
         # saved typed line, 1 the prev entered line
         self.index = 0
         # what was on the prompt before using history
-        self.saved_line = ''
+        self.saved_line = ""
         self.duplicates = duplicates
         self.hist_size = hist_size
 
@@ -54,7 +54,7 @@ class History(object):
         self.append_to(self.entries, line)
 
     def append_to(self, entries, line):
-        line = line.rstrip('\n')
+        line = line.rstrip("\n")
         if line:
             if not self.duplicates:
                 # remove duplicates
@@ -71,15 +71,17 @@ class History(object):
             self.index = len(self.entries)
         return self.entries[-self.index]
 
-    def back(self, start=True, search=False, target=None,
-             include_current=False):
+    def back(
+        self, start=True, search=False, target=None, include_current=False
+    ):
         """Move one step back in the history."""
         if target is None:
             target = self.saved_line
         if not self.is_at_end:
             if search:
-                self.index += self.find_partial_match_backward(target,
-                                                               include_current)
+                self.index += self.find_partial_match_backward(
+                    target, include_current
+                )
             elif start:
                 self.index += self.find_match_backward(target, include_current)
             else:
@@ -111,15 +113,17 @@ class History(object):
                 return idx + add
         return 0
 
-    def forward(self, start=True, search=False, target=None,
-                include_current=False):
+    def forward(
+        self, start=True, search=False, target=None, include_current=False
+    ):
         """Move one step forward in the history."""
         if target is None:
             target = self.saved_line
         if self.index > 1:
             if search:
-                self.index -= self.find_partial_match_forward(target,
-                                                              include_current)
+                self.index -= self.find_partial_match_forward(
+                    target, include_current
+                )
             elif start:
                 self.index -= self.find_match_forward(target, include_current)
             else:
@@ -167,11 +171,12 @@ class History(object):
 
     def reset(self):
         self.index = 0
-        self.saved_line = ''
+        self.saved_line = ""
 
     def load(self, filename, encoding):
-        with io.open(filename, 'r', encoding=encoding,
-                     errors='ignore') as hfile:
+        with io.open(
+            filename, "r", encoding=encoding, errors="ignore"
+        ) as hfile:
             with FileLock(hfile, filename=filename):
                 self.entries = self.load_from(hfile)
 
@@ -179,13 +184,15 @@ class History(object):
         entries = []
         for line in fd:
             self.append_to(entries, line)
-        return entries if len(entries) else ['']
+        return entries if len(entries) else [""]
 
     def save(self, filename, encoding, lines=0):
-        fd = os.open(filename, os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
-                     stat.S_IRUSR | stat.S_IWUSR)
-        with io.open(fd, 'w', encoding=encoding,
-                     errors='ignore') as hfile:
+        fd = os.open(
+            filename,
+            os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
+            stat.S_IRUSR | stat.S_IWUSR,
+        )
+        with io.open(fd, "w", encoding=encoding, errors="ignore") as hfile:
             with FileLock(hfile, filename=filename):
                 self.save_to(hfile, self.entries, lines)
 
@@ -194,17 +201,19 @@ class History(object):
             entries = self.entries
         for line in entries[-lines:]:
             fd.write(line)
-            fd.write('\n')
+            fd.write("\n")
 
     def append_reload_and_write(self, s, filename, encoding):
         if not self.hist_size:
             return self.append(s)
 
         try:
-            fd = os.open(filename, os.O_APPEND | os.O_RDWR | os.O_CREAT,
-                         stat.S_IRUSR | stat.S_IWUSR)
-            with io.open(fd, 'a+', encoding=encoding,
-                         errors='ignore') as hfile:
+            fd = os.open(
+                filename,
+                os.O_APPEND | os.O_RDWR | os.O_CREAT,
+                stat.S_IRUSR | stat.S_IWUSR,
+            )
+            with io.open(fd, "a+", encoding=encoding, errors="ignore") as hfile:
                 with FileLock(hfile, filename=filename):
                     # read entries
                     hfile.seek(0, os.SEEK_SET)
@@ -219,10 +228,11 @@ class History(object):
                     self.entries = entries
         except EnvironmentError as err:
             raise RuntimeError(
-                _('Error occurred while writing to file %s (%s)')
-                % (filename, err.strerror))
+                _("Error occurred while writing to file %s (%s)")
+                % (filename, err.strerror)
+            )
         else:
             if len(self.entries) == 0:
                 # Make sure that entries contains at least one element. If the
                 # file and s are empty, this can occur.
-                self.entries = ['']
+                self.entries = [""]

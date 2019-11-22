@@ -29,8 +29,19 @@
 from __future__ import absolute_import
 
 from pygments.formatter import Formatter
-from pygments.token import Keyword, Name, Comment, String, Error, \
-    Number, Operator, Token, Whitespace, Literal, Punctuation
+from pygments.token import (
+    Keyword,
+    Name,
+    Comment,
+    String,
+    Error,
+    Number,
+    Operator,
+    Token,
+    Whitespace,
+    Literal,
+    Punctuation,
+)
 from six import iteritems
 
 """These format strings are pretty ugly.
@@ -60,20 +71,21 @@ from six import iteritems
 Parenthesis = Token.Punctuation.Parenthesis
 
 theme_map = {
-    Keyword: 'keyword',
-    Name: 'name',
-    Comment: 'comment',
-    String: 'string',
-    Literal: 'string',
-    Error: 'error',
-    Number: 'number',
-    Token.Literal.Number.Float: 'number',
-    Operator: 'operator',
-    Punctuation: 'punctuation',
-    Token: 'token',
-    Whitespace: 'background',
-    Parenthesis: 'paren',
-    Parenthesis.UnderCursor: 'operator'}
+    Keyword: "keyword",
+    Name: "name",
+    Comment: "comment",
+    String: "string",
+    Literal: "string",
+    Error: "error",
+    Number: "number",
+    Token.Literal.Number.Float: "number",
+    Operator: "operator",
+    Punctuation: "punctuation",
+    Token: "token",
+    Whitespace: "background",
+    Parenthesis: "paren",
+    Parenthesis.UnderCursor: "operator",
+}
 
 
 class BPythonFormatter(Formatter):
@@ -91,22 +103,23 @@ class BPythonFormatter(Formatter):
     def __init__(self, color_scheme, **options):
         self.f_strings = {}
         for k, v in iteritems(theme_map):
-            self.f_strings[k] = '\x01%s' % (color_scheme[v],)
+            self.f_strings[k] = "\x01%s" % (color_scheme[v],)
             if k is Parenthesis:
                 # FIXME: Find a way to make this the inverse of the current
                 # background colour
-                self.f_strings[k] += 'I'
+                self.f_strings[k] += "I"
         super(BPythonFormatter, self).__init__(**options)
 
     def format(self, tokensource, outfile):
-        o = ''
+        o = ""
         for token, text in tokensource:
-            if text == '\n':
+            if text == "\n":
                 continue
 
             while token not in self.f_strings:
                 token = token.parent
             o += "%s\x03%s\x04" % (self.f_strings[token], text)
         outfile.write(o.rstrip())
+
 
 # vim: sw=4 ts=4 sts=4 ai et

@@ -86,6 +86,7 @@ class CodeRunner(object):
     just passes whatever is passed in to run_code(for_code) to the
     code greenlet
     """
+
     def __init__(self, interp=None, request_refresh=lambda: None):
         """
         interp is an interpreter object to use. By default a new one is
@@ -113,8 +114,9 @@ class CodeRunner(object):
 
     def load_code(self, source):
         """Prep code to be run"""
-        assert self.source is None, "you shouldn't load code when some is " \
-            "already running"
+        assert self.source is None, (
+            "you shouldn't load code when some is " "already running"
+        )
         self.source = source
         self.code_context = None
 
@@ -149,10 +151,11 @@ class CodeRunner(object):
             else:
                 request = self.code_context.switch(for_code)
 
-        logger.debug('request received from code was %r', request)
+        logger.debug("request received from code was %r", request)
         if not isinstance(request, RequestFromCodeRunner):
-            raise ValueError("Not a valid value from code greenlet: %r" %
-                             request)
+            raise ValueError(
+                "Not a valid value from code greenlet: %r" % request
+            )
         if isinstance(request, (Wait, Refresh)):
             self.code_is_waiting = True
             if isinstance(request, Refresh):
@@ -172,11 +175,13 @@ class CodeRunner(object):
         """SIGINT handler to use while code is running or request being
         fulfilled"""
         if greenlet.getcurrent() is self.code_context:
-            logger.debug('sigint while running user code!')
+            logger.debug("sigint while running user code!")
             raise KeyboardInterrupt()
         else:
-            logger.debug('sigint while fulfilling code request sigint handler '
-                         'running!')
+            logger.debug(
+                "sigint while fulfilling code request sigint handler "
+                "running!"
+            )
             self.sigint_happened_in_main_context = True
 
     def _blocking_run_code(self):
@@ -215,7 +220,7 @@ class FakeOutput(object):
 
     def write(self, s, *args, **kwargs):
         if not py3 and isinstance(s, str):
-            s = s.decode(getpreferredencoding(), 'ignore')
+            s = s.decode(getpreferredencoding(), "ignore")
         self.on_write(s, *args, **kwargs)
         return self.coderunner.request_from_main_context(force_refresh=True)
 

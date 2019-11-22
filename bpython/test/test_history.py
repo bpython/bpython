@@ -12,7 +12,7 @@ from bpython.test import unittest
 
 class TestHistory(unittest.TestCase):
     def setUp(self):
-        self.history = History('#%d' % x for x in range(1000))
+        self.history = History("#%d" % x for x in range(1000))
 
     def test_is_at_start(self):
         self.history.first()
@@ -42,89 +42,90 @@ class TestHistory(unittest.TestCase):
         self.assertFalse(self.history.is_at_end)
 
     def test_back(self):
-        self.assertEqual(self.history.back(), '#999')
-        self.assertNotEqual(self.history.back(), '#999')
-        self.assertEqual(self.history.back(), '#997')
+        self.assertEqual(self.history.back(), "#999")
+        self.assertNotEqual(self.history.back(), "#999")
+        self.assertEqual(self.history.back(), "#997")
         for x in range(997):
             self.history.back()
-        self.assertEqual(self.history.back(), '#0')
+        self.assertEqual(self.history.back(), "#0")
 
     def test_forward(self):
         self.history.first()
 
-        self.assertEqual(self.history.forward(), '#1')
-        self.assertNotEqual(self.history.forward(), '#1')
-        self.assertEqual(self.history.forward(), '#3')
+        self.assertEqual(self.history.forward(), "#1")
+        self.assertNotEqual(self.history.forward(), "#1")
+        self.assertEqual(self.history.forward(), "#3")
         #  1000 == entries   4 == len(range(1, 3) ===> '#1000' (so +1)
         for x in range(1000 - 4 - 1):
             self.history.forward()
-        self.assertEqual(self.history.forward(), '#999')
+        self.assertEqual(self.history.forward(), "#999")
 
     def test_append(self):
         self.history.append('print "foo\n"\n')
-        self.history.append('\n')
+        self.history.append("\n")
 
         self.assertEqual(self.history.back(), 'print "foo\n"')
 
     def test_enter(self):
-        self.history.enter('#lastnumber!')
+        self.history.enter("#lastnumber!")
 
-        self.assertEqual(self.history.back(), '#lastnumber!')
-        self.assertEqual(self.history.forward(), '#lastnumber!')
+        self.assertEqual(self.history.back(), "#lastnumber!")
+        self.assertEqual(self.history.forward(), "#lastnumber!")
 
     def test_enter_2(self):
-        self.history.enter('#50')
+        self.history.enter("#50")
 
-        self.assertEqual(self.history.back(), '#509')
-        self.assertEqual(self.history.back(), '#508')
-        self.assertEqual(self.history.forward(), '#509')
+        self.assertEqual(self.history.back(), "#509")
+        self.assertEqual(self.history.back(), "#508")
+        self.assertEqual(self.history.forward(), "#509")
 
     def test_reset(self):
-        self.history.enter('#lastnumber!')
+        self.history.enter("#lastnumber!")
         self.history.reset()
 
-        self.assertEqual(self.history.back(), '#999')
-        self.assertEqual(self.history.forward(), '')
+        self.assertEqual(self.history.back(), "#999")
+        self.assertEqual(self.history.forward(), "")
 
 
 class TestHistoryFileAccess(unittest.TestCase):
     def setUp(self):
-        self.filename = 'history_temp_file'
+        self.filename = "history_temp_file"
         self.encoding = getpreferredencoding()
 
-        with io.open(self.filename, 'w', encoding=self.encoding,
-                     errors='ignore') as f:
-            f.write(b'#1\n#2\n'.decode())
+        with io.open(
+            self.filename, "w", encoding=self.encoding, errors="ignore"
+        ) as f:
+            f.write(b"#1\n#2\n".decode())
 
     def test_load(self):
         history = History()
 
         history.load(self.filename, self.encoding)
-        self.assertEqual(history.entries, ['#1', '#2'])
+        self.assertEqual(history.entries, ["#1", "#2"])
 
     def test_append_reload_and_write(self):
         history = History()
 
-        history.append_reload_and_write('#3', self.filename, self.encoding)
-        self.assertEqual(history.entries, ['#1', '#2', '#3'])
+        history.append_reload_and_write("#3", self.filename, self.encoding)
+        self.assertEqual(history.entries, ["#1", "#2", "#3"])
 
-        history.append_reload_and_write('#4', self.filename, self.encoding)
-        self.assertEqual(history.entries, ['#1', '#2', '#3', '#4'])
+        history.append_reload_and_write("#4", self.filename, self.encoding)
+        self.assertEqual(history.entries, ["#1", "#2", "#3", "#4"])
 
     def test_save(self):
         history = History()
         history.entries = []
-        for line in ['#1', '#2', '#3', '#4']:
+        for line in ["#1", "#2", "#3", "#4"]:
             history.append_to(history.entries, line)
 
         # save only last 2 lines
         history.save(self.filename, self.encoding, lines=2)
 
         # empty the list of entries and load again from the file
-        history.entries = ['']
+        history.entries = [""]
         history.load(self.filename, self.encoding)
 
-        self.assertEqual(history.entries, ['#3', '#4'])
+        self.assertEqual(history.entries, ["#3", "#4"])
 
     def tearDown(self):
         try:

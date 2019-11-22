@@ -49,25 +49,25 @@ class SimpleRepl(BaseRepl):
     def _request_refresh(self):
         self.requested_events.append(bpythonevents.RefreshRequestEvent())
 
-    def _schedule_refresh(self, when='now'):
-        if when == 'now':
+    def _schedule_refresh(self, when="now"):
+        if when == "now":
             self.request_refresh()
         else:
             dt = round(when - time.time(), 1)
-            self.out('please refresh in {} seconds'.format(dt))
+            self.out("please refresh in {} seconds".format(dt))
 
-    def _request_reload(self, files_modified=('?',)):
+    def _request_reload(self, files_modified=("?",)):
         e = bpythonevents.ReloadEvent()
         e.files_modified = files_modified
         self.requested_events.append(e)
-        self.out('please hit enter to trigger a refresh')
+        self.out("please hit enter to trigger a refresh")
 
     def request_undo(self, n=1):
         self.requested_events.append(bpythonevents.UndoEvent(n=n))
 
     def out(self, msg):
-        if hasattr(self, 'orig_stdout'):
-            self.orig_stdout.write((msg + '\n').encode('utf8'))
+        if hasattr(self, "orig_stdout"):
+            self.orig_stdout.write((msg + "\n").encode("utf8"))
             self.orig_stdout.flush()
         else:
             print(msg)
@@ -76,27 +76,27 @@ class SimpleRepl(BaseRepl):
         pass
 
     def after_suspend(self):
-        self.out('please hit enter to trigger a refresh')
+        self.out("please hit enter to trigger a refresh")
 
     def print_output(self):
         arr, cpos = self.paint()
-        arr[cpos[0]:cpos[0] + 1, cpos[1]:cpos[1] + 1] = ['~']
+        arr[cpos[0] : cpos[0] + 1, cpos[1] : cpos[1] + 1] = ["~"]
 
         def print_padded(s):
-            return self.out(s.center(self.width + 8, 'X'))
+            return self.out(s.center(self.width + 8, "X"))
 
-        print_padded('')
+        print_padded("")
         print_padded(' enter -> "/", rewind -> "\\", ')
         print_padded(' reload -> "|", pastebin -> "$", ')
         print_padded(' "~" is the cursor ')
-        print_padded('')
-        self.out('X``' + ('`' * (self.width + 2)) + '``X')
+        print_padded("")
+        self.out("X``" + ("`" * (self.width + 2)) + "``X")
         for line in arr:
-            self.out('X```' + unicode(line.ljust(self.width)) + '```X')
-        logger.debug('line:')
+            self.out("X```" + unicode(line.ljust(self.width)) + "```X")
+        logger.debug("line:")
         logger.debug(repr(line))
-        self.out('X``' + ('`' * (self.width + 2)) + '``X')
-        self.out('X' * (self.width + 8))
+        self.out("X``" + ("`" * (self.width + 2)) + "``X")
+        self.out("X" * (self.width + 8))
         return max(len(arr) - self.height, 0)
 
     def get_input(self):
@@ -106,13 +106,13 @@ class SimpleRepl(BaseRepl):
                 self.process_event(self.requested_events.pop())
                 continue
             c = chars.pop(0)
-            if c in '/':
-                c = '\n'
-            elif c in '\\':
+            if c in "/":
+                c = "\n"
+            elif c in "\\":
                 c = key_dispatch[self.config.undo_key][0]
-            elif c in '$':
+            elif c in "$":
                 c = key_dispatch[self.config.pastebin_key][0]
-            elif c in '|':
+            elif c in "|":
                 c = key_dispatch[self.config.reimport_key][0]
             self.process_event(c)
 
@@ -129,5 +129,5 @@ def main(args=None, locals_=None, banner=None):
             r.get_input()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

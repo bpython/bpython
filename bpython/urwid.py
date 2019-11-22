@@ -72,15 +72,15 @@ Parenthesis = Token.Punctuation.Parenthesis
 # blacK, Red, Green, Yellow, Blue, Magenta, Cyan, White, Default
 
 COLORMAP = {
-    'k': 'black',
-    'r': 'dark red',  # or light red?
-    'g': 'dark green',  # or light green?
-    'y': 'yellow',
-    'b': 'dark blue',  # or light blue?
-    'm': 'dark magenta',  # or light magenta?
-    'c': 'dark cyan',  # or light cyan?
-    'w': 'white',
-    'd': 'default',
+    "k": "black",
+    "r": "dark red",  # or light red?
+    "g": "dark green",  # or light green?
+    "y": "yellow",
+    "b": "dark blue",  # or light blue?
+    "m": "dark magenta",  # or light magenta?
+    "c": "dark cyan",  # or light cyan?
+    "w": "white",
+    "d": "default",
 }
 
 
@@ -93,7 +93,7 @@ else:
 
     class EvalProtocol(basic.LineOnlyReceiver):
 
-        delimiter = '\n'
+        delimiter = "\n"
 
         def __init__(self, myrepl):
             self.repl = myrepl
@@ -102,10 +102,9 @@ else:
             # HACK!
             # TODO: deal with encoding issues here...
             self.repl.main_loop.process_input(line)
-            self.repl.main_loop.process_input(['enter'])
+            self.repl.main_loop.process_input(["enter"])
 
     class EvalFactory(protocol.ServerFactory):
-
         def __init__(self, myrepl):
             self.repl = myrepl
 
@@ -116,7 +115,8 @@ else:
 # If Twisted is not available urwid has no TwistedEventLoop attribute.
 # Code below will try to import reactor before using TwistedEventLoop.
 # I assume TwistedEventLoop will be available if that import succeeds.
-if urwid.VERSION < (1, 0, 0) and hasattr(urwid, 'TwistedEventLoop'):
+if urwid.VERSION < (1, 0, 0) and hasattr(urwid, "TwistedEventLoop"):
+
     class TwistedEventLoop(urwid.TwistedEventLoop):
 
         """TwistedEventLoop modified to properly stop the reactor.
@@ -144,9 +144,12 @@ if urwid.VERSION < (1, 0, 0) and hasattr(urwid, 'TwistedEventLoop'):
                     print(sys.exc_info())
                     self._exc_info = sys.exc_info()
                     self.reactor.crash()
+
             return wrapper
+
+
 else:
-    TwistedEventLoop = getattr(urwid, 'TwistedEventLoop', None)
+    TwistedEventLoop = getattr(urwid, "TwistedEventLoop", None)
 
 
 class StatusbarEdit(urwid.Edit):
@@ -155,7 +158,7 @@ class StatusbarEdit(urwid.Edit):
     This class only adds a single signal that is emitted if the user presses
     Enter."""
 
-    signals = urwid.Edit.signals + ['prompt_enter']
+    signals = urwid.Edit.signals + ["prompt_enter"]
 
     def __init__(self, *args, **kwargs):
         self.single = False
@@ -163,14 +166,14 @@ class StatusbarEdit(urwid.Edit):
 
     def keypress(self, size, key):
         if self.single:
-            urwid.emit_signal(self, 'prompt_enter', self, key)
-        elif key == 'enter':
-            urwid.emit_signal(self, 'prompt_enter', self, self.get_edit_text())
+            urwid.emit_signal(self, "prompt_enter", self, key)
+        elif key == "enter":
+            urwid.emit_signal(self, "prompt_enter", self, self.get_edit_text())
         else:
             return urwid.Edit.keypress(self, size, key)
 
 
-urwid.register_signal(StatusbarEdit, 'prompt_enter')
+urwid.register_signal(StatusbarEdit, "prompt_enter")
 
 
 class Statusbar(object):
@@ -193,20 +196,20 @@ class Statusbar(object):
     The "widget" attribute is an urwid widget.
     """
 
-    signals = ['prompt_result']
+    signals = ["prompt_result"]
 
     def __init__(self, config, s=None, main_loop=None):
         self.config = config
         self.timer = None
         self.main_loop = main_loop
-        self.s = s or ''
+        self.s = s or ""
 
-        self.text = urwid.Text(('main', self.s))
+        self.text = urwid.Text(("main", self.s))
         # use wrap mode 'clip' to just cut off at the end of line
-        self.text.set_wrap_mode('clip')
+        self.text.set_wrap_mode("clip")
 
-        self.edit = StatusbarEdit(('main', ''))
-        urwid.connect_signal(self.edit, 'prompt_enter', self._on_prompt_enter)
+        self.edit = StatusbarEdit(("main", ""))
+        urwid.connect_signal(self.edit, "prompt_enter", self._on_prompt_enter)
 
         self.widget = urwid.Columns([self.text, self.edit])
 
@@ -237,8 +240,8 @@ class Statusbar(object):
         self._reset_timer()
 
         self.edit.single = single
-        self.edit.set_caption(('main', s or '?'))
-        self.edit.set_edit_text('')
+        self.edit.set_caption(("main", s or "?"))
+        self.edit.set_edit_text("")
         # hide the text and display the edit widget
         if not self.edit in self.widget.widget_list:
             self.widget.widget_list.append(self.edit)
@@ -259,22 +262,22 @@ class Statusbar(object):
         if not self.text in self.widget.widget_list:
             self.widget.widget_list.append(self.text)
 
-        self.text.set_text(('main', s))
+        self.text.set_text(("main", s))
         if permanent:
             self.s = s
 
     def clear(self):
         """Clear the status bar."""
-        self.settext('')
+        self.settext("")
 
     def _on_prompt_enter(self, edit, new_text):
         """Reset the statusbar and pass the input from the prompt to the caller
         via 'prompt_result'."""
         self.settext(self.s)
-        urwid.emit_signal(self, 'prompt_result', new_text)
+        urwid.emit_signal(self, "prompt_result", new_text)
 
 
-urwid.register_signal(Statusbar, 'prompt_result')
+urwid.register_signal(Statusbar, "prompt_result")
 
 
 def decoding_input_filter(keys, raw):
@@ -292,7 +295,7 @@ def decoding_input_filter(keys, raw):
 
 def format_tokens(tokensource):
     for token, text in tokensource:
-        if text == '\n':
+        if text == "\n":
             continue
 
         # TODO: something about inversing Parenthesis
@@ -325,10 +328,10 @@ class BPythonEdit(urwid.Edit):
     - an "edit-pos-changed" signal is emitted when edit_pos changes.
     """
 
-    signals = ['edit-pos-changed']
+    signals = ["edit-pos-changed"]
 
     def __init__(self, config, *args, **kwargs):
-        self._bpy_text = ''
+        self._bpy_text = ""
         self._bpy_attr = []
         self._bpy_selectable = True
         self._bpy_may_move_cursor = False
@@ -363,7 +366,7 @@ class BPythonEdit(urwid.Edit):
             self._bpy_text, self._bpy_attr = urwid.decompose_tagmarkup(markup)
         else:
             # decompose_tagmarkup in some urwids fails on the empty list
-            self._bpy_text, self._bpy_attr = '', []
+            self._bpy_text, self._bpy_attr = "", []
         # This is redundant when we're called off the 'change' signal.
         # I'm assuming this is cheap, making that ok.
         self._invalidate()
@@ -391,7 +394,7 @@ class BPythonEdit(urwid.Edit):
     def get_pref_col(self, size):
         # Need to make this deal with us being nonselectable
         if not self._bpy_selectable:
-            return 'left'
+            return "left"
         return urwid.Edit.get_pref_col(self, size)
 
     def move_cursor_to_coords(self, *args):
@@ -400,26 +403,26 @@ class BPythonEdit(urwid.Edit):
         return False
 
     def keypress(self, size, key):
-        if urwid.command_map[key] in ['cursor up', 'cursor down']:
+        if urwid.command_map[key] in ["cursor up", "cursor down"]:
             # Do not handle up/down arrow, leave them for the repl.
             return key
 
         self._bpy_may_move_cursor = True
         try:
-            if urwid.command_map[key] == 'cursor max left':
+            if urwid.command_map[key] == "cursor max left":
                 self.edit_pos = 0
-            elif urwid.command_map[key] == 'cursor max right':
+            elif urwid.command_map[key] == "cursor max right":
                 self.edit_pos = len(self.get_edit_text())
-            elif urwid.command_map[key] == 'clear word':
+            elif urwid.command_map[key] == "clear word":
                 # ^w
                 if self.edit_pos == 0:
                     return
                 line = self.get_edit_text()
                 # delete any space left of the cursor
-                p = len(line[:self.edit_pos].strip())
-                line = line[:p] + line[self.edit_pos:]
+                p = len(line[: self.edit_pos].strip())
+                line = line[:p] + line[self.edit_pos :]
                 # delete a full word
-                np = line.rfind(' ', 0, p)
+                np = line.rfind(" ", 0, p)
                 if np == -1:
                     line = line[p:]
                     np = 0
@@ -427,15 +430,15 @@ class BPythonEdit(urwid.Edit):
                     line = line[:np] + line[p:]
                 self.set_edit_text(line)
                 self.edit_pos = np
-            elif urwid.command_map[key] == 'clear line':
+            elif urwid.command_map[key] == "clear line":
                 line = self.get_edit_text()
-                self.set_edit_text(line[self.edit_pos:])
+                self.set_edit_text(line[self.edit_pos :])
                 self.edit_pos = 0
-            elif key == 'backspace':
+            elif key == "backspace":
                 line = self.get_edit_text()
                 cpos = len(line) - self.edit_pos
                 if not (cpos or len(line) % self.tab_length or line.strip()):
-                    self.set_edit_text(line[:-self.tab_length])
+                    self.set_edit_text(line[: -self.tab_length])
                 else:
                     return urwid.Edit.keypress(self, size, key)
             else:
@@ -494,11 +497,10 @@ class Tooltip(urwid.BoxWidget):
 
     def mouse_event(self, size, event, button, col, row, focus):
         # TODO: pass to top widget if visible and inside it.
-        if not hasattr(self.bottom_w, 'mouse_event'):
+        if not hasattr(self.bottom_w, "mouse_event"):
             return False
 
-        return self.bottom_w.mouse_event(
-            size, event, button, col, row, focus)
+        return self.bottom_w.mouse_event(size, event, button, col, row, focus)
 
     def get_cursor_coords(self, size):
         return self.bottom_w.get_cursor_coords(size)
@@ -527,7 +529,7 @@ class Tooltip(urwid.BoxWidget):
         # - It is a loop.
         #   (ideally it would check how much free space there is,
         #   instead of repeatedly trying smaller sizes)
-        while 'bottom' in self.listbox.ends_visible((maxcol - 2, rows - 3)):
+        while "bottom" in self.listbox.ends_visible((maxcol - 2, rows - 3)):
             rows -= 1
 
         # If we're displaying above the cursor move the top edge down:
@@ -536,8 +538,7 @@ class Tooltip(urwid.BoxWidget):
 
         # Render *both* windows focused. This is probably not normal in urwid,
         # but it works nicely.
-        top_c = self.top_w.render((maxcol, rows),
-                                  focus and self.tooltip_focus)
+        top_c = self.top_w.render((maxcol, rows), focus and self.tooltip_focus)
 
         combi_c = urwid.CanvasOverlay(top_c, bottom_c, 0, y)
         # Use the cursor coordinates from the bottom canvas.
@@ -550,14 +551,14 @@ class URWIDInteraction(repl.Interaction):
     def __init__(self, config, statusbar, frame):
         repl.Interaction.__init__(self, config, statusbar)
         self.frame = frame
-        urwid.connect_signal(statusbar, 'prompt_result', self._prompt_result)
+        urwid.connect_signal(statusbar, "prompt_result", self._prompt_result)
         self.callback = None
 
     def confirm(self, q, callback):
         """Ask for yes or no and call callback to return the result"""
 
         def callback_wrapper(result):
-            callback(result.lower() in (_('y'), _('yes')))
+            callback(result.lower() in (_("y"), _("yes")))
 
         self.prompt(q, callback_wrapper, single=True)
 
@@ -570,14 +571,14 @@ class URWIDInteraction(repl.Interaction):
         callback can already start a new prompt."""
 
         if self.callback is not None:
-            raise Exception('Prompt already in progress')
+            raise Exception("Prompt already in progress")
 
         self.callback = callback
         self.statusbar.prompt(s, single=single)
-        self.frame.set_focus('footer')
+        self.frame.set_focus("footer")
 
     def _prompt_result(self, text):
-        self.frame.set_focus('body')
+        self.frame.set_focus("body")
         if self.callback is not None:
             # The callback might want to start another prompt, so reset it
             # before calling the callback.
@@ -588,7 +589,7 @@ class URWIDInteraction(repl.Interaction):
 
 class URWIDRepl(repl.Repl):
 
-    _time_between_redraws = .05  # seconds
+    _time_between_redraws = 0.05  # seconds
 
     def __init__(self, event_loop, palette, interpreter, config):
         repl.Repl.__init__(self, interpreter, config)
@@ -602,30 +603,45 @@ class URWIDRepl(repl.Repl):
         self.tooltip = urwid.ListBox(urwid.SimpleListWalker([]))
         self.tooltip.grid = None
         self.overlay = Tooltip(self.listbox, self.tooltip)
-        self.stdout_hist = ''  # native str (bytes in Py2, unicode in Py3)
+        self.stdout_hist = ""  # native str (bytes in Py2, unicode in Py3)
 
         self.frame = urwid.Frame(self.overlay)
 
-        if urwid.get_encoding_mode() == 'narrow':
+        if urwid.get_encoding_mode() == "narrow":
             input_filter = decoding_input_filter
         else:
             input_filter = None
 
         # This constructs a raw_display.Screen, which nabs sys.stdin/out.
         self.main_loop = urwid.MainLoop(
-            self.frame, palette,
-            event_loop=event_loop, unhandled_input=self.handle_input,
-            input_filter=input_filter, handle_mouse=False)
+            self.frame,
+            palette,
+            event_loop=event_loop,
+            unhandled_input=self.handle_input,
+            input_filter=input_filter,
+            handle_mouse=False,
+        )
 
         # String is straight from bpython.cli
-        self.statusbar = Statusbar(config,
-                                   _(" <%s> Rewind  <%s> Save  <%s> Pastebin "
-                                     " <%s> Pager  <%s> Show Source ") %
-                                   (config.undo_key, config.save_key, config.pastebin_key,
-                                       config.last_output_key, config.show_source_key), self.main_loop)
+        self.statusbar = Statusbar(
+            config,
+            _(
+                " <%s> Rewind  <%s> Save  <%s> Pastebin "
+                " <%s> Pager  <%s> Show Source "
+            )
+            % (
+                config.undo_key,
+                config.save_key,
+                config.pastebin_key,
+                config.last_output_key,
+                config.show_source_key,
+            ),
+            self.main_loop,
+        )
         self.frame.set_footer(self.statusbar.widget)
         self.interact = URWIDInteraction(
-            self.config, self.statusbar, self.frame)
+            self.config, self.statusbar, self.frame
+        )
 
         self.edits = []
         self.edit = None
@@ -639,10 +655,10 @@ class URWIDRepl(repl.Repl):
 
     # Subclasses of Repl need to implement echo, current_line, cw
     def echo(self, orig_s):
-        s = orig_s.rstrip('\n')
+        s = orig_s.rstrip("\n")
         if s:
             if self.current_output is None:
-                self.current_output = urwid.Text(('output', s))
+                self.current_output = urwid.Text(("output", s))
                 if self.edit is None:
                     self.listbox.body.append(self.current_output)
                     # Focus the widget we just added to force the
@@ -660,8 +676,9 @@ class URWIDRepl(repl.Repl):
             else:
                 # XXX this assumes this all has "output" markup applied.
                 self.current_output.set_text(
-                    ('output', self.current_output.text + s))
-        if orig_s.endswith('\n'):
+                    ("output", self.current_output.text + s)
+                )
+        if orig_s.endswith("\n"):
             self.current_output = None
 
         # If we hit this repeatedly in a loop the redraw is rather
@@ -684,7 +701,8 @@ class URWIDRepl(repl.Repl):
                 self._redraw_handle = None
 
             self._redraw_handle = self.main_loop.set_alarm_in(
-                self._time_between_redraws, maybe_redraw, self)
+                self._time_between_redraws, maybe_redraw, self
+            )
             self._redraw_time = time.time()
         else:
             self._redraw_pending = True
@@ -697,13 +715,18 @@ class URWIDRepl(repl.Repl):
 
     def _get_current_line(self):
         if self.edit is None:
-            return ''
+            return ""
         return self.edit.get_edit_text()
 
     def _set_current_line(self, line):
         self.edit.set_edit_text(line)
-    current_line = property(_get_current_line, _set_current_line, None,
-                            "Return the current line (the one the cursor is in).")
+
+    current_line = property(
+        _get_current_line,
+        _set_current_line,
+        None,
+        "Return the current line (the one the cursor is in).",
+    )
 
     def cw(self):
         """Return the current word (incomplete word left of cursor)."""
@@ -717,13 +740,12 @@ class URWIDRepl(repl.Repl):
             return
 
         # Stolen from cli. TODO: clean up and split out.
-        if (not text or
-                (not text[-1].isalnum() and text[-1] not in ('.', '_'))):
+        if not text or (not text[-1].isalnum() and text[-1] not in (".", "_")):
             return
 
         # Seek backwards in text for the first non-identifier char:
         for i, c in enumerate(reversed(text)):
-            if not c.isalnum() and c not in ('.', '_'):
+            if not c.isalnum() and c not in (".", "_"):
                 break
         else:
             # No non-identifiers, return everything.
@@ -742,8 +764,13 @@ class URWIDRepl(repl.Repl):
 
     def _set_cursor_offset(self, offset):
         self.edit.edit_pos = offset
-    cursor_offset = property(_get_cursor_offset, _set_cursor_offset, None,
-                             "The cursor offset from the beginning of the line")
+
+    cursor_offset = property(
+        _get_cursor_offset,
+        _set_cursor_offset,
+        None,
+        "The cursor offset from the beginning of the line",
+    )
 
     def _populate_completion(self):
         widget_list = self.tooltip.body
@@ -758,11 +785,12 @@ class URWIDRepl(repl.Repl):
                 args, varargs, varkw, defaults = args[:4]
                 if py3:
                     kwonly = self.funcprops.argspec.kwonly
-                    kwonly_defaults = self.funcprops.argspec.kwonly_defaults or {}
+                    kwonly_defaults = (
+                        self.funcprops.argspec.kwonly_defaults or {}
+                    )
                 else:
                     kwonly, kwonly_defaults = [], {}
-                markup = [('bold name', func_name),
-                          ('name', ': (')]
+                markup = [("bold name", func_name), ("name", ": (")]
 
                 # the isinstance checks if we're in a positional arg
                 # (instead of a keyword arg), I think
@@ -777,13 +805,13 @@ class URWIDRepl(repl.Repl):
                     else:
                         kw = None
 
-                    if not k and str(i) == 'self':
-                        color = 'name'
+                    if not k and str(i) == "self":
+                        color = "name"
                     else:
-                        color = 'token'
+                        color = "token"
 
                     if k == in_arg or i == in_arg:
-                        color = 'bold ' + color
+                        color = "bold " + color
 
                     if not py3:
                         # See issue #138: We need to format tuple unpacking correctly
@@ -793,46 +821,51 @@ class URWIDRepl(repl.Repl):
                     else:
                         markup.append((color, str(i)))
                     if kw is not None:
-                        markup.extend([('punctuation', '='),
-                                       ('token', kw)])
+                        markup.extend([("punctuation", "="), ("token", kw)])
                     if k != len(args) - 1:
-                        markup.append(('punctuation', ', '))
+                        markup.append(("punctuation", ", "))
 
                 if varargs:
                     if args:
-                        markup.append(('punctuation', ', '))
-                    markup.append(('token', '*' + varargs))
+                        markup.append(("punctuation", ", "))
+                    markup.append(("token", "*" + varargs))
 
                 if kwonly:
                     if not varargs:
                         if args:
-                            markup.append(('punctuation', ', '))
-                        markup.append(('punctuation', '*'))
+                            markup.append(("punctuation", ", "))
+                        markup.append(("punctuation", "*"))
                     for arg in kwonly:
                         if arg == in_arg:
-                            color = 'bold token'
+                            color = "bold token"
                         else:
-                            color = 'token'
-                        markup.extend([('punctuation', ', '),
-                                       (color, arg)])
+                            color = "token"
+                        markup.extend([("punctuation", ", "), (color, arg)])
                         if arg in kwonly_defaults:
-                            markup.extend([('punctuation', '='),
-                                           ('token', repr(kwonly_defaults[arg]))])
+                            markup.extend(
+                                [
+                                    ("punctuation", "="),
+                                    ("token", repr(kwonly_defaults[arg])),
+                                ]
+                            )
 
                 if varkw:
                     if args or varargs or kwonly:
-                        markup.append(('punctuation', ', '))
-                    markup.append(('token', '**' + varkw))
-                markup.append(('punctuation', ')'))
+                        markup.append(("punctuation", ", "))
+                    markup.append(("token", "**" + varkw))
+                markup.append(("punctuation", ")"))
                 widget_list.append(urwid.Text(markup))
             if self.matches_iter.matches:
                 attr_map = {}
-                focus_map = {'main': 'operator'}
-                texts = [urwid.AttrMap(urwid.Text(('main', match)),
-                                       attr_map, focus_map)
-                         for match in self.matches_iter.matches]
+                focus_map = {"main": "operator"}
+                texts = [
+                    urwid.AttrMap(
+                        urwid.Text(("main", match)), attr_map, focus_map
+                    )
+                    for match in self.matches_iter.matches
+                ]
                 width = max(text.original_widget.pack()[0] for text in texts)
-                gridflow = urwid.GridFlow(texts, width, 1, 0, 'left')
+                gridflow = urwid.GridFlow(texts, width, 1, 0, "left")
                 widget_list.append(gridflow)
                 self.tooltip.grid = gridflow
                 self.overlay.tooltip_focus = False
@@ -846,7 +879,7 @@ class URWIDRepl(repl.Repl):
         if self.docstring:
             # TODO: use self.format_docstring? needs a width/height...
             docstring = self.docstring
-            widget_list.append(urwid.Text(('comment', docstring)))
+            widget_list.append(urwid.Text(("comment", docstring)))
 
     def reprint_line(self, lineno, tokens):
         edit = self.edits[-len(self.buffer) + lineno - 1]
@@ -856,7 +889,7 @@ class URWIDRepl(repl.Repl):
         """This method returns the 'spoofed' stdout buffer, for writing to a
         file or sending to a pastebin or whatever."""
 
-        return self.stdout_hist + '\n'
+        return self.stdout_hist + "\n"
 
     def ask_confirmation(self, q):
         """Ask for yes or no and return boolean"""
@@ -865,14 +898,14 @@ class URWIDRepl(repl.Repl):
         except ValueError:
             return False
 
-        return reply.lower() in ('y', 'yes')
+        return reply.lower() in ("y", "yes")
 
     def reevaluate(self):
         """Clear the buffer, redraw the screen and re-evaluate the history"""
 
         self.evaluating = True
-        self.stdout_hist = ''
-        self.f_string = ''
+        self.stdout_hist = ""
+        self.f_string = ""
         self.buffer = []
         self.scr.erase()
         self.s_hist = []
@@ -884,22 +917,23 @@ class URWIDRepl(repl.Repl):
         self.iy, self.ix = self.scr.getyx()
         for line in self.history:
             if py3:
-                self.stdout_hist += line + '\n'
+                self.stdout_hist += line + "\n"
             else:
-                self.stdout_hist += line.encode(
-                    locale.getpreferredencoding()) + '\n'
+                self.stdout_hist += (
+                    line.encode(locale.getpreferredencoding()) + "\n"
+                )
             self.print_line(line)
             self.s_hist[-1] += self.f_string
             # I decided it was easier to just do this manually
             # than to make the print_line and history stuff more flexible.
-            self.scr.addstr('\n')
+            self.scr.addstr("\n")
             more = self.push(line)
             self.prompt(more)
             self.iy, self.ix = self.scr.getyx()
 
         self.cpos = 0
         indent = repl.next_indentation(self.s, self.config.tab_length)
-        self.s = ''
+        self.s = ""
         self.scr.refresh()
 
         if self.buffer:
@@ -907,17 +941,17 @@ class URWIDRepl(repl.Repl):
                 self.tab()
 
         self.evaluating = False
-        #map(self.push, self.history)
+        # map(self.push, self.history)
         # ^-- That's how simple this method was at first :(
 
     def write(self, s):
         """For overriding stdout defaults"""
-        if '\x04' in s:
-            for block in s.split('\x04'):
+        if "\x04" in s:
+            for block in s.split("\x04"):
                 self.write(block)
             return
-        if s.rstrip() and '\x03' in s:
-            t = s.split('\x03')[1]
+        if s.rstrip() and "\x03" in s:
+            t = s.split("\x03")[1]
         else:
             t = s
 
@@ -965,12 +999,12 @@ class URWIDRepl(repl.Repl):
             self.edit.make_readonly()
             self.edit = None
             self.buffer = []
-            self.echo('KeyboardInterrupt')
+            self.echo("KeyboardInterrupt")
             self.prompt(False)
         else:
             # I do not quite remember if this is reachable, but let's
             # be safe.
-            self.echo('KeyboardInterrupt')
+            self.echo("KeyboardInterrupt")
 
     def prompt(self, more):
         # Clear current output here, or output resulting from the
@@ -985,24 +1019,25 @@ class URWIDRepl(repl.Repl):
         # input to be the same type, using ascii as encoding. If the
         # caption is bytes this breaks typing non-ascii into bpython.
         if not more:
-            caption = ('prompt', self.ps1)
+            caption = ("prompt", self.ps1)
             if py3:
                 self.stdout_hist += self.ps1
             else:
                 self.stdout_hist += self.ps1.encode(getpreferredencoding())
         else:
-            caption = ('prompt_more', self.ps2)
+            caption = ("prompt_more", self.ps2)
             if py3:
                 self.stdout_hist += self.ps2
             else:
                 self.stdout_hist += self.ps2.encode(getpreferredencoding())
         self.edit = BPythonEdit(self.config, caption=caption)
 
-        urwid.connect_signal(self.edit, 'change', self.on_input_change)
-        urwid.connect_signal(self.edit, 'edit-pos-changed',
-                             self.on_edit_pos_changed)
+        urwid.connect_signal(self.edit, "change", self.on_input_change)
+        urwid.connect_signal(
+            self.edit, "edit-pos-changed", self.on_edit_pos_changed
+        )
         # Do this after connecting the change signal handler:
-        self.edit.insert_text(4 * self.next_indentation() * ' ')
+        self.edit.insert_text(4 * self.next_indentation() * " ")
         self.edits.append(self.edit)
         self.listbox.body.append(self.edit)
         self.listbox.set_focus(len(self.listbox.body) - 1)
@@ -1019,7 +1054,8 @@ class URWIDRepl(repl.Repl):
             # If we call this synchronously the get_edit_text() in repl.cw
             # still returns the old text...
             self.main_loop.set_alarm_in(
-                0, lambda *args: self._populate_completion())
+                0, lambda *args: self._populate_completion()
+            )
 
     def on_edit_pos_changed(self, edit, position):
         """Gets called when the cursor position inside the edit changed.
@@ -1031,10 +1067,10 @@ class URWIDRepl(repl.Repl):
     def handle_input(self, event):
         # Since most of the input handling here should be handled in the edit
         # instead, we return here early if the edit doesn't have the focus.
-        if self.frame.get_focus() != 'body':
+        if self.frame.get_focus() != "body":
             return
 
-        if event == 'enter':
+        if event == "enter":
             inp = self.edit.get_edit_text()
             self.history.append(inp)
             self.edit.make_readonly()
@@ -1043,32 +1079,32 @@ class URWIDRepl(repl.Repl):
                 self.stdout_hist += inp
             else:
                 self.stdout_hist += inp.encode(locale.getpreferredencoding())
-            self.stdout_hist += '\n'
+            self.stdout_hist += "\n"
             self.edit = None
             # This may take a while, so force a redraw first:
             self.main_loop.draw_screen()
             more = self.push(inp)
             self.prompt(more)
-        elif event == 'ctrl d':
+        elif event == "ctrl d":
             # ctrl+d on an empty line exits, otherwise deletes
             if self.edit is not None:
                 if not self.edit.get_edit_text():
                     raise urwid.ExitMainLoop()
                 else:
-                    self.main_loop.process_input(['delete'])
-        elif urwid.command_map[event] == 'cursor up':
+                    self.main_loop.process_input(["delete"])
+        elif urwid.command_map[event] == "cursor up":
             # "back" from bpython.cli
             self.rl_history.enter(self.edit.get_edit_text())
-            self.edit.set_edit_text('')
+            self.edit.set_edit_text("")
             self.edit.insert_text(self.rl_history.back())
-        elif urwid.command_map[event] == 'cursor down':
+        elif urwid.command_map[event] == "cursor down":
             # "fwd" from bpython.cli
             self.rl_history.enter(self.edit.get_edit_text())
-            self.edit.set_edit_text('')
+            self.edit.set_edit_text("")
             self.edit.insert_text(self.rl_history.forward())
-        elif urwid.command_map[event] == 'next selectable':
+        elif urwid.command_map[event] == "next selectable":
             self.tab()
-        elif urwid.command_map[event] == 'prev selectable':
+        elif urwid.command_map[event] == "prev selectable":
             self.tab(True)
         # else:
         #    self.echo(repr(event))
@@ -1095,7 +1131,7 @@ class URWIDRepl(repl.Repl):
                 if not num_spaces:
                     num_spaces = self.config.tab_length
 
-                self.edit.insert_text(' ' * num_spaces)
+                self.edit.insert_text(" " * num_spaces)
                 return True
 
             if not self.matches_iter:
@@ -1128,40 +1164,78 @@ def main(args=None, locals_=None, banner=None):
     translations.init()
 
     # TODO: maybe support displays other than raw_display?
-    config, options, exec_args = bpargs.parse(args, (
-        'Urwid options', None, [
-            Option('--twisted', '-T', action='store_true',
-                   help=_('Run twisted reactor.')),
-            Option('--reactor', '-r',
-                   help=_('Select specific reactor (see --help-reactors). '
-                          'Implies --twisted.')),
-            Option('--help-reactors', action='store_true',
-                   help=_('List available reactors for -r.')),
-            Option('--plugin', '-p',
-                   help=_('twistd plugin to run (use twistd for a list). '
-                          'Use "--" to pass further options to the plugin.')),
-            Option('--server', '-s', type='int',
-                   help=_('Port to run an eval server on (forces Twisted).')),
-        ]))
+    config, options, exec_args = bpargs.parse(
+        args,
+        (
+            "Urwid options",
+            None,
+            [
+                Option(
+                    "--twisted",
+                    "-T",
+                    action="store_true",
+                    help=_("Run twisted reactor."),
+                ),
+                Option(
+                    "--reactor",
+                    "-r",
+                    help=_(
+                        "Select specific reactor (see --help-reactors). "
+                        "Implies --twisted."
+                    ),
+                ),
+                Option(
+                    "--help-reactors",
+                    action="store_true",
+                    help=_("List available reactors for -r."),
+                ),
+                Option(
+                    "--plugin",
+                    "-p",
+                    help=_(
+                        "twistd plugin to run (use twistd for a list). "
+                        'Use "--" to pass further options to the plugin.'
+                    ),
+                ),
+                Option(
+                    "--server",
+                    "-s",
+                    type="int",
+                    help=_("Port to run an eval server on (forces Twisted)."),
+                ),
+            ],
+        ),
+    )
 
     if options.help_reactors:
         try:
             from twisted.application import reactors
+
             # Stolen from twisted.application.app (twistd).
             for r in reactors.getReactorTypes():
-                print('    %-4s\t%s' % (r.shortName, r.description))
+                print("    %-4s\t%s" % (r.shortName, r.description))
         except ImportError:
-            sys.stderr.write('No reactors are available. Please install '
-                             'twisted for reactor support.\n')
+            sys.stderr.write(
+                "No reactors are available. Please install "
+                "twisted for reactor support.\n"
+            )
         return
 
     palette = [
-        (name, COLORMAP[color.lower()], 'default',
-         'bold' if color.isupper() else 'default')
-        for name, color in iteritems(config.color_scheme)]
-    palette.extend([
-        ('bold ' + name, color + ',bold', background, monochrome)
-        for name, color, background, monochrome in palette])
+        (
+            name,
+            COLORMAP[color.lower()],
+            "default",
+            "bold" if color.isupper() else "default",
+        )
+        for name, color in iteritems(config.color_scheme)
+    ]
+    palette.extend(
+        [
+            ("bold " + name, color + ",bold", background, monochrome)
+            for name, color, background, monochrome in palette
+        ]
+    )
 
     if options.server or options.plugin:
         options.twisted = True
@@ -1170,8 +1244,10 @@ def main(args=None, locals_=None, banner=None):
         try:
             from twisted.application import reactors
         except ImportError:
-            sys.stderr.write('No reactors are available. Please install '
-                             'twisted for reactor support.\n')
+            sys.stderr.write(
+                "No reactors are available. Please install "
+                "twisted for reactor support.\n"
+            )
             return
         try:
             # XXX why does this not just return the reactor it installed?
@@ -1179,16 +1255,17 @@ def main(args=None, locals_=None, banner=None):
             if reactor is None:
                 from twisted.internet import reactor
         except reactors.NoSuchReactor:
-            sys.stderr.write('Reactor %s does not exist\n' % (
-                options.reactor,))
+            sys.stderr.write("Reactor %s does not exist\n" % (options.reactor,))
             return
         event_loop = TwistedEventLoop(reactor)
     elif options.twisted:
         try:
             from twisted.internet import reactor
         except ImportError:
-            sys.stderr.write('No reactors are available. Please install '
-                             'twisted for reactor support.\n')
+            sys.stderr.write(
+                "No reactors are available. Please install "
+                "twisted for reactor support.\n"
+            )
             return
         event_loop = TwistedEventLoop(reactor)
     else:
@@ -1203,20 +1280,22 @@ def main(args=None, locals_=None, banner=None):
             from twisted import plugin
             from twisted.application import service
         except ImportError:
-            sys.stderr.write('No twisted plugins are available. Please install '
-                             'twisted for twisted plugin support.\n')
+            sys.stderr.write(
+                "No twisted plugins are available. Please install "
+                "twisted for twisted plugin support.\n"
+            )
             return
 
         for plug in plugin.getPlugins(service.IServiceMaker):
             if plug.tapname == options.plugin:
                 break
         else:
-            sys.stderr.write('Plugin %s does not exist\n' % (options.plugin,))
+            sys.stderr.write("Plugin %s does not exist\n" % (options.plugin,))
             return
         plugopts = plug.options()
         plugopts.parseOptions(exec_args)
         serv = plug.makeService(plugopts)
-        extend_locals['service'] = serv
+        extend_locals["service"] = serv
         reactor.callWhenRunning(serv.startService)
         exec_args = []
     interpreter = repl.Interpreter(locals_, locale.getpreferredencoding())
@@ -1228,13 +1307,14 @@ def main(args=None, locals_=None, banner=None):
 
     if options.server:
         factory = EvalFactory(myrepl)
-        reactor.listenTCP(options.server, factory, interface='127.0.0.1')
+        reactor.listenTCP(options.server, factory, interface="127.0.0.1")
 
     if options.reactor:
         # Twisted sets a sigInt handler that stops the reactor unless
         # it sees a different custom signal handler.
         def sigint(*args):
             reactor.callFromThread(myrepl.keyboard_interrupt)
+
         signal.signal(signal.SIGINT, sigint)
 
     # Save stdin, stdout and stderr for later restoration
@@ -1278,7 +1358,8 @@ def main(args=None, locals_=None, banner=None):
                     # up an equivalent to reactor.callFromThread (which
                     # is what our Twisted sigint handler does)
                     myrepl.main_loop.set_alarm_in(
-                        0, lambda *args: myrepl.keyboard_interrupt())
+                        0, lambda *args: myrepl.keyboard_interrupt()
+                    )
                     continue
                 break
 
@@ -1294,20 +1375,21 @@ def main(args=None, locals_=None, banner=None):
             if not options.interactive:
                 raise urwid.ExitMainLoop()
         if not exec_args:
-            sys.path.insert(0, '')
+            sys.path.insert(0, "")
             # this is CLIRepl.startup inlined.
-            filename = os.environ.get('PYTHONSTARTUP')
+            filename = os.environ.get("PYTHONSTARTUP")
             if filename and os.path.isfile(filename):
-                with open(filename, 'r') as f:
+                with open(filename, "r") as f:
                     if py3:
-                        interpreter.runsource(f.read(), filename, 'exec')
+                        interpreter.runsource(f.read(), filename, "exec")
                     else:
-                        interpreter.runsource(f.read(), filename, 'exec',
-                                              encode=False)
+                        interpreter.runsource(
+                            f.read(), filename, "exec", encode=False
+                        )
 
         if banner is not None:
             myrepl.write(banner)
-            myrepl.write('\n')
+            myrepl.write("\n")
         myrepl.start()
 
         # This bypasses main_loop.set_alarm_in because we must *not*
@@ -1328,16 +1410,16 @@ def main(args=None, locals_=None, banner=None):
 
 
 def load_urwid_command_map(config):
-    urwid.command_map[key_dispatch[config.up_one_line_key]] = 'cursor up'
-    urwid.command_map[key_dispatch[config.down_one_line_key]] = 'cursor down'
-    urwid.command_map[key_dispatch['C-a']] = 'cursor max left'
-    urwid.command_map[key_dispatch['C-e']] = 'cursor max right'
-    urwid.command_map[key_dispatch[config.pastebin_key]] = 'pastebin'
-    urwid.command_map[key_dispatch['C-f']] = 'cursor right'
-    urwid.command_map[key_dispatch['C-b']] = 'cursor left'
-    urwid.command_map[key_dispatch['C-d']] = 'delete'
-    urwid.command_map[key_dispatch[config.clear_word_key]] = 'clear word'
-    urwid.command_map[key_dispatch[config.clear_line_key]] = 'clear line'
+    urwid.command_map[key_dispatch[config.up_one_line_key]] = "cursor up"
+    urwid.command_map[key_dispatch[config.down_one_line_key]] = "cursor down"
+    urwid.command_map[key_dispatch["C-a"]] = "cursor max left"
+    urwid.command_map[key_dispatch["C-e"]] = "cursor max right"
+    urwid.command_map[key_dispatch[config.pastebin_key]] = "pastebin"
+    urwid.command_map[key_dispatch["C-f"]] = "cursor right"
+    urwid.command_map[key_dispatch["C-b"]] = "cursor left"
+    urwid.command_map[key_dispatch["C-d"]] = "delete"
+    urwid.command_map[key_dispatch[config.clear_word_key]] = "clear word"
+    urwid.command_map[key_dispatch[config.clear_line_key]] = "clear line"
 
 
 """
@@ -1354,5 +1436,5 @@ def load_urwid_command_map(config):
             'up_one_line': 'C-p',
             'yank_from_buffer': 'C-y'},
 """
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

@@ -42,36 +42,84 @@ from . import line as lineparts
 from .line import LinePart
 from ._py3compat import py3, try_decode
 from .lazyre import LazyReCompile
-from .simpleeval import (safe_eval, evaluate_current_expression,
-                         EvaluationError)
+from .simpleeval import safe_eval, evaluate_current_expression, EvaluationError
 
 if not py3:
     from types import InstanceType, ClassType
 
 
 # Autocomplete modes
-SIMPLE = 'simple'
-SUBSTRING = 'substring'
-FUZZY = 'fuzzy'
+SIMPLE = "simple"
+SUBSTRING = "substring"
+FUZZY = "fuzzy"
 
 ALL_MODES = (SIMPLE, SUBSTRING, FUZZY)
 
-MAGIC_METHODS = tuple("__%s__" % s for s in (
-    "init", "repr", "str", "lt", "le", "eq", "ne", "gt", "ge", "cmp", "hash",
-    "nonzero", "unicode", "getattr", "setattr", "get", "set", "call", "len",
-    "getitem", "setitem", "iter", "reversed", "contains", "add", "sub", "mul",
-    "floordiv", "mod", "divmod", "pow", "lshift", "rshift", "and", "xor", "or",
-    "div", "truediv", "neg", "pos", "abs", "invert", "complex", "int", "float",
-    "oct", "hex", "index", "coerce", "enter", "exit"))
+MAGIC_METHODS = tuple(
+    "__%s__" % s
+    for s in (
+        "init",
+        "repr",
+        "str",
+        "lt",
+        "le",
+        "eq",
+        "ne",
+        "gt",
+        "ge",
+        "cmp",
+        "hash",
+        "nonzero",
+        "unicode",
+        "getattr",
+        "setattr",
+        "get",
+        "set",
+        "call",
+        "len",
+        "getitem",
+        "setitem",
+        "iter",
+        "reversed",
+        "contains",
+        "add",
+        "sub",
+        "mul",
+        "floordiv",
+        "mod",
+        "divmod",
+        "pow",
+        "lshift",
+        "rshift",
+        "and",
+        "xor",
+        "or",
+        "div",
+        "truediv",
+        "neg",
+        "pos",
+        "abs",
+        "invert",
+        "complex",
+        "int",
+        "float",
+        "oct",
+        "hex",
+        "index",
+        "coerce",
+        "enter",
+        "exit",
+    )
+)
 
 if py3:
     KEYWORDS = frozenset(keyword.kwlist)
 else:
-    KEYWORDS = frozenset(name.decode('ascii') for name in keyword.kwlist)
+    KEYWORDS = frozenset(name.decode("ascii") for name in keyword.kwlist)
 
 
 def after_last_dot(name):
-    return name.rstrip('.').rsplit('.')[-1]
+    return name.rstrip(".").rsplit(".")[-1]
 
 
 def few_enough_underscores(current, match):
@@ -81,11 +129,11 @@ def few_enough_underscores(current, match):
     if current is __, True regardless of match
     otherwise True if match does not start with any underscore
     """
-    if current.startswith('__'):
+    if current.startswith("__"):
         return True
-    elif current.startswith('_') and not match.startswith('__'):
+    elif current.startswith("_") and not match.startswith("__"):
         return True
-    elif match.startswith('_'):
+    elif match.startswith("_"):
         return False
     else:
         return True
@@ -100,14 +148,14 @@ def method_match_substring(word, size, text):
 
 
 def method_match_fuzzy(word, size, text):
-    s = r'.*%s.*' % '.*'.join(list(text))
+    s = r".*%s.*" % ".*".join(list(text))
     return re.search(s, word)
 
 
 MODES_MAP = {
     SIMPLE: method_match_simple,
     SUBSTRING: method_match_substring,
-    FUZZY: method_match_fuzzy
+    FUZZY: method_match_fuzzy,
 }
 
 
@@ -151,7 +199,7 @@ class BaseCompletionType(object):
         """Returns a cursor offset and line with match swapped in"""
         lpart = self.locate(cursor_offset, line)
         offset = lpart.start + len(match)
-        changed_line = line[:lpart.start] + match + line[lpart.end:]
+        changed_line = line[: lpart.start] + match + line[lpart.end :]
         return offset, changed_line
 
     @property
@@ -167,7 +215,8 @@ class CumulativeCompleter(BaseCompletionType):
     def __init__(self, completers, mode=SIMPLE):
         if not completers:
             raise ValueError(
-                "CumulativeCompleter requires at least one completer")
+                "CumulativeCompleter requires at least one completer"
+            )
         self._completers = completers
 
         super(CumulativeCompleter, self).__init__(True, mode)
@@ -182,9 +231,9 @@ class CumulativeCompleter(BaseCompletionType):
         return_value = None
         all_matches = set()
         for completer in self._completers:
-            matches = completer.matches(cursor_offset=cursor_offset,
-                                        line=line,
-                                        **kwargs)
+            matches = completer.matches(
+                cursor_offset=cursor_offset, line=line, **kwargs
+            )
             if matches is not None:
                 all_matches.update(matches)
                 return_value = all_matches
@@ -193,7 +242,6 @@ class CumulativeCompleter(BaseCompletionType):
 
 
 class ImportCompletion(BaseCompletionType):
-
     def matches(self, cursor_offset, line, **kwargs):
         return importcompletion.complete(cursor_offset, line)
 
@@ -205,17 +253,19 @@ class ImportCompletion(BaseCompletionType):
 
 
 class FilenameCompletion(BaseCompletionType):
-
     def __init__(self, mode=SIMPLE):
         super(FilenameCompletion, self).__init__(False, mode)
 
     if py3:
+
         def safe_glob(self, pathname):
-            return glob.iglob(glob.escape(pathname) + '*')
+            return glob.iglob(glob.escape(pathname) + "*")
+
     else:
+
         def safe_glob(self, pathname):
             try:
-                return glob.glob(pathname + '*')
+                return glob.glob(pathname + "*")
             except re.error:
                 # see #491
                 return tuple()
@@ -230,8 +280,8 @@ class FilenameCompletion(BaseCompletionType):
         for filename in self.safe_glob(os.path.expanduser(cs.word)):
             if os.path.isdir(filename):
                 filename += os.path.sep
-            if cs.word.startswith('~'):
-                filename = username + filename[len(user_dir):]
+            if cs.word.startswith("~"):
+                filename = username + filename[len(user_dir) :]
             matches.add(filename)
         return matches
 
@@ -241,7 +291,7 @@ class FilenameCompletion(BaseCompletionType):
     def format(self, filename):
         filename.rstrip(os.sep).rsplit(os.sep)[-1]
         if os.sep in filename[:-1]:
-            return filename[filename.rindex(os.sep, 0, -1) + 1:]
+            return filename[filename.rindex(os.sep, 0, -1) + 1 :]
         else:
             return filename
 
@@ -251,9 +301,9 @@ class AttrCompletion(BaseCompletionType):
     attr_matches_re = LazyReCompile(r"(\w+(\.\w+)*)\.(\w*)")
 
     def matches(self, cursor_offset, line, **kwargs):
-        if 'locals_' not in kwargs:
+        if "locals_" not in kwargs:
             return None
-        locals_ = kwargs['locals_']
+        locals_ = kwargs["locals_"]
 
         r = self.locate(cursor_offset, line)
         if r is None:
@@ -262,19 +312,23 @@ class AttrCompletion(BaseCompletionType):
         if locals_ is None:  # TODO add a note about why
             locals_ = __main__.__dict__
 
-        assert '.' in r.word
+        assert "." in r.word
 
         for i in range(1, len(r.word) + 1):
-            if r.word[-i] == '[':
+            if r.word[-i] == "[":
                 i -= 1
                 break
         methodtext = r.word[-i:]
-        matches = set(''.join([r.word[:-i], m])
-                      for m in self.attr_matches(methodtext, locals_))
+        matches = set(
+            "".join([r.word[:-i], m])
+            for m in self.attr_matches(methodtext, locals_)
+        )
 
-        return set(m for m in matches
-                   if few_enough_underscores(r.word.split('.')[-1],
-                                             m.split('.')[-1]))
+        return set(
+            m
+            for m in matches
+            if few_enough_underscores(r.word.split(".")[-1], m.split(".")[-1])
+        )
 
     def locate(self, current_offset, line):
         return lineparts.current_dotted_attribute(current_offset, line)
@@ -311,18 +365,18 @@ class AttrCompletion(BaseCompletionType):
         be wrapped in a safe try/finally block in case anything bad happens to
         restore the original __getattribute__ method."""
         words = self.list_attributes(obj)
-        if hasattr(obj, '__class__'):
-            words.append('__class__')
+        if hasattr(obj, "__class__"):
+            words.append("__class__")
             words = words + rlcompleter.get_class_members(obj.__class__)
             if not isinstance(obj.__class__, abc.ABCMeta):
                 try:
-                    words.remove('__abstractmethods__')
+                    words.remove("__abstractmethods__")
                 except ValueError:
                     pass
 
         if not py3 and isinstance(obj, (InstanceType, ClassType)):
             # Account for the __dict__ in an old-style class.
-            words.append('__dict__')
+            words.append("__dict__")
 
         matches = []
         n = len(attr)
@@ -332,9 +386,12 @@ class AttrCompletion(BaseCompletionType):
         return matches
 
     if py3:
+
         def list_attributes(self, obj):
             return dir(obj)
+
     else:
+
         def list_attributes(self, obj):
             if isinstance(obj, InstanceType):
                 try:
@@ -343,17 +400,16 @@ class AttrCompletion(BaseCompletionType):
                     # This is a case where we can not prevent user code from
                     # running. We return a default list attributes on error
                     # instead. (#536)
-                    return ['__doc__', '__module__']
+                    return ["__doc__", "__module__"]
             else:
                 return dir(obj)
 
 
 class DictKeyCompletion(BaseCompletionType):
-
     def matches(self, cursor_offset, line, **kwargs):
-        if 'locals_' not in kwargs:
+        if "locals_" not in kwargs:
             return None
-        locals_ = kwargs['locals_']
+        locals_ = kwargs["locals_"]
 
         r = self.locate(cursor_offset, line)
         if r is None:
@@ -364,8 +420,11 @@ class DictKeyCompletion(BaseCompletionType):
         except EvaluationError:
             return None
         if isinstance(obj, dict) and obj.keys():
-            matches = set("{0!r}]".format(k) for k in obj.keys()
-                          if repr(k).startswith(r.word))
+            matches = set(
+                "{0!r}]".format(k)
+                for k in obj.keys()
+                if repr(k).startswith(r.word)
+            )
             return matches if matches else None
         else:
             return None
@@ -378,16 +437,15 @@ class DictKeyCompletion(BaseCompletionType):
 
 
 class MagicMethodCompletion(BaseCompletionType):
-
     def matches(self, cursor_offset, line, **kwargs):
-        if 'current_block' not in kwargs:
+        if "current_block" not in kwargs:
             return None
-        current_block = kwargs['current_block']
+        current_block = kwargs["current_block"]
 
         r = self.locate(cursor_offset, line)
         if r is None:
             return None
-        if 'class' not in current_block:
+        if "class" not in current_block:
             return None
         return set(name for name in MAGIC_METHODS if name.startswith(r.word))
 
@@ -396,15 +454,14 @@ class MagicMethodCompletion(BaseCompletionType):
 
 
 class GlobalCompletion(BaseCompletionType):
-
     def matches(self, cursor_offset, line, **kwargs):
         """Compute matches when text is a simple name.
         Return a list of all keywords, built-in functions and names currently
         defined in self.namespace that match.
         """
-        if 'locals_' not in kwargs:
+        if "locals_" not in kwargs:
             return None
-        locals_ = kwargs['locals_']
+        locals_ = kwargs["locals_"]
 
         r = self.locate(cursor_offset, line)
         if r is None:
@@ -417,12 +474,14 @@ class GlobalCompletion(BaseCompletionType):
                 matches.add(word)
         for nspace in (builtins.__dict__, locals_):
             for word, val in iteritems(nspace):
-                word = try_decode(word, 'ascii')
+                word = try_decode(word, "ascii")
                 # if identifier isn't ascii, don't complete (syntax error)
                 if word is None:
                     continue
-                if (self.method_match(word, n, r.word) and
-                        word != "__builtins__"):
+                if (
+                    self.method_match(word, n, r.word)
+                    and word != "__builtins__"
+                ):
                     matches.add(_callable_postfix(val, word))
         return matches if matches else None
 
@@ -431,11 +490,10 @@ class GlobalCompletion(BaseCompletionType):
 
 
 class ParameterNameCompletion(BaseCompletionType):
-
     def matches(self, cursor_offset, line, **kwargs):
-        if 'argspec' not in kwargs:
+        if "argspec" not in kwargs:
             return None
-        argspec = kwargs['argspec']
+        argspec = kwargs["argspec"]
 
         if not argspec:
             return None
@@ -443,12 +501,17 @@ class ParameterNameCompletion(BaseCompletionType):
         if r is None:
             return None
         if argspec:
-            matches = set(name + '=' for name in argspec[1][0]
-                          if isinstance(name, string_types) and
-                          name.startswith(r.word))
+            matches = set(
+                name + "="
+                for name in argspec[1][0]
+                if isinstance(name, string_types) and name.startswith(r.word)
+            )
             if py3:
-                matches.update(name + '=' for name in argspec[1][4]
-                               if name.startswith(r.word))
+                matches.update(
+                    name + "="
+                    for name in argspec[1][4]
+                    if name.startswith(r.word)
+                )
         return matches if matches else None
 
     def locate(self, current_offset, line):
@@ -461,9 +524,9 @@ class ExpressionAttributeCompletion(AttrCompletion):
         return lineparts.current_expression_attribute(current_offset, line)
 
     def matches(self, cursor_offset, line, **kwargs):
-        if 'locals_' not in kwargs:
+        if "locals_" not in kwargs:
             return None
-        locals_ = kwargs['locals_']
+        locals_ = kwargs["locals_"]
 
         if locals_ is None:
             locals_ = __main__.__dict__
@@ -476,7 +539,7 @@ class ExpressionAttributeCompletion(AttrCompletion):
             return set()
         with inspection.AttrCleaner(obj):
             #          strips leading dot
-            matches = [m[1:] for m in self.attr_lookup(obj, '', attr.word)]
+            matches = [m[1:] for m in self.attr_lookup(obj, "", attr.word)]
 
         return set(m for m in matches if few_enough_underscores(attr.word, m))
 
@@ -484,24 +547,28 @@ class ExpressionAttributeCompletion(AttrCompletion):
 try:
     import jedi
 except ImportError:
+
     class MultilineJediCompletion(BaseCompletionType):
         def matches(self, cursor_offset, line, **kwargs):
             return None
-else:
-    class JediCompletion(BaseCompletionType):
 
+
+else:
+
+    class JediCompletion(BaseCompletionType):
         def matches(self, cursor_offset, line, **kwargs):
-            if 'history' not in kwargs:
+            if "history" not in kwargs:
                 return None
-            history = kwargs['history']
+            history = kwargs["history"]
 
             if not lineparts.current_word(cursor_offset, line):
                 return None
-            history = '\n'.join(history) + '\n' + line
+            history = "\n".join(history) + "\n" + line
 
             try:
-                script = jedi.Script(history, len(history.splitlines()),
-                                     cursor_offset, 'fake.py')
+                script = jedi.Script(
+                    history, len(history.splitlines()), cursor_offset, "fake.py"
+                )
                 completions = script.completions()
             except (jedi.NotFoundError, IndexError, KeyError):
                 # IndexError for #483
@@ -516,11 +583,12 @@ else:
                 self._orig_start = None
                 return None
 
-            first_letter = line[self._orig_start:self._orig_start + 1]
+            first_letter = line[self._orig_start : self._orig_start + 1]
 
-            matches = [try_decode(c.name, 'ascii') for c in completions]
-            if any(not m.lower().startswith(matches[0][0].lower())
-                   for m in matches):
+            matches = [try_decode(c.name, "ascii") for c in completions]
+            if any(
+                not m.lower().startswith(matches[0][0].lower()) for m in matches
+            ):
                 # Too general - giving completions starting with multiple
                 # letters
                 return None
@@ -535,17 +603,19 @@ else:
 
     class MultilineJediCompletion(JediCompletion):
         def matches(self, cursor_offset, line, **kwargs):
-            if 'current_block' not in kwargs or 'history' not in kwargs:
+            if "current_block" not in kwargs or "history" not in kwargs:
                 return None
-            current_block = kwargs['current_block']
-            history = kwargs['history']
+            current_block = kwargs["current_block"]
+            history = kwargs["history"]
 
-            if '\n' in current_block:
-                assert cursor_offset <= len(line), "%r %r" % (cursor_offset,
-                                                              line)
-                results = super(MultilineJediCompletion,
-                                self).matches(cursor_offset, line,
-                                              history=history)
+            if "\n" in current_block:
+                assert cursor_offset <= len(line), "%r %r" % (
+                    cursor_offset,
+                    line,
+                )
+                results = super(MultilineJediCompletion, self).matches(
+                    cursor_offset, line, history=history
+                )
                 return results
             else:
                 return None
@@ -575,8 +645,10 @@ def get_completer(completers, cursor_offset, line, **kwargs):
             # Instead of crashing the UI, log exceptions from autocompleters.
             logger = logging.getLogger(__name__)
             logger.debug(
-                'Completer {} failed with unhandled exception: {}'.format(
-                    completer, e))
+                "Completer {} failed with unhandled exception: {}".format(
+                    completer, e
+                )
+            )
             continue
         if matches is not None:
             return sorted(matches), (completer if matches else None)
@@ -591,9 +663,10 @@ def get_default_completer(mode=SIMPLE):
         FilenameCompletion(mode=mode),
         MagicMethodCompletion(mode=mode),
         MultilineJediCompletion(mode=mode),
-        CumulativeCompleter((GlobalCompletion(mode=mode),
-                             ParameterNameCompletion(mode=mode)),
-                            mode=mode),
+        CumulativeCompleter(
+            (GlobalCompletion(mode=mode), ParameterNameCompletion(mode=mode)),
+            mode=mode,
+        ),
         AttrCompletion(mode=mode),
         ExpressionAttributeCompletion(mode=mode),
     )
@@ -601,13 +674,12 @@ def get_default_completer(mode=SIMPLE):
 
 def get_completer_bpython(cursor_offset, line, **kwargs):
     """"""
-    return get_completer(get_default_completer(),
-                         cursor_offset, line, **kwargs)
+    return get_completer(get_default_completer(), cursor_offset, line, **kwargs)
 
 
 def _callable_postfix(value, word):
     """rlcompleter's _callable_postfix done right."""
     with inspection.AttrCleaner(value):
         if inspection.is_callable(value):
-            word += '('
+            word += "("
     return word

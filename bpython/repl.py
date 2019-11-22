@@ -63,7 +63,7 @@ class RuntimeTimer(object):
 
     def __init__(self):
         self.reset_timer()
-        self.time = time.monotonic if hasattr(time, 'monotonic') else time.time
+        self.time = time.monotonic if hasattr(time, "monotonic") else time.time
 
     def __enter__(self):
         self.start = self.time()
@@ -84,7 +84,7 @@ class RuntimeTimer(object):
 class Interpreter(code.InteractiveInterpreter, object):
     """Source code interpreter for use in bpython."""
 
-    bpython_input_re = LazyReCompile(r'<bpython-input-\d+>')
+    bpython_input_re = LazyReCompile(r"<bpython-input-\d+>")
 
     def __init__(self, locals=None, encoding=None):
         """Constructor.
@@ -113,7 +113,7 @@ class Interpreter(code.InteractiveInterpreter, object):
         if locals is None:
             # instead of messing with sys.modules, we should modify sys.modules
             # in the interpreter instance
-            sys.modules['__main__'] = main_mod = ModuleType('__main__')
+            sys.modules["__main__"] = main_mod = ModuleType("__main__")
             locals = main_mod.__dict__
 
         # Unfortunately code.InteractiveInterpreter is a classic class, so no
@@ -124,8 +124,7 @@ class Interpreter(code.InteractiveInterpreter, object):
     def reset_running_time(self):
         self.running_time = 0
 
-    def runsource(self, source, filename=None, symbol='single',
-                  encode='auto'):
+    def runsource(self, source, filename=None, symbol="single", encode="auto"):
         """Execute Python code.
 
         source, filename and symbol are passed on to
@@ -147,14 +146,13 @@ class Interpreter(code.InteractiveInterpreter, object):
         unicode string in Python 2 will throw a ValueError."""
         # str means bytestring in Py2
         if encode and not py3 and isinstance(source, unicode):
-            if encode != 'auto':
+            if encode != "auto":
                 raise ValueError("can't add encoding line to unicode input")
             encode = False
         if encode and filename is not None:
             # files have encoding comments or implicit encoding of ASCII
-            if encode != 'auto':
-                raise ValueError(
-                    "shouldn't add encoding line to file contents")
+            if encode != "auto":
+                raise ValueError("shouldn't add encoding line to file contents")
             encode = False
 
         if encode and not py3 and isinstance(source, str):
@@ -165,21 +163,22 @@ class Interpreter(code.InteractiveInterpreter, object):
                 # keep the existing encoding comment, but add two lines
                 # because this interp always adds 2 to stack trace line
                 # numbers in Python 2
-                source = source.replace(comment, b'%s\n\n' % comment, 1)
+                source = source.replace(comment, b"%s\n\n" % comment, 1)
             else:
-                source = b'# coding: %s\n\n%s' % (self.encoding, source)
+                source = b"# coding: %s\n\n%s" % (self.encoding, source)
         elif not py3 and filename is None:
             # 2 blank lines still need to be added
             # because this interpreter always adds 2 to stack trace line
             # numbers in Python 2 when the filename is "<input>"
-            newlines = u'\n\n' if isinstance(source, unicode) else b'\n\n'
+            newlines = u"\n\n" if isinstance(source, unicode) else b"\n\n"
             source = newlines + source
             # we know we're in Python 2 here, so ok to reference unicode
         if filename is None:
             filename = filename_for_console_input(source)
         with self.timer:
-            return code.InteractiveInterpreter.runsource(self, source,
-                                                         filename, symbol)
+            return code.InteractiveInterpreter.runsource(
+                self, source, filename, symbol
+            )
 
     def showsyntaxerror(self, filename=None):
         """Override the regular handler, the code's copied and pasted from
@@ -202,8 +201,8 @@ class Interpreter(code.InteractiveInterpreter, object):
                 # Stuff in the right filename and right lineno
                 # strip linecache line number
                 if self.bpython_input_re.match(filename):
-                    filename = '<input>'
-                if filename == '<input>' and not py3:
+                    filename = "<input>"
+                if filename == "<input>" and not py3:
                     lineno -= 2
                 value = SyntaxError(msg, (filename, lineno, offset, line))
                 sys.last_value = value
@@ -225,16 +224,16 @@ class Interpreter(code.InteractiveInterpreter, object):
             for i, (fname, lineno, module, something) in enumerate(tblist):
                 # strip linecache line number
                 if self.bpython_input_re.match(fname):
-                    fname = '<input>'
+                    fname = "<input>"
                     tblist[i] = (fname, lineno, module, something)
                 # Set the right lineno (encoding header adds an extra line)
-                if fname == '<input>' and not py3:
+                if fname == "<input>" and not py3:
                     tblist[i] = (fname, lineno - 2, module, something)
 
             l = traceback.format_list(tblist)
             if l:
                 l.insert(0, "Traceback (most recent call last):\n")
-            l[len(l):] = traceback.format_exception_only(t, v)
+            l[len(l) :] = traceback.format_exception_only(t, v)
         finally:
             pass
 
@@ -258,7 +257,7 @@ class MatchesIterator(object):
 
     def __init__(self):
         # word being replaced in the original line of text
-        self.current_word = ''
+        self.current_word = ""
         # possible replacements for current_word
         self.matches = None
         # which word is currently replacing the current word
@@ -288,7 +287,7 @@ class MatchesIterator(object):
 
     def current(self):
         if self.index == -1:
-            raise ValueError('No current match.')
+            raise ValueError("No current match.")
         return self.matches[self.index]
 
     def next(self):
@@ -312,14 +311,18 @@ class MatchesIterator(object):
 
     def substitute(self, match):
         """Returns a cursor offset and line with match substituted in"""
-        start, end, word = self.completer.locate(self.orig_cursor_offset,
-                                                 self.orig_line)
-        return (start + len(match),
-                self.orig_line[:start] + match + self.orig_line[end:])
+        start, end, word = self.completer.locate(
+            self.orig_cursor_offset, self.orig_line
+        )
+        return (
+            start + len(match),
+            self.orig_line[:start] + match + self.orig_line[end:],
+        )
 
     def is_cseq(self):
         return bool(
-            os.path.commonprefix(self.matches)[len(self.current_word):])
+            os.path.commonprefix(self.matches)[len(self.current_word) :]
+        )
 
     def substitute_cseq(self):
         """Returns a new line by substituting a common sequence in, and update
@@ -329,8 +332,9 @@ class MatchesIterator(object):
         if len(self.matches) == 1:
             self.clear()
         else:
-            self.update(new_cursor_offset, new_line, self.matches,
-                        self.completer)
+            self.update(
+                new_cursor_offset, new_line, self.matches, self.completer
+            )
             if len(self.matches) == 1:
                 self.clear()
         return new_cursor_offset, new_line
@@ -350,13 +354,14 @@ class MatchesIterator(object):
         self.completer = completer
         self.index = -1
         self.start, self.end, self.current_word = self.completer.locate(
-            self.orig_cursor_offset, self.orig_line)
+            self.orig_cursor_offset, self.orig_line
+        )
 
     def clear(self):
         self.matches = []
         self.cursor_offset = -1
-        self.current_line = ''
-        self.current_word = ''
+        self.current_line = ""
+        self.current_word = ""
         self.start = None
         self.end = None
         self.index = -1
@@ -425,13 +430,14 @@ class Repl(object):
         """
 
         self.config = config
-        self.cut_buffer = ''
+        self.cut_buffer = ""
         self.buffer = []
         self.interp = interp
         self.interp.syntaxerror_callback = self.clear_current_line
         self.match = False
-        self.rl_history = History(duplicates=config.hist_duplicates,
-                                  hist_size=config.hist_length)
+        self.rl_history = History(
+            duplicates=config.hist_duplicates, hist_size=config.hist_length
+        )
         self.s_hist = []
         self.history = []
         self.evaluating = False
@@ -445,9 +451,9 @@ class Repl(object):
         self.interact = Interaction(self.config)
         # previous pastebin content to prevent duplicate pastes, filled on call
         # to repl.pastebin
-        self.prev_pastebin_content = ''
-        self.prev_pastebin_url = ''
-        self.prev_removal_url = ''
+        self.prev_pastebin_content = ""
+        self.prev_pastebin_url = ""
+        self.prev_removal_url = ""
         # Necessary to fix mercurial.ui.ui expecting sys.stderr to have this
         # attribute
         self.closed = False
@@ -456,20 +462,24 @@ class Repl(object):
         pythonhist = os.path.expanduser(self.config.hist_file)
         if os.path.exists(pythonhist):
             try:
-                self.rl_history.load(pythonhist,
-                                     getpreferredencoding() or "ascii")
+                self.rl_history.load(
+                    pythonhist, getpreferredencoding() or "ascii"
+                )
             except EnvironmentError:
                 pass
 
         self.completers = autocomplete.get_default_completer(
-            config.autocomplete_mode)
+            config.autocomplete_mode
+        )
         if self.config.pastebin_helper:
             self.paster = PasteHelper(self.config.pastebin_helper)
         else:
-            self.paster = PastePinnwand(self.config.pastebin_url,
-                                        self.config.pastebin_expiry,
-                                        self.config.pastebin_show_url,
-                                        self.config.pastebin_removal_url)
+            self.paster = PastePinnwand(
+                self.config.pastebin_url,
+                self.config.pastebin_expiry,
+                self.config.pastebin_show_url,
+                self.config.pastebin_removal_url,
+            )
 
     @property
     def ps1(self):
@@ -479,7 +489,7 @@ class Repl(object):
             else:
                 return sys.ps1
         except AttributeError:
-            return u'>>> '
+            return u">>> "
 
     @property
     def ps2(self):
@@ -490,31 +500,33 @@ class Repl(object):
                 return sys.ps2
 
         except AttributeError:
-            return u'... '
+            return u"... "
 
     def startup(self):
         """
         Execute PYTHONSTARTUP file if it exits. Call this after front
         end-specific initialisation.
         """
-        filename = os.environ.get('PYTHONSTARTUP')
+        filename = os.environ.get("PYTHONSTARTUP")
         if filename:
             encoding = inspection.get_encoding_file(filename)
-            with io.open(filename, 'rt', encoding=encoding) as f:
+            with io.open(filename, "rt", encoding=encoding) as f:
                 source = f.read()
                 if not py3:
                     # Early Python 2.7.X need bytes.
                     source = source.encode(encoding)
-                self.interp.runsource(source, filename, 'exec', encode=False)
+                self.interp.runsource(source, filename, "exec", encode=False)
 
     def current_string(self, concatenate=False):
         """If the line ends in a string get it, otherwise return ''"""
         tokens = self.tokenize(self.current_line)
-        string_tokens = list(takewhile(token_is_any_of([Token.String,
-                                                        Token.Text]),
-                                       reversed(tokens)))
+        string_tokens = list(
+            takewhile(
+                token_is_any_of([Token.String, Token.Text]), reversed(tokens)
+            )
+        )
         if not string_tokens:
-            return ''
+            return ""
         opening = string_tokens.pop()[1]
         string = list()
         for (token, value) in reversed(string_tokens):
@@ -533,11 +545,11 @@ class Repl(object):
                 string.append(value)
 
         if opening is None:
-            return ''
-        return ''.join(string)
+            return ""
+        return "".join(string)
 
     def get_object(self, name):
-        attributes = name.split('.')
+        attributes = name.split(".")
         obj = eval(attributes.pop(0), self.interp.locals)
         while attributes:
             with inspection.AttrCleaner(obj):
@@ -551,50 +563,54 @@ class Repl(object):
         # [full_expr, function_expr, arg_number, opening]
         # arg_number may be a string if we've encountered a keyword
         # argument so we're done counting
-        stack = [['', '', 0, '']]
+        stack = [["", "", 0, ""]]
         try:
             for (token, value) in PythonLexer().get_tokens(line):
                 if token is Token.Punctuation:
-                    if value in '([{':
-                        stack.append(['', '', 0, value])
-                    elif value in ')]}':
+                    if value in "([{":
+                        stack.append(["", "", 0, value])
+                    elif value in ")]}":
                         full, _, _, start = stack.pop()
                         expr = start + full + value
                         stack[-1][1] += expr
                         stack[-1][0] += expr
-                    elif value == ',':
+                    elif value == ",":
                         try:
                             stack[-1][2] += 1
                         except TypeError:
-                            stack[-1][2] = ''
-                        stack[-1][1] = ''
+                            stack[-1][2] = ""
+                        stack[-1][1] = ""
                         stack[-1][0] += value
-                    elif value == ':' and stack[-1][3] == 'lambda':
-                        expr = stack.pop()[0] + ':'
+                    elif value == ":" and stack[-1][3] == "lambda":
+                        expr = stack.pop()[0] + ":"
                         stack[-1][1] += expr
                         stack[-1][0] += expr
                     else:
-                        stack[-1][1] = ''
+                        stack[-1][1] = ""
                         stack[-1][0] += value
-                elif (token is Token.Number or
-                      token in Token.Number.subtypes or
-                      token is Token.Name or token in Token.Name.subtypes or
-                      token is Token.Operator and value == '.'):
+                elif (
+                    token is Token.Number
+                    or token in Token.Number.subtypes
+                    or token is Token.Name
+                    or token in Token.Name.subtypes
+                    or token is Token.Operator
+                    and value == "."
+                ):
                     stack[-1][1] += value
                     stack[-1][0] += value
-                elif token is Token.Operator and value == '=':
+                elif token is Token.Operator and value == "=":
                     stack[-1][2] = stack[-1][1]
-                    stack[-1][1] = ''
+                    stack[-1][1] = ""
                     stack[-1][0] += value
                 elif token is Token.Number or token in Token.Number.subtypes:
                     stack[-1][1] = value
                     stack[-1][0] += value
-                elif token is Token.Keyword and value == 'lambda':
-                    stack.append([value, '', 0, value])
+                elif token is Token.Keyword and value == "lambda":
+                    stack.append([value, "", 0, value])
                 else:
-                    stack[-1][1] = ''
+                    stack[-1][1] = ""
                     stack[-1][0] += value
-            while stack[-1][3] in '[{':
+            while stack[-1][3] in "[{":
                 stack.pop()
             _, _, arg_number, _ = stack.pop()
             _, func, _, _ = stack.pop()
@@ -623,22 +639,24 @@ class Repl(object):
                 try:
                     fake_cursor = self.current_line.index(func) + len(func)
                     f = simpleeval.evaluate_current_attribute(
-                        fake_cursor, self.current_line, self.interp.locals)
+                        fake_cursor, self.current_line, self.interp.locals
+                    )
                 except simpleeval.EvaluationError:
                     return False
 
             if inspect.isclass(f):
                 class_f = None
 
-                if (hasattr(f, '__init__') and
-                        f.__init__ is not object.__init__):
+                if hasattr(f, "__init__") and f.__init__ is not object.__init__:
                     class_f = f.__init__
-                if ((not class_f or
-                     not inspection.getfuncprops(func, class_f)) and
-                        hasattr(f, '__new__') and
-                        f.__new__ is not object.__new__ and
-                        # py3
-                        f.__new__.__class__ is not object.__new__.__class__):
+                if (
+                    (not class_f or not inspection.getfuncprops(func, class_f))
+                    and hasattr(f, "__new__")
+                    and f.__new__ is not object.__new__
+                    and
+                    # py3
+                    f.__new__.__class__ is not object.__new__.__class__
+                ):
 
                     class_f = f.__new__
 
@@ -674,14 +692,14 @@ class Repl(object):
                     obj = self.get_object(line)
             return inspection.get_source_unicode(obj)
         except (AttributeError, NameError) as e:
-            msg = _(u"Cannot get source: %s") % (e, )
+            msg = _(u"Cannot get source: %s") % (e,)
         except IOError as e:
-            msg = u"%s" % (e, )
+            msg = u"%s" % (e,)
         except TypeError as e:
-            if "built-in" in u"%s" % (e, ):
-                msg = _("Cannot access source of %r") % (obj, )
+            if "built-in" in u"%s" % (e,):
+                msg = _("Cannot access source of %r") % (obj,)
             else:
-                msg = _("No source code found for %s") % (self.current_line, )
+                msg = _("No source code found for %s") % (self.current_line,)
         raise SourceNotFound(msg)
 
     def set_docstring(self):
@@ -730,23 +748,27 @@ class Repl(object):
             line=self.current_line,
             locals_=self.interp.locals,
             argspec=self.funcprops,
-            current_block='\n'.join(self.buffer + [self.current_line]),
+            current_block="\n".join(self.buffer + [self.current_line]),
             complete_magic_methods=self.config.complete_magic_methods,
-            history=self.history)
+            history=self.history,
+        )
 
         if len(matches) == 0:
             self.matches_iter.clear()
             return bool(self.funcprops)
 
-        self.matches_iter.update(self.cursor_offset,
-                                 self.current_line, matches, completer)
+        self.matches_iter.update(
+            self.cursor_offset, self.current_line, matches, completer
+        )
 
         if len(matches) == 1:
             if tab:
                 # if this complete is being run for a tab key press, substitute
                 # common sequence
-                self._cursor_offset, self._current_line = \
-                    self.matches_iter.substitute_cseq()
+                (
+                    self._cursor_offset,
+                    self._current_line,
+                ) = self.matches_iter.substitute_cseq()
                 return Repl.complete(self)  # again for
             elif self.matches_iter.current_word == matches[0]:
                 self.matches_iter.clear()
@@ -760,15 +782,15 @@ class Repl(object):
         """Take a string and try to format it into a sane list of strings to be
         put into the suggestion box."""
 
-        lines = docstring.split('\n')
+        lines = docstring.split("\n")
         out = []
         i = 0
         for line in lines:
             i += 1
             if not line.strip():
-                out.append('\n')
+                out.append("\n")
             for block in textwrap.wrap(line, width):
-                out.append('  ' + block + '\n')
+                out.append("  " + block + "\n")
                 if i >= height:
                     return out
                 i += 1
@@ -780,11 +802,14 @@ class Repl(object):
         """Return the indentation of the next line based on the current
         input buffer."""
         if self.buffer:
-            indentation = next_indentation(self.buffer[-1],
-                                           self.config.tab_length)
+            indentation = next_indentation(
+                self.buffer[-1], self.config.tab_length
+            )
             if indentation and self.config.dedent_after > 0:
+
                 def line_is_empty(line):
                     return not line.strip()
+
                 empty_lines = takewhile(line_is_empty, reversed(self.buffer))
                 if sum(1 for _ in empty_lines) >= self.config.dedent_after:
                     indentation -= 1
@@ -798,13 +823,14 @@ class Repl(object):
         output lines."""
 
         def process():
-            for line in session_ouput.split('\n'):
+            for line in session_ouput.split("\n"):
                 if line.startswith(self.ps1):
-                    yield line[len(self.ps1):]
+                    yield line[len(self.ps1) :]
                 elif line.startswith(self.ps2):
-                    yield line[len(self.ps2):]
+                    yield line[len(self.ps2) :]
                 elif line.rstrip():
                     yield "# OUT: %s" % (line,)
+
         return "\n".join(process())
 
     def write2file(self):
@@ -812,31 +838,36 @@ class Repl(object):
         buffer to disk."""
 
         try:
-            fn = self.interact.file_prompt(_('Save to file (Esc to cancel): '))
+            fn = self.interact.file_prompt(_("Save to file (Esc to cancel): "))
             if not fn:
-                self.interact.notify(_('Save cancelled.'))
+                self.interact.notify(_("Save cancelled."))
                 return
         except ValueError:
-            self.interact.notify(_('Save cancelled.'))
+            self.interact.notify(_("Save cancelled."))
             return
 
-        if fn.startswith('~'):
+        if fn.startswith("~"):
             fn = os.path.expanduser(fn)
-        if not fn.endswith('.py') and self.config.save_append_py:
-            fn = fn + '.py'
+        if not fn.endswith(".py") and self.config.save_append_py:
+            fn = fn + ".py"
 
-        mode = 'w'
+        mode = "w"
         if os.path.exists(fn):
-            mode = self.interact.file_prompt(_('%s already exists. Do you '
-                                               'want to (c)ancel, '
-                                               ' (o)verwrite or '
-                                               '(a)ppend? ') % (fn, ))
-            if mode in ('o', 'overwrite', _('overwrite')):
-                mode = 'w'
-            elif mode in ('a', 'append', _('append')):
-                mode = 'a'
+            mode = self.interact.file_prompt(
+                _(
+                    "%s already exists. Do you "
+                    "want to (c)ancel, "
+                    " (o)verwrite or "
+                    "(a)ppend? "
+                )
+                % (fn,)
+            )
+            if mode in ("o", "overwrite", _("overwrite")):
+                mode = "w"
+            elif mode in ("a", "append", _("append")):
+                mode = "a"
             else:
-                self.interact.notify(_('Save cancelled.'))
+                self.interact.notify(_("Save cancelled."))
                 return
 
         stdout_text = self.formatforfile(self.getstdout())
@@ -847,22 +878,22 @@ class Repl(object):
         except IOError as e:
             self.interact.notify(_("Error writing file '%s': %s") % (fn, e))
         else:
-            self.interact.notify(_('Saved to %s.') % (fn, ))
+            self.interact.notify(_("Saved to %s.") % (fn,))
 
     def copy2clipboard(self):
         """Copy current content to clipboard."""
 
         if self.clipboard is None:
-            self.interact.notify(_('No clipboard available.'))
+            self.interact.notify(_("No clipboard available."))
             return
 
         content = self.formatforfile(self.getstdout())
         try:
             self.clipboard.copy(content)
         except CopyFailed:
-            self.interact.notify(_('Could not copy to clipboard.'))
+            self.interact.notify(_("Could not copy to clipboard."))
         else:
-            self.interact.notify(_('Copied content to clipboard.'))
+            self.interact.notify(_("Copied content to clipboard."))
 
     def pastebin(self, s=None):
         """Upload to a pastebin and display the URL in the status bar."""
@@ -870,8 +901,9 @@ class Repl(object):
         if s is None:
             s = self.getstdout()
 
-        if (self.config.pastebin_confirm and
-                not self.interact.confirm(_("Pastebin buffer? (y/N) "))):
+        if self.config.pastebin_confirm and not self.interact.confirm(
+            _("Pastebin buffer? (y/N) ")
+        ):
             self.interact.notify(_("Pastebin aborted."))
             return
         return self.do_pastebin(s)
@@ -879,17 +911,18 @@ class Repl(object):
     def do_pastebin(self, s):
         """Actually perform the upload."""
         if s == self.prev_pastebin_content:
-            self.interact.notify(_('Duplicate pastebin. Previous URL: %s. '
-                                   'Removal URL: %s') %
-                                 (self.prev_pastebin_url,
-                                  self.prev_removal_url), 10)
+            self.interact.notify(
+                _("Duplicate pastebin. Previous URL: %s. " "Removal URL: %s")
+                % (self.prev_pastebin_url, self.prev_removal_url),
+                10,
+            )
             return self.prev_pastebin_url
 
-        self.interact.notify(_('Posting data to pastebin...'))
+        self.interact.notify(_("Posting data to pastebin..."))
         try:
             paste_url, removal_url = self.paster.paste(s)
         except PasteFailed as e:
-            self.interact.notify(_('Upload failed: %s') % e)
+            self.interact.notify(_("Upload failed: %s") % e)
             return
 
         self.prev_pastebin_content = s
@@ -897,23 +930,26 @@ class Repl(object):
         self.prev_removal_url = removal_url
 
         if removal_url is not None:
-            self.interact.notify(_('Pastebin URL: %s - Removal URL: %s') %
-                                 (paste_url, removal_url), 10)
+            self.interact.notify(
+                _("Pastebin URL: %s - Removal URL: %s")
+                % (paste_url, removal_url),
+                10,
+            )
         else:
-            self.interact.notify(_('Pastebin URL: %s') % (paste_url, ), 10)
+            self.interact.notify(_("Pastebin URL: %s") % (paste_url,), 10)
 
         return paste_url
 
     def push(self, s, insert_into_history=True):
         """Push a line of code onto the buffer so it can process it all
         at once when a code block ends"""
-        s = s.rstrip('\n')
+        s = s.rstrip("\n")
         self.buffer.append(s)
 
         if insert_into_history:
             self.insert_into_history(s)
 
-        more = self.interp.runsource('\n'.join(self.buffer))
+        more = self.interp.runsource("\n".join(self.buffer))
 
         if not more:
             self.buffer = []
@@ -923,36 +959,42 @@ class Repl(object):
     def insert_into_history(self, s):
         pythonhist = os.path.expanduser(self.config.hist_file)
         try:
-            self.rl_history.append_reload_and_write(s, pythonhist,
-                                                    getpreferredencoding())
+            self.rl_history.append_reload_and_write(
+                s, pythonhist, getpreferredencoding()
+            )
         except RuntimeError as e:
-            self.interact.notify(u"%s" % (e, ))
+            self.interact.notify(u"%s" % (e,))
 
     def prompt_undo(self):
         """Returns how many lines to undo, 0 means don't undo"""
-        if (self.config.single_undo_time < 0 or
-                self.interp.timer.estimate() < self.config.single_undo_time):
+        if (
+            self.config.single_undo_time < 0
+            or self.interp.timer.estimate() < self.config.single_undo_time
+        ):
             return 1
         est = self.interp.timer.estimate()
         n = self.interact.file_prompt(
             _("Undo how many lines? (Undo will take up to ~%.1f seconds) [1]")
-            % (est,))
+            % (est,)
+        )
         try:
-            if n == '':
-                n = '1'
+            if n == "":
+                n = "1"
             n = int(n)
         except ValueError:
-            self.interact.notify(_('Undo canceled'), .1)
+            self.interact.notify(_("Undo canceled"), 0.1)
             return 0
         else:
             if n == 0:
-                self.interact.notify(_('Undo canceled'), .1)
+                self.interact.notify(_("Undo canceled"), 0.1)
                 return 0
             else:
-                message = ngettext('Undoing %d line... (est. %.1f seconds)',
-                                   'Undoing %d lines... (est. %.1f seconds)',
-                                   n)
-                self.interact.notify(message % (n, est), .1)
+                message = ngettext(
+                    "Undoing %d line... (est. %.1f seconds)",
+                    "Undoing %d lines... (est. %.1f seconds)",
+                    n,
+                )
+                self.interact.notify(message % (n, est), 0.1)
             return n
 
     def undo(self, n=1):
@@ -1005,7 +1047,7 @@ class Repl(object):
         """
         highlighted_paren = None
 
-        source = '\n'.join(self.buffer + [s])
+        source = "\n".join(self.buffer + [s])
         cursor = len(source) - self.cpos
         if self.cpos:
             cursor += 1
@@ -1015,15 +1057,15 @@ class Repl(object):
         # no size, so strip them
         while not all_tokens[-1][1]:
             all_tokens.pop()
-        all_tokens[-1] = (all_tokens[-1][0], all_tokens[-1][1].rstrip('\n'))
+        all_tokens[-1] = (all_tokens[-1][0], all_tokens[-1][1].rstrip("\n"))
         line = pos = 0
-        parens = dict(zip('{([', '})]'))
+        parens = dict(zip("{([", "})]"))
         line_tokens = list()
         saved_tokens = list()
         search_for_paren = True
         for (token, value) in split_lines(all_tokens):
             pos += len(value)
-            if token is Token.Text and value == '\n':
+            if token is Token.Text and value == "\n":
                 line += 1
                 # Remove trailing newline
                 line_tokens = list()
@@ -1033,7 +1075,7 @@ class Repl(object):
             saved_tokens.append((token, value))
             if not search_for_paren:
                 continue
-            under_cursor = (pos == cursor)
+            under_cursor = pos == cursor
             if token is Token.Punctuation:
                 if value in parens:
                     if under_cursor:
@@ -1041,8 +1083,9 @@ class Repl(object):
                         # Push marker on the stack
                         stack.append((Parenthesis, value))
                     else:
-                        stack.append((line, len(line_tokens) - 1,
-                                      line_tokens, value))
+                        stack.append(
+                            (line, len(line_tokens) - 1, line_tokens, value)
+                        )
                 elif value in itervalues(parens):
                     saved_stack = list(stack)
                     try:
@@ -1098,9 +1141,10 @@ class Repl(object):
         exited with non-zero"""
 
         encoding = getpreferredencoding()
-        editor_args = shlex.split(prepare_for_exec(self.config.editor,
-                                                   encoding))
-        with tempfile.NamedTemporaryFile(suffix='.py') as temp:
+        editor_args = shlex.split(
+            prepare_for_exec(self.config.editor, encoding)
+        )
+        with tempfile.NamedTemporaryFile(suffix=".py") as temp:
             temp.write(text.encode(encoding))
             temp.flush()
 
@@ -1116,49 +1160,62 @@ class Repl(object):
 
     def open_in_external_editor(self, filename):
         encoding = getpreferredencoding()
-        editor_args = shlex.split(prepare_for_exec(self.config.editor,
-                                                   encoding))
+        editor_args = shlex.split(
+            prepare_for_exec(self.config.editor, encoding)
+        )
         args = editor_args + [prepare_for_exec(filename, encoding)]
         return subprocess.call(args) == 0
 
     def edit_config(self):
         if not os.path.isfile(self.config.config_path):
-            if self.interact.confirm(_("Config file does not exist - create "
-                                       "new from default? (y/N)")):
+            if self.interact.confirm(
+                _(
+                    "Config file does not exist - create "
+                    "new from default? (y/N)"
+                )
+            ):
                 try:
-                    default_config = pkgutil.get_data('bpython',
-                                                      'sample-config')
+                    default_config = pkgutil.get_data(
+                        "bpython", "sample-config"
+                    )
                     if py3:  # py3 files need unicode
-                        default_config = default_config.decode('ascii')
+                        default_config = default_config.decode("ascii")
                     containing_dir = os.path.dirname(
-                        os.path.abspath(self.config.config_path))
+                        os.path.abspath(self.config.config_path)
+                    )
                     if not os.path.exists(containing_dir):
                         os.makedirs(containing_dir)
-                    with open(self.config.config_path, 'w') as f:
+                    with open(self.config.config_path, "w") as f:
                         f.write(default_config)
                 except (IOError, OSError) as e:
-                    self.interact.notify(_("Error writing file '%s': %s") %
-                                         (self.config.config.path, e))
+                    self.interact.notify(
+                        _("Error writing file '%s': %s")
+                        % (self.config.config.path, e)
+                    )
                     return False
             else:
                 return False
 
         try:
             if self.open_in_external_editor(self.config.config_path):
-                self.interact.notify(_('bpython config file edited. Restart '
-                                       'bpython for changes to take effect.'))
+                self.interact.notify(
+                    _(
+                        "bpython config file edited. Restart "
+                        "bpython for changes to take effect."
+                    )
+                )
         except OSError as e:
-            self.interact.notify(_('Error editing config file: %s') % e)
+            self.interact.notify(_("Error editing config file: %s") % e)
 
 
 def next_indentation(line, tab_length):
     """Given a code line, return the indentation of the next line."""
     line = line.expandtabs(tab_length)
-    indentation = (len(line) - len(line.lstrip(' '))) // tab_length
-    if line.rstrip().endswith(':'):
+    indentation = (len(line) - len(line.lstrip(" "))) // tab_length
+    if line.rstrip().endswith(":"):
         indentation += 1
     elif indentation >= 1:
-        if line.lstrip().startswith(('return', 'pass', 'raise', 'yield')):
+        if line.lstrip().startswith(("return", "pass", "raise", "yield")):
             indentation -= 1
     return indentation
 
@@ -1168,7 +1225,7 @@ def next_token_inside_string(code_string, inside_string):
     whether the next token will be inside a string or not."""
     for token, value in PythonLexer().get_tokens(code_string):
         if token is Token.String:
-            value = value.lstrip('bBrRuU')
+            value = value.lstrip("bBrRuU")
             if value in ['"""', "'''", '"', "'"]:
                 if not inside_string:
                     inside_string = value
@@ -1182,7 +1239,7 @@ def split_lines(tokens):
         if not value:
             continue
         while value:
-            head, newline, value = value.partition('\n')
+            head, newline, value = value.partition("\n")
             yield (token, head)
             if newline:
                 yield (Token.Text, newline)

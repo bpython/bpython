@@ -34,26 +34,31 @@ repl = None  # global for `from bpython.curtsies import repl`
 class FullCurtsiesRepl(BaseRepl):
     def __init__(self, config, locals_, banner, interp=None):
         self.input_generator = curtsies.input.Input(
-            keynames='curtsies',
-            sigint_event=True,
-            paste_threshold=None)
+            keynames="curtsies", sigint_event=True, paste_threshold=None
+        )
         self.window = curtsies.window.CursorAwareWindow(
             sys.stdout,
             sys.stdin,
             keep_last_line=True,
             hide_cursor=False,
-            extra_bytes_callback=self.input_generator.unget_bytes)
+            extra_bytes_callback=self.input_generator.unget_bytes,
+        )
 
         self._request_refresh = self.input_generator.event_trigger(
-            bpythonevents.RefreshRequestEvent)
+            bpythonevents.RefreshRequestEvent
+        )
         self._schedule_refresh = self.input_generator.scheduled_event_trigger(
-            bpythonevents.ScheduledRefreshRequestEvent)
+            bpythonevents.ScheduledRefreshRequestEvent
+        )
         self._request_reload = self.input_generator.threadsafe_event_trigger(
-            bpythonevents.ReloadEvent)
-        self.interrupting_refresh = (self.input_generator
-                                     .threadsafe_event_trigger(lambda: None))
+            bpythonevents.ReloadEvent
+        )
+        self.interrupting_refresh = self.input_generator.threadsafe_event_trigger(
+            lambda: None
+        )
         self.request_undo = self.input_generator.event_trigger(
-            bpythonevents.UndoEvent)
+            bpythonevents.UndoEvent
+        )
 
         with self.input_generator:
             pass  # temp hack to get .original_stty
@@ -63,7 +68,8 @@ class FullCurtsiesRepl(BaseRepl):
             config=config,
             banner=banner,
             interp=interp,
-            orig_tcattrs=self.input_generator.original_stty)
+            orig_tcattrs=self.input_generator.original_stty,
+        )
 
     def get_term_hw(self):
         return self.window.get_term_hw()
@@ -91,8 +97,8 @@ class FullCurtsiesRepl(BaseRepl):
         except (SystemExitFromCodeRunner, SystemExit) as err:
             array, cursor_pos = self.paint(
                 about_to_exit=True,
-                user_quit=isinstance(err,
-                                     SystemExitFromCodeRunner))
+                user_quit=isinstance(err, SystemExitFromCodeRunner),
+            )
             scrolled = self.window.render_to_terminal(array, cursor_pos)
             self.scroll_offset += scrolled
             raise
@@ -133,25 +139,39 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
     """
     translations.init()
 
-    config, options, exec_args = bpargs.parse(args, (
-        'curtsies options', None, [
-            Option('--log', '-L', action='count',
-                   help=_("log debug messages to bpython.log")),
-            Option('--paste', '-p', action='store_true',
-                   help=_("start by pasting lines of a file into session")),
-        ]))
+    config, options, exec_args = bpargs.parse(
+        args,
+        (
+            "curtsies options",
+            None,
+            [
+                Option(
+                    "--log",
+                    "-L",
+                    action="count",
+                    help=_("log debug messages to bpython.log"),
+                ),
+                Option(
+                    "--paste",
+                    "-p",
+                    action="store_true",
+                    help=_("start by pasting lines of a file into session"),
+                ),
+            ],
+        ),
+    )
     if options.log is None:
         options.log = 0
     logging_levels = [logging.ERROR, logging.INFO, logging.DEBUG]
     level = logging_levels[min(len(logging_levels) - 1, options.log)]
-    logging.getLogger('curtsies').setLevel(level)
-    logging.getLogger('bpython').setLevel(level)
+    logging.getLogger("curtsies").setLevel(level)
+    logging.getLogger("bpython").setLevel(level)
     if options.log:
-        handler = logging.FileHandler(filename='bpython.log')
-        logging.getLogger('curtsies').addHandler(handler)
-        logging.getLogger('curtsies').propagate = False
-        logging.getLogger('bpython').addHandler(handler)
-        logging.getLogger('bpython').propagate = False
+        handler = logging.FileHandler(filename="bpython.log")
+        logging.getLogger("curtsies").addHandler(handler)
+        logging.getLogger("curtsies").propagate = False
+        logging.getLogger("bpython").addHandler(handler)
+        logging.getLogger("bpython").propagate = False
 
     interp = None
     paste = None
@@ -175,7 +195,7 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
                 return extract_exit_value(exit_value)
     else:
         # expected for interactive sessions (vanilla python does it)
-        sys.path.insert(0, '')
+        sys.path.insert(0, "")
 
     if not options.quiet:
         print(bpargs.version_banner())
@@ -196,7 +216,7 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
 
 def _combined_events(event_provider, paste_threshold):
     """Combines consecutive keypress events into paste events."""
-    timeout = yield 'nonsense_event'  # so send can be used immediately
+    timeout = yield "nonsense_event"  # so send can be used immediately
     queue = collections.deque()
     while True:
         e = event_provider.send(timeout)
@@ -228,5 +248,5 @@ def combined_events(event_provider, paste_threshold=3):
     return g
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

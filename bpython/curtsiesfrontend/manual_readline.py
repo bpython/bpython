@@ -24,9 +24,9 @@ else:
 class AbstractEdits(object):
 
     default_kwargs = {
-        'line': 'hello world',
-        'cursor_offset': 5,
-        'cut_buffer': 'there',
+        "line": "hello world",
+        "cursor_offset": 5,
+        "cut_buffer": "there",
     }
 
     def __contains__(self, key):
@@ -42,29 +42,36 @@ class AbstractEdits(object):
             if overwrite:
                 del self[key]
             else:
-                raise ValueError('key %r already has a mapping' % (key,))
+                raise ValueError("key %r already has a mapping" % (key,))
         params = getargspec(func)
-        args = dict((k, v) for k, v in iteritems(self.default_kwargs)
-                    if k in params)
+        args = dict(
+            (k, v) for k, v in iteritems(self.default_kwargs) if k in params
+        )
         r = func(**args)
         if len(r) == 2:
-            if hasattr(func, 'kills'):
-                raise ValueError('function %r returns two values, but has a '
-                                 'kills attribute' % (func,))
+            if hasattr(func, "kills"):
+                raise ValueError(
+                    "function %r returns two values, but has a "
+                    "kills attribute" % (func,)
+                )
             self.simple_edits[key] = func
         elif len(r) == 3:
-            if not hasattr(func, 'kills'):
-                raise ValueError('function %r returns three values, but has '
-                                 'no kills attribute' % (func,))
+            if not hasattr(func, "kills"):
+                raise ValueError(
+                    "function %r returns three values, but has "
+                    "no kills attribute" % (func,)
+                )
             self.cut_buffer_edits[key] = func
         else:
-            raise ValueError('return type of function %r not recognized' %
-                             (func,))
+            raise ValueError(
+                "return type of function %r not recognized" % (func,)
+            )
 
     def add_config_attr(self, config_attr, func):
         if config_attr in self.awaiting_config:
-            raise ValueError('config attribute %r already has a mapping' %
-                             (config_attr,))
+            raise ValueError(
+                "config attribute %r already has a mapping" % (config_attr,)
+            )
         self.awaiting_config[config_attr] = func
 
     def call(self, key, **kwargs):
@@ -119,27 +126,42 @@ class UnconfiguredEdits(AbstractEdits):
 
     def mapping_with_config(self, config, key_dispatch):
         """Creates a new mapping object by applying a config object"""
-        return ConfiguredEdits(self.simple_edits, self.cut_buffer_edits,
-                               self.awaiting_config, config, key_dispatch)
+        return ConfiguredEdits(
+            self.simple_edits,
+            self.cut_buffer_edits,
+            self.awaiting_config,
+            config,
+            key_dispatch,
+        )
 
     def on(self, key=None, config=None):
         if not ((key is None) ^ (config is None)):
             raise ValueError("Must use exactly one of key, config")
         if key is not None:
+
             def add_to_keybinds(func):
                 self.add(key, func)
                 return func
+
             return add_to_keybinds
         else:
+
             def add_to_config(func):
                 self.add_config_attr(config, func)
                 return func
+
             return add_to_config
 
 
 class ConfiguredEdits(AbstractEdits):
-    def __init__(self, simple_edits, cut_buffer_edits, awaiting_config, config,
-                 key_dispatch):
+    def __init__(
+        self,
+        simple_edits,
+        cut_buffer_edits,
+        awaiting_config,
+        config,
+        key_dispatch,
+    ):
         self.simple_edits = dict(simple_edits)
         self.cut_buffer_edits = dict(cut_buffer_edits)
         for attr, func in awaiting_config.items():
@@ -160,35 +182,35 @@ edit_keys = UnconfiguredEdits()
 
 
 def kills_behind(func):
-    func.kills = 'behind'
+    func.kills = "behind"
     return func
 
 
 def kills_ahead(func):
-    func.kills = 'ahead'
+    func.kills = "ahead"
     return func
 
 
-@edit_keys.on(config='left_key')
-@edit_keys.on('<LEFT>')
+@edit_keys.on(config="left_key")
+@edit_keys.on("<LEFT>")
 def left_arrow(cursor_offset, line):
     return max(0, cursor_offset - 1), line
 
 
-@edit_keys.on(config='right_key')
-@edit_keys.on('<RIGHT>')
+@edit_keys.on(config="right_key")
+@edit_keys.on("<RIGHT>")
 def right_arrow(cursor_offset, line):
     return min(len(line), cursor_offset + 1), line
 
 
-@edit_keys.on(config='beginning_of_line_key')
-@edit_keys.on('<HOME>')
+@edit_keys.on(config="beginning_of_line_key")
+@edit_keys.on("<HOME>")
 def beginning_of_line(cursor_offset, line):
     return 0, line
 
 
-@edit_keys.on(config='end_of_line_key')
-@edit_keys.on('<END>')
+@edit_keys.on(config="end_of_line_key")
+@edit_keys.on("<END>")
 def end_of_line(cursor_offset, line):
     return len(line), line
 
@@ -196,11 +218,11 @@ def end_of_line(cursor_offset, line):
 forward_word_re = LazyReCompile(r"\S\s")
 
 
-@edit_keys.on('<Esc+f>')
-@edit_keys.on('<Ctrl-RIGHT>')
-@edit_keys.on('<Esc+RIGHT>')
+@edit_keys.on("<Esc+f>")
+@edit_keys.on("<Ctrl-RIGHT>")
+@edit_keys.on("<Esc+RIGHT>")
 def forward_word(cursor_offset, line):
-    match = forward_word_re.search(line[cursor_offset:]+' ')
+    match = forward_word_re.search(line[cursor_offset:] + " ")
     delta = match.end() - 1 if match else 0
     return (cursor_offset + delta, line)
 
@@ -212,21 +234,20 @@ def last_word_pos(string):
     return index or 0
 
 
-@edit_keys.on('<Esc+b>')
-@edit_keys.on('<Ctrl-LEFT>')
-@edit_keys.on('<Esc+LEFT>')
+@edit_keys.on("<Esc+b>")
+@edit_keys.on("<Ctrl-LEFT>")
+@edit_keys.on("<Esc+LEFT>")
 def back_word(cursor_offset, line):
     return (last_word_pos(line[:cursor_offset]), line)
 
 
-@edit_keys.on('<DELETE>')
+@edit_keys.on("<DELETE>")
 def delete(cursor_offset, line):
-    return (cursor_offset,
-            line[:cursor_offset] + line[cursor_offset+1:])
+    return (cursor_offset, line[:cursor_offset] + line[cursor_offset + 1 :])
 
 
-@edit_keys.on('<BACKSPACE>')
-@edit_keys.on(config='backspace_key')
+@edit_keys.on("<BACKSPACE>")
+@edit_keys.on(config="backspace_key")
 def backspace(cursor_offset, line):
     if cursor_offset == 0:
         return cursor_offset, line
@@ -234,111 +255,127 @@ def backspace(cursor_offset, line):
         # front_white = len(line[:cursor_offset]) - \
         #     len(line[:cursor_offset].lstrip())
         to_delete = ((cursor_offset - 1) % INDENT) + 1
-        return (cursor_offset - to_delete,
-                line[:cursor_offset - to_delete] + line[cursor_offset:])
-    return (cursor_offset - 1,
-            line[:cursor_offset - 1] + line[cursor_offset:])
+        return (
+            cursor_offset - to_delete,
+            line[: cursor_offset - to_delete] + line[cursor_offset:],
+        )
+    return (cursor_offset - 1, line[: cursor_offset - 1] + line[cursor_offset:])
 
 
-@edit_keys.on(config='clear_line_key')
+@edit_keys.on(config="clear_line_key")
 def delete_from_cursor_back(cursor_offset, line):
     return 0, line[cursor_offset:]
 
 
-delete_rest_of_word_re = LazyReCompile(r'\w\b')
+delete_rest_of_word_re = LazyReCompile(r"\w\b")
 
 
-@edit_keys.on('<Esc+d>')  # option-d
+@edit_keys.on("<Esc+d>")  # option-d
 @kills_ahead
 def delete_rest_of_word(cursor_offset, line):
     m = delete_rest_of_word_re.search(line[cursor_offset:])
     if not m:
-        return cursor_offset, line, ''
-    return (cursor_offset,
-            line[:cursor_offset] + line[m.start()+cursor_offset+1:],
-            line[cursor_offset:m.start()+cursor_offset+1])
+        return cursor_offset, line, ""
+    return (
+        cursor_offset,
+        line[:cursor_offset] + line[m.start() + cursor_offset + 1 :],
+        line[cursor_offset : m.start() + cursor_offset + 1],
+    )
 
 
-delete_word_to_cursor_re = LazyReCompile(r'\s\S')
+delete_word_to_cursor_re = LazyReCompile(r"\s\S")
 
 
-@edit_keys.on(config='clear_word_key')
+@edit_keys.on(config="clear_word_key")
 @kills_behind
 def delete_word_to_cursor(cursor_offset, line):
     start = 0
     for match in delete_word_to_cursor_re.finditer(line[:cursor_offset]):
         start = match.start() + 1
-    return (start, line[:start] + line[cursor_offset:],
-            line[start:cursor_offset])
+    return (
+        start,
+        line[:start] + line[cursor_offset:],
+        line[start:cursor_offset],
+    )
 
 
-@edit_keys.on('<Esc+y>')
+@edit_keys.on("<Esc+y>")
 def yank_prev_prev_killed_text(cursor_offset, line, cut_buffer):
     # TODO not implemented - just prev
-    return (cursor_offset+len(cut_buffer),
-            line[:cursor_offset] + cut_buffer + line[cursor_offset:])
+    return (
+        cursor_offset + len(cut_buffer),
+        line[:cursor_offset] + cut_buffer + line[cursor_offset:],
+    )
 
 
-@edit_keys.on(config='yank_from_buffer_key')
+@edit_keys.on(config="yank_from_buffer_key")
 def yank_prev_killed_text(cursor_offset, line, cut_buffer):
-    return (cursor_offset+len(cut_buffer),
-            line[:cursor_offset] + cut_buffer + line[cursor_offset:])
+    return (
+        cursor_offset + len(cut_buffer),
+        line[:cursor_offset] + cut_buffer + line[cursor_offset:],
+    )
 
 
-@edit_keys.on(config='transpose_chars_key')
+@edit_keys.on(config="transpose_chars_key")
 def transpose_character_before_cursor(cursor_offset, line):
     if cursor_offset < 2:
         return cursor_offset, line
     if cursor_offset == len(line):
         return cursor_offset, line[:-2] + line[-1] + line[-2]
-    return (min(len(line), cursor_offset + 1),
-            line[:cursor_offset - 1] +
-            (line[cursor_offset] if len(line) > cursor_offset else '') +
-            line[cursor_offset - 1] +
-            line[cursor_offset + 1:])
+    return (
+        min(len(line), cursor_offset + 1),
+        line[: cursor_offset - 1]
+        + (line[cursor_offset] if len(line) > cursor_offset else "")
+        + line[cursor_offset - 1]
+        + line[cursor_offset + 1 :],
+    )
 
 
-@edit_keys.on('<Esc+t>')
+@edit_keys.on("<Esc+t>")
 def transpose_word_before_cursor(cursor_offset, line):
     return cursor_offset, line  # TODO Not implemented
+
 
 # TODO undo all changes to line: meta-r
 
 # bonus functions (not part of readline)
 
 
-@edit_keys.on('<Esc+u>')
+@edit_keys.on("<Esc+u>")
 def uppercase_next_word(cursor_offset, line):
     return cursor_offset, line  # TODO Not implemented
 
 
-@edit_keys.on(config='cut_to_buffer_key')
+@edit_keys.on(config="cut_to_buffer_key")
 @kills_ahead
 def delete_from_cursor_forward(cursor_offset, line):
     return cursor_offset, line[:cursor_offset], line[cursor_offset:]
 
 
-@edit_keys.on('<Esc+c>')
+@edit_keys.on("<Esc+c>")
 def titlecase_next_word(cursor_offset, line):
     return cursor_offset, line  # TODO Not implemented
 
 
-delete_word_from_cursor_back_re = LazyReCompile(r'^|\b\w')
+delete_word_from_cursor_back_re = LazyReCompile(r"^|\b\w")
 
 
-@edit_keys.on('<Esc+BACKSPACE>')
-@edit_keys.on('<Meta-BACKSPACE>')
+@edit_keys.on("<Esc+BACKSPACE>")
+@edit_keys.on("<Meta-BACKSPACE>")
 @kills_behind
 def delete_word_from_cursor_back(cursor_offset, line):
     """Whatever my option-delete does in bash on my mac"""
     if not line:
-        return cursor_offset, line, ''
+        return cursor_offset, line, ""
     start = None
     for match in delete_word_from_cursor_back_re.finditer(line):
         if match.start() < cursor_offset:
             start = match.start()
     if start is not None:
-        return (start, line[:start] + line[cursor_offset:],
-                line[start:cursor_offset])
+        return (
+            start,
+            line[:start] + line[cursor_offset:],
+            line[start:cursor_offset],
+        )
     else:
-        return cursor_offset, line, ''
+        return cursor_offset, line, ""

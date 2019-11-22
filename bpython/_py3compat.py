@@ -39,7 +39,7 @@ from __future__ import absolute_import
 import sys
 import threading
 
-py3 = (sys.version_info[0] == 3)
+py3 = sys.version_info[0] == 3
 
 
 if py3:
@@ -49,17 +49,25 @@ else:
 
 
 if py3 or sys.version_info[:3] >= (2, 7, 3):
+
     def prepare_for_exec(arg, encoding=None):
         return arg
+
+
 else:
+
     def prepare_for_exec(arg, encoding=None):
         return arg.encode(encoding)
 
 
 if py3:
+
     def try_decode(s, encoding):
         return s
+
+
 else:
+
     def try_decode(s, encoding):
         """Try to decode s which is str names. Return None if not decodable"""
         if not isinstance(s, unicode):
@@ -71,8 +79,12 @@ else:
 
 
 if py3:
+
     def is_main_thread():
         return threading.main_thread() == threading.current_thread()
+
+
 else:
+
     def is_main_thread():
         return isinstance(threading.current_thread(), threading._MainThread)

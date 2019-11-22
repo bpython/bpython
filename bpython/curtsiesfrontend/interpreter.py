@@ -14,23 +14,23 @@ from bpython.repl import Interpreter as ReplInterpreter
 
 
 default_colors = {
-    Generic.Error: 'R',
-    Keyword: 'd',
-    Name: 'c',
-    Name.Builtin: 'g',
-    Comment: 'b',
-    String: 'm',
-    Error: 'r',
-    Literal: 'd',
-    Number: 'M',
-    Number.Integer: 'd',
-    Operator: 'd',
-    Punctuation: 'd',
-    Token: 'd',
-    Whitespace: 'd',
-    Token.Punctuation.Parenthesis: 'R',
-    Name.Function: 'd',
-    Name.Class: 'd'
+    Generic.Error: "R",
+    Keyword: "d",
+    Name: "c",
+    Name.Builtin: "g",
+    Comment: "b",
+    String: "m",
+    Error: "r",
+    Literal: "d",
+    Number: "M",
+    Number.Integer: "d",
+    Operator: "d",
+    Punctuation: "d",
+    Token: "d",
+    Whitespace: "d",
+    Token.Punctuation.Parenthesis: "R",
+    Name.Function: "d",
+    Name.Class: "d",
 }
 
 
@@ -48,11 +48,11 @@ class BPythonFormatter(Formatter):
     def __init__(self, color_scheme, **options):
         self.f_strings = {}
         for k, v in iteritems(color_scheme):
-            self.f_strings[k] = '\x01%s' % (v,)
+            self.f_strings[k] = "\x01%s" % (v,)
         super(BPythonFormatter, self).__init__(**options)
 
     def format(self, tokensource, outfile):
-        o = ''
+        o = ""
 
         for token, text in tokensource:
             while token not in self.f_strings:
@@ -82,29 +82,30 @@ class Interp(ReplInterpreter):
         self.outfile = self
 
     def writetb(self, lines):
-        tbtext = ''.join(lines)
+        tbtext = "".join(lines)
         lexer = get_lexer_by_name("pytb")
         self.format(tbtext, lexer)
         # TODO for tracebacks get_lexer_by_name("pytb", stripall=True)
 
     def format(self, tbtext, lexer):
         traceback_informative_formatter = BPythonFormatter(default_colors)
-        traceback_code_formatter = BPythonFormatter({Token: ('d')})
+        traceback_code_formatter = BPythonFormatter({Token: ("d")})
         tokens = list(lexer.get_tokens(tbtext))
 
         no_format_mode = False
         cur_line = []
         for token, text in tokens:
-            if text.endswith('\n'):
+            if text.endswith("\n"):
                 cur_line.append((token, text))
                 if no_format_mode:
                     traceback_code_formatter.format(cur_line, self.outfile)
                     no_format_mode = False
                 else:
-                    traceback_informative_formatter.format(cur_line,
-                                                           self.outfile)
+                    traceback_informative_formatter.format(
+                        cur_line, self.outfile
+                    )
                 cur_line = []
-            elif text == '    ' and cur_line == []:
+            elif text == "    " and cur_line == []:
                 no_format_mode = True
                 cur_line.append((token, text))
             else:

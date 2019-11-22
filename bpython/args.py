@@ -27,8 +27,11 @@ class RaisingOptionParser(OptionParser):
 
 
 def version_banner():
-    return 'bpython version %s on top of Python %s %s' % (
-        __version__, sys.version.split()[0], sys.executable)
+    return "bpython version %s on top of Python %s %s" % (
+        __version__,
+        sys.version.split()[0],
+        sys.executable,
+    )
 
 
 def parse(args, extras=None, ignore_stdin=False):
@@ -60,24 +63,43 @@ def parse(args, extras=None, ignore_stdin=False):
         args = sys.argv[1:]
 
     parser = RaisingOptionParser(
-        usage=_('Usage: %prog [options] [file [args]]\n'
-                'NOTE: If bpython sees an argument it does '
-                'not know, execution falls back to the '
-                'regular Python interpreter.'))
+        usage=_(
+            "Usage: %prog [options] [file [args]]\n"
+            "NOTE: If bpython sees an argument it does "
+            "not know, execution falls back to the "
+            "regular Python interpreter."
+        )
+    )
     # This is not sufficient if bpython gains its own -m support
     # (instead of falling back to Python itself for that).
     # That's probably fixable though, for example by having that
     # option swallow all remaining arguments in a callback.
     parser.disable_interspersed_args()
-    parser.add_option('--config', default=default_config_path(),
-                      help=_('Use CONFIG instead of default config file.'))
-    parser.add_option('--interactive', '-i', action='store_true',
-                      help=_('Drop to bpython shell after running file '
-                             'instead of exiting.'))
-    parser.add_option('--quiet', '-q', action='store_true',
-                      help=_("Don't flush the output to stdout."))
-    parser.add_option('--version', '-V', action='store_true',
-                      help=_('Print version and exit.'))
+    parser.add_option(
+        "--config",
+        default=default_config_path(),
+        help=_("Use CONFIG instead of default config file."),
+    )
+    parser.add_option(
+        "--interactive",
+        "-i",
+        action="store_true",
+        help=_(
+            "Drop to bpython shell after running file " "instead of exiting."
+        ),
+    )
+    parser.add_option(
+        "--quiet",
+        "-q",
+        action="store_true",
+        help=_("Don't flush the output to stdout."),
+    )
+    parser.add_option(
+        "--version",
+        "-V",
+        action="store_true",
+        help=_("Print version and exit."),
+    )
 
     if extras is not None:
         extras_group = OptionGroup(parser, extras[0], extras[1])
@@ -93,8 +115,10 @@ def parse(args, extras=None, ignore_stdin=False):
 
     if options.version:
         print(version_banner())
-        print('(C) 2008-2016 Bob Farrell, Andreas Stuehrk, Sebastian Ramacher, Thomas Ballinger, et al. '
-              'See AUTHORS for detail.')
+        print(
+            "(C) 2008-2016 Bob Farrell, Andreas Stuehrk, Sebastian Ramacher, Thomas Ballinger, et al. "
+            "See AUTHORS for detail."
+        )
         raise SystemExit
 
     if not ignore_stdin and not (sys.stdin.isatty() and sys.stdout.isatty()):
@@ -113,13 +137,13 @@ def exec_code(interpreter, args):
     Helper to execute code in a given interpreter. args should be a [faked]
     sys.argv
     """
-    with open(args[0], 'r') as sourcefile:
+    with open(args[0], "r") as sourcefile:
         source = sourcefile.read()
     old_argv, sys.argv = sys.argv, args
     sys.path.insert(0, os.path.abspath(os.path.dirname(args[0])))
-    mod = imp.new_module('__console__')
-    sys.modules['__console__'] = mod
+    mod = imp.new_module("__console__")
+    sys.modules["__console__"] = mod
     interpreter.locals = mod.__dict__
-    interpreter.locals['__file__'] = args[0]
-    interpreter.runsource(source, args[0], 'exec')
+    interpreter.locals["__file__"] = args[0]
+    interpreter.runsource(source, args[0], "exec")
     sys.argv = old_argv

@@ -49,12 +49,8 @@ class PastePinnwand(object):
     def paste(self, s):
         """Upload to pastebin via json interface."""
 
-        url = urljoin(self.url, '/json/new')
-        payload = {
-            'code': s,
-            'lexer': 'pycon',
-            'expiry': self.expiry
-        }
+        url = urljoin(self.url, "/json/new")
+        payload = {"code": s, "lexer": "pycon", "expiry": self.expiry}
 
         try:
             response = requests.post(url, data=payload, verify=True)
@@ -65,13 +61,14 @@ class PastePinnwand(object):
         data = response.json()
 
         paste_url_template = Template(self.show_url)
-        paste_id = urlquote(data['paste_id'])
+        paste_id = urlquote(data["paste_id"])
         paste_url = paste_url_template.safe_substitute(paste_id=paste_id)
 
         removal_url_template = Template(self.removal_url)
-        removal_id = urlquote(data['removal_id'])
+        removal_id = urlquote(data["removal_id"])
         removal_url = removal_url_template.safe_substitute(
-            removal_id=removal_id)
+            removal_id=removal_id
+        )
 
         return (paste_url, removal_url)
 
@@ -84,31 +81,41 @@ class PasteHelper(object):
         """Call out to helper program for pastebin upload."""
 
         try:
-            helper = subprocess.Popen('',
-                                      executable=self.executable,
-                                      stdin=subprocess.PIPE,
-                                      stdout=subprocess.PIPE)
+            helper = subprocess.Popen(
+                "",
+                executable=self.executable,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+            )
             helper.stdin.write(s.encode(getpreferredencoding()))
             output = helper.communicate()[0].decode(getpreferredencoding())
             paste_url = output.split()[0]
         except OSError as e:
             if e.errno == errno.ENOENT:
-                raise PasteFailed(_('Helper program not found.'))
+                raise PasteFailed(_("Helper program not found."))
             else:
-                raise PasteFailed(_('Helper program could not be run.'))
+                raise PasteFailed(_("Helper program could not be run."))
 
         if helper.returncode != 0:
-            raise PasteFailed(_('Helper program returned non-zero exit '
-                                'status %d.' % (helper.returncode, )))
+            raise PasteFailed(
+                _(
+                    "Helper program returned non-zero exit "
+                    "status %d." % (helper.returncode,)
+                )
+            )
 
         if not paste_url:
-            raise PasteFailed(_('No output from helper program.'))
+            raise PasteFailed(_("No output from helper program."))
         else:
             parsed_url = urlparse(paste_url)
-            if (not parsed_url.scheme or
-                any(unicodedata.category(c) == 'Cc'
-                    for c in paste_url)):
-                raise PasteFailed(_('Failed to recognize the helper '
-                                    'program\'s output as an URL.'))
+            if not parsed_url.scheme or any(
+                unicodedata.category(c) == "Cc" for c in paste_url
+            ):
+                raise PasteFailed(
+                    _(
+                        "Failed to recognize the helper "
+                        "program's output as an URL."
+                    )
+                )
 
         return paste_url, None

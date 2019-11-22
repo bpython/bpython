@@ -40,12 +40,22 @@ from .lazyre import LazyReCompile
 if not py3:
     import types
 
-    _name = LazyReCompile(r'[a-zA-Z_]\w*$')
+    _name = LazyReCompile(r"[a-zA-Z_]\w*$")
 
-ArgSpec = namedtuple('ArgSpec', ['args', 'varargs', 'varkwargs', 'defaults',
-                                 'kwonly', 'kwonly_defaults', 'annotations'])
+ArgSpec = namedtuple(
+    "ArgSpec",
+    [
+        "args",
+        "varargs",
+        "varkwargs",
+        "defaults",
+        "kwonly",
+        "kwonly_defaults",
+        "annotations",
+    ],
+)
 
-FuncProps = namedtuple('FuncProps', ['func', 'argspec', 'is_bound_method'])
+FuncProps = namedtuple("FuncProps", ["func", "argspec", "is_bound_method"])
 
 
 class AttrCleaner(object):
@@ -71,16 +81,16 @@ class AttrCleaner(object):
         # The upshot being that introspecting on an object to display its
         # attributes will avoid unwanted side-effects.
         if is_new_style(self.obj):
-            __getattr__ = getattr(type_, '__getattr__', None)
+            __getattr__ = getattr(type_, "__getattr__", None)
             if __getattr__ is not None:
                 try:
-                    setattr(type_, '__getattr__', (lambda *_, **__: None))
+                    setattr(type_, "__getattr__", (lambda *_, **__: None))
                 except TypeError:
                     __getattr__ = None
-            __getattribute__ = getattr(type_, '__getattribute__', None)
+            __getattribute__ = getattr(type_, "__getattribute__", None)
             if __getattribute__ is not None:
                 try:
-                    setattr(type_, '__getattribute__', object.__getattribute__)
+                    setattr(type_, "__getattribute__", object.__getattribute__)
                 except TypeError:
                     # XXX: This happens for e.g. built-in types
                     __getattribute__ = None
@@ -93,16 +103,20 @@ class AttrCleaner(object):
         __getattribute__, __getattr__ = self.attribs
         # Dark magic:
         if __getattribute__ is not None:
-            setattr(type_, '__getattribute__', __getattribute__)
+            setattr(type_, "__getattribute__", __getattribute__)
         if __getattr__ is not None:
-            setattr(type_, '__getattr__', __getattr__)
+            setattr(type_, "__getattr__", __getattr__)
         # /Dark magic
 
 
 if py3:
+
     def is_new_style(obj):
         return True
+
+
 else:
+
     def is_new_style(obj):
         """Returns True if obj is a new-style class or object"""
         return type(obj) not in [types.InstanceType, types.ClassType]
@@ -135,15 +149,16 @@ def parsekeywordpairs(signature):
             continue
 
         if token is Token.Punctuation:
-            if value in [u'(', u'{', u'[']:
+            if value in [u"(", u"{", u"["]:
                 parendepth += 1
-            elif value in [u')', u'}', u']']:
+            elif value in [u")", u"}", u"]"]:
                 parendepth -= 1
-            elif value == ':' and parendepth == -1:
+            elif value == ":" and parendepth == -1:
                 # End of signature reached
                 break
-            if ((value == ',' and parendepth == 0) or
-                    (value == ')' and parendepth == -1)):
+            if (value == "," and parendepth == 0) or (
+                value == ")" and parendepth == -1
+            ):
                 stack.append(substack)
                 substack = []
                 continue
@@ -154,7 +169,7 @@ def parsekeywordpairs(signature):
     d = {}
     for item in stack:
         if len(item) >= 3:
-            d[item[0]] = ''.join(item[2:])
+            d[item[0]] = "".join(item[2:])
     return d
 
 
@@ -169,14 +184,14 @@ def fixlongargs(f, argspec):
     values = list(argspec[3])
     if not values:
         return
-    keys = argspec[0][-len(values):]
+    keys = argspec[0][-len(values) :]
     try:
         src = inspect.getsourcelines(f)
     except (IOError, IndexError):
         # IndexError is raised in inspect.findsource(), can happen in
         # some situations. See issue #94.
         return
-    signature = ''.join(src[0])
+    signature = "".join(src[0])
     kwparsed = parsekeywordpairs(signature)
 
     for i, (key, value) in enumerate(zip(keys, values)):
@@ -186,7 +201,7 @@ def fixlongargs(f, argspec):
     argspec[3] = values
 
 
-getpydocspec_re = LazyReCompile(r'([a-zA-Z_][a-zA-Z0-9_]*?)\((.*?)\)')
+getpydocspec_re = LazyReCompile(r"([a-zA-Z_][a-zA-Z0-9_]*?)\((.*?)\)")
 
 
 def getpydocspec(f, func):
@@ -199,7 +214,7 @@ def getpydocspec(f, func):
     if s is None:
         return None
 
-    if not hasattr(f, '__name__') or s.groups()[0] != f.__name__:
+    if not hasattr(f, "__name__") or s.groups()[0] != f.__name__:
         return None
 
     args = list()
@@ -207,14 +222,14 @@ def getpydocspec(f, func):
     varargs = varkwargs = None
     kwonly_args = list()
     kwonly_defaults = dict()
-    for arg in s.group(2).split(','):
+    for arg in s.group(2).split(","):
         arg = arg.strip()
-        if arg.startswith('**'):
+        if arg.startswith("**"):
             varkwargs = arg[2:]
-        elif arg.startswith('*'):
+        elif arg.startswith("*"):
             varargs = arg[1:]
         else:
-            arg, _, default = arg.partition('=')
+            arg, _, default = arg.partition("=")
             if varargs is not None:
                 kwonly_args.append(arg)
                 if default:
@@ -224,8 +239,9 @@ def getpydocspec(f, func):
                 if default:
                     defaults.append(default)
 
-    return ArgSpec(args, varargs, varkwargs, defaults, kwonly_args,
-                   kwonly_defaults, None)
+    return ArgSpec(
+        args, varargs, varkwargs, defaults, kwonly_args, kwonly_defaults, None
+    )
 
 
 def getfuncprops(func, f):
@@ -233,17 +249,17 @@ def getfuncprops(func, f):
     # (i.e. FooClass(...) and not FooClass.__init__(...) -- the former would
     # not take 'self', the latter would:
     try:
-        func_name = getattr(f, '__name__', None)
+        func_name = getattr(f, "__name__", None)
     except:
         # if calling foo.__name__ would result in an error
         func_name = None
 
     try:
-        is_bound_method = ((inspect.ismethod(f) and f.__self__ is not None) or
-                           (func_name == '__init__' and not
-                            func.endswith('.__init__')) or
-                           (func_name == '__new__' and not
-                            func.endswith('.__new__')))
+        is_bound_method = (
+            (inspect.ismethod(f) and f.__self__ is not None)
+            or (func_name == "__init__" and not func.endswith(".__init__"))
+            or (func_name == "__new__" and not func.endswith(".__new__"))
+        )
     except:
         # if f is a method from a xmlrpclib.Server instance, func_name ==
         # '__init__' throws xmlrpclib.Fault (see #202)
@@ -265,18 +281,22 @@ def getfuncprops(func, f):
         if argspec is None:
             return None
         if inspect.ismethoddescriptor(f):
-            argspec.args.insert(0, 'obj')
+            argspec.args.insert(0, "obj")
         fprops = FuncProps(func, argspec, is_bound_method)
     return fprops
 
 
 def is_eval_safe_name(string):
     if py3:
-        return all(part.isidentifier() and not keyword.iskeyword(part)
-                   for part in string.split('.'))
+        return all(
+            part.isidentifier() and not keyword.iskeyword(part)
+            for part in string.split(".")
+        )
     else:
-        return all(_name.match(part) and not keyword.iskeyword(part)
-                   for part in string.split('.'))
+        return all(
+            _name.match(part) and not keyword.iskeyword(part)
+            for part in string.split(".")
+        )
 
 
 def is_callable(obj):
@@ -329,10 +349,18 @@ def get_argspec_from_signature(f):
     if not annotations:
         annotations = None
 
-    return [args, varargs, varkwargs, defaults, kwonly, kwonly_defaults, annotations]
+    return [
+        args,
+        varargs,
+        varkwargs,
+        defaults,
+        kwonly,
+        kwonly_defaults,
+        annotations,
+    ]
 
 
-get_encoding_line_re = LazyReCompile(r'^.*coding[:=]\s*([-\w.]+).*$')
+get_encoding_line_re = LazyReCompile(r"^.*coding[:=]\s*([-\w.]+).*$")
 
 
 def get_encoding(obj):
@@ -341,7 +369,7 @@ def get_encoding(obj):
         m = get_encoding_line_re.search(line)
         if m:
             return m.group(1)
-    return 'ascii'
+    return "ascii"
 
 
 def get_encoding_comment(source):
@@ -355,20 +383,24 @@ def get_encoding_comment(source):
 
 def get_encoding_file(fname):
     """Try to obtain encoding information from a Python source file."""
-    with io.open(fname, 'rt', encoding='ascii', errors='ignore') as f:
+    with io.open(fname, "rt", encoding="ascii", errors="ignore") as f:
         for unused in range(2):
             line = f.readline()
             match = get_encoding_line_re.search(line)
             if match:
                 return match.group(1)
-    return 'ascii'
+    return "ascii"
 
 
 if py3:
+
     def get_source_unicode(obj):
         """Returns a decoded source of object"""
         return inspect.getsource(obj)
+
+
 else:
+
     def get_source_unicode(obj):
         """Returns a decoded source of object"""
         return inspect.getsource(obj).decode(get_encoding(obj))

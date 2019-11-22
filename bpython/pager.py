@@ -35,14 +35,14 @@ import shlex
 from bpython._py3compat import py3
 
 
-def get_pager_command(default='less -rf'):
-    command = shlex.split(os.environ.get('PAGER', default))
+def get_pager_command(default="less -rf"):
+    command = shlex.split(os.environ.get("PAGER", default))
     return command
 
 
 def page_internal(data):
     """A more than dumb pager function."""
-    if hasattr(pydoc, 'ttypager'):
+    if hasattr(pydoc, "ttypager"):
         pydoc.ttypager(data)
     else:
         sys.stdout.write(data)
@@ -57,7 +57,7 @@ def page(data, use_internal=False):
         try:
             popen = subprocess.Popen(command, stdin=subprocess.PIPE)
             if py3 or isinstance(data, unicode):
-                data = data.encode(sys.__stdout__.encoding, 'replace')
+                data = data.encode(sys.__stdout__.encoding, "replace")
             popen.stdin.write(data)
             popen.stdin.close()
         except OSError as e:
@@ -77,5 +77,6 @@ def page(data, use_internal=False):
             else:
                 break
         curses.doupdate()
+
 
 # vim: sw=4 ts=4 sts=4 ai et

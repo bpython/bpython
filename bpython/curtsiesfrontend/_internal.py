@@ -42,7 +42,6 @@ class NopPydocPager(object):
 
 
 class _Helper(bpython._internal._Helper):
-
     def __init__(self, repl=None):
         self._repl = repl
         pydoc.pager = self.pager
@@ -60,5 +59,6 @@ class _Helper(bpython._internal._Helper):
                 return super(_Helper, self).__call__(*args, **kwargs)
         else:
             return super(_Helper, self).__call__(*args, **kwargs)
+
 
 # vim: sw=4 ts=4 sts=4 ai et

@@ -27,7 +27,7 @@ import os.path
 try:
     from ._version import __version__ as version
 except ImportError:
-    version = 'unknown'
+    version = "unknown"
 
 __version__ = version
 package_dir = os.path.abspath(os.path.dirname(__file__))
@@ -35,7 +35,8 @@ package_dir = os.path.abspath(os.path.dirname(__file__))
 
 def embed(locals_=None, args=None, banner=None):
     if args is None:
-        args = ['-i', '-q']
+        args = ["-i", "-q"]
 
     from .curtsies import main
+
     return main(args, locals_, banner)

@@ -43,7 +43,7 @@ _string_type_nodes = (ast.Str, ast.Bytes) if py3 else (ast.Str,)
 _numeric_types = (int, float, complex) + (() if py3 else (long,))
 
 # added in Python 3.4
-if hasattr(ast, 'NameConstant'):
+if hasattr(ast, "NameConstant"):
     _name_type_nodes = (ast.Name, ast.NameConstant)
 else:
     _name_type_nodes = (ast.Name,)
@@ -92,7 +92,7 @@ def simple_eval(node_or_string, namespace=None):
     if namespace is None:
         namespace = {}
     if isinstance(node_or_string, string_types):
-        node_or_string = ast.parse(node_or_string, mode='eval')
+        node_or_string = ast.parse(node_or_string, mode="eval")
     if isinstance(node_or_string, ast.Expression):
         node_or_string = node_or_string.body
 
@@ -106,8 +106,10 @@ def simple_eval(node_or_string, namespace=None):
         elif isinstance(node, ast.List):
             return list(map(_convert, node.elts))
         elif isinstance(node, ast.Dict):
-            return dict((_convert(k), _convert(v)) for k, v
-                        in zip(node.keys, node.values))
+            return dict(
+                (_convert(k), _convert(v))
+                for k, v in zip(node.keys, node.values)
+            )
 
         # this is a deviation from literal_eval: we allow non-literals
         elif isinstance(node, _name_type_nodes):
@@ -120,23 +122,26 @@ def simple_eval(node_or_string, namespace=None):
                     raise EvaluationError("can't lookup %s" % node.id)
 
         # unary + and - are allowed on any type
-        elif (isinstance(node, ast.UnaryOp) and
-              isinstance(node.op, (ast.UAdd, ast.USub))):
+        elif isinstance(node, ast.UnaryOp) and isinstance(
+            node.op, (ast.UAdd, ast.USub)
+        ):
             # ast.literal_eval does ast typechecks here, we use type checks
             operand = _convert(node.operand)
             if not type(operand) in _numeric_types:
                 raise ValueError("unary + and - only allowed on builtin nums")
             if isinstance(node.op, ast.UAdd):
-                return + operand
+                return +operand
             else:
-                return - operand
-        elif (isinstance(node, ast.BinOp) and
-              isinstance(node.op, (ast.Add, ast.Sub))):
+                return -operand
+        elif isinstance(node, ast.BinOp) and isinstance(
+            node.op, (ast.Add, ast.Sub)
+        ):
             # ast.literal_eval does ast typechecks here, we use type checks
             left = _convert(node.left)
             right = _convert(node.right)
-            if not (type(left) in _numeric_types and
-                    type(right) in _numeric_types):
+            if not (
+                type(left) in _numeric_types and type(right) in _numeric_types
+            ):
                 raise ValueError("binary + and - only allowed on builtin nums")
             if isinstance(node.op, ast.Add):
                 return left + right
@@ -144,8 +149,9 @@ def simple_eval(node_or_string, namespace=None):
                 return left - right
 
         # this is a deviation from literal_eval: we allow indexing
-        elif (isinstance(node, ast.Subscript) and
-              isinstance(node.slice, ast.Index)):
+        elif isinstance(node, ast.Subscript) and isinstance(
+            node.slice, ast.Index
+        ):
             obj = _convert(node.value)
             index = _convert(node.slice.value)
             return safe_getitem(obj, index)
@@ -156,7 +162,8 @@ def simple_eval(node_or_string, namespace=None):
             attr = node.attr
             return safe_get_attribute(obj, attr)
 
-        raise ValueError('malformed string')
+        raise ValueError("malformed string")
+
     return _convert(node_or_string)
 
 
@@ -166,7 +173,7 @@ def safe_getitem(obj, index):
             return obj[index]
         except (KeyError, IndexError):
             raise EvaluationError("can't lookup key %r on %r" % (index, obj))
-    raise ValueError('unsafe to lookup on object of type %s' % (type(obj), ))
+    raise ValueError("unsafe to lookup on object of type %s" % (type(obj),))
 
 
 def find_attribute_with_name(node, name):
@@ -192,13 +199,14 @@ def evaluate_current_expression(cursor_offset, line, namespace=None):
         namespace = {}
 
     # in case attribute is blank, e.g. foo.| -> foo.xxx|
-    temp_line = line[:cursor_offset] + 'xxx' + line[cursor_offset:]
+    temp_line = line[:cursor_offset] + "xxx" + line[cursor_offset:]
     temp_cursor = cursor_offset + 3
     temp_attribute = line_properties.current_expression_attribute(
-        temp_cursor, temp_line)
+        temp_cursor, temp_line
+    )
     if temp_attribute is None:
         raise EvaluationError("No current attribute")
-    attr_before_cursor = temp_line[temp_attribute.start:temp_cursor]
+    attr_before_cursor = temp_line[temp_attribute.start : temp_cursor]
 
     def parse_trees(cursor_offset, line):
         for i in range(cursor_offset - 1, -1, -1):
@@ -216,7 +224,8 @@ def evaluate_current_expression(cursor_offset, line, namespace=None):
 
     if largest_ast is None:
         raise EvaluationError(
-            "Corresponding ASTs to right of cursor are invalid")
+            "Corresponding ASTs to right of cursor are invalid"
+        )
     try:
         return simple_eval(largest_ast, namespace)
     except ValueError:
@@ -236,7 +245,8 @@ def evaluate_current_attribute(cursor_offset, line, namespace=None):
         return getattr(obj, attr.word)
     except AttributeError:
         raise EvaluationError(
-            "can't lookup attribute %s on %r" % (attr.word, obj))
+            "can't lookup attribute %s on %r" % (attr.word, obj)
+        )
 
 
 def safe_get_attribute(obj, attr):
@@ -252,7 +262,7 @@ def safe_get_attribute(obj, attr):
 
 
 class _ClassWithSlots(object):
-    __slots__ = ['a']
+    __slots__ = ["a"]
 
 
 member_descriptor = type(_ClassWithSlots.a)
@@ -270,12 +280,12 @@ def safe_get_attribute_new_style(obj, attr):
     """
     if not is_new_style(obj):
         raise ValueError("%r is not a new-style class or object" % obj)
-    to_look_through = (obj.__mro__
-                       if inspect.isclass(obj)
-                       else (obj,) + type(obj).__mro__)
+    to_look_through = (
+        obj.__mro__ if inspect.isclass(obj) else (obj,) + type(obj).__mro__
+    )
 
     for cls in to_look_through:
-        if hasattr(cls, '__dict__') and attr in cls.__dict__:
+        if hasattr(cls, "__dict__") and attr in cls.__dict__:
             return cls.__dict__[attr]
 
     raise AttributeError()

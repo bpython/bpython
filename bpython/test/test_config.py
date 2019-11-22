@@ -18,7 +18,7 @@ class TestConfig(unittest.TestCase):
             struct = config.Struct()
 
         with tempfile.NamedTemporaryFile() as f:
-            f.write(content.encode('utf8'))
+            f.write(content.encode("utf8"))
             f.flush()
 
             config.loadini(struct, f.name)
@@ -34,59 +34,81 @@ class TestConfig(unittest.TestCase):
 
         defaults = {"name": "c"}
         expected.update(defaults)
-        config.load_theme(struct, TEST_THEME_PATH, struct.color_scheme,
-                          defaults)
+        config.load_theme(
+            struct, TEST_THEME_PATH, struct.color_scheme, defaults
+        )
         self.assertEqual(struct.color_scheme, expected)
 
     def test_keybindings_default_contains_no_duplicates(self):
         struct = self.load_temp_config("")
 
-        keys = (attr for attr in dir(struct) if attr.endswith('_key'))
-        mapped_keys = [getattr(struct, key) for key in keys if
-                       getattr(struct, key)]
+        keys = (attr for attr in dir(struct) if attr.endswith("_key"))
+        mapped_keys = [
+            getattr(struct, key) for key in keys if getattr(struct, key)
+        ]
 
         mapped_keys_set = set(mapped_keys)
         self.assertEqual(len(mapped_keys), len(mapped_keys_set))
 
     def test_keybindings_use_default(self):
-        struct = self.load_temp_config(textwrap.dedent("""
+        struct = self.load_temp_config(
+            textwrap.dedent(
+                """
             [keyboard]
             help = F1
-            """))
+            """
+            )
+        )
 
-        self.assertEqual(struct.help_key, 'F1')
+        self.assertEqual(struct.help_key, "F1")
 
     def test_keybindings_use_other_default(self):
-        struct = self.load_temp_config(textwrap.dedent("""
+        struct = self.load_temp_config(
+            textwrap.dedent(
+                """
             [keyboard]
             help = C-h
-            """))
+            """
+            )
+        )
 
-        self.assertEqual(struct.help_key, 'C-h')
-        self.assertEqual(struct.backspace_key, '')
+        self.assertEqual(struct.help_key, "C-h")
+        self.assertEqual(struct.backspace_key, "")
 
     def test_keybindings_use_other_default_issue_447(self):
-        struct = self.load_temp_config(textwrap.dedent("""
+        struct = self.load_temp_config(
+            textwrap.dedent(
+                """
             [keyboard]
             help = F2
             show_source = F9
-            """))
+            """
+            )
+        )
 
-        self.assertEqual(struct.help_key, 'F2')
-        self.assertEqual(struct.show_source_key, 'F9')
+        self.assertEqual(struct.help_key, "F2")
+        self.assertEqual(struct.show_source_key, "F9")
 
     def test_keybindings_unset(self):
-        struct = self.load_temp_config(textwrap.dedent("""
+        struct = self.load_temp_config(
+            textwrap.dedent(
+                """
             [keyboard]
             help =
-            """))
+            """
+            )
+        )
 
         self.assertFalse(struct.help_key)
 
     def test_keybindings_unused(self):
-        struct = self.load_temp_config(textwrap.dedent("""
+        struct = self.load_temp_config(
+            textwrap.dedent(
+                """
             [keyboard]
             help = F4
-            """))
+            """
+            )
+        )
 
-        self.assertEqual(struct.help_key, 'F4')
+        self.assertEqual(struct.help_key, "F4")

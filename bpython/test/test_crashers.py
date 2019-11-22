@@ -16,12 +16,15 @@ try:
     from twisted.internet.protocol import ProcessProtocol
     from twisted.trial.unittest import TestCase as TrialTestCase
 except ImportError:
+
     class TrialTestCase(object):
         pass
+
     reactor = None
 
 try:
     import urwid
+
     have_urwid = True
 except ImportError:
     have_urwid = False
@@ -29,14 +32,16 @@ except ImportError:
 try:
     from nose.plugins.attrib import attr
 except ImportError:
+
     def attr(*args, **kwargs):
         def identity(func):
             return func
+
         return identity
 
 
 def set_win_size(fd, rows, columns):
-    s = struct.pack('HHHH', rows, columns, 0, 0)
+    s = struct.pack("HHHH", rows, columns, 0, 0)
     fcntl.ioctl(fd, termios.TIOCSWINSZ, s)
 
 
@@ -73,7 +78,7 @@ class CrashersTest(object):
                 if self.state == self.SEND_INPUT:
                     index = self.data.find(">>> ")
                     if index >= 0:
-                        self.data = self.data[index + 4:]
+                        self.data = self.data[index + 4 :]
                         self.transport.write(input)
                         self.state = next(self.states)
                 else:
@@ -90,32 +95,41 @@ class CrashersTest(object):
         (master, slave) = pty.openpty()
         set_win_size(slave, 25, 80)
         reactor.spawnProcess(
-            Protocol(), sys.executable,
-            (sys.executable, "-m", "bpython." + self.backend, "--config",
-             TEST_CONFIG),
+            Protocol(),
+            sys.executable,
+            (
+                sys.executable,
+                "-m",
+                "bpython." + self.backend,
+                "--config",
+                TEST_CONFIG,
+            ),
             env=dict(TERM="vt100", LANG=os.environ.get("LANG", "")),
-            usePTY=(master, slave, os.ttyname(slave)))
+            usePTY=(master, slave, os.ttyname(slave)),
+        )
         return result
 
-    @attr(speed='slow')
+    @attr(speed="slow")
     def test_issue108(self):
         input = textwrap.dedent(
             """\
             def spam():
             u"y\\xe4y"
             \b
-            spam(""")
+            spam("""
+        )
         deferred = self.run_bpython(input)
         return deferred.addCallback(self.check_no_traceback)
 
-    @attr(speed='slow')
+    @attr(speed="slow")
     def test_issue133(self):
         input = textwrap.dedent(
             """\
             def spam(a, (b, c)):
             pass
             \b
-            spam(1""")
+            spam(1"""
+        )
         return self.run_bpython(input).addCallback(self.check_no_traceback)
 
     def check_no_traceback(self, data):

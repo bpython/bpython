@@ -43,6 +43,7 @@ class LazyReCompile(object):
             if self.compiled is None:
                 self.compiled = re.compile(self.regex, self.flags)
             return method(self, *args, **kwargs)
+
         return _impl
 
     @compile_regex

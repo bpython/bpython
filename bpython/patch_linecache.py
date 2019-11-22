@@ -15,7 +15,7 @@ class BPythonLinecache(dict):
 
     def is_bpython_filename(self, fname):
         try:
-            return fname.startswith('<bpython-input-')
+            return fname.startswith("<bpython-input-")
         except AttributeError:
             # In case the key isn't a string
             return False
@@ -24,7 +24,7 @@ class BPythonLinecache(dict):
         """Given a filename provided by remember_bpython_input,
         returns the associated source string."""
         try:
-            idx = int(key.split('-')[2][:-1])
+            idx = int(key.split("-")[2][:-1])
             return self.bpython_history[idx]
         except (IndexError, ValueError):
             raise KeyError
@@ -32,9 +32,10 @@ class BPythonLinecache(dict):
     def remember_bpython_input(self, source):
         """Remembers a string of source code, and returns
         a fake filename to use to retrieve it later."""
-        filename = '<bpython-input-%s>' % len(self.bpython_history)
-        self.bpython_history.append((len(source), None,
-                                     source.splitlines(True), filename))
+        filename = "<bpython-input-%s>" % len(self.bpython_history)
+        self.bpython_history.append(
+            (len(source), None, source.splitlines(True), filename)
+        )
         return filename
 
     def __getitem__(self, key):
@@ -80,4 +81,4 @@ def filename_for_console_input(code_string):
         # If someone else has patched linecache.cache, better for code to
         # simply be unavailable to inspect.getsource() than to raise
         # an exception.
-        return '<input>'
+        return "<input>"

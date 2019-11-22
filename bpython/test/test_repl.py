@@ -16,19 +16,18 @@ from bpython.test import MagicIterMock, mock, FixLanguageTestCase as TestCase
 from bpython.test import unittest, TEST_CONFIG
 
 
-pypy = 'PyPy' in sys.version
+pypy = "PyPy" in sys.version
 
 
 def setup_config(conf):
     config_struct = config.Struct()
     config.loadini(config_struct, TEST_CONFIG)
-    if conf is not None and 'autocomplete_mode' in conf:
-        config_struct.autocomplete_mode = conf['autocomplete_mode']
+    if conf is not None and "autocomplete_mode" in conf:
+        config_struct.autocomplete_mode = conf["autocomplete_mode"]
     return config_struct
 
 
 class FakeHistory(repl.History):
-
     def __init__(self):
         pass
 
@@ -45,19 +44,18 @@ class FakeRepl(repl.Repl):
 
 class FakeCliRepl(cli.CLIRepl, FakeRepl):
     def __init__(self):
-        self.s = ''
+        self.s = ""
         self.cpos = 0
         self.rl_history = FakeHistory()
 
 
 class TestMatchesIterator(unittest.TestCase):
-
     def setUp(self):
-        self.matches = ['bobby', 'bobbies', 'bobberina']
+        self.matches = ["bobby", "bobbies", "bobberina"]
         self.matches_iterator = repl.MatchesIterator()
-        self.matches_iterator.current_word = 'bob'
-        self.matches_iterator.orig_line = 'bob'
-        self.matches_iterator.orig_cursor_offset = len('bob')
+        self.matches_iterator.current_word = "bob"
+        self.matches_iterator.orig_line = "bob"
+        self.matches_iterator.orig_cursor_offset = len("bob")
         self.matches_iterator.matches = self.matches
 
     def test_next(self):
@@ -102,10 +100,10 @@ class TestMatchesIterator(unittest.TestCase):
         slice = islice(self.matches_iterator, 0, 3)
         self.assertEqual(list(slice), self.matches)
 
-        newmatches = ['string', 'str', 'set']
+        newmatches = ["string", "str", "set"]
         completer = mock.Mock()
-        completer.locate.return_value = (0, 1, 's')
-        self.matches_iterator.update(1, 's', newmatches, completer)
+        completer.locate.return_value = (0, 1, "s")
+        self.matches_iterator.update(1, "s", newmatches, completer)
 
         newslice = islice(newmatches, 0, 3)
         self.assertNotEqual(list(slice), self.matches)
@@ -116,15 +114,18 @@ class TestMatchesIterator(unittest.TestCase):
         completer.locate.return_value = (
             0,
             self.matches_iterator.orig_cursor_offset,
-            self.matches_iterator.orig_line)
+            self.matches_iterator.orig_line,
+        )
         self.matches_iterator.completer = completer
 
         with self.assertRaises(ValueError):
             self.matches_iterator.cur_line()
 
         self.assertEqual(next(self.matches_iterator), self.matches[0])
-        self.assertEqual(self.matches_iterator.cur_line(),
-                         (len(self.matches[0]), self.matches[0]))
+        self.assertEqual(
+            self.matches_iterator.cur_line(),
+            (len(self.matches[0]), self.matches[0]),
+        )
 
     def test_is_cseq(self):
         self.assertTrue(self.matches_iterator.is_cseq())
@@ -157,17 +158,21 @@ class TestArgspec(unittest.TestCase):
         self.repl.cursor_offset = len(line)
 
     def test_func_name(self):
-        for (line, expected_name) in [("spam(", "spam"),
-                                      ("spam(map([]", "map"),
-                                      ("spam((), ", "spam")]:
+        for (line, expected_name) in [
+            ("spam(", "spam"),
+            ("spam(map([]", "map"),
+            ("spam((), ", "spam"),
+        ]:
             self.set_input_line(line)
             self.assertTrue(self.repl.get_args())
             self.assertEqual(self.repl.current_func.__name__, expected_name)
 
     def test_func_name_method_issue_479(self):
-        for (line, expected_name) in [("o.spam(", "spam"),
-                                      ("o.spam(map([]", "map"),
-                                      ("o.spam((), ", "spam")]:
+        for (line, expected_name) in [
+            ("o.spam(", "spam"),
+            ("o.spam(map([]", "map"),
+            ("o.spam((), ", "spam"),
+        ]:
             self.set_input_line(line)
             self.assertTrue(self.repl.get_args())
             self.assertEqual(self.repl.current_func.__name__, expected_name)
@@ -224,7 +229,7 @@ class TestArgspec(unittest.TestCase):
         self.set_input_line("WonderfulSpam(")
         self.assertTrue(self.repl.get_args())
 
-    @unittest.skipIf(pypy, 'pypy pydoc doesn\'t have this')
+    @unittest.skipIf(pypy, "pypy pydoc doesn't have this")
     def test_issue583(self):
         self.repl = FakeRepl()
         self.repl.push("a = 1.2\n", False)
@@ -245,22 +250,22 @@ class TestArgspecInternal(unittest.TestCase):
         te = self.assertTupleEqual
         fa = lambda line: repl.Repl._funcname_and_argnum(line)
         for line, (func, argnum) in [
-            ('spam(', ('spam', 0)),
-            ('spam((), ', ('spam', 1)),
-            ('spam.eggs((), ', ('spam.eggs', 1)),
-            ('spam[abc].eggs((), ', ('spam[abc].eggs', 1)),
-            ('spam[0].eggs((), ', ('spam[0].eggs', 1)),
-            ('spam[a + b]eggs((), ', ('spam[a + b]eggs', 1)),
-            ('spam().eggs((), ', ('spam().eggs', 1)),
-            ('spam(1, 2).eggs((), ', ('spam(1, 2).eggs', 1)),
-            ('spam(1, f(1)).eggs((), ', ('spam(1, f(1)).eggs', 1)),
-            ('[0].eggs((), ', ('[0].eggs', 1)),
-            ('[0][0]((), {}).eggs((), ', ('[0][0]((), {}).eggs', 1)),
-            ('a + spam[0].eggs((), ', ('spam[0].eggs', 1)),
+            ("spam(", ("spam", 0)),
+            ("spam((), ", ("spam", 1)),
+            ("spam.eggs((), ", ("spam.eggs", 1)),
+            ("spam[abc].eggs((), ", ("spam[abc].eggs", 1)),
+            ("spam[0].eggs((), ", ("spam[0].eggs", 1)),
+            ("spam[a + b]eggs((), ", ("spam[a + b]eggs", 1)),
+            ("spam().eggs((), ", ("spam().eggs", 1)),
+            ("spam(1, 2).eggs((), ", ("spam(1, 2).eggs", 1)),
+            ("spam(1, f(1)).eggs((), ", ("spam(1, f(1)).eggs", 1)),
+            ("[0].eggs((), ", ("[0].eggs", 1)),
+            ("[0][0]((), {}).eggs((), ", ("[0][0]((), {}).eggs", 1)),
+            ("a + spam[0].eggs((), ", ("spam[0].eggs", 1)),
             ("spam(", ("spam", 0)),
             ("spam(map([]", ("map", 0)),
-            ("spam((), ", ("spam", 1))
-                ]:
+            ("spam((), ", ("spam", 1)),
+        ]:
             te(fa(line), (func, argnum))
 
 
@@ -285,29 +290,35 @@ class TestGetSource(unittest.TestCase):
             self.fail("Should have raised SourceNotFound")
 
     def test_current_function(self):
-        self.set_input_line('INPUTLINE')
+        self.set_input_line("INPUTLINE")
         self.repl.current_func = inspect.getsource
-        self.assertIn("text of the source code",
-                      self.repl.get_source_of_current_name())
+        self.assertIn(
+            "text of the source code", self.repl.get_source_of_current_name()
+        )
 
         self.assert_get_source_error_for_current_function(
-            [], "No source code found for INPUTLINE")
+            [], "No source code found for INPUTLINE"
+        )
 
         self.assert_get_source_error_for_current_function(
-            list.pop, "No source code found for INPUTLINE")
+            list.pop, "No source code found for INPUTLINE"
+        )
 
-    @unittest.skipIf(pypy, 'different errors for PyPy')
+    @unittest.skipIf(pypy, "different errors for PyPy")
     def test_current_function_cpython(self):
-        self.set_input_line('INPUTLINE')
+        self.set_input_line("INPUTLINE")
         self.assert_get_source_error_for_current_function(
-            collections.defaultdict.copy, "No source code found for INPUTLINE")
+            collections.defaultdict.copy, "No source code found for INPUTLINE"
+        )
         self.assert_get_source_error_for_current_function(
-            collections.defaultdict, "could not find class definition")
+            collections.defaultdict, "could not find class definition"
+        )
 
     def test_current_line(self):
-        self.repl.interp.locals['a'] = socket.socket
-        self.set_input_line('a')
-        self.assertIn('dup(self)', self.repl.get_source_of_current_name())
+        self.repl.interp.locals["a"] = socket.socket
+        self.set_input_line("a")
+        self.assertIn("dup(self)", self.repl.get_source_of_current_name())
+
 
 # TODO add tests for various failures without using current function
 
@@ -317,12 +328,12 @@ class TestEditConfig(TestCase):
         self.repl = FakeRepl()
         self.repl.interact.confirm = lambda msg: True
         self.repl.interact.notify = lambda msg: None
-        self.repl.config.editor = 'true'
+        self.repl.config.editor = "true"
 
     def test_create_config(self):
         tmp_dir = tempfile.mkdtemp()
         try:
-            config_path = os.path.join(tmp_dir, 'newdir', 'config')
+            config_path = os.path.join(tmp_dir, "newdir", "config")
             self.repl.config.config_path = config_path
             self.repl.edit_config()
             self.assertTrue(os.path.exists(config_path))
@@ -332,7 +343,6 @@ class TestEditConfig(TestCase):
 
 
 class TestRepl(unittest.TestCase):
-
     def set_input_line(self, line):
         """Set current input line of the test REPL."""
         self.repl.current_line = line
@@ -348,48 +358,52 @@ class TestRepl(unittest.TestCase):
         self.assertEqual(self.repl.current_string(), '"2"')
 
         self.set_input_line('a = "2" + 2')
-        self.assertEqual(self.repl.current_string(), '')
+        self.assertEqual(self.repl.current_string(), "")
 
     def test_push(self):
         self.repl = FakeRepl()
         self.repl.push("foobar = 2")
-        self.assertEqual(self.repl.interp.locals['foobar'], 2)
+        self.assertEqual(self.repl.interp.locals["foobar"], 2)
 
     # COMPLETE TESTS
     # 1. Global tests
     def test_simple_global_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
+        self.repl = FakeRepl({"autocomplete_mode": autocomplete.SIMPLE})
         self.set_input_line("d")
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
-        self.assertEqual(self.repl.matches_iter.matches,
-                         ['def', 'del', 'delattr(', 'dict(', 'dir(',
-                          'divmod('])
+        self.assertTrue(hasattr(self.repl.matches_iter, "matches"))
+        self.assertEqual(
+            self.repl.matches_iter.matches,
+            ["def", "del", "delattr(", "dict(", "dir(", "divmod("],
+        )
 
     def test_substring_global_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
+        self.repl = FakeRepl({"autocomplete_mode": autocomplete.SUBSTRING})
         self.set_input_line("time")
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
-        self.assertEqual(self.repl.matches_iter.matches,
-                         ['RuntimeError(', 'RuntimeWarning('])
+        self.assertTrue(hasattr(self.repl.matches_iter, "matches"))
+        self.assertEqual(
+            self.repl.matches_iter.matches, ["RuntimeError(", "RuntimeWarning("]
+        )
 
     def test_fuzzy_global_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
+        self.repl = FakeRepl({"autocomplete_mode": autocomplete.FUZZY})
         self.set_input_line("doc")
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
-        self.assertEqual(self.repl.matches_iter.matches,
-                         ['UnboundLocalError(', '__doc__'] if not py3 else
-                         ['ChildProcessError(', 'UnboundLocalError(',
-                          '__doc__'])
+        self.assertTrue(hasattr(self.repl.matches_iter, "matches"))
+        self.assertEqual(
+            self.repl.matches_iter.matches,
+            ["UnboundLocalError(", "__doc__"]
+            if not py3
+            else ["ChildProcessError(", "UnboundLocalError(", "__doc__"],
+        )
 
     # 2. Attribute tests
     def test_simple_attribute_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
+        self.repl = FakeRepl({"autocomplete_mode": autocomplete.SIMPLE})
         self.set_input_line("Foo.b")
 
         code = "class Foo():\n\tdef bar(self):\n\t\tpass\n"
@@ -397,11 +411,11 @@ class TestRepl(unittest.TestCase):
             self.repl.push(line)
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
-        self.assertEqual(self.repl.matches_iter.matches, ['Foo.bar'])
+        self.assertTrue(hasattr(self.repl.matches_iter, "matches"))
+        self.assertEqual(self.repl.matches_iter.matches, ["Foo.bar"])
 
     def test_substring_attribute_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode': autocomplete.SUBSTRING})
+        self.repl = FakeRepl({"autocomplete_mode": autocomplete.SUBSTRING})
         self.set_input_line("Foo.az")
 
         code = "class Foo():\n\tdef baz(self):\n\t\tpass\n"
@@ -409,11 +423,11 @@ class TestRepl(unittest.TestCase):
             self.repl.push(line)
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
-        self.assertEqual(self.repl.matches_iter.matches, ['Foo.baz'])
+        self.assertTrue(hasattr(self.repl.matches_iter, "matches"))
+        self.assertEqual(self.repl.matches_iter.matches, ["Foo.baz"])
 
     def test_fuzzy_attribute_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode': autocomplete.FUZZY})
+        self.repl = FakeRepl({"autocomplete_mode": autocomplete.FUZZY})
         self.set_input_line("Foo.br")
 
         code = "class Foo():\n\tdef bar(self):\n\t\tpass\n"
@@ -421,29 +435,29 @@ class TestRepl(unittest.TestCase):
             self.repl.push(line)
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
-        self.assertEqual(self.repl.matches_iter.matches, ['Foo.bar'])
+        self.assertTrue(hasattr(self.repl.matches_iter, "matches"))
+        self.assertEqual(self.repl.matches_iter.matches, ["Foo.bar"])
 
     # 3. Edge cases
     def test_updating_namespace_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
+        self.repl = FakeRepl({"autocomplete_mode": autocomplete.SIMPLE})
         self.set_input_line("foo")
         self.repl.push("foobar = 2")
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
-        self.assertEqual(self.repl.matches_iter.matches, ['foobar'])
+        self.assertTrue(hasattr(self.repl.matches_iter, "matches"))
+        self.assertEqual(self.repl.matches_iter.matches, ["foobar"])
 
     def test_file_should_not_appear_in_complete(self):
-        self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
+        self.repl = FakeRepl({"autocomplete_mode": autocomplete.SIMPLE})
         self.set_input_line("_")
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
-        self.assertNotIn('__file__', self.repl.matches_iter.matches)
+        self.assertTrue(hasattr(self.repl.matches_iter, "matches"))
+        self.assertNotIn("__file__", self.repl.matches_iter.matches)
 
     # 4. Parameter names
     def test_paremeter_name_completion(self):
-        self.repl = FakeRepl({'autocomplete_mode': autocomplete.SIMPLE})
+        self.repl = FakeRepl({"autocomplete_mode": autocomplete.SIMPLE})
         self.set_input_line("foo(ab")
 
         code = "def foo(abc=1, abd=2, xyz=3):\n\tpass\n"
@@ -451,13 +465,13 @@ class TestRepl(unittest.TestCase):
             self.repl.push(line)
 
         self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.matches_iter, 'matches'))
-        self.assertEqual(self.repl.matches_iter.matches,
-                         ['abc=', 'abd=', 'abs('])
+        self.assertTrue(hasattr(self.repl.matches_iter, "matches"))
+        self.assertEqual(
+            self.repl.matches_iter.matches, ["abc=", "abd=", "abs("]
+        )
 
 
 class TestCliRepl(unittest.TestCase):
-
     def setUp(self):
         self.repl = FakeCliRepl()
 
@@ -478,12 +492,11 @@ class TestCliRepl(unittest.TestCase):
         self.assertEqual(self.repl.s, "foobar")
 
         self.repl.cpos = 3
-        self.repl.addstr('buzz')
+        self.repl.addstr("buzz")
         self.assertEqual(self.repl.s, "foobuzzbar")
 
 
 class TestCliReplTab(unittest.TestCase):
-
     def setUp(self):
         self.repl = FakeCliRepl()
 
@@ -594,5 +607,5 @@ class TestCliReplTab(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

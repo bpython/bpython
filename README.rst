@@ -3,6 +3,9 @@
 .. |ImageLink| image:: https://travis-ci.org/bpython/bpython.svg?branch=master
 .. _ImageLink: https://travis-ci.org/bpython/bpython
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/ambv/black
+
 ***********************************************************************
 bpython: A fancy curses interface to the Python interactive interpreter
 ***********************************************************************

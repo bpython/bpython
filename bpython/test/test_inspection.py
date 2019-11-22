@@ -60,7 +60,7 @@ class TestInspection(unittest.TestCase):
         self.assertFalse(inspection.is_callable(None))
         self.assertTrue(inspection.is_callable(CallableMethod().method))
 
-    @unittest.skipIf(py3, 'old-style classes only exist in Python 2')
+    @unittest.skipIf(py3, "old-style classes only exist in Python 2")
     def test_is_new_style_py2(self):
         self.assertTrue(inspection.is_new_style(spam))
         self.assertTrue(inspection.is_new_style(Noncallable))
@@ -69,7 +69,7 @@ class TestInspection(unittest.TestCase):
         self.assertFalse(inspection.is_new_style(OldNoncallable()))
         self.assertTrue(inspection.is_new_style(None))
 
-    @unittest.skipUnless(py3, 'only in Python 3 are all classes new-style')
+    @unittest.skipUnless(py3, "only in Python 3 are all classes new-style")
     def test_is_new_style_py3(self):
         self.assertTrue(inspection.is_new_style(spam))
         self.assertTrue(inspection.is_new_style(Noncallable))
@@ -78,17 +78,19 @@ class TestInspection(unittest.TestCase):
         self.assertTrue(inspection.is_new_style(OldNoncallable()))
         self.assertTrue(inspection.is_new_style(None))
 
-
     def test_parsekeywordpairs(self):
         # See issue #109
-        def fails(spam=['-a', '-b']):
+        def fails(spam=["-a", "-b"]):
             pass
 
         default_arg_repr = "['-a', '-b']"
-        self.assertEqual(str(['-a', '-b']), default_arg_repr,
-                         'This test is broken (repr does not match), fix me.')
+        self.assertEqual(
+            str(["-a", "-b"]),
+            default_arg_repr,
+            "This test is broken (repr does not match), fix me.",
+        )
 
-        argspec = inspection.getfuncprops('fails', fails)
+        argspec = inspection.getfuncprops("fails", fails)
         defaults = argspec.argspec.defaults
         self.assertEqual(str(defaults[0]), default_arg_repr)
 
@@ -108,44 +110,50 @@ class TestInspection(unittest.TestCase):
         self.assertEqual(repr(defaults[1]), "'yay'")
 
     def test_get_encoding_ascii(self):
-        self.assertEqual(inspection.get_encoding(encoding_ascii), 'ascii')
-        self.assertEqual(inspection.get_encoding(encoding_ascii.foo), 'ascii')
+        self.assertEqual(inspection.get_encoding(encoding_ascii), "ascii")
+        self.assertEqual(inspection.get_encoding(encoding_ascii.foo), "ascii")
 
     def test_get_encoding_latin1(self):
-        self.assertEqual(inspection.get_encoding(encoding_latin1), 'latin1')
-        self.assertEqual(inspection.get_encoding(encoding_latin1.foo),
-                         'latin1')
+        self.assertEqual(inspection.get_encoding(encoding_latin1), "latin1")
+        self.assertEqual(inspection.get_encoding(encoding_latin1.foo), "latin1")
 
     def test_get_encoding_utf8(self):
-        self.assertEqual(inspection.get_encoding(encoding_utf8), 'utf-8')
-        self.assertEqual(inspection.get_encoding(encoding_utf8.foo), 'utf-8')
+        self.assertEqual(inspection.get_encoding(encoding_utf8), "utf-8")
+        self.assertEqual(inspection.get_encoding(encoding_utf8.foo), "utf-8")
 
     def test_get_source_ascii(self):
-        self.assertEqual(inspection.get_source_unicode(encoding_ascii.foo),
-                         foo_ascii_only)
+        self.assertEqual(
+            inspection.get_source_unicode(encoding_ascii.foo), foo_ascii_only
+        )
 
     def test_get_source_utf8(self):
-        self.assertEqual(inspection.get_source_unicode(encoding_utf8.foo),
-                         foo_non_ascii)
+        self.assertEqual(
+            inspection.get_source_unicode(encoding_utf8.foo), foo_non_ascii
+        )
 
     def test_get_source_latin1(self):
-        self.assertEqual(inspection.get_source_unicode(encoding_latin1.foo),
-                         foo_non_ascii)
+        self.assertEqual(
+            inspection.get_source_unicode(encoding_latin1.foo), foo_non_ascii
+        )
 
     def test_get_source_file(self):
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            'fodder')
+        path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "fodder"
+        )
 
         encoding = inspection.get_encoding_file(
-            os.path.join(path, 'encoding_ascii.py'))
-        self.assertEqual(encoding, 'ascii')
+            os.path.join(path, "encoding_ascii.py")
+        )
+        self.assertEqual(encoding, "ascii")
         encoding = inspection.get_encoding_file(
-            os.path.join(path, 'encoding_latin1.py'))
-        self.assertEqual(encoding, 'latin1')
+            os.path.join(path, "encoding_latin1.py")
+        )
+        self.assertEqual(encoding, "latin1")
         encoding = inspection.get_encoding_file(
-            os.path.join(path, 'encoding_utf8.py'))
-        self.assertEqual(encoding, 'utf-8')
+            os.path.join(path, "encoding_utf8.py")
+        )
+        self.assertEqual(encoding, "utf-8")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

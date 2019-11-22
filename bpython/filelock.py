@@ -27,6 +27,7 @@ from __future__ import absolute_import
 try:
     import fcntl
     import errno
+
     has_fcntl = True
 except ImportError:
     has_fcntl = False
@@ -34,6 +35,7 @@ except ImportError:
 try:
     import msvcrt
     import os
+
     has_msvcrt = True
 except ImportError:
     has_msvcrt = False
@@ -100,7 +102,9 @@ class WindowsFileLock(BaseLock):
 
     def acquire(self):
         # create a lock file and lock it
-        self.fileobj = os.open(self.filename, os.O_RDWR | os.O_CREAT | os.O_TRUNC)
+        self.fileobj = os.open(
+            self.filename, os.O_RDWR | os.O_CREAT | os.O_TRUNC
+        )
         msvcrt.locking(self.fileobj, msvcrt.LK_NBLCK, 1)
 
         self.locked = True
