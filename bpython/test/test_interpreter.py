@@ -40,7 +40,19 @@ class TestInterpreter(unittest.TestCase):
 
         i.runsource("1.1.1.1")
 
-        if pypy:
+        if sys.version_info[:2] >= (3, 8):
+            expected = (
+                "  File "
+                + green('"<input>"')
+                + ", line "
+                + bold(magenta("1"))
+                + "\n    1.1.1.1\n       ^\n"
+                + bold(red("SyntaxError"))
+                + ": "
+                + cyan("invalid syntax")
+                + "\n"
+            )
+        elif pypy:
             expected = (
                 "  File "
                 + green('"<input>"')
