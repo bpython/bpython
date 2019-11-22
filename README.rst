@@ -7,6 +7,9 @@
 .. image:: https://img.shields.io/pypi/v/bpython
     :target: https://pypi.org/project/bpython
 
+.. image:: https://readthedocs.org/projects/pinnwand/badge/?version=latest
+    :target: https://pinnwand.readthedocs.io/en/latest/
+
 
 ***********************************************************************
 bpython: A fancy curses interface to the Python interactive interpreter
