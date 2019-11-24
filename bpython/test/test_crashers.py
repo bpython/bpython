@@ -9,6 +9,7 @@ import termios
 import textwrap
 
 from bpython.test import unittest, TEST_CONFIG
+from bpython.config import getpreferredencoding
 
 try:
     from twisted.internet import reactor
@@ -57,6 +58,7 @@ class CrashersTest(object):
         Returns bpython's output.
         """
         result = Deferred()
+        encoding = getpreferredencoding()
 
         class Protocol(ProcessProtocol):
             STATES = (SEND_INPUT, COLLECT) = range(2)
@@ -68,7 +70,7 @@ class CrashersTest(object):
                 self.state = next(self.states)
 
             def outReceived(self, data):
-                self.data += data
+                self.data += data.decode(encoding)
                 if self.delayed_call is not None:
                     self.delayed_call.cancel()
                 self.delayed_call = reactor.callLater(0.5, self.next)
@@ -79,7 +81,7 @@ class CrashersTest(object):
                     index = self.data.find(">>> ")
                     if index >= 0:
                         self.data = self.data[index + 4 :]
-                        self.transport.write(input)
+                        self.transport.write(input.encode(encoding))
                         self.state = next(self.states)
                 else:
                     self.transport.closeStdin()
