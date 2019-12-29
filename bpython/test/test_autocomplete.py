@@ -179,7 +179,7 @@ class TestFilenameCompletion(unittest.TestCase):
 
 
 class MockNumPy(object):
-    """This is a mock numpy object that raises an error when there is an atempt
+    """This is a mock numpy object that raises an error when there is an attempt
     to convert it to a boolean."""
 
     def __nonzero__(self):
