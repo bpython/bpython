@@ -32,6 +32,7 @@ Available Switches
 * number
 * operator
 * punctuation
+* annotation
 * token
 * background
 * output
@@ -64,6 +65,7 @@ The default theme included in bpython is as follows:
   number = G
   operator = Y
   punctuation = y
+  annotation = b
   token = C
   paren = R
 

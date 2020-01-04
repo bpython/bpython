@@ -16,6 +16,7 @@ number = G
 operator = Y
 paren = y
 punctuation = y
+annotation = b
 token = C
 paren = R
 

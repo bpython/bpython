@@ -18,6 +18,7 @@ error = B
 number = C
 operator = G
 punctuation = C
+annotation = c
 token = M
 
 [interface]

@@ -254,6 +254,7 @@ def loadini(struct, configfile):
         "number": "G",
         "operator": "Y",
         "punctuation": "y",
+        "annotation": "b",
         "token": "C",
         "background": "d",
         "output": "w",

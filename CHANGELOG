@@ -5,6 +5,8 @@ Changelog
 ----
 
 New features:
+* Separate colors for type annotations and type annotations shown in argspec
+  for functions without kwargs.
 
 Fixes:
 * #765: Display correct signature for decorted functions.

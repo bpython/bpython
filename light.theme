@@ -16,6 +16,7 @@ number = B
 operator = c
 paren = b
 punctuation = b
+annotation = b
 token = g
 
 [interface]

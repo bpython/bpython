@@ -97,6 +97,7 @@ def formatted_argspec(funcprops, arg_pos, columns, config):
     func = funcprops.func
     args = funcprops.argspec.args
     kwargs = funcprops.argspec.defaults
+    annotations = funcprops.argspec.annotations
     _args = funcprops.argspec.varargs
     _kwargs = funcprops.argspec.varkwargs
     is_bound_method = funcprops.is_bound_method
@@ -107,6 +108,7 @@ def formatted_argspec(funcprops, arg_pos, columns, config):
     arg_color = func_for_letter(config.color_scheme["name"])
     func_color = func_for_letter(config.color_scheme["name"].swapcase())
     punctuation_color = func_for_letter(config.color_scheme["punctuation"])
+    annotation_color = func_for_letter(config.color_scheme["annotation"])
     token_color = func_for_letter(config.color_scheme["token"])
     bolds = {
         token_color: lambda x: bold(token_color(x)),
@@ -131,6 +133,11 @@ def formatted_argspec(funcprops, arg_pos, columns, config):
             s += color(inspect.strseq(arg, unicode))
         else:
             s += color(arg)
+
+        if arg in annotations:
+            s += punctuation_color(":")
+            s += " "
+            s += annotation_color(annotations[arg].__name__)
 
         if kw is not None:
             s += punctuation_color("=")
