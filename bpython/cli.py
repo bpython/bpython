@@ -1032,7 +1032,7 @@ class CLIRepl(repl.Repl):
         elif key == "\x03":
             raise KeyboardInterrupt()
 
-        elif key[0:3] == "PAD" and not key in ("PAD0", "PADSTOP"):
+        elif key[0:3] == "PAD" and key not in ("PAD0", "PADSTOP"):
             pad_keys = {
                 "PADMINUS": "-",
                 "PADPLUS": "+",

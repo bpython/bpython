@@ -243,7 +243,7 @@ class Statusbar(object):
         self.edit.set_caption(("main", s or "?"))
         self.edit.set_edit_text("")
         # hide the text and display the edit widget
-        if not self.edit in self.widget.widget_list:
+        if self.edit not in self.widget.widget_list:
             self.widget.widget_list.append(self.edit)
         if self.text in self.widget.widget_list:
             self.widget.widget_list.remove(self.text)
@@ -259,7 +259,7 @@ class Statusbar(object):
         # hide the edit and display the text widget
         if self.edit in self.widget.widget_list:
             self.widget.widget_list.remove(self.edit)
-        if not self.text in self.widget.widget_list:
+        if self.text not in self.widget.widget_list:
             self.widget.widget_list.append(self.text)
 
         self.text.set_text(("main", s))
