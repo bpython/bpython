@@ -134,7 +134,7 @@ def formatted_argspec(funcprops, arg_pos, columns, config):
         else:
             s += color(arg)
 
-        if arg in annotations:
+        if annotations and arg in annotations:
             s += punctuation_color(":")
             s += " "
             s += annotation_color(annotations[arg].__name__)
