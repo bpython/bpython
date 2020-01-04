@@ -142,7 +142,7 @@ def parsekeywordpairs(signature):
     stack = []
     substack = []
     parendepth = 0
-    annotation = False
+
     for token, value in tokens:
         if preamble:
             if token is Token.Punctuation and value == u"(":
@@ -161,16 +161,24 @@ def parsekeywordpairs(signature):
             if (value == "," and parendepth == 0) or (
                 value == ")" and parendepth == -1
             ):
+                annotation = False
+
+                # We filter out type annotations here
+                for index, value in enumerate(substack):
+                    if annotation:
+                        del substack[index]
+                    elif not annotation and value == u":":
+                        annotation = True
+                        del substack[index]
+                    elif annotation and value == u"=":
+                        annotation = False
+                        del substack[index]
+
                 stack.append(substack)
                 substack = []
                 continue
 
         if value and (parendepth > 0 or value.strip()):
-            # We take out annotations here since they don't belong in values
-            if (value == ":" and not annotation) or (value == "=" and annotation):
-                annotation = not annotation
-                continue
-
             substack.append(value)
 
     d = {}
