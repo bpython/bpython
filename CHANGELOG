@@ -8,7 +8,11 @@ New features:
 
 Fixes:
 * #765: Display correct signature for decorted functions.
-  Thanks to Bendeikt Rascher-Friesenhausen.
+  Thanks to Benedikt Rascher-Friesenhausen.
+* #776: Protect get_args from user code exceptions
+* Improve lock file handling on Windows
+
+Support for Python 3.8 has been added. Support for Python 3.4 has been dropped.
 
 0.18
 ----
