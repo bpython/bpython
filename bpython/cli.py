@@ -1991,14 +1991,18 @@ def main_curses(scr, args, config, interactive=True, locals_=None, banner=None):
 
     # XXX these deprecation warnings need to go at some point
     clirepl.write(
-        "WARNING: You are using `bpython-cli`, the curses backend for `bpython`. This backend has been deprecated in version 0.19 and might disappear in a future version."
+        _(
+            "WARNING: You are using `bpython-cli`, the curses backend for `bpython`. This backend has been deprecated in version 0.19 and might disappear in a future version."
+        )
     )
     clirepl.write("\n")
 
     if sys.version_info[0] == 2:
         # XXX these deprecation warnings need to go at some point
         clirepl.write(
-            "WARNING: You are using `bpython` on Python 2. Support for Python 2 has been deprecated in version 0.19 and might disappear in a future version."
+            _(
+                "WARNING: You are using `bpython` on Python 2. Support for Python 2 has been deprecated in version 0.19 and might disappear in a future version."
+            )
         )
         clirepl.write("\n")
 
