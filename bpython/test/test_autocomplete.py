@@ -21,8 +21,7 @@ from bpython import autocomplete
 from bpython._py3compat import py3
 from bpython.test import mock
 
-is_py34 = sys.version_info[:2] >= (3, 4)
-if is_py34:
+if is_py3:
     glob_function = "glob.iglob"
 else:
     glob_function = "glob.glob"
@@ -430,7 +429,7 @@ class TestMultilineJediCompletion(unittest.TestCase):
         )
         self.assertSetEqual(matches, set(["ade"]))
 
-    @unittest.skipUnless(is_py34, "asyncio required")
+    @unittest.skipUnless(is_py3, "asyncio required")
     def test_issue_544(self):
         com = autocomplete.MultilineJediCompletion()
         code = "@asyncio.coroutine\ndef"
