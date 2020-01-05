@@ -204,7 +204,9 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
 
     if sys.version_info[0] == 2:
         # XXX these deprecation warnings need to go at some point
-        print("WARNING: You are using `bpython` on Python 2. Support for Python 2 has been deprecated in version 0.19 and might disappear in a future version.")
+        print(
+            "WARNING: You are using `bpython` on Python 2. Support for Python 2 has been deprecated in version 0.19 and might disappear in a future version."
+        )
 
     global repl
     repl = FullCurtsiesRepl(config, locals_, welcome_message, interp)
