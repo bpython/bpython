@@ -4,6 +4,13 @@ Changelog
 0.19
 ----
 
+General information:
+* The bpython-cli and bpython-urwid rendering backends have been deprecated and
+  will show a warning that they'll be removed in a future release when started.
+* Usage in combination with Python 2 has been deprecated. This does not mean that
+  support is dropped instantly but rather that at some point in the future we will
+  stop running our testcases against Python 2.
+
 New features:
 
 Fixes:
