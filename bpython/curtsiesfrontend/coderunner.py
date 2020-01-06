@@ -13,7 +13,6 @@ makes more sense to you.
 """
 
 import code
-import threading
 import signal
 import greenlet
 import logging
