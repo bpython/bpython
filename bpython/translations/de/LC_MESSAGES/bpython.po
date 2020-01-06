@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: bpython mercurial\n"
 "Report-Msgid-Bugs-To: http://github.com/bpython/bpython/issues\n"
 "POT-Creation-Date: 2020-01-05 13:08+0000\n"
-"PO-Revision-Date: 2019-09-22 22:54+0200\n"
+"PO-Revision-Date: 2020-01-06 12:17+0100\n"
 "Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language: de\n"
 "Language-Team: de <LL@li.org>\n"
@@ -77,13 +77,13 @@ msgid ""
 "WARNING: You are using `bpython-cli`, the curses backend for `bpython`. "
 "This backend has been deprecated in version 0.19 and might disappear in a"
 " future version."
-msgstr ""
+msgstr "ACHTUNG: `bpython-cli` wird verwendet, die curses Implementierung von `bpython`. Diese Implementierung wird ab Version 0.19 nicht mehr aktiv unterstützt und wird in einer zukünftigen Version entfernt werden."
 
 #: bpython/cli.py:2003 bpython/curtsies.py:208 bpython/urwid.py:1405
 msgid ""
 "WARNING: You are using `bpython` on Python 2. Support for Python 2 has "
 "been deprecated in version 0.19 and might disappear in a future version."
-msgstr ""
+msgstr "ACHTUNG: `bpython` wird mit Python 2 verwendet. Diese Pythonversion wird seit Version 0.19 nicht mehr aktiv unterstützt und Unterstützung dafür wird in einer zukünftigen Version entfernt werden."
 
 #: bpython/curtsies.py:152
 msgid "log debug messages to bpython.log"
@@ -280,7 +280,7 @@ msgid ""
 "WARNING: You are using `bpython-urwid`, the urwid backend for `bpython`. "
 "This backend has been deprecated in version 0.19 and might disappear in a"
 " future version."
-msgstr ""
+msgstr "ACHTUNG: `bpython-urwid` wird verwendet, die curses Implementierung von `bpython`. Diese Implementierung wird ab Version 0.19 nicht mehr aktiv unterstützt und wird in einer zukünftigen Version entfernt werden."
 
 #: bpython/curtsiesfrontend/repl.py:350
 msgid "Welcome to bpython!"
