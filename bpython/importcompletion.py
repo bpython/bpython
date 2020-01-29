@@ -43,6 +43,8 @@ if py3:
 
     SUFFIXES = importlib.machinery.all_suffixes()
 else:
+    import imp
+
     SUFFIXES = [suffix for suffix, mode, type in imp.get_suffixes()]
 
 # The cached list of all known modules
@@ -158,9 +160,15 @@ def find_modules(path):
             # Workaround for issue #166
             continue
         try:
+            is_package = False
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", ImportWarning)
                 fo, pathname, _ = imp.find_module(name, [path])
+                if fo is not None:
+                    fo.close()
+                else:
+                    # Yay, package
+                    is_package = True
         except (ImportError, IOError, SyntaxError):
             continue
         except UnicodeEncodeError:
@@ -168,10 +176,7 @@ def find_modules(path):
             # invalid encoding
             continue
         else:
-            if fo is not None:
-                fo.close()
-            else:
-                # Yay, package
+            if is_package:
                 for subname in find_modules(pathname):
                     if subname != "__init__":
                         yield "%s.%s" % (name, subname)
