@@ -15,7 +15,7 @@ import time
 import unicodedata
 from six.moves import range
 
-from pygments import format
+from pygments import format as pygformat
 from bpython._py3compat import PythonLexer
 from pygments.formatters import TerminalFormatter
 
@@ -1126,7 +1126,7 @@ class BaseRepl(BpythonRepl):
 
         if self.config.syntax:
             display_line = bpythonparse(
-                format(self.tokenize(line), self.formatter)
+                pygformat(self.tokenize(line), self.formatter)
             )
             # self.tokenize requires that the line not be in self.buffer yet
 
@@ -1208,7 +1208,7 @@ class BaseRepl(BpythonRepl):
             self.highlighted_paren = None
             logger.debug("trying to unhighlight a paren on line %r", lineno)
             logger.debug("with these tokens: %r", saved_tokens)
-            new = bpythonparse(format(saved_tokens, self.formatter))
+            new = bpythonparse(pygformat(saved_tokens, self.formatter))
             self.display_buffer[lineno] = self.display_buffer[
                 lineno
             ].setslice_with_length(
@@ -1276,7 +1276,7 @@ class BaseRepl(BpythonRepl):
         """The colored current line (no prompt, not wrapped)"""
         if self.config.syntax:
             fs = bpythonparse(
-                format(self.tokenize(self.current_line), self.formatter)
+                pygformat(self.tokenize(self.current_line), self.formatter)
             )
             if self.incr_search_mode:
                 if self.incr_search_target in self.current_line:
@@ -1766,7 +1766,7 @@ class BaseRepl(BpythonRepl):
         logger.debug("calling reprint line with %r %r", lineno, tokens)
         if self.config.syntax:
             self.display_buffer[lineno] = bpythonparse(
-                format(tokens, self.formatter)
+                pygformat(tokens, self.formatter)
             )
 
     def take_back_buffer_line(self):
@@ -1920,7 +1920,7 @@ class BaseRepl(BpythonRepl):
             self.status_bar.message("%s" % (e,))
         else:
             if self.config.highlight_show_source:
-                source = format(
+                source = pygformat(
                     PythonLexer().get_tokens(source), TerminalFormatter()
                 )
             self.pager(source)
