@@ -18,6 +18,7 @@ Fixes:
   Thanks to Benedikt Rascher-Friesenhausen.
 * #776: Protect get_args from user code exceptions
 * Improve lock file handling on Windows
+* #791: Use importlib instead of deprecated imp when running under Python 3
 
 Support for Python 3.8 has been added. Support for Python 3.4 has been dropped.
 
