@@ -32,7 +32,6 @@ from .line import (
     current_from_import_import,
 )
 
-import imp
 import os
 import sys
 import warnings
@@ -143,6 +142,10 @@ def find_modules(path):
         filenames = os.listdir(path)
     except EnvironmentError:
         filenames = []
+
+    if py3:
+        finder = importlib.machinery.FileFinder(path)
+
     for name in filenames:
         if not any(name.endswith(suffix) for suffix in SUFFIXES):
             # Possibly a package
@@ -163,12 +166,22 @@ def find_modules(path):
             is_package = False
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", ImportWarning)
-                fo, pathname, _ = imp.find_module(name, [path])
-                if fo is not None:
-                    fo.close()
+                if py3:
+                    spec = finder.find_spec(name)
+                    if spec is None:
+                        continue
+                    if spec.submodule_search_locations is not None:
+                        pathname = spec.submodule_search_locations[0]
+                        is_package = True
+                    else:
+                        pathname = spec.origin
                 else:
-                    # Yay, package
-                    is_package = True
+                    fo, pathname, _ = imp.find_module(name, [path])
+                    if fo is not None:
+                        fo.close()
+                    else:
+                        # Yay, package
+                        is_package = True
         except (ImportError, IOError, SyntaxError):
             continue
         except UnicodeEncodeError:
