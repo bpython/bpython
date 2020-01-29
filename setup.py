@@ -196,8 +196,6 @@ else:
     man_pages = []
 
 data_files = [
-    # desktop shortcut
-    (os.path.join('share', 'applications'), ['data/org.bpython-interpreter.bpython.desktop']),
     # AppData
     (os.path.join('share', 'appinfo'), ['data/org.bpython-interpreter.bpython.appdata.xml']),
     # icon
