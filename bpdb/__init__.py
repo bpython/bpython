@@ -46,6 +46,7 @@ def set_trace():
 
 # Adopted verbatim from pdb for completeness:
 
+
 def post_mortem(t=None):
     # handling the default
     if t is None:
@@ -53,8 +54,10 @@ def post_mortem(t=None):
         # being handled, otherwise it returns None
         t = sys.exc_info()[2]
         if t is None:
-            raise ValueError("A valid traceback must be passed if no "
-                             "exception is being handled")
+            raise ValueError(
+                "A valid traceback must be passed if no "
+                "exception is being handled"
+            )
 
     p = BPdb()
     p.reset()
@@ -66,26 +69,28 @@ def pm():
 
 
 def main():
-    parser = OptionParser(
-        usage='Usage: %prog [options] [file [args]]')
-    parser.add_option('--version', '-V', action='store_true',
-                      help='Print version and exit.')
+    parser = OptionParser(usage="Usage: %prog [options] [file [args]]")
+    parser.add_option(
+        "--version", "-V", action="store_true", help="Print version and exit."
+    )
     options, args = parser.parse_args(sys.argv)
     if options.version:
-        print('bpdb on top of bpython version', __version__, end="")
-        print('on top of Python', sys.version.split()[0])
-        print('(C) 2008-2013 Bob Farrell, Andreas Stuehrk et al. '
-              'See AUTHORS for detail.')
+        print("bpdb on top of bpython version", __version__, end="")
+        print("on top of Python", sys.version.split()[0])
+        print(
+            "(C) 2008-2013 Bob Farrell, Andreas Stuehrk et al. "
+            "See AUTHORS for detail."
+        )
         return 0
 
     if len(args) < 2:
-        print('usage: bpdb scriptfile [arg] ...')
+        print("usage: bpdb scriptfile [arg] ...")
         return 2
 
     # The following code is based on Python's pdb.py.
     mainpyfile = args[1]
     if not os.path.exists(mainpyfile):
-        print('Error:', mainpyfile, 'does not exist')
+        print("Error:", mainpyfile, "does not exist")
         return 1
 
     # Hide bpdb from argument list.
@@ -114,5 +119,8 @@ def main():
             print("Running 'cont' or 'step' will restart the program")
             t = sys.exc_info()[2]
             pdb.interaction(None, t)
-            print("Post mortem debugger finished. The " + mainpyfile +
-                  " will be restarted")
+            print(
+                "Post mortem debugger finished. The "
+                + mainpyfile
+                + " will be restarted"
+            )
