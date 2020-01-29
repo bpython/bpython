@@ -22,32 +22,32 @@
     </ul>
   </description>
   <launchable type="desktop-id">org.bpython-interpreter.bpython.desktop</launchable>
-  <url type="homepage">http://www.bpython-interpreter.org/</url>
+  <url type="homepage">https://www.bpython-interpreter.org/</url>
   <url type="bugtracker">https://github.com/bpython/bpython/issues</url>
   <screenshots>
     <screenshot type="default">
-      <image>http://bpython-interpreter.org/images/8.png</image>
+      <image>https://bpython-interpreter.org/images/8.png</image>
     </screenshot>
     <screenshot>
-      <image>http://bpython-interpreter.org/images/1.png</image>
+      <image>https://bpython-interpreter.org/images/1.png</image>
     </screenshot>
     <screenshot>
-      <image>http://bpython-interpreter.org/images/2.png</image>
+      <image>https://bpython-interpreter.org/images/2.png</image>
     </screenshot>
     <screenshot>
-      <image>http://bpython-interpreter.org/images/3.png</image>
+      <image>https://bpython-interpreter.org/images/3.png</image>
     </screenshot>
     <screenshot>
-      <image>http://bpython-interpreter.org/images/4.png</image>
+      <image>https://bpython-interpreter.org/images/4.png</image>
     </screenshot>
     <screenshot>
-      <image>http://bpython-interpreter.org/images/5.png</image>
+      <image>https://bpython-interpreter.org/images/5.png</image>
     </screenshot>
     <screenshot>
-      <image>http://bpython-interpreter.org/images/6.png</image>
+      <image>https://bpython-interpreter.org/images/6.png</image>
     </screenshot>
     <screenshot>
-      <image>http://bpython-interpreter.org/images/7.png</image>
+      <image>https://bpython-interpreter.org/images/7.png</image>
     </screenshot>
   </screenshots>
   <update_contact>bpython@googlegroups.com</update_contact>

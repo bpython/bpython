@@ -284,7 +284,7 @@ setup(
     author_email="robertanthonyfarrell@gmail.com",
     description="Fancy Interface to the Python Interpreter",
     license="MIT/X",
-    url="http://www.bpython-interpreter.org/",
+    url="https://www.bpython-interpreter.org/",
     long_description="""bpython is a fancy interface to the Python
     interpreter for Unix-like operating systems.""",
     classifiers=classifiers,
