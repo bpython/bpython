@@ -477,8 +477,6 @@ class Repl(object):
             self.paster = PastePinnwand(
                 self.config.pastebin_url,
                 self.config.pastebin_expiry,
-                self.config.pastebin_show_url,
-                self.config.pastebin_removal_url,
             )
 
     @property

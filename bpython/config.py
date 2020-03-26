@@ -81,9 +81,7 @@ def loadini(struct, configfile):
             "pastebin_confirm": True,
             "pastebin_expiry": "1week",
             "pastebin_helper": "",
-            "pastebin_removal_url": "https://bpaste.net/remove/$removal_id",
-            "pastebin_show_url": "https://bpaste.net/show/$paste_id",
-            "pastebin_url": "https://bpaste.net/json/new",
+            "pastebin_url": "https://bpaste.net",
             "save_append_py": False,
             "single_undo_time": 1.0,
             "syntax": True,
@@ -224,8 +222,6 @@ def loadini(struct, configfile):
 
     struct.pastebin_confirm = config.getboolean("general", "pastebin_confirm")
     struct.pastebin_url = config.get("general", "pastebin_url")
-    struct.pastebin_show_url = config.get("general", "pastebin_show_url")
-    struct.pastebin_removal_url = config.get("general", "pastebin_removal_url")
     struct.pastebin_expiry = config.get("general", "pastebin_expiry")
     struct.pastebin_helper = config.get("general", "pastebin_helper")
 
