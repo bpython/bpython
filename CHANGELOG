@@ -10,6 +10,7 @@ General information:
 * Usage in combination with Python 2 has been deprecated. This does not mean that
   support is dropped instantly but rather that at some point in the future we will
   stop running our testcases against Python 2.
+* The new pinnwand API is used for the pastebin functionality.
 
 New features:
 

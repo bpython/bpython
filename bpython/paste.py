@@ -50,9 +50,7 @@ class PastePinnwand(object):
         url = urljoin(self.url, "/api/v1/paste")
         payload = {
             "expiry": self.expiry,
-            "files": [
-                {"lexer": "pycon", "content": s}
-            ],
+            "files": [{"lexer": "pycon", "content": s}],
         }
 
         try:
