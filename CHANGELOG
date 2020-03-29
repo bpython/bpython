@@ -14,7 +14,7 @@ General information:
 New features:
 
 Fixes:
-* #765: Display correct signature for decorted functions.
+* #765: Display correct signature for decorated functions.
   Thanks to Benedikt Rascher-Friesenhausen.
 * #776: Protect get_args from user code exceptions
 * Improve lock file handling on Windows
