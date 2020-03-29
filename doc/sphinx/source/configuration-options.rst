@@ -91,10 +91,9 @@ pastebin_helper
 ^^^^^^^^^^^^^^^
 
 The name of a helper executable that should perform pastebin upload on bpython's
-behalf. If set, this overrides `pastebin_url`. It also overrides
-`pastebin_show_url`, as the helper is expected to return the full URL to the
-pastebin as the first word of its output. The data is supplied to the helper via
-STDIN.
+behalf. If set, this overrides `pastebin_url`. The helper is expected to return
+the full URL to the pastebin as the first word of its output. The data is
+supplied to the helper via STDIN.
 
 An example helper program is ``pastebinit``, available for most systems. The
 following helper program can be used to create `gists
@@ -141,23 +140,11 @@ following helper program can be used to create `gists
 
 .. versionadded:: 0.12
 
-pastebin_show_url
-^^^^^^^^^^^^^^^^^
-The url under which the new paste can be reached. ``$paste_id`` will be replaced
-by the ID of the new paste (default: https://bpaste.net/show/$paste_id/).
-
-pastebin_removal_url
-^^^^^^^^^^^^^^^^^^^^
-The url under which a paste can be removed. ``$removal_id`` will be replaced by
-the removal ID of the paste (default: https://bpaste.net/remova/$removal_id/).
-
-.. versionadded:: 0.14
-
 pastebin_url
 ^^^^^^^^^^^^
 The pastebin url to post to (without a trailing slash). This pastebin has to be
-a pastebin which uses provides a similar interface to ``bpaste.net``'s JSON
-interface (default: https://bpaste.net/json/new).
+a pastebin which provides a similar interface to ``bpaste.net``'s JSON
+interface (default: https://bpaste.net).
 
 save_append_py
 ^^^^^^^^^^^^^^

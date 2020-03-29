@@ -40,35 +40,29 @@ class PasteFailed(Exception):
 
 
 class PastePinnwand(object):
-    def __init__(self, url, expiry, show_url, removal_url):
+    def __init__(self, url, expiry):
         self.url = url
         self.expiry = expiry
-        self.show_url = show_url
-        self.removal_url = removal_url
 
     def paste(self, s):
         """Upload to pastebin via json interface."""
 
-        url = urljoin(self.url, "/json/new")
-        payload = {"code": s, "lexer": "pycon", "expiry": self.expiry}
+        url = urljoin(self.url, "/api/v1/paste")
+        payload = {
+            "expiry": self.expiry,
+            "files": [{"lexer": "pycon", "content": s}],
+        }
 
         try:
-            response = requests.post(url, data=payload, verify=True)
+            response = requests.post(url, json=payload, verify=True)
             response.raise_for_status()
         except requests.exceptions.RequestException as exc:
             raise PasteFailed(exc.message)
 
         data = response.json()
 
-        paste_url_template = Template(self.show_url)
-        paste_id = urlquote(data["paste_id"])
-        paste_url = paste_url_template.safe_substitute(paste_id=paste_id)
-
-        removal_url_template = Template(self.removal_url)
-        removal_id = urlquote(data["removal_id"])
-        removal_url = removal_url_template.safe_substitute(
-            removal_id=removal_id
-        )
+        paste_url = data["link"]
+        removal_url = data["removal"]
 
         return (paste_url, removal_url)
 
