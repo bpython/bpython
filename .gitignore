@@ -10,3 +10,5 @@ env
 .idea/
 doc/sphinx/build/*
 bpython/_version.py
+venv/
+.venv/
