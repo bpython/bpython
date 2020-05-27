@@ -274,6 +274,16 @@ class ImportFinder(object):
         self.watcher = watcher
         self.old_meta_path = old_meta_path
 
+    def find_distributions(self, context):
+        for finder in self.old_meta_path:
+            distribution_finder = getattr(finder, 'find_distributions', None)
+            if distribution_finder is not None:
+                loader = finder.find_distributions(context)
+                if loader is not None:
+                    return loader
+
+        return None
+
     def find_module(self, fullname, path=None):
         for finder in self.old_meta_path:
             loader = finder.find_module(fullname, path)
