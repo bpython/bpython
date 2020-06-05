@@ -97,6 +97,8 @@ def simple_eval(node_or_string, namespace=None):
         node_or_string = node_or_string.body
 
     def _convert(node):
+        if py3 and isinstance(node, ast.Constant):
+            return node.value
         if isinstance(node, _string_type_nodes):
             return node.s
         elif isinstance(node, ast.Num):
