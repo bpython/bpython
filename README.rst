@@ -20,10 +20,10 @@ to IDEs. These features include **syntax highlighting**, **expected parameter
 list**, **auto-indentation**, and **autocompletion**. (See below for example
 usage).
 
-.. image:: http://i.imgur.com/jf8mCtP.gif
+.. image:: https://bpython-interpreter.org/images/math.gif
   :alt: bpython
-  :width: 646
-  :height: 300
+  :width: 566
+  :height: 348
   :align: center
 
 bpython does **not** aim to be a complete IDE - the focus is on implementing a
