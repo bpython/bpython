@@ -192,7 +192,7 @@ may be interested to try.
 .. _cffi docs: https://cffi.readthedocs.org/en/release-0.8/#macos-x
 .. _issues tracker: http://github.com/bpython/bpython/issues/
 .. _pip: https://pip.pypa.io/en/latest/index.html
-.. _project homepage: http://bpython-interpreter.org/community
+.. _project homepage: http://bpython-interpreter.org
 .. _community: http://docs.bpython-interpreter.org/community.html
 .. _Robert: robertanthonyfarrell@gmail.com
 .. _bpython: http://www.bpython-interpreter.org/
