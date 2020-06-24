@@ -905,7 +905,7 @@ class CLIRepl(repl.Repl):
             if n > 0:
                 self.undo(n=n)
             return ""
-
+  
         elif key in key_dispatch[config.search_key]:
             self.search()
             return ""

@@ -775,6 +775,12 @@ class BaseRepl(BpythonRepl):
             self.on_tab(back=True)
         elif e in key_dispatch[self.config.undo_key]:  # ctrl-r for undo
             self.prompt_undo()
+        elif e in ["<Ctrl-g>"]:  # for redo
+            if (self.could_be_redone):
+                self.push(self.could_be_redone.pop())
+                open("testFile.txt", "a").write(str(self.history) + "\n") 
+            else:
+                self.status_bar.message("Nothing to redo.")
         elif e in key_dispatch[self.config.save_key]:  # ctrl-s for save
             greenlet.greenlet(self.write2file).switch()
         elif e in key_dispatch[self.config.pastebin_key]:  # F8 for pastebin
@@ -860,6 +866,9 @@ class BaseRepl(BpythonRepl):
 
     def on_enter(self, insert_into_history=True, reset_rl_history=True):
         # so the cursor isn't touching a paren TODO: necessary?
+        if insert_into_history:
+            self.could_be_redone = []
+
         self._set_cursor_offset(-1, update_completion=False)
         if reset_rl_history:
             self.rl_history.reset()
@@ -1151,6 +1160,7 @@ class BaseRepl(BpythonRepl):
 
         if insert_into_history:
             self.insert_into_history(line)
+            #self.history.append(line)
         self.buffer.append(line)
 
         code_to_run = "\n".join(self.buffer)
@@ -1812,7 +1822,7 @@ class BaseRepl(BpythonRepl):
         greenlet.greenlet(prompt_for_undo).switch()
 
     def reevaluate(self, insert_into_history=False):
-        """bpython.Repl.undo calls this"""
+        """bpython.Repl.undo calls this"""        
         if self.watcher:
             self.watcher.reset()
         old_logical_lines = self.history

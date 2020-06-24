@@ -439,7 +439,8 @@ class Repl(object):
             duplicates=config.hist_duplicates, hist_size=config.hist_length
         )
         self.s_hist = []
-        self.history = []
+        self.history = []  # History of commands
+        self.could_be_redone = []
         self.evaluating = False
         self.matches_iter = MatchesIterator()
         self.funcprops = None
@@ -1009,6 +1010,10 @@ class Repl(object):
 
         entries = list(self.rl_history.entries)
 
+        #Most recently undone command
+        lastEntry = self.history[-n:]
+        lastEntry.reverse()
+        self.could_be_redone += lastEntry
         self.history = self.history[:-n]
         self.reevaluate()
 
