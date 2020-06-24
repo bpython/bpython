@@ -777,8 +777,9 @@ class BaseRepl(BpythonRepl):
             self.prompt_undo()
         elif e in ["<Ctrl-g>"]:  # for redo
             if (self.could_be_redone):
-                self.push(self.could_be_redone.pop())
-                open("testFile.txt", "a").write(str(self.history) + "\n") 
+                temp = self.could_be_redone.pop()
+                self.push(temp)
+                self.history.append(temp)
             else:
                 self.status_bar.message("Nothing to redo.")
         elif e in key_dispatch[self.config.save_key]:  # ctrl-s for save
@@ -1160,7 +1161,6 @@ class BaseRepl(BpythonRepl):
 
         if insert_into_history:
             self.insert_into_history(line)
-            #self.history.append(line)
         self.buffer.append(line)
 
         code_to_run = "\n".join(self.buffer)
@@ -1822,7 +1822,7 @@ class BaseRepl(BpythonRepl):
         greenlet.greenlet(prompt_for_undo).switch()
 
     def reevaluate(self, insert_into_history=False):
-        """bpython.Repl.undo calls this"""        
+        """bpython.Repl.undo calls this"""
         if self.watcher:
             self.watcher.reset()
         old_logical_lines = self.history
