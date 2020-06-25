@@ -776,7 +776,7 @@ class BaseRepl(BpythonRepl):
         elif e in key_dispatch[self.config.undo_key]:  # ctrl-r for undo
             self.prompt_undo()
         elif e in key_dispatch[self.config.redo_key]:  # ctrl-g for redo
-            self.prompt_redo()
+            self.redo()
         elif e in key_dispatch[self.config.save_key]:  # ctrl-s for save
             greenlet.greenlet(self.write2file).switch()
         elif e in key_dispatch[self.config.pastebin_key]:  # F8 for pastebin
@@ -1816,7 +1816,7 @@ class BaseRepl(BpythonRepl):
 
         greenlet.greenlet(prompt_for_undo).switch()
 
-    def prompt_redo(self):
+    def redo(self):
         if (self.redo_stack):
             temp = self.redo_stack.pop()
             self.push(temp)
