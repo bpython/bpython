@@ -102,7 +102,7 @@ class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
             orig_stdout = sys.stdout
             sys.stdout = self.repl.stdout
             [self.repl.add_normal_character(c) for c in "1 + 1"]
-            self.repl.on_enter(insert_into_history=False)
+            self.repl.on_enter(new_code=False)
             screen = fsarray([">>> 1 + 1", "2", "Welcome to"])
             self.assert_paint_ignoring_formatting(screen, (1, 1))
         finally:
@@ -248,7 +248,7 @@ class HigherLevelCurtsiesPaintingTest(CurtsiesPaintingTest):
             self.repl._set_cursor_offset(len(line), update_completion=False)
             self.repl.current_line = line
         with output_to_repl(self.repl):
-            self.repl.on_enter(insert_into_history=False)
+            self.repl.on_enter(new_code=False)
             self.assertEqual(self.repl.rl_history.entries, [""])
             self.send_refreshes()
 
@@ -592,7 +592,7 @@ class TestCurtsiesRewindRedraw(HigherLevelCurtsiesPaintingTest):
         self.repl.width = 50
         self.repl.current_line = "__import__('random').__name__"
         with output_to_repl(self.repl):
-            self.repl.on_enter(insert_into_history=False)
+            self.repl.on_enter(new_code=False)
         screen = [">>> __import__('random').__name__", "'random'"]
         self.assert_paint_ignoring_formatting(screen)
 

@@ -1024,7 +1024,7 @@ class BaseRepl(BpythonRepl):
         source = preprocess("\n".join(from_editor), self.interp.compile)
         lines = source.split("\n")
         self.history = lines
-        self.reevaluate(insert_into_history=True)
+        self.reevaluate(new_code=True)
         self.current_line = current_line
         self.cursor_offset = len(self.current_line)
         self.status_bar.message(_("Session edited and reevaluated"))
@@ -1035,7 +1035,7 @@ class BaseRepl(BpythonRepl):
         cursor, line = self.cursor_offset, self.current_line
         for modname in set(sys.modules.keys()) - self.original_modules:
             del sys.modules[modname]
-        self.reevaluate(insert_into_history=True)
+        self.reevaluate(new_code=True)
         self.cursor_offset, self.current_line = cursor, line
         self.status_bar.message(
             _("Reloaded at %s by user.") % (time.strftime("%X"),)
