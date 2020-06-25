@@ -35,6 +35,7 @@ from .line import (
 import os
 import sys
 import warnings
+import re
 from six.moves import filter
 
 if py3:
@@ -134,6 +135,10 @@ def complete(cursor_offset, line):
 
 def find_modules(path):
     """Find all modules (and packages) for a given directory."""
+
+    global nameSubname
+    nameSubname = []
+
     if not os.path.isdir(path):
         # Perhaps a zip file
         return
@@ -192,8 +197,21 @@ def find_modules(path):
             if is_package:
                 for subname in find_modules(pathname):
                     if subname != "__init__":
-                        yield "%s.%s" % (name, subname)
+                        doNotAppend = False
+                        for obj in nameSubname:
+                            nam = obj[0]
+                            subnam = obj[1]
+                            if (name == nam and subname == subnam) or \
+                               any(nam in sub for sub in re.split("[.]", subname)) or \
+                               any(subname in na for na in re.split("[.]", name)):
+                                doNotAppend = True
+                                break
+                        if not doNotAppend:
+                            nameSubname.append((name, subname))
+                            yield "%s.%s" % (name, subname)        
             yield name
+    for obj in nameSubname:
+        print(obj[0] + " " + obj[1])
 
 
 def find_all_modules(path=None):
