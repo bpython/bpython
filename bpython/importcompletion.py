@@ -136,11 +136,8 @@ def complete(cursor_offset, line):
 def find_modules(path):
     """Find all modules (and packages) for a given directory."""
 
-    global nameSubname
-    nameSubname = []
-
-    #global pathNameList
-    #pathNameList = []
+    #global nameSubname
+    #nameSubname = []
 
     if not os.path.isdir(path):
         # Perhaps a zip file
@@ -199,28 +196,15 @@ def find_modules(path):
         else:
             if is_package:
                 pathGood = True
-                #print("pathname:", pathname)
-                #for paths in pathNameList:
-                    #print(paths)
-                    #print("Hi")
-
-                    #if pathname == paths:
-                        #pathGood = False
-                        #break
                     
                 pathList = re.split("[/]", pathname)
                 #print("pathL length:", len(pathList))
                 #for pathL in pathList:
                     #print("pathL:", pathL)
 
-                for folder in range(len(pathList)):
-                    for folderT in range(len(pathList)):
-                        #print("folder:", folder, "folderT:", folderT)
-                        #print("Pathlist Folder:", pathList[folder], "Pathlist FolderT:", pathList[folderT])
-                        if folder == folderT:
-                            continue
-                        elif pathList[folder] == pathList[folderT]:
-                            pathGood = False
+                for folder in range(len(pathList) - 2):
+                    if pathList[folder] == pathList[len(pathList) - 1]:
+                        pathGood = False
                 #print(pathGood)
                 #print()
                 if pathGood:
@@ -242,14 +226,10 @@ def find_modules(path):
                             #print()
                             #if not doNotAppend:
                                 #nameSubname.append((name, subname))
-                                #print(name, subname)
-                            yield "%s.%s" % (name, subname)     
+                            print(name, subname)
+                            yield "%s.%s" % (name, subname)
+            print(name)     
             yield name
-    for obj in nameSubname:
-        #print(obj[0] + " " + obj[1])
-        pass
-    #print("PathNameList len:", len(pathNameList))
-
 
 def find_all_modules(path=None):
     """Return a list with all modules in `path`, which should be a list of

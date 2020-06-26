@@ -4,10 +4,7 @@ import os
 foo = find_modules(os.path.abspath("./importtestfolder"))
 
 for thing in foo:
-    print(thing)
-
-#for obj in foo.nameSubname:
-        #print(obj[0] + " " + obj[1])
+    pass
 
 #bpython import_completion yield name       |       #bpython import yield name subname and yield name
 #bpdb                                       |       #bpdb
