@@ -136,8 +136,14 @@ def complete(cursor_offset, line):
 def find_modules(path):
     """Find all modules (and packages) for a given directory."""
 
-    #global nameSubname
-    #nameSubname = []
+    global nameSubname
+    nameSubname = []
+
+    #Decides if you are using the first method: usng name subname (1),
+    #   the second method: using pathname (2) or the original (3)
+    global useNameSubname
+    useNameSubname = 3
+    #print("useNameSubname:", useNameSubname)
 
     if not os.path.isdir(path):
         # Perhaps a zip file
@@ -195,40 +201,51 @@ def find_modules(path):
             continue
         else:
             if is_package:
-                pathGood = True
-                    
-                pathList = re.split("[/]", pathname)
-                #print("pathL length:", len(pathList))
-                #for pathL in pathList:
-                    #print("pathL:", pathL)
+                pathGood = False
+                if useNameSubname == 2:
+                    pathGood = True
+                        
+                    pathList = re.split("[/]", pathname)
+                    #print("pathL length:", len(pathList))
+                    #for pathL in pathList:
+                        #print("pathL:", pathL)
 
-                for folder in range(len(pathList) - 2):
-                    if pathList[folder] == pathList[len(pathList) - 1]:
-                        pathGood = False
-                #print(pathGood)
-                #print()
-                if pathGood:
-                    #pathNameList.append(pathname)
-                    #print("PathGood len", len(pathNameList), pathname)
+                    #I did path len - 2 because I am worried about folders like bpython/bpython
+                    #  but if it is a symbolic link it will stop at bpython/bpython/bpython
+                    for folder in range(len(pathList) - 2):
+                        if pathList[folder] == pathList[len(pathList) - 1]:
+                            pathGood = False
+                    #print(pathGood)
+                    #print()
+                if useNameSubname == 1 or pathGood:
                     for subname in find_modules(pathname):
                         if subname != "__init__":
-                            #doNotAppend = False
-                            #print("name: ", name, " subname: ", subname)
-                            #for obj in nameSubname:
-                                #nam = obj[0]
-                                #subnam = obj[1]
-                                #print("name: ", name, " nam: ", nam, " subname: ", subname, " subnam: ", subnam)
-                                #if (name == nam and subname == subnam) or \
-                                #any(name in sub for sub in re.split("[.]", subnam)):
-                                    #print("Excluded: ", name, subname, "because ", nam, subnam)
-                                    #doNotAppend = True
-                                    #break
-                            #print()
-                            #if not doNotAppend:
-                                #nameSubname.append((name, subname))
-                            print(name, subname)
-                            yield "%s.%s" % (name, subname)
-            print(name)     
+                            #If trying the first method using name and subname
+                            if useNameSubname == 1:
+                                doNotAppend = False
+                                #print("name: ", name, " subname: ", subname)
+                                for obj in nameSubname:
+                                    nam = obj[0]
+                                    subnam = obj[1]
+                                    #print("name: ", name, " nam: ", nam, " subname: ", subname, " subnam: ", subnam)
+                                    if (name == nam and subname == subnam) or \
+                                    any(name in sub for sub in re.split("[.]", subnam)):
+                                        #print("Excluded: ", name, subname, "because ", nam, subnam)
+                                        doNotAppend = True
+                                        break
+                                #print()
+                                if not doNotAppend:
+                                    nameSubname.append((name, subname))
+                                    #print(name, subname)
+                                    yield "%s.%s" % (name, subname)
+                            #If trying seconf methond using the pathname
+                            else:
+                                yield "%s.%s" % (name, subname)
+                elif useNameSubname == 3:
+                    for subname in find_modules(pathname):
+                        if subname != "__init__":
+                                yield "%s.%s" % (name, subname)
+            #print("Name: ", name)     
             yield name
 
 def find_all_modules(path=None):
