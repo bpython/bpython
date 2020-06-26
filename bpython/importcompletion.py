@@ -140,9 +140,9 @@ def find_modules(path):
     nameSubname = []
 
     #Decides if you are using the first method: usng name subname (1),
-    #   the second method: using pathname (2) or the original (3)
+    #   the second method: using pathname (2) or the original (3), os.realpath
     global useNameSubname
-    useNameSubname = 3
+    useNameSubname = 4
     #print("useNameSubname:", useNameSubname)
 
     if not os.path.isdir(path):
@@ -217,6 +217,12 @@ def find_modules(path):
                             pathGood = False
                     #print(pathGood)
                     #print()
+                elif useNameSubname == 4:
+                    pathGood = True
+                    pathReal = os.path.realpath(pathname)
+                    if  len(pathReal) < len(pathname) and pathReal in pathname:
+                        #print("PathReal:", pathReal, "Path:", pathname)
+                        pathGood = False
                 if useNameSubname == 1 or pathGood:
                     for subname in find_modules(pathname):
                         if subname != "__init__":
