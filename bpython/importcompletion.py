@@ -139,6 +139,9 @@ def find_modules(path):
     global nameSubname
     nameSubname = []
 
+    #global pathNameList
+    #pathNameList = []
+
     if not os.path.isdir(path):
         # Perhaps a zip file
         return
@@ -195,23 +198,57 @@ def find_modules(path):
             continue
         else:
             if is_package:
-                for subname in find_modules(pathname):
-                    if subname != "__init__":
-                        doNotAppend = False
-                        for obj in nameSubname:
-                            nam = obj[0]
-                            subnam = obj[1]
-                            if (name == nam and subname == subnam) or \
-                               any(nam in sub for sub in re.split("[.]", subname)) or \
-                               any(subname in na for na in re.split("[.]", name)):
-                                doNotAppend = True
-                                break
-                        if not doNotAppend:
-                            nameSubname.append((name, subname))
-                            yield "%s.%s" % (name, subname)        
+                pathGood = True
+                #print("pathname:", pathname)
+                #for paths in pathNameList:
+                    #print(paths)
+                    #print("Hi")
+
+                    #if pathname == paths:
+                        #pathGood = False
+                        #break
+                    
+                pathList = re.split("[/]", pathname)
+                #print("pathL length:", len(pathList))
+                #for pathL in pathList:
+                    #print("pathL:", pathL)
+
+                for folder in range(len(pathList)):
+                    for folderT in range(len(pathList)):
+                        #print("folder:", folder, "folderT:", folderT)
+                        #print("Pathlist Folder:", pathList[folder], "Pathlist FolderT:", pathList[folderT])
+                        if folder == folderT:
+                            continue
+                        elif pathList[folder] == pathList[folderT]:
+                            pathGood = False
+                #print(pathGood)
+                #print()
+                if pathGood:
+                    #pathNameList.append(pathname)
+                    #print("PathGood len", len(pathNameList), pathname)
+                    for subname in find_modules(pathname):
+                        if subname != "__init__":
+                            #doNotAppend = False
+                            #print("name: ", name, " subname: ", subname)
+                            #for obj in nameSubname:
+                                #nam = obj[0]
+                                #subnam = obj[1]
+                                #print("name: ", name, " nam: ", nam, " subname: ", subname, " subnam: ", subnam)
+                                #if (name == nam and subname == subnam) or \
+                                #any(name in sub for sub in re.split("[.]", subnam)):
+                                    #print("Excluded: ", name, subname, "because ", nam, subnam)
+                                    #doNotAppend = True
+                                    #break
+                            #print()
+                            #if not doNotAppend:
+                                #nameSubname.append((name, subname))
+                                #print(name, subname)
+                            yield "%s.%s" % (name, subname)     
             yield name
     for obj in nameSubname:
-        print(obj[0] + " " + obj[1])
+        #print(obj[0] + " " + obj[1])
+        pass
+    #print("PathNameList len:", len(pathNameList))
 
 
 def find_all_modules(path=None):
@@ -220,7 +257,7 @@ def find_all_modules(path=None):
     if path is None:
         modules.update(try_decode(m, "ascii") for m in sys.builtin_module_names)
         path = sys.path
-
+    path = ['/Users/eerichart/bpython']
     for p in path:
         if not p:
             p = os.curdir
