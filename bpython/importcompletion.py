@@ -237,7 +237,7 @@ def find_all_modules(path=None):
     if path is None:
         modules.update(try_decode(m, "ascii") for m in sys.builtin_module_names)
         path = sys.path
-    path = ['/Users/eerichart/bpython']
+    
     for p in path:
         if not p:
             p = os.curdir
