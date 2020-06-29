@@ -135,16 +135,7 @@ def complete(cursor_offset, line):
 
 def find_modules(path):
     """Find all modules (and packages) for a given directory."""
-
-    global nameSubname
-    nameSubname = []
-
-    #Decides if you are using the first method: usng name subname (1),
-    #   the second method: using pathname (2) or the original (3), os.realpath
-    global useNameSubname
-    useNameSubname = 4
-    #print("useNameSubname:", useNameSubname)
-
+    
     if not os.path.isdir(path):
         # Perhaps a zip file
         return
