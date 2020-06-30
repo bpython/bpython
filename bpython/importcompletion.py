@@ -49,6 +49,8 @@ else:
 
 # The cached list of all known modules
 modules = set()
+#List of stored paths
+paths = set()
 fully_loaded = False
 
 
@@ -192,11 +194,9 @@ def find_modules(path):
             continue
         else:
             if is_package:
-                pathGood = True
                 pathReal = os.path.realpath(pathname)
-                if  len(pathReal) < len(pathname) and pathReal in pathname:
-                    pathGood = False
-                if pathGood:
+                if not pathReal in paths:
+                    paths.add(pathReal)
                     for subname in find_modules(pathname):
                         if subname != "__init__":
                             yield "%s.%s" % (name, subname)
