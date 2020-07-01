@@ -108,6 +108,7 @@ def loadini(struct, configfile):
             "last_output": "F9",
             "left": "C-b",
             "pastebin": "F8",
+            "redo": "C-g",
             "reimport": "F6",
             "reverse_incremental_search": "M-r",
             "right": "C-f",
@@ -193,6 +194,7 @@ def loadini(struct, configfile):
     struct.suspend_key = get_key_no_doublebind("suspend")
     struct.toggle_file_watch_key = get_key_no_doublebind("toggle_file_watch")
     struct.undo_key = get_key_no_doublebind("undo")
+    struct.redo_key = get_key_no_doublebind("redo")
     struct.reimport_key = get_key_no_doublebind("reimport")
     struct.reverse_incremental_search_key = get_key_no_doublebind(
         "reverse_incremental_search"

@@ -67,6 +67,7 @@
 # toggle_file_watch = F5
 # save = C-s
 # undo = C-r
+# redo = C-g
 # up_one_line = C-p
 # down_one_line = C-n
 # cut_to_buffer = C-k
