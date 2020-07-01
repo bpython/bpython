@@ -1035,7 +1035,7 @@ class BaseRepl(BpythonRepl):
         cursor, line = self.cursor_offset, self.current_line
         for modname in set(sys.modules.keys()) - self.original_modules:
             del sys.modules[modname]
-        self.reevaluate(new_code=True)
+        self.reevaluate(new_code=False)
         self.cursor_offset, self.current_line = cursor, line
         self.status_bar.message(
             _("Reloaded at %s by user.") % (time.strftime("%X"),)
