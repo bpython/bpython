@@ -35,7 +35,6 @@ from .line import (
 import os
 import sys
 import warnings
-import re
 from six.moves import filter
 
 if py3:
@@ -49,7 +48,8 @@ else:
 
 # The cached list of all known modules
 modules = set()
-#List of stored paths
+# List of stored paths to compare against so that real paths are not repeated
+# handles symlinks not mount points
 paths = set()
 fully_loaded = False
 
@@ -137,7 +137,6 @@ def complete(cursor_offset, line):
 
 def find_modules(path):
     """Find all modules (and packages) for a given directory."""
-    
     if not os.path.isdir(path):
         # Perhaps a zip file
         return
@@ -194,13 +193,14 @@ def find_modules(path):
             continue
         else:
             if is_package:
-                pathReal = os.path.realpath(pathname)
-                if not pathReal in paths:
-                    paths.add(pathReal)
+                path_real = os.path.realpath(pathname)
+                if path_real not in paths:
+                    paths.add(path_real)
                     for subname in find_modules(pathname):
                         if subname != "__init__":
                             yield "%s.%s" % (name, subname)
             yield name
+
 
 def find_all_modules(path=None):
     """Return a list with all modules in `path`, which should be a list of
@@ -208,7 +208,7 @@ def find_all_modules(path=None):
     if path is None:
         modules.update(try_decode(m, "ascii") for m in sys.builtin_module_names)
         path = sys.path
-    
+
     for p in path:
         if not p:
             p = os.curdir
