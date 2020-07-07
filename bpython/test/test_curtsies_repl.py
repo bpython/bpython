@@ -78,6 +78,8 @@ class TestCurtsiesRepl(TestCase):
     def test_external_communication_encoding(self):
         with captured_output():
             self.repl.display_lines.append('>>> "åß∂ƒ"')
+            self.repl.history.append('"åß∂ƒ"')
+            self.repl.all_logical_lines.append(('"åß∂ƒ"',"input"))
             self.repl.send_session_to_external_editor()
 
     def test_get_last_word(self):
