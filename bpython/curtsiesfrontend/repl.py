@@ -1558,7 +1558,7 @@ class BaseRepl(BpythonRepl):
 
         if self.stdin.has_focus:
             cursor_row, cursor_column = divmod(
-                len(self.current_stdouterr_line)
+                wcswidth(self.current_stdouterr_line)
                 + wcswidth(self.stdin.current_line[: self.stdin.cursor_offset]),
                 width,
             )
