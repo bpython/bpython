@@ -775,6 +775,8 @@ class BaseRepl(BpythonRepl):
             self.on_tab(back=True)
         elif e in key_dispatch[self.config.undo_key]:  # ctrl-r for undo
             self.prompt_undo()
+        elif e in key_dispatch[self.config.redo_key]:  # ctrl-g for redo
+            self.redo()
         elif e in key_dispatch[self.config.save_key]:  # ctrl-s for save
             greenlet.greenlet(self.write2file).switch()
         elif e in key_dispatch[self.config.pastebin_key]:  # F8 for pastebin
@@ -858,14 +860,17 @@ class BaseRepl(BpythonRepl):
         else:
             self.cut_buffer = cut
 
-    def on_enter(self, insert_into_history=True, reset_rl_history=True):
+    def on_enter(self, new_code=True, reset_rl_history=True):
         # so the cursor isn't touching a paren TODO: necessary?
+        if new_code:
+            self.redo_stack = []
+
         self._set_cursor_offset(-1, update_completion=False)
         if reset_rl_history:
             self.rl_history.reset()
 
         self.history.append(self.current_line)
-        self.push(self.current_line, insert_into_history=insert_into_history)
+        self.push(self.current_line, insert_into_history=new_code)
 
     def on_tab(self, back=False):
         """Do something on tab key
@@ -1019,7 +1024,7 @@ class BaseRepl(BpythonRepl):
         source = preprocess("\n".join(from_editor), self.interp.compile)
         lines = source.split("\n")
         self.history = lines
-        self.reevaluate(insert_into_history=True)
+        self.reevaluate(new_code=True)
         self.current_line = current_line
         self.cursor_offset = len(self.current_line)
         self.status_bar.message(_("Session edited and reevaluated"))
@@ -1030,7 +1035,7 @@ class BaseRepl(BpythonRepl):
         cursor, line = self.cursor_offset, self.current_line
         for modname in set(sys.modules.keys()) - self.original_modules:
             del sys.modules[modname]
-        self.reevaluate(insert_into_history=True)
+        self.reevaluate(new_code=False)
         self.cursor_offset, self.current_line = cursor, line
         self.status_bar.message(
             _("Reloaded at %s by user.") % (time.strftime("%X"),)
@@ -1811,7 +1816,15 @@ class BaseRepl(BpythonRepl):
 
         greenlet.greenlet(prompt_for_undo).switch()
 
-    def reevaluate(self, insert_into_history=False):
+    def redo(self):
+        if (self.redo_stack):
+            temp = self.redo_stack.pop()
+            self.push(temp)
+            self.history.append(temp)
+        else:
+            self.status_bar.message("Nothing to redo.")
+
+    def reevaluate(self, new_code=False):
         """bpython.Repl.undo calls this"""
         if self.watcher:
             self.watcher.reset()
@@ -1835,7 +1848,7 @@ class BaseRepl(BpythonRepl):
         sys.stdin = ReevaluateFakeStdin(self.stdin, self)
         for line in old_logical_lines:
             self._current_line = line
-            self.on_enter(insert_into_history=insert_into_history)
+            self.on_enter(new_code=new_code)
             while self.fake_refresh_requested:
                 self.fake_refresh_requested = False
                 self.process_event(bpythonevents.RefreshRequestEvent())
