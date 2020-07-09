@@ -6,41 +6,25 @@ import os, sys, tempfile
 class TestAvoidSymbolicLinks(unittest.TestCase):
     def setUp(self):
         with tempfile.TemporaryDirectory() as import_test_folder:
-            try:
-                os.chdir(import_test_folder)
-            except:
-                print("Can't change the Current Working Directory")
-                import_test_folder.cleanup()
-                sys.exit()
+            os.chdir(import_test_folder)
 
             os.mkdir(os.path.join(os.getcwd(), "Level0"))
             os.mkdir(os.path.join(os.getcwd(), "Right"))
             os.mkdir(os.path.join(os.getcwd(), "Left"))
-            try:
-                os.chdir("Level0")
-                with open("__init__.py", "w") as init_file:
-                    init_file.close()
-            except OSError:
-                print("Can't change the Current Working Directory")
-                sys.exit()
+            
+            os.chdir("Level0")
+            with open("__init__.py", "w") as init_file:
+                pass
 
             os.mkdir(os.path.join(os.getcwd(), "Level1"))
-            try:
-                os.chdir("Level1")
-                with open("__init__.py", "w") as init_file:
-                    init_file.close()
-            except OSError:
-                print("Can't change the Current Working Directory")
-                sys.exit()
+            os.chdir("Level1")
+            with open("__init__.py", "w") as init_file:
+                pass
 
             os.mkdir(os.path.join(os.getcwd(), "Level2"))
-            try:
-                os.chdir("Level2")
-                with open("__init__.py", "w") as init_file:
-                    init_file.close()
-            except OSError:
-                print("Can't change the Current Working Directory")
-                sys.exit()
+            os.chdir("Level2")
+            with open("__init__.py", "w") as init_file:
+                pass
 
             os.symlink(
                 "import_test_folder/Level0/Level1",
@@ -48,19 +32,11 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
                 True,
             )
 
-            try:
-                os.chdir(import_test_folder)
-            except:
-                print("Can't change the Current Working Directory")
-                sys.exit()
+            os.chdir(import_test_folder)
 
-            try:
-                os.chdir("Right")
-                with open("__init__.py", "w") as init_file:
-                    init_file.close()
-            except OSError:
-                print("Can't change the Current Working Directory")
-                sys.exit()
+            os.chdir("Right")
+            with open("__init__.py", "w") as init_file:
+                pass
 
             os.symlink(
                 "import_test_folder/Left",
@@ -68,19 +44,11 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
                 True,
             )
 
-            try:
-                os.chdir(import_test_folder)
-            except:
-                print("Can't change the Current Working Directory")
-                sys.exit()
+            os.chdir(import_test_folder)
 
-            try:
-                os.chdir("Left")
-                with open("__init__.py", "w") as init_file:
-                    init_file.close()
-            except OSError:
-                print("Can't change the Current Working Directory")
-                sys.exit()
+            os.chdir("Left")
+            with open("__init__.py", "w") as init_file:
+                pass
 
             os.symlink(
                 "import_test_folder/Right",
