@@ -31,6 +31,7 @@ from .line import (
 import fnmatch
 import os
 import sys
+import importlib
 import warnings
 import importlib.machinery
 
