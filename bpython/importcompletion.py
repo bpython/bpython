@@ -34,6 +34,7 @@ from .line import (
 
 import os
 import sys
+import importlib
 import warnings
 from six.moves import filter
 
@@ -50,10 +51,15 @@ else:
 modules = set()
 fully_loaded = False
 
-
 def module_matches(cw, prefix=""):
     """Modules names to replace cw with"""
     full = "%s.%s" % (prefix, cw) if prefix else cw
+    if prefix and prefix not in modules:
+        module = importlib.import_module(prefix)
+        module_path = os.path.abspath(module.__file__)
+        print("path", module_path)
+        find_all_modules(module_path)
+        print("import", module)
     matches = (
         name
         for name in modules
@@ -208,7 +214,7 @@ def find_all_modules(path=None):
             p = os.curdir
         for module in find_modules(p):
             module = try_decode(module, "ascii")
-            if module is None:
+            if module is None or ("numpy" in module and not fully_loaded):
                 continue
             modules.add(module)
             yield
