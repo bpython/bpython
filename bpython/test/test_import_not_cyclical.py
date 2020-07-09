@@ -57,19 +57,18 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
             )
 
             self.foo = list(find_modules(os.path.abspath(import_test_folder)))
-            self.counter = 0
             self.filepaths = [
                 "Left",
                 "Level0.Level1.Level2",
                 "Level0.Level1",
                 "Level0",
-                "Right",
+                "Right"
             ]
 
     def test_simple_symbolic_link_loop(self):
         for thing in self.foo:
-            self.assertEqual(thing, self.filepaths[self.counter])
-            self.counter = self.counter + 1
+            self.assertTrue(thing in self.filepaths)
+            self.filepaths.remove(thing)
 
 
 if __name__ == "__main__":
