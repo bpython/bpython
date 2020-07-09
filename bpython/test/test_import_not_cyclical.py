@@ -71,7 +71,7 @@ if sys.version_info[0] > 2:
                 self.filepaths.remove(thing)
 
 else:
-    @unittest.skip()
+    @unittest.skip("test doesn't work in python 2")
     def test_skip():
         pass
 
