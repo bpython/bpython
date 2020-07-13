@@ -1361,7 +1361,11 @@ class BaseRepl(BpythonRepl):
 
     @property
     def current_cursor_line_without_suggestion(self):
-        """Current line, either output/input or Python prompt + code"""
+        """
+        Current line, either output/input or Python prompt + code
+
+        :returns: FmtStr
+        """
         value = self.current_output_line + (
             "" if self.coderunner.running else self.display_line_with_prompt
         )
@@ -1577,10 +1581,10 @@ class BaseRepl(BpythonRepl):
                 len(self.current_line),
                 self.cursor_offset,
             )
-        else:
+        else: # Common case for determining cursor position
             cursor_row, cursor_column = divmod(
                 (
-                    self.current_cursor_line_without_suggestion.width
+                    wcswidth(self.current_cursor_line_without_suggestion.s)
                     - wcswidth(self.current_line)
                     + wcswidth(self.current_line[: self.cursor_offset]) 
                 ),
