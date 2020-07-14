@@ -197,11 +197,18 @@ def find_all_modules(path=None):
         modules.update(sys.builtin_module_names)
         path = sys.path
 
+    print("Done2:", done)
+    if done:
+        print("path2:", path)
     for p in path:
+        if done:
+            print("p:", p)
         if not p:
             p = os.curdir
         for module in find_modules(p):
             modules.add(module)
+            if done:
+                print("Yes:", module)
             yield
 
 
