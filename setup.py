@@ -228,6 +228,7 @@ install_requires = [
     "curtsies >=0.1.18",
     "greenlet",
     "six >=1.5",
+    "wcwidth"
 ]
 
 extras_require = {

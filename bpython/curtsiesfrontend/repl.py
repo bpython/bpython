@@ -19,6 +19,8 @@ from pygments import format as pygformat
 from bpython._py3compat import PythonLexer
 from pygments.formatters import TerminalFormatter
 
+from wcwidth import wcswidth
+
 import blessings
 
 import curtsies
@@ -1359,7 +1361,11 @@ class BaseRepl(BpythonRepl):
 
     @property
     def current_cursor_line_without_suggestion(self):
-        """Current line, either output/input or Python prompt + code"""
+        """
+        Current line, either output/input or Python prompt + code
+
+        :returns: FmtStr
+        """
         value = self.current_output_line + (
             "" if self.coderunner.running else self.display_line_with_prompt
         )
@@ -1556,7 +1562,8 @@ class BaseRepl(BpythonRepl):
 
         if self.stdin.has_focus:
             cursor_row, cursor_column = divmod(
-                len(self.current_stdouterr_line) + self.stdin.cursor_offset,
+                wcswidth(self.current_stdouterr_line)
+                + wcswidth(self.stdin.current_line[: self.stdin.cursor_offset]),
                 width,
             )
             assert cursor_column >= 0, cursor_column
@@ -1574,12 +1581,12 @@ class BaseRepl(BpythonRepl):
                 len(self.current_line),
                 self.cursor_offset,
             )
-        else:
+        else: # Common case for determining cursor position
             cursor_row, cursor_column = divmod(
                 (
-                    len(self.current_cursor_line_without_suggestion)
-                    - len(self.current_line)
-                    + self.cursor_offset
+                    wcswidth(self.current_cursor_line_without_suggestion.s)
+                    - wcswidth(self.current_line)
+                    + wcswidth(self.current_line[: self.cursor_offset]) 
                 ),
                 width,
             )
