@@ -31,7 +31,7 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
                 pass
 
             os.symlink(
-                "import_test_folder/Level0/Level1",
+                os.path.join(import_test_folder, "Level0/Level1"),
                 os.path.join(current_path, "Level3"),
                 True,
             )
@@ -43,7 +43,7 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
                 pass
 
             os.symlink(
-                "import_test_folder/Left",
+                os.path.join(import_test_folder, "Left"),
                 os.path.join(current_path, "toLeft"),
                 True,
             )
@@ -55,7 +55,7 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
                 pass
 
             os.symlink(
-                "import_test_folder/Right",
+                os.path.join(import_test_folder, "Right"),
                 os.path.join(current_path, "toRight"),
                 True,
             )
@@ -64,7 +64,10 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
                 find_modules(os.path.abspath(import_test_folder))
             )
             self.filepaths = [
+                "Left.toRight.toLeft",
+                "Left.toRight",
                 "Left",
+                "Level0.Level1.Level2.Level3",
                 "Level0.Level1.Level2",
                 "Level0.Level1",
                 "Level0",
@@ -75,6 +78,7 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
         for thing in self.foo:
             self.assertTrue(thing in self.filepaths)
             self.filepaths.remove(thing)
+
 
 if __name__ == "__main__":
     unittest.main()
