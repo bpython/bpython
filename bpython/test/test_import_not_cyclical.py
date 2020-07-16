@@ -78,6 +78,12 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
     def test_simple_symbolic_link_loop(self):
         for thing in self.foo:
             self.assertTrue(thing in self.filepaths)
+            if thing == "Left.toRight.toLeft":
+                self.filepaths.remove("Right.toLeft")
+                self.filepaths.remove("Right.toLeft.toRight")
+            if thing == "Right.toLeft.toRight":
+                self.filepaths.remove("Left.toRight.toLeft")
+                self.filepaths.remove("Left.toRight")
             self.filepaths.remove(thing)
 
 
