@@ -71,6 +71,8 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
                 "Level0.Level1",
                 "Level0",
                 "Right",
+                "Right.toLeft",
+                "Right.toLeft.toRight",
             ]
 
     def test_simple_symbolic_link_loop(self):
