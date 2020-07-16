@@ -85,6 +85,7 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
                 self.filepaths.remove("Left.toRight.toLeft")
                 self.filepaths.remove("Left.toRight")
             self.filepaths.remove(thing)
+        self.assertFalse(self.filepaths)
 
 
 if __name__ == "__main__":
