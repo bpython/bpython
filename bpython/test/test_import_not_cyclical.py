@@ -2,6 +2,7 @@ from bpython.test import unittest
 from bpython.importcompletion import find_modules
 import os, sys, tempfile
 
+
 @unittest.skipIf(sys.version_info[0] <= 2, "Test doesn't work in python 2.")
 class TestAvoidSymbolicLinks(unittest.TestCase):
     def setUp(self):
@@ -60,9 +61,7 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
                 True,
             )
 
-            self.foo = list(
-                find_modules(os.path.abspath(import_test_folder))
-            )
+            self.foo = list(find_modules(os.path.abspath(import_test_folder)))
             self.filepaths = [
                 "Left.toRight.toLeft",
                 "Left.toRight",
