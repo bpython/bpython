@@ -31,6 +31,7 @@ from curtsies import events
 
 import bpython
 from bpython.repl import Repl as BpythonRepl, SourceNotFound
+from bpython.repl import LineTypeTranslator as LineType
 from bpython.config import (
     Struct,
     loadini,
@@ -396,7 +397,6 @@ class BaseRepl(BpythonRepl):
         # current line of output - stdout and stdin go here
         self.current_stdouterr_line = ""
 
-
         # this is every line that's been displayed (input and output)
         # as with formatting applied. Logical lines that exceeded the terminal width
         # at the time of output are split across multiple entries in this list.
@@ -408,8 +408,9 @@ class BaseRepl(BpythonRepl):
         # This is every logical line that's been displayed, both input and output. 
         # Like self.history, lines are unwrapped, uncolored, and without prompt.
         # Entries are tuples, where
-        #   the first element a string of the line
-        #   the second element is one of 2 strings: "input" or "output".
+        #   - the first element the line (string, not fmtsr)
+        #   - the second element is one of 2 global constants: "input" or "output"
+        #     (use LineType.INPUT or LineType.OUTPUT to avoid typing these strings)
         self.all_logical_lines = []
 
         # formatted version of lines in the buffer kept around so we can
@@ -881,9 +882,8 @@ class BaseRepl(BpythonRepl):
             self.rl_history.reset()
 
         self.history.append(self.current_line)
-        self.all_logical_lines.append((self.current_line, "input"))
+        self.all_logical_lines.append((self.current_line, LineType.INPUT))
         self.push(self.current_line, insert_into_history=new_code)
-
 
     def on_tab(self, back=False):
         """Do something on tab key
@@ -1016,7 +1016,7 @@ class BaseRepl(BpythonRepl):
         """
         for_editor = EDIT_SESSION_HEADER
         for_editor += "\n".join(
-            line[0] if line[1] == "input"
+            line[0] if line[1] == INPUT
             else "### " + line[0] 
             for line in self.all_logical_lines
         )
@@ -1189,9 +1189,7 @@ class BaseRepl(BpythonRepl):
         if c:
             logger.debug("finished - buffer cleared")
             self.cursor_offset = 0
-
             self.display_lines.extend(self.display_buffer_lines)
-            
             self.display_buffer = []
             self.buffer = []
 
@@ -1296,14 +1294,12 @@ class BaseRepl(BpythonRepl):
                     [],
                 )
             )
-
             # These can be FmtStrs, but self.all_logical_lines only wants strings
             for line in [self.current_stdouterr_line] + lines[1:-1]:
                 if isinstance(line, FmtStr):
-                    self.all_logical_lines.append((line.s, "output"))
+                    self.all_logical_lines.append((line.s, LineType.OUTPUT))
                 else:
-                    self.all_logical_lines.append((line, "output"))
-
+                    self.all_logical_lines.append((line, LineType.OUTPUT))
 
             self.current_stdouterr_line = lines[-1]
         logger.debug("display_lines: %r", self.display_lines)
@@ -1846,8 +1842,6 @@ class BaseRepl(BpythonRepl):
         self.display_lines.pop()
         self.all_logical_lines.pop()
  
-
-
     def prompt_undo(self):
         if self.buffer:
             return self.take_back_buffer_line()
@@ -1865,7 +1859,7 @@ class BaseRepl(BpythonRepl):
         if (self.redo_stack):
             temp = self.redo_stack.pop()
             self.history.append(temp)
-            self.all_logical_lines.append((temp, "input"))
+            self.all_logical_lines.append((temp, LineType.INPUT))
             self.push(temp)
         else:
             self.status_bar.message("Nothing to redo.")
@@ -1953,7 +1947,6 @@ class BaseRepl(BpythonRepl):
             else ""
         )
         return s
-
 
     def focus_on_subprocess(self, args):
         prev_sigwinch_handler = signal.getsignal(signal.SIGWINCH)
