@@ -13,6 +13,7 @@ from six.moves import StringIO
 from bpython.curtsiesfrontend import repl as curtsiesrepl
 from bpython.curtsiesfrontend import interpreter
 from bpython.curtsiesfrontend import events as bpythonevents
+from bpython.repl import LineTypeTranslator as LineType
 from bpython import autocomplete
 from bpython import config
 from bpython import args
@@ -79,7 +80,7 @@ class TestCurtsiesRepl(TestCase):
         with captured_output():
             self.repl.display_lines.append('>>> "åß∂ƒ"')
             self.repl.history.append('"åß∂ƒ"')
-            self.repl.all_logical_lines.append(('"åß∂ƒ"',"input"))
+            self.repl.all_logical_lines.append(('"åß∂ƒ"', LineType.INPUT))
             self.repl.send_session_to_external_editor()
 
     def test_get_last_word(self):

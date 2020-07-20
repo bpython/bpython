@@ -41,6 +41,7 @@ import traceback
 from itertools import takewhile
 from six import itervalues
 from types import ModuleType
+from enum import Enum
 
 from pygments.token import Token
 
@@ -387,6 +388,11 @@ class Interaction(object):
 class SourceNotFound(Exception):
     """Exception raised when the requested source could not be found."""
 
+class LineTypeTranslator(Enum):
+    """ Used when adding a tuple to all_logical_lines, to get input / output values
+    having to actually type/know the strings """
+    INPUT = "input"
+    OUTPUT = "output"
 
 class Repl(object):
     """Implements the necessary guff for a Python-repl-alike interface
@@ -821,11 +827,9 @@ class Repl(object):
         output lines."""
 
         def process():
-            for line in session_ouput.split("\n"):
-                if line.startswith(self.ps1):
-                    yield line[len(self.ps1) :]
-                elif line.startswith(self.ps2):
-                    yield line[len(self.ps2) :]
+            for line, lineType in self.all_logical_lines:
+                if lineType == LineTypeTranslator.INPUT:
+                    yield line
                 elif line.rstrip():
                     yield "# OUT: %s" % (line,)
 
