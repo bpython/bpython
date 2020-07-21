@@ -20,7 +20,6 @@ from bpython._py3compat import PythonLexer
 from pygments.formatters import TerminalFormatter
 
 from wcwidth import wcswidth
-from math import ceil
 
 import blessings
 
@@ -1009,18 +1008,10 @@ class BaseRepl(BpythonRepl):
 
     def send_session_to_external_editor(self, filename=None):
         """
-        Sends entire bpython session to external editor to be edited. Usually bound to F7. 
-
-        Loops through self.all_logical_lines so that lines aren't wrapped in the editor.
-        
+        Sends entire bpython session to external editor to be edited. Usually bound to F7.         
         """
         for_editor = EDIT_SESSION_HEADER
-        for_editor += "\n".join(
-            line[0] if line[1] == INPUT
-            else "### " + line[0] 
-            for line in self.all_logical_lines
-        )
-        for_editor += "\n" + "### " + self.current_line
+        for_editor += self.get_session_formatted_for_file()
 
         text = self.send_to_external_editor(for_editor)
         if text == for_editor:
@@ -1035,7 +1026,7 @@ class BaseRepl(BpythonRepl):
             current_line = lines[-1][4:]
         else:
             current_line = ""
-        from_editor = [line for line in lines if line[:3] != "###"]
+        from_editor = [line for line in lines if line[:6] != "# OUT:"]
         if all(not line.strip() for line in from_editor):
             self.status_bar.message(
                 _("Session not reevaluated because saved file was blank")
@@ -1938,7 +1929,7 @@ class BaseRepl(BpythonRepl):
 
     def getstdout(self):
         """
-        Returns a string of the current bpython session, formatted and wrapped.
+        Returns a string of the current bpython session, wrapped, WITH prompts.
         """
         lines = self.lines_for_display + [self.current_line_formatted]
         s = (

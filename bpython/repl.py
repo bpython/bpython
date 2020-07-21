@@ -821,18 +821,18 @@ class Repl(object):
             indentation = 0
         return indentation
 
-    def formatforfile(self, session_ouput):
+    def get_session_formatted_for_file(self):
         """Format the stdout buffer to something suitable for writing to disk,
         i.e. without >>> and ... at input lines and with "# OUT: " prepended to
-        output lines."""
+        output lines and "### " prepended to current line"""
 
         def process():
             for line, lineType in self.all_logical_lines:
                 if lineType == LineTypeTranslator.INPUT:
                     yield line
                 elif line.rstrip():
-                    yield "# OUT: %s" % (line,)
-
+                    yield "# OUT: %s" % line
+            yield "###: %s" % self.current_line
         return "\n".join(process())
 
     def write2file(self):
@@ -872,7 +872,7 @@ class Repl(object):
                 self.interact.notify(_("Save cancelled."))
                 return
 
-        stdout_text = self.formatforfile(self.getstdout())
+        stdout_text = self.get_session_formatted_for_file()
 
         try:
             with open(fn, mode) as f:
@@ -889,7 +889,7 @@ class Repl(object):
             self.interact.notify(_("No clipboard available."))
             return
 
-        content = self.formatforfile(self.getstdout())
+        content = self.get_session_formatted_for_file()
         try:
             self.clipboard.copy(content)
         except CopyFailed:
