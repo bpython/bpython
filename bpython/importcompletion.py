@@ -201,14 +201,13 @@ def find_all_modules(path=None):
     if done:
         print("path2:", path)
     for p in path:
-        if done:
-            print("p:", p)
         if not p:
             p = os.curdir
         for module in find_modules(p):
+            module = try_decode(module, "ascii")
+            if module is None or "numpy" in module:
+                continue
             modules.add(module)
-            if done:
-                print("Yes:", module)
             yield
 
 
