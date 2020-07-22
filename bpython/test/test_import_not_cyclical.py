@@ -1,9 +1,15 @@
+# encoding: utf-8
+
+import os
+import sys
+import tempfile
+
+from bpython._py3compat import py3
 from bpython.test import unittest
 from bpython.importcompletion import find_modules
-import os, sys, tempfile
 
 
-@unittest.skipIf(sys.version_info[0] <= 2, "Test doesn't work in python 2.")
+@unittest.skipIf(not py3, "Test doesn't work in python 2.")
 class TestAvoidSymbolicLinks(unittest.TestCase):
     def setUp(self):
         with tempfile.TemporaryDirectory() as import_test_folder:
@@ -61,7 +67,7 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
                 True,
             )
 
-            self.foo = list(find_modules(os.path.abspath(import_test_folder)))
+            self.modules = list(find_modules(os.path.abspath(import_test_folder)))
             self.filepaths = [
                 "Left.toRight.toLeft",
                 "Left.toRight",
@@ -76,7 +82,7 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
             ]
 
     def test_simple_symbolic_link_loop(self):
-        for thing in self.foo:
+        for thing in self.modules:
             self.assertTrue(thing in self.filepaths)
             if thing == "Left.toRight.toLeft":
                 self.filepaths.remove("Right.toLeft")
