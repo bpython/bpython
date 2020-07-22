@@ -38,9 +38,6 @@ import importlib
 import warnings
 from six.moves import filter
 
-global done
-done = False
-
 if py3:
     import importlib.machinery
 
@@ -60,11 +57,9 @@ def module_matches(cw, prefix=""):
     if prefix and prefix not in modules:
         module = importlib.import_module(prefix)
         module_path = os.path.dirname(module.__file__)
-        done = True
-        print("done", done)
-        print("path", module_path)
-        find_iterator = find_all_modules(module_path)
-        print("import", module)
+        for mod in find_modules(module_path):
+            modules.add("%s.%s" % (prefix, mod))
+        modules.add(prefix)
 
     matches = (
         name
@@ -215,22 +210,14 @@ def find_all_modules(path=None):
         modules.update(try_decode(m, "ascii") for m in sys.builtin_module_names)
         path = sys.path
 
-    print("Done2:", done)
-    if done:
-            print("path2:", path)
     for p in path:
-        if done:
-            print("p:", p)
         if not p:
             p = os.curdir
         for module in find_modules(p):
             module = try_decode(module, "ascii")
-            if module is None or ("numpy" in module and not done):
-                print("No:", module)
+            if module is None or "numpy" in module:
                 continue
             modules.add(module)
-            if done:
-                print("Yes:", module)
             yield
 
 
