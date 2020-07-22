@@ -835,7 +835,7 @@ class Repl(object):
                     yield line
                 elif line.rstrip():
                     yield "# OUT: %s" % line
-            yield "###: %s" % self.current_line
+            yield "### %s" % self.current_line
 
         return "\n".join(process())
 
