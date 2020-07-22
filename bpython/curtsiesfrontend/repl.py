@@ -279,7 +279,7 @@ class ImportFinder(object):
 
     def find_distributions(self, context):
         for finder in self.old_meta_path:
-            distribution_finder = getattr(finder, 'find_distributions', None)
+            distribution_finder = getattr(finder, "find_distributions", None)
             if distribution_finder is not None:
                 loader = finder.find_distributions(context)
                 if loader is not None:
@@ -404,7 +404,7 @@ class BaseRepl(BpythonRepl):
         # this is every line that's been executed; it gets smaller on rewind
         self.history = []
 
-        # This is every logical line that's been displayed, both input and output. 
+        # This is every logical line that's been displayed, both input and output.
         # Like self.history, lines are unwrapped, uncolored, and without prompt.
         # Entries are tuples, where
         #   - the first element the line (string, not fmtsr)
@@ -1602,12 +1602,12 @@ class BaseRepl(BpythonRepl):
                 len(self.current_line),
                 self.cursor_offset,
             )
-        else: # Common case for determining cursor position
+        else:  # Common case for determining cursor position
             cursor_row, cursor_column = divmod(
                 (
                     wcswidth(self.current_cursor_line_without_suggestion.s)
                     - wcswidth(self.current_line)
-                    + wcswidth(self.current_line[: self.cursor_offset]) 
+                    + wcswidth(self.current_line[: self.cursor_offset])
                 ),
                 width,
             )
@@ -1832,7 +1832,7 @@ class BaseRepl(BpythonRepl):
         self.history.pop()
         self.display_lines.pop()
         self.all_logical_lines.pop()
- 
+
     def prompt_undo(self):
         if self.buffer:
             return self.take_back_buffer_line()
@@ -1847,7 +1847,7 @@ class BaseRepl(BpythonRepl):
         greenlet.greenlet(prompt_for_undo).switch()
 
     def redo(self):
-        if (self.redo_stack):
+        if self.redo_stack:
             temp = self.redo_stack.pop()
             self.history.append(temp)
             self.all_logical_lines.append((temp, LineType.INPUT))

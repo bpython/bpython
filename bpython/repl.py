@@ -388,11 +388,14 @@ class Interaction(object):
 class SourceNotFound(Exception):
     """Exception raised when the requested source could not be found."""
 
+
 class LineTypeTranslator(Enum):
     """ Used when adding a tuple to all_logical_lines, to get input / output values
     having to actually type/know the strings """
+
     INPUT = "input"
     OUTPUT = "output"
+
 
 class Repl(object):
     """Implements the necessary guff for a Python-repl-alike interface
@@ -833,6 +836,7 @@ class Repl(object):
                 elif line.rstrip():
                     yield "# OUT: %s" % line
             yield "###: %s" % self.current_line
+
         return "\n".join(process())
 
     def write2file(self):
@@ -1014,7 +1018,7 @@ class Repl(object):
 
         entries = list(self.rl_history.entries)
 
-        #Most recently undone command
+        # Most recently undone command
         last_entries = self.history[-n:]
         last_entries.reverse()
         self.redo_stack += last_entries
