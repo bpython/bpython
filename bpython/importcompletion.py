@@ -48,6 +48,9 @@ else:
 
 # The cached list of all known modules
 modules = set()
+# List of stored paths to compare against so that real paths are not repeated
+# handles symlinks not mount points
+paths = set()
 fully_loaded = False
 
 
@@ -190,9 +193,12 @@ def find_modules(path):
             continue
         else:
             if is_package:
-                for subname in find_modules(pathname):
-                    if subname != "__init__":
-                        yield "%s.%s" % (name, subname)
+                path_real = os.path.realpath(pathname)
+                if path_real not in paths:
+                    paths.add(path_real)
+                    for subname in find_modules(pathname):
+                        if subname != "__init__":
+                            yield "%s.%s" % (name, subname)
             yield name
 
 
