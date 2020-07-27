@@ -155,5 +155,57 @@ class TestInspection(unittest.TestCase):
         self.assertEqual(encoding, "utf-8")
 
 
+    class TestSafeGetAttribute(unittest.TestCase):
+        def test_lookup_on_object(self):
+            a = A()
+            a.x = 1
+            self.assertEqual(get_attr_safe(a, "x"), 1)
+            self.assertEqual(get_attr_safe(a, "a"), "a")
+            b = B()
+            b.y = 2
+            self.assertEqual(get_attr_safe(b, "y"), 2)
+            self.assertEqual(get_attr_safe(b, "a"), "a")
+            self.assertEqual(get_attr_safe(b, "b"), "b")
+
+        def test_avoid_running_properties(self):
+            p = Property()
+            self.assertEqual(get_attr_safe(p, "prop"), Property.prop)
+        
+        def test_lookup_with_slots(self):
+            s = Slots()
+            s.s1 = "s1"
+            self.assertEqual(get_attr_safe(s, "s1"), "s1")
+            with self.assertRaises(AttributeError):
+                get_attr_safe(s, "s2")
+
+        def test_lookup_on_slots_classes(self):
+            sga = get_attr_safe
+            s = SlotsSubclass()
+            self.assertIsInstance(sga(Slots, "s1"), member_descriptor)
+            self.assertIsInstance(sga(SlotsSubclass, "s1"), member_descriptor)
+            self.assertIsInstance(sga(SlotsSubclass, "s4"), property)
+            self.assertIsInstance(sga(s, "s4"), property)
+
+        @unittest.skipIf(py3, "Py 3 doesn't allow slots and prop in same class")
+        def test_lookup_with_property_and_slots(self):
+            sga = get_attr_safe
+            s = SlotsSubclass()
+            self.assertIsInstance(sga(Slots, "s3"), property)
+            self.assertEqual(get_attr_safe(s, "s3"), Slots.__dict__["s3"])
+            self.assertIsInstance(sga(SlotsSubclass, "s3"), property)
+
+        def test_lookup_on_overridden_methods(self):
+            sga = get_attr_safe
+            self.assertEqual(sga(OverriddenGetattr(), "a"), 1)
+            self.assertEqual(sga(OverriddenGetattribute(), "a"), 1)
+            self.assertEqual(sga(OverriddenMRO(), "a"), 1)
+            with self.assertRaises(AttributeError):
+                sga(OverriddenGetattr(), "b")
+            with self.assertRaises(AttributeError):
+                sga(OverriddenGetattribute(), "b")
+            with self.assertRaises(AttributeError):
+                sga(OverriddenMRO(), "b")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -356,8 +356,7 @@ class AttrCompletion(BaseCompletionType):
             obj = safe_eval(expr, namespace)
         except EvaluationError:
             return []
-        with inspection.AttrCleaner(obj):
-            matches = self.attr_lookup(obj, expr, attr)
+        matches = self.attr_lookup(obj, expr, attr)
         return matches
 
     def attr_lookup(self, obj, expr, attr):
@@ -365,7 +364,7 @@ class AttrCompletion(BaseCompletionType):
         be wrapped in a safe try/finally block in case anything bad happens to
         restore the original __getattribute__ method."""
         words = self.list_attributes(obj)
-        if hasattr(obj, "__class__"):
+        if inspection.has_attr_safe(obj, "__class__"):
             words.append("__class__")
             words = words + rlcompleter.get_class_members(obj.__class__)
             if not isinstance(obj.__class__, abc.ABCMeta):
@@ -537,10 +536,9 @@ class ExpressionAttributeCompletion(AttrCompletion):
             obj = evaluate_current_expression(cursor_offset, line, locals_)
         except EvaluationError:
             return set()
-        with inspection.AttrCleaner(obj):
-            #          strips leading dot
-            matches = [m[1:] for m in self.attr_lookup(obj, "", attr.word)]
 
+        # strips leading dot
+        matches = [m[1:] for m in self.attr_lookup(obj, "", attr.word)]
         return set(m for m in matches if few_enough_underscores(attr.word, m))
 
 
@@ -679,7 +677,7 @@ def get_completer_bpython(cursor_offset, line, **kwargs):
 
 def _callable_postfix(value, word):
     """rlcompleter's _callable_postfix done right."""
-    with inspection.AttrCleaner(value):
-        if inspection.is_callable(value):
-            word += "("
+    # TODO: do we need this done within an AttrCleaner?
+    if inspection.is_callable(value):
+        word += "("
     return word
