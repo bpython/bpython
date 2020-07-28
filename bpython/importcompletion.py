@@ -92,6 +92,19 @@ def module_attr_matches(name):
     return attr_matches(name, prefix="", only_modules=True)
 
 
+def try_to_import(module_name):
+    """If this hasn't been imported our goal is to add it to the set of modules and actually import it"""
+    if module_name not in sys.modules:
+        try:
+            module = __import__(module_name)
+            module_path = os.path.dirname(module.__file__)
+            for mod in find_modules(module_path):
+                modules.add("%s.%s" % (module_name, mod))
+            modules.add(module_name)
+        except ImportError:
+            pass
+
+
 def complete(cursor_offset, line):
     """Construct a full list of possibly completions for imports."""
     tokens = line.split()
@@ -205,7 +218,7 @@ def find_all_modules(path=None):
             p = os.curdir
         for module in find_modules(p):
             module = try_decode(module, "ascii")
-            if module is None or "numpy" in module:
+            if module is None:
                 continue
             modules.add(module)
             yield

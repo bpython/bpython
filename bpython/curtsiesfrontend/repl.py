@@ -37,6 +37,7 @@ from bpython.formatter import BPythonFormatter
 from bpython import autocomplete
 from bpython.translations import _
 from bpython.pager import get_pager_command
+from bpython.line import from_import_tab
 
 from bpython.curtsiesfrontend import replpainter as paint
 from bpython.curtsiesfrontend import sitefix
@@ -887,6 +888,15 @@ class BaseRepl(BpythonRepl):
             for unused in range(to_add):
                 self.add_normal_character(" ")
             return
+        
+        # if line is `from a import` and tab then import module and attr
+        line = self.current_line.split()
+        module_name = ""
+        if "from" in line and "import" in line:
+            module_name = from_import_tab(self.current_line)
+        if module_name:
+            self.status_bar.message("Importing module %s" % module_name)
+            self.completers[1].try_to_complete(module_name)
 
         # run complete() if we don't already have matches
         if len(self.matches_iter.matches) == 0:
