@@ -120,6 +120,19 @@ def current_object_attribute(cursor_offset, line):
     return None
 
 
+from_import_tab_re = LazyReCompile(r"from ([\w0-9_.]*)\s+import")
+
+
+def from_import_tab(line):
+    matches = from_import_tab_re.finditer(line)
+    try:
+        module = matches.__next__()
+    except StopIteration:
+        pass
+    if module:
+        return str(module[1])
+
+
 current_from_import_from_re = LazyReCompile(
     r"from ([\w0-9_.]*)(?:\s+import\s+([\w0-9_]+[,]?\s*)+)*"
 )

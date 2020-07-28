@@ -51,16 +51,10 @@ else:
 modules = set()
 fully_loaded = False
 
+
 def module_matches(cw, prefix=""):
     """Modules names to replace cw with"""
     full = "%s.%s" % (prefix, cw) if prefix else cw
-    if prefix and prefix not in modules:
-        module = importlib.import_module(prefix)
-        module_path = os.path.dirname(module.__file__)
-        for mod in find_modules(module_path):
-            modules.add("%s.%s" % (prefix, mod))
-        modules.add(prefix)
-
     matches = (
         name
         for name in modules
@@ -104,6 +98,19 @@ def attr_matches(cw, prefix="", only_modules=False):
 def module_attr_matches(name):
     """Only attributes which are modules to replace name with"""
     return attr_matches(name, prefix="", only_modules=True)
+
+
+def try_to_import(module_name):
+    """If this hasn't been imported our goal is to add it to the set of modules and actually import it"""
+    if module_name not in sys.modules:
+        try:
+            module = __import__(module_name)
+            module_path = os.path.dirname(module.__file__)
+            for mod in find_modules(module_path):
+                modules.add("%s.%s" % (module_name, mod))
+            modules.add(module_name)
+        except ImportError:
+            pass
 
 
 def complete(cursor_offset, line):
@@ -215,7 +222,7 @@ def find_all_modules(path=None):
             p = os.curdir
         for module in find_modules(p):
             module = try_decode(module, "ascii")
-            if module is None or "numpy" in module:
+            if module is None:
                 continue
             modules.add(module)
             yield
