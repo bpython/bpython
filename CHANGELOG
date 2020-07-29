@@ -5,8 +5,16 @@ Changelog
 ----
 
 New features:
+* #802: Provide redo.
+  Thanks to Evan.
 
 Fixes:
+* #806: Prevent symbolic link loops in import completion.
+  Thanks to Etienne Richart.
+* #807: Support packages using importlib.metadata API.
+  Thanks to uriariel.
+* #817: Fix cursor position with full-width characters.
+  Thanks to Jack Rybarczyk.
 
 0.19
 ----

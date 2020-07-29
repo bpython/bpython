@@ -41,6 +41,7 @@ import traceback
 from itertools import takewhile
 from six import itervalues
 from types import ModuleType
+from enum import Enum
 
 from pygments.token import Token
 
@@ -386,6 +387,14 @@ class Interaction(object):
 
 class SourceNotFound(Exception):
     """Exception raised when the requested source could not be found."""
+
+
+class LineTypeTranslator(Enum):
+    """ Used when adding a tuple to all_logical_lines, to get input / output values
+    having to actually type/know the strings """
+
+    INPUT = "input"
+    OUTPUT = "output"
 
 
 class Repl(object):
@@ -815,19 +824,18 @@ class Repl(object):
             indentation = 0
         return indentation
 
-    def formatforfile(self, session_ouput):
+    def get_session_formatted_for_file(self):
         """Format the stdout buffer to something suitable for writing to disk,
         i.e. without >>> and ... at input lines and with "# OUT: " prepended to
-        output lines."""
+        output lines and "### " prepended to current line"""
 
         def process():
-            for line in session_ouput.split("\n"):
-                if line.startswith(self.ps1):
-                    yield line[len(self.ps1) :]
-                elif line.startswith(self.ps2):
-                    yield line[len(self.ps2) :]
+            for line, lineType in self.all_logical_lines:
+                if lineType == LineTypeTranslator.INPUT:
+                    yield line
                 elif line.rstrip():
-                    yield "# OUT: %s" % (line,)
+                    yield "# OUT: %s" % line
+            yield "###: %s" % self.current_line
 
         return "\n".join(process())
 
@@ -868,7 +876,7 @@ class Repl(object):
                 self.interact.notify(_("Save cancelled."))
                 return
 
-        stdout_text = self.formatforfile(self.getstdout())
+        stdout_text = self.get_session_formatted_for_file()
 
         try:
             with open(fn, mode) as f:
@@ -885,7 +893,7 @@ class Repl(object):
             self.interact.notify(_("No clipboard available."))
             return
 
-        content = self.formatforfile(self.getstdout())
+        content = self.get_session_formatted_for_file()
         try:
             self.clipboard.copy(content)
         except CopyFailed:
@@ -1010,7 +1018,7 @@ class Repl(object):
 
         entries = list(self.rl_history.entries)
 
-        #Most recently undone command
+        # Most recently undone command
         last_entries = self.history[-n:]
         last_entries.reverse()
         self.redo_stack += last_entries

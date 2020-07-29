@@ -19,6 +19,8 @@ from pygments import format as pygformat
 from bpython._py3compat import PythonLexer
 from pygments.formatters import TerminalFormatter
 
+from wcwidth import wcswidth
+
 import blessings
 
 import curtsies
@@ -28,6 +30,7 @@ from curtsies import events
 
 import bpython
 from bpython.repl import Repl as BpythonRepl, SourceNotFound
+from bpython.repl import LineTypeTranslator as LineType
 from bpython.config import (
     Struct,
     loadini,
@@ -276,7 +279,7 @@ class ImportFinder(object):
 
     def find_distributions(self, context):
         for finder in self.old_meta_path:
-            distribution_finder = getattr(finder, 'find_distributions', None)
+            distribution_finder = getattr(finder, "find_distributions", None)
             if distribution_finder is not None:
                 loader = finder.find_distributions(context)
                 if loader is not None:
@@ -393,13 +396,21 @@ class BaseRepl(BpythonRepl):
         # current line of output - stdout and stdin go here
         self.current_stdouterr_line = ""
 
-        # lines separated whenever logical line
-        # length goes over what the terminal width
-        # was at the time of original output
+        # this is every line that's been displayed (input and output)
+        # as with formatting applied. Logical lines that exceeded the terminal width
+        # at the time of output are split across multiple entries in this list.
         self.display_lines = []
 
         # this is every line that's been executed; it gets smaller on rewind
         self.history = []
+
+        # This is every logical line that's been displayed, both input and output.
+        # Like self.history, lines are unwrapped, uncolored, and without prompt.
+        # Entries are tuples, where
+        #   - the first element the line (string, not fmtsr)
+        #   - the second element is one of 2 global constants: "input" or "output"
+        #     (use LineType.INPUT or LineType.OUTPUT to avoid typing these strings)
+        self.all_logical_lines = []
 
         # formatted version of lines in the buffer kept around so we can
         # unhighlight parens using self.reprint_line as called by bpython.Repl
@@ -409,7 +420,7 @@ class BaseRepl(BpythonRepl):
         # because there wasn't room to display everything
         self.scroll_offset = 0
 
-        # from the left, 0 means first char
+        # cursor position relative to start of current_line, 0 is first char
         self._cursor_offset = 0
 
         self.orig_tcattrs = orig_tcattrs
@@ -870,6 +881,7 @@ class BaseRepl(BpythonRepl):
             self.rl_history.reset()
 
         self.history.append(self.current_line)
+        self.all_logical_lines.append((self.current_line, LineType.INPUT))
         self.push(self.current_line, insert_into_history=new_code)
 
     def on_tab(self, back=False):
@@ -980,6 +992,9 @@ class BaseRepl(BpythonRepl):
             self.add_normal_character(e)
 
     def send_current_block_to_external_editor(self, filename=None):
+        """"
+        Sends the current code block to external editor to be edited. Usually bound to C-x.
+        """
         text = self.send_to_external_editor(self.get_current_block())
         lines = [line for line in text.split("\n")]
         while lines and not lines[-1].split():
@@ -992,15 +1007,12 @@ class BaseRepl(BpythonRepl):
         self.cursor_offset = len(self.current_line)
 
     def send_session_to_external_editor(self, filename=None):
+        """
+        Sends entire bpython session to external editor to be edited. Usually bound to F7.         
+        """
         for_editor = EDIT_SESSION_HEADER
-        for_editor += "\n".join(
-            line[len(self.ps1) :]
-            if line.startswith(self.ps1)
-            else line[len(self.ps2) :]
-            if line.startswith(self.ps2)
-            else "### " + line
-            for line in self.getstdout().split("\n")
-        )
+        for_editor += self.get_session_formatted_for_file()
+
         text = self.send_to_external_editor(for_editor)
         if text == for_editor:
             self.status_bar.message(
@@ -1014,7 +1026,7 @@ class BaseRepl(BpythonRepl):
             current_line = lines[-1][4:]
         else:
             current_line = ""
-        from_editor = [line for line in lines if line[:3] != "###"]
+        from_editor = [line for line in lines if line[:6] != "# OUT:"]
         if all(not line.strip() for line in from_editor):
             self.status_bar.message(
                 _("Session not reevaluated because saved file was blank")
@@ -1235,6 +1247,7 @@ class BaseRepl(BpythonRepl):
         if remove_from_history:
             for unused in self.buffer:
                 self.history.pop()
+                self.all_logical_lines.pop()
         self.buffer = []
         self.cursor_offset = 0
         self.saved_indent = 0
@@ -1242,6 +1255,9 @@ class BaseRepl(BpythonRepl):
         self.cursor_offset = len(self.current_line)
 
     def get_current_block(self):
+        """
+        Returns the current code block as string (without prompts)
+        """
         return "\n".join(self.buffer + [self.current_line])
 
     def send_to_stdouterr(self, output):
@@ -1269,6 +1285,13 @@ class BaseRepl(BpythonRepl):
                     [],
                 )
             )
+            # These can be FmtStrs, but self.all_logical_lines only wants strings
+            for line in [self.current_stdouterr_line] + lines[1:-1]:
+                if isinstance(line, FmtStr):
+                    self.all_logical_lines.append((line.s, LineType.OUTPUT))
+                else:
+                    self.all_logical_lines.append((line, LineType.OUTPUT))
+
             self.current_stdouterr_line = lines[-1]
         logger.debug("display_lines: %r", self.display_lines)
 
@@ -1359,7 +1382,11 @@ class BaseRepl(BpythonRepl):
 
     @property
     def current_cursor_line_without_suggestion(self):
-        """Current line, either output/input or Python prompt + code"""
+        """
+        Current line, either output/input or Python prompt + code
+
+        :returns: FmtStr
+        """
         value = self.current_output_line + (
             "" if self.coderunner.running else self.display_line_with_prompt
         )
@@ -1556,7 +1583,8 @@ class BaseRepl(BpythonRepl):
 
         if self.stdin.has_focus:
             cursor_row, cursor_column = divmod(
-                len(self.current_stdouterr_line) + self.stdin.cursor_offset,
+                wcswidth(self.current_stdouterr_line)
+                + wcswidth(self.stdin.current_line[: self.stdin.cursor_offset]),
                 width,
             )
             assert cursor_column >= 0, cursor_column
@@ -1574,12 +1602,12 @@ class BaseRepl(BpythonRepl):
                 len(self.current_line),
                 self.cursor_offset,
             )
-        else:
+        else:  # Common case for determining cursor position
             cursor_row, cursor_column = divmod(
                 (
-                    len(self.current_cursor_line_without_suggestion)
-                    - len(self.current_line)
-                    + self.cursor_offset
+                    wcswidth(self.current_cursor_line_without_suggestion.s)
+                    - wcswidth(self.current_line)
+                    + wcswidth(self.current_line[: self.cursor_offset])
                 ),
                 width,
             )
@@ -1797,11 +1825,13 @@ class BaseRepl(BpythonRepl):
         self.display_buffer.pop()
         self.buffer.pop()
         self.history.pop()
+        self.all_logical_lines.pop()
 
     def take_back_empty_line(self):
         assert self.history and not self.history[-1]
         self.history.pop()
         self.display_lines.pop()
+        self.all_logical_lines.pop()
 
     def prompt_undo(self):
         if self.buffer:
@@ -1817,10 +1847,11 @@ class BaseRepl(BpythonRepl):
         greenlet.greenlet(prompt_for_undo).switch()
 
     def redo(self):
-        if (self.redo_stack):
+        if self.redo_stack:
             temp = self.redo_stack.pop()
-            self.push(temp)
             self.history.append(temp)
+            self.all_logical_lines.append((temp, LineType.INPUT))
+            self.push(temp)
         else:
             self.status_bar.message("Nothing to redo.")
 
@@ -1832,6 +1863,7 @@ class BaseRepl(BpythonRepl):
         old_display_lines = self.display_lines
         self.history = []
         self.display_lines = []
+        self.all_logical_lines = []
 
         if not self.weak_rewind:
             self.interp = self.interp.__class__()
@@ -1896,6 +1928,9 @@ class BaseRepl(BpythonRepl):
         del self.coderunner.interp.locals["_Helper"]
 
     def getstdout(self):
+        """
+        Returns a string of the current bpython session, wrapped, WITH prompts.
+        """
         lines = self.lines_for_display + [self.current_line_formatted]
         s = (
             "\n".join(x.s if isinstance(x, FmtStr) else x for x in lines)

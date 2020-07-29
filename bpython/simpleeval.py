@@ -32,6 +32,7 @@ from __future__ import absolute_import
 
 import ast
 import inspect
+import sys
 from six import string_types
 from six.moves import builtins
 
@@ -97,6 +98,8 @@ def simple_eval(node_or_string, namespace=None):
         node_or_string = node_or_string.body
 
     def _convert(node):
+        if sys.version_info[:2] >= (3, 6) and isinstance(node, ast.Constant):
+            return node.value
         if isinstance(node, _string_type_nodes):
             return node.s
         elif isinstance(node, ast.Num):
