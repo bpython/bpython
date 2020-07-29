@@ -215,7 +215,7 @@ def getpydocspec(f, func):
     if s is None:
         return None
 
-    if not has_attr_safe(f, "__name__") or s.groups()[0] != f.__name__:
+    if not hasattr_safe(f, "__name__") or s.groups()[0] != f.__name__:
         return None
 
     args = list()
@@ -394,7 +394,7 @@ def get_encoding_file(fname):
 
 if not py3:
 
-    def get_attr_safe(obj, name):
+    def getattr_safe(obj, name):
         """side effect free getattr"""
         if not is_new_style(obj):
             return getattr(obj, name)
@@ -416,8 +416,8 @@ if not py3:
 
 else:
 
-    def get_attr_safe(obj, name):
-        """side effect and AttrCleaner free getattr (calls getattr_static)."""
+    def getattr_safe(obj, name):
+        """side effect free getattr (calls getattr_static)."""
         result = inspect.getattr_static(obj, name)
         # Slots are a MemberDescriptorType
         if isinstance(result, MemberDescriptorType):
@@ -425,9 +425,9 @@ else:
         return result
 
 
-def has_attr_safe(obj, name):
+def hasattr_safe(obj, name):
     try:
-        get_attr_safe(obj, name)
+        getattr_safe(obj, name)
         return True
     except AttributeError:
         return False

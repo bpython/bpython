@@ -38,7 +38,7 @@ from six.moves import builtins
 
 from . import line as line_properties
 from ._py3compat import py3
-from .inspection import get_attr_safe
+from .inspection import getattr_safe
 
 _string_type_nodes = (ast.Str, ast.Bytes) if py3 else (ast.Str,)
 _numeric_types = (int, float, complex) + (() if py3 else (long,))
@@ -163,7 +163,7 @@ def simple_eval(node_or_string, namespace=None):
         if isinstance(node, ast.Attribute):
             obj = _convert(node.value)
             attr = node.attr
-            return get_attr_safe(obj, attr)
+            return getattr_safe(obj, attr)
 
         raise ValueError("malformed string")
 

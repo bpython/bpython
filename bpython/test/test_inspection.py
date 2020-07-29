@@ -159,43 +159,53 @@ class TestInspection(unittest.TestCase):
         def test_lookup_on_object(self):
             a = A()
             a.x = 1
-            self.assertEqual(get_attr_safe(a, "x"), 1)
-            self.assertEqual(get_attr_safe(a, "a"), "a")
+            self.assertEqual(getattr_safe(a, "x"), 1)
+            self.assertEqual(getattr_safe(a, "a"), "a")
             b = B()
             b.y = 2
-            self.assertEqual(get_attr_safe(b, "y"), 2)
-            self.assertEqual(get_attr_safe(b, "a"), "a")
-            self.assertEqual(get_attr_safe(b, "b"), "b")
+            self.assertEqual(getattr_safe(b, "y"), 2)
+            self.assertEqual(getattr_safe(b, "a"), "a")
+            self.assertEqual(getattr_safe(b, "b"), "b")
+
+            self.assertEqual(hasattr_safe(b, "y"), True)
+            self.assertEqual(hasattr_safe(b, "b"), True)
+
 
         def test_avoid_running_properties(self):
             p = Property()
-            self.assertEqual(get_attr_safe(p, "prop"), Property.prop)
+            self.assertEqual(getattr_safe(p, "prop"), Property.prop)
+            self.assertEqual(hasattr_safe(p, "prop"), True)
         
         def test_lookup_with_slots(self):
             s = Slots()
             s.s1 = "s1"
-            self.assertEqual(get_attr_safe(s, "s1"), "s1")
+            self.assertEqual(getattr_safe(s, "s1"), "s1")
             with self.assertRaises(AttributeError):
-                get_attr_safe(s, "s2")
+                getattr_safe(s, "s2")
+
+            self.assertEqual(hasattr_safe(s, "s2"), False)
 
         def test_lookup_on_slots_classes(self):
-            sga = get_attr_safe
+            sga = getattr_safe
             s = SlotsSubclass()
             self.assertIsInstance(sga(Slots, "s1"), member_descriptor)
             self.assertIsInstance(sga(SlotsSubclass, "s1"), member_descriptor)
             self.assertIsInstance(sga(SlotsSubclass, "s4"), property)
             self.assertIsInstance(sga(s, "s4"), property)
 
+            self.assertEqual(hasattr_safe(s, "s1"), True)
+            self.assertEqual(hasattr_safe(s, "s4"), True)
+
         @unittest.skipIf(py3, "Py 3 doesn't allow slots and prop in same class")
         def test_lookup_with_property_and_slots(self):
-            sga = get_attr_safe
+            sga = getattr_safe
             s = SlotsSubclass()
             self.assertIsInstance(sga(Slots, "s3"), property)
-            self.assertEqual(get_attr_safe(s, "s3"), Slots.__dict__["s3"])
+            self.assertEqual(getattr_safe(s, "s3"), Slots.__dict__["s3"])
             self.assertIsInstance(sga(SlotsSubclass, "s3"), property)
 
         def test_lookup_on_overridden_methods(self):
-            sga = get_attr_safe
+            sga = getattr_safe
             self.assertEqual(sga(OverriddenGetattr(), "a"), 1)
             self.assertEqual(sga(OverriddenGetattribute(), "a"), 1)
             self.assertEqual(sga(OverriddenMRO(), "a"), 1)
@@ -205,6 +215,12 @@ class TestInspection(unittest.TestCase):
                 sga(OverriddenGetattribute(), "b")
             with self.assertRaises(AttributeError):
                 sga(OverriddenMRO(), "b")
+
+            self.assertEqual(hasattr_safe(OverriddenGetattr(), "b"), False)
+            self.assertEqual(hasattr_safe(OverriddenGetattribute(), "b"), False)
+            self.assertEqual(hasattr_safe(OverriddenMRO(), "b"), False)
+            
+
 
 
 if __name__ == "__main__":

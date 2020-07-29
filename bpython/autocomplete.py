@@ -340,9 +340,6 @@ class AttrCompletion(BaseCompletionType):
         """Taken from rlcompleter.py and bent to my will.
         """
 
-        # Gna, Py 2.6's rlcompleter searches for __call__ inside the
-        # instance instead of the type, so we monkeypatch to prevent
-        # side-effects (__getattr__/__getattribute__)
         m = self.attr_matches_re.match(text)
         if not m:
             return []
@@ -364,7 +361,7 @@ class AttrCompletion(BaseCompletionType):
         be wrapped in a safe try/finally block in case anything bad happens to
         restore the original __getattribute__ method."""
         words = self.list_attributes(obj)
-        if inspection.has_attr_safe(obj, "__class__"):
+        if inspection.hasattr_safe(obj, "__class__"):
             words.append("__class__")
             words = words + rlcompleter.get_class_members(obj.__class__)
             if not isinstance(obj.__class__, abc.ABCMeta):
@@ -537,7 +534,7 @@ class ExpressionAttributeCompletion(AttrCompletion):
         except EvaluationError:
             return set()
 
-        # strips leading dot
+         #        strips leading dot
         matches = [m[1:] for m in self.attr_lookup(obj, "", attr.word)]
         return set(m for m in matches if few_enough_underscores(attr.word, m))
 
@@ -677,7 +674,6 @@ def get_completer_bpython(cursor_offset, line, **kwargs):
 
 def _callable_postfix(value, word):
     """rlcompleter's _callable_postfix done right."""
-    # TODO: do we need this done within an AttrCleaner?
     if inspection.is_callable(value):
         word += "("
     return word
