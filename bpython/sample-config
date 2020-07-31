@@ -36,7 +36,7 @@
 # color_scheme = default
 
 # External editor to use for editing the current line, block, or full history
-# Options: vi (vim)
+# Examples: vi (vim)
 #          code --wait (VS Code) - in VS Code use the command pallete to:
 #                Shell Command: Install 'code' command in PATH
 #          atom -nw (Atom)
