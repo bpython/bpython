@@ -287,6 +287,18 @@ class ImportFinder(object):
 
         return None
 
+    def find_spec(self, fullname, path, target=None):
+        for finder in self.old_meta_path:
+            # Consider the finder only if it implements find_spec
+            if not getattr(finder, "find_spec", None):
+                continue
+            # Attempt to find the spec
+            spec = finder.find_spec(fullname, path, target)
+            if spec is not None:
+                # Patch the loader to enable reloading
+                spec.__loader__ = ImportLoader(self.watcher, spec.__loader__)
+                return spec
+
     def find_module(self, fullname, path=None):
         for finder in self.old_meta_path:
             loader = finder.find_module(fullname, path)
