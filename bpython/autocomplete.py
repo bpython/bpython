@@ -357,14 +357,13 @@ class AttrCompletion(BaseCompletionType):
         return matches
 
     def attr_lookup(self, obj, expr, attr):
-        """Second half of original attr_matches method factored out so it can
-        be wrapped in a safe try/finally block in case anything bad happens to
-        restore the original __getattribute__ method."""
+        """Second half of attr_matches."""
         words = self.list_attributes(obj)
         if inspection.hasattr_safe(obj, "__class__"):
             words.append("__class__")
-            words = words + rlcompleter.get_class_members(obj.__class__)
-            if not isinstance(obj.__class__, abc.ABCMeta):
+            klass = inspection.getattr_safe(obj, "__class__")
+            words = words + rlcompleter.get_class_members(klass)
+            if not isinstance(klass, abc.ABCMeta):
                 try:
                     words.remove("__abstractmethods__")
                 except ValueError:
@@ -384,21 +383,25 @@ class AttrCompletion(BaseCompletionType):
     if py3:
 
         def list_attributes(self, obj):
-            return dir(obj)
+            # TODO: re-implement dir using getattr_static to avoid using
+            # AttrCleaner here?
+            with inspection.AttrCleaner(obj):
+                return dir(obj)
 
     else:
 
         def list_attributes(self, obj):
-            if isinstance(obj, InstanceType):
-                try:
+            with inspection.AttrCleaner(obj):
+                if isinstance(obj, InstanceType):
+                    try:
+                        return dir(obj)
+                    except Exception:
+                        # This is a case where we can not prevent user code from
+                        # running. We return a default list attributes on error
+                        # instead. (#536)
+                        return ["__doc__", "__module__"]
+                else:
                     return dir(obj)
-                except Exception:
-                    # This is a case where we can not prevent user code from
-                    # running. We return a default list attributes on error
-                    # instead. (#536)
-                    return ["__doc__", "__module__"]
-            else:
-                return dir(obj)
 
 
 class DictKeyCompletion(BaseCompletionType):

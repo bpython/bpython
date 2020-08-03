@@ -133,58 +133,6 @@ class TestEvaluateCurrentExpression(unittest.TestCase):
         self.assertCannotEval("a[1].a|bc", {})
 
 
-class A(object):
-    a = "a"
-
-
-class B(A):
-    b = "b"
-
-
-class Property(object):
-    @property
-    def prop(self):
-        raise AssertionError("Property __get__ executed")
-
-
-class Slots(object):
-    __slots__ = ["s1", "s2", "s3"]
-
-    if not py3:
-
-        @property
-        def s3(self):
-            raise AssertionError("Property __get__ executed")
-
-
-class SlotsSubclass(Slots):
-    @property
-    def s4(self):
-        raise AssertionError("Property __get__ executed")
-
-
-class OverriddenGetattr(object):
-    def __getattr__(self, attr):
-        raise AssertionError("custom __getattr__ executed")
-
-    a = 1
-
-
-class OverriddenGetattribute(object):
-    def __getattribute__(self, attr):
-        raise AssertionError("custom __getattribute__ executed")
-
-    a = 1
-
-
-class OverriddenMRO(object):
-    def __mro__(self):
-        raise AssertionError("custom mro executed")
-
-    a = 1
-
-
-member_descriptor = type(Slots.s1)
 
 
 if __name__ == "__main__":
