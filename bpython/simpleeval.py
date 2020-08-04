@@ -38,7 +38,7 @@ from six.moves import builtins
 
 from . import line as line_properties
 from ._py3compat import py3
-from .inspection import is_new_style, AttrCleaner
+from .inspection import getattr_safe
 
 _string_type_nodes = (ast.Str, ast.Bytes) if py3 else (ast.Str,)
 _numeric_types = (int, float, complex) + (() if py3 else (long,))
@@ -163,7 +163,7 @@ def simple_eval(node_or_string, namespace=None):
         if isinstance(node, ast.Attribute):
             obj = _convert(node.value)
             attr = node.attr
-            return safe_get_attribute(obj, attr)
+            return getattr_safe(obj, attr)
 
         raise ValueError("malformed string")
 
@@ -171,6 +171,7 @@ def simple_eval(node_or_string, namespace=None):
 
 
 def safe_getitem(obj, index):
+    """ Safely tries to access obj[index] """
     if type(obj) in (list, tuple, dict, bytes) + string_types:
         try:
             return obj[index]
@@ -251,44 +252,3 @@ def evaluate_current_attribute(cursor_offset, line, namespace=None):
             "can't lookup attribute %s on %r" % (attr.word, obj)
         )
 
-
-def safe_get_attribute(obj, attr):
-    """Gets attributes without triggering descriptors on new-style classes"""
-    if is_new_style(obj):
-        with AttrCleaner(obj):
-            result = safe_get_attribute_new_style(obj, attr)
-            if isinstance(result, member_descriptor):
-                # will either be the same slot descriptor or the value
-                return getattr(obj, attr)
-            return result
-    return getattr(obj, attr)
-
-
-class _ClassWithSlots(object):
-    __slots__ = ["a"]
-
-
-member_descriptor = type(_ClassWithSlots.a)
-
-
-def safe_get_attribute_new_style(obj, attr):
-    """Returns approximately the attribute returned by getattr(obj, attr)
-
-    The object returned ought to be callable if getattr(obj, attr) was.
-    Fake callable objects may be returned instead, in order to avoid executing
-    arbitrary code in descriptors.
-
-    If the object is an instance of a class that uses __slots__, will return
-    the member_descriptor object instead of the value.
-    """
-    if not is_new_style(obj):
-        raise ValueError("%r is not a new-style class or object" % obj)
-    to_look_through = (
-        obj.__mro__ if inspect.isclass(obj) else (obj,) + type(obj).__mro__
-    )
-
-    for cls in to_look_through:
-        if hasattr(cls, "__dict__") and attr in cls.__dict__:
-            return cls.__dict__[attr]
-
-    raise AttributeError()

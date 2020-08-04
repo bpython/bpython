@@ -33,6 +33,7 @@ from collections import namedtuple
 from six.moves import range
 
 from pygments.token import Token
+from types import MemberDescriptorType
 
 from ._py3compat import PythonLexer, py3
 from .lazyre import LazyReCompile
@@ -214,7 +215,7 @@ def getpydocspec(f, func):
     if s is None:
         return None
 
-    if not hasattr(f, "__name__") or s.groups()[0] != f.__name__:
+    if not hasattr_safe(f, "__name__") or s.groups()[0] != f.__name__:
         return None
 
     args = list()
@@ -276,8 +277,7 @@ def getfuncprops(func, f):
         argspec = ArgSpec(*argspec)
         fprops = FuncProps(func, argspec, is_bound_method)
     except (TypeError, KeyError, ValueError):
-        with AttrCleaner(f):
-            argspec = getpydocspec(f, func)
+        argspec = getpydocspec(f, func)
         if argspec is None:
             return None
         if inspect.ismethoddescriptor(f):
@@ -390,6 +390,47 @@ def get_encoding_file(fname):
             if match:
                 return match.group(1)
     return "ascii"
+
+
+if not py3:
+
+    def getattr_safe(obj, name):
+        """side effect free getattr"""
+        if not is_new_style(obj):
+            return getattr(obj, name)
+
+        with AttrCleaner(obj):
+            to_look_through = (
+                obj.__mro__
+                if inspect.isclass(obj)
+                else (obj,) + type(obj).__mro__
+            )
+            for cls in to_look_through:
+                if hasattr(cls, "__dict__") and name in cls.__dict__:
+                    result = cls.__dict__[name]
+                    if isinstance(result, MemberDescriptorType):
+                        result = getattr(obj, name)
+                    return result
+            raise AttributeError(name)
+
+
+else:
+
+    def getattr_safe(obj, name):
+        """side effect free getattr (calls getattr_static)."""
+        result = inspect.getattr_static(obj, name)
+        # Slots are a MemberDescriptorType
+        if isinstance(result, MemberDescriptorType):
+            result = getattr(obj, name)
+        return result
+
+
+def hasattr_safe(obj, name):
+    try:
+        getattr_safe(obj, name)
+        return True
+    except AttributeError:
+        return False
 
 
 if py3:

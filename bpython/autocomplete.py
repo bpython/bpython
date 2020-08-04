@@ -340,9 +340,6 @@ class AttrCompletion(BaseCompletionType):
         """Taken from rlcompleter.py and bent to my will.
         """
 
-        # Gna, Py 2.6's rlcompleter searches for __call__ inside the
-        # instance instead of the type, so we monkeypatch to prevent
-        # side-effects (__getattr__/__getattribute__)
         m = self.attr_matches_re.match(text)
         if not m:
             return []
@@ -356,19 +353,17 @@ class AttrCompletion(BaseCompletionType):
             obj = safe_eval(expr, namespace)
         except EvaluationError:
             return []
-        with inspection.AttrCleaner(obj):
-            matches = self.attr_lookup(obj, expr, attr)
+        matches = self.attr_lookup(obj, expr, attr)
         return matches
 
     def attr_lookup(self, obj, expr, attr):
-        """Second half of original attr_matches method factored out so it can
-        be wrapped in a safe try/finally block in case anything bad happens to
-        restore the original __getattribute__ method."""
+        """Second half of attr_matches."""
         words = self.list_attributes(obj)
-        if hasattr(obj, "__class__"):
+        if inspection.hasattr_safe(obj, "__class__"):
             words.append("__class__")
-            words = words + rlcompleter.get_class_members(obj.__class__)
-            if not isinstance(obj.__class__, abc.ABCMeta):
+            klass = inspection.getattr_safe(obj, "__class__")
+            words = words + rlcompleter.get_class_members(klass)
+            if not isinstance(klass, abc.ABCMeta):
                 try:
                     words.remove("__abstractmethods__")
                 except ValueError:
@@ -388,21 +383,25 @@ class AttrCompletion(BaseCompletionType):
     if py3:
 
         def list_attributes(self, obj):
-            return dir(obj)
+            # TODO: re-implement dir using getattr_static to avoid using
+            # AttrCleaner here?
+            with inspection.AttrCleaner(obj):
+                return dir(obj)
 
     else:
 
         def list_attributes(self, obj):
-            if isinstance(obj, InstanceType):
-                try:
+            with inspection.AttrCleaner(obj):
+                if isinstance(obj, InstanceType):
+                    try:
+                        return dir(obj)
+                    except Exception:
+                        # This is a case where we can not prevent user code from
+                        # running. We return a default list attributes on error
+                        # instead. (#536)
+                        return ["__doc__", "__module__"]
+                else:
                     return dir(obj)
-                except Exception:
-                    # This is a case where we can not prevent user code from
-                    # running. We return a default list attributes on error
-                    # instead. (#536)
-                    return ["__doc__", "__module__"]
-            else:
-                return dir(obj)
 
 
 class DictKeyCompletion(BaseCompletionType):
@@ -537,10 +536,9 @@ class ExpressionAttributeCompletion(AttrCompletion):
             obj = evaluate_current_expression(cursor_offset, line, locals_)
         except EvaluationError:
             return set()
-        with inspection.AttrCleaner(obj):
-            #          strips leading dot
-            matches = [m[1:] for m in self.attr_lookup(obj, "", attr.word)]
 
+         #        strips leading dot
+        matches = [m[1:] for m in self.attr_lookup(obj, "", attr.word)]
         return set(m for m in matches if few_enough_underscores(attr.word, m))
 
 
@@ -679,7 +677,6 @@ def get_completer_bpython(cursor_offset, line, **kwargs):
 
 def _callable_postfix(value, word):
     """rlcompleter's _callable_postfix done right."""
-    with inspection.AttrCleaner(value):
-        if inspection.is_callable(value):
-            word += "("
+    if inspection.is_callable(value):
+        word += "("
     return word
