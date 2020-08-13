@@ -882,6 +882,7 @@ class BaseRepl(BpythonRepl):
         2) complete the current word with characters common to all completions
         3) select the first or last match
         4) select the next or previous match if already have a match
+        5) if line is `from <module> import` and tab then import module and attr
         """
 
         def only_whitespace_left_of_cursor():
@@ -898,14 +899,25 @@ class BaseRepl(BpythonRepl):
                 self.add_normal_character(" ")
             return
         
-        # if line is `from a import` and tab then import module and attr
+        #5. if line is `from a import` and tab then import module and attr
         line = self.current_line.split()
         module_name = ""
         if "from" in line and "import" in line:
-            module_name = from_import_tab(self.current_line)
-        if module_name:
-            self.status_bar.message("Importing module %s" % module_name)
-            self.completers[1].try_to_complete(module_name)
+            #returns <module> name if the line contains: "from <module> import"
+            module_name, rest = from_import_tab(self.current_line)
+            if module_name:
+                if module_name not in sys.modules:
+                    self.status_bar.message("Imported module %s" % module_name, .5)
+                    #self.comleters[1] should match to autocomplete's ImportCompletion class
+                    self.completers[1].try_to_import(module_name)
+                #Checks to see that we do not already have a module word going so that 
+                # we are showing matches when there is nothing to match to in order not
+                # to interfere with the normal autocomplete process.
+                if not rest or rest == ' ':
+                    #displays autocomplete options even if no second argument is yet typed
+                    print("start complete")
+                    self.complete(advanced_tab=module_name)
+                    print("end complete")
 
         # run complete() if we don't already have matches
         if len(self.matches_iter.matches) == 0:

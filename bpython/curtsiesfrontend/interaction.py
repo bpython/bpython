@@ -67,13 +67,14 @@ class StatusBar(BpythonInteraction):
     def has_focus(self):
         return self.in_prompt or self.in_confirm or self.waiting_for_refresh
 
-    def message(self, msg, schedule_refresh=True):
+    def message(self, msg, schedule_refresh=True, message_time=None):
         """Sets a temporary message"""
         self.message_start_time = time.time()
         self._message = msg
+        duration = message_time if message_time else self.message_time
         if schedule_refresh:
-            self.schedule_refresh(time.time() + self.message_time)
-
+            self.schedule_refresh(time.time() + duration)
+            
     def _check_for_expired_message(self):
         if (
             self._message

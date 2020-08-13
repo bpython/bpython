@@ -127,10 +127,12 @@ def from_import_tab(line):
     matches = from_import_tab_re.finditer(line)
     try:
         module = matches.__next__()
+        rest = line[len(module[0]):]
+        module = module[1]
     except StopIteration:
         pass
     if module:
-        return str(module[1])
+        return (module, rest)
 
 
 current_from_import_from_re = LazyReCompile(

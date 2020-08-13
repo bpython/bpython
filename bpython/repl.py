@@ -725,7 +725,7 @@ class Repl(object):
     # If exactly one match that is equal to current line, clear matches
     # If example one match and tab=True, then choose that and clear matches
 
-    def complete(self, tab=False):
+    def complete(self, tab=False, advanced_tab=False):
         """Construct a full list of possible completions and
         display them in a window. Also check if there's an available argspec
         (via the inspect module) and bang that on top of the completions too.
@@ -739,7 +739,10 @@ class Repl(object):
         """
 
         self.set_docstring()
+        self.advanced_tab = advanced_tab
 
+        if advanced_tab:
+            print("find matches")
         matches, completer = autocomplete.get_completer(
             self.completers,
             cursor_offset=self.cursor_offset,
@@ -749,6 +752,7 @@ class Repl(object):
             current_block="\n".join(self.buffer + [self.current_line]),
             complete_magic_methods=self.config.complete_magic_methods,
             history=self.history,
+            advancedTab=self.advanced_tab
         )
 
         if len(matches) == 0:

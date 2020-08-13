@@ -251,8 +251,11 @@ class ImportCompletion(BaseCompletionType):
     def format(self, word):
         return after_last_dot(word)
 
-    def try_to_complete(self, module):
-        return importcompletion.try_to_import(module)
+    def try_to_import(self, module_name):
+        return importcompletion.try_to_import(module_name)
+
+    def try_to_complete(self, module_name):
+        return importcompletion.try_to_complete(module_name)
 
 
 class FilenameCompletion(BaseCompletionType):
@@ -624,7 +627,7 @@ else:
                 return None
 
 
-def get_completer(completers, cursor_offset, line, **kwargs):
+def get_completer(completers, cursor_offset, line, advanced_tab=False, **kwargs):
     """Returns a list of matches and an applicable completer
 
     If no matches available, returns a tuple of an empty list and None
@@ -641,21 +644,37 @@ def get_completer(completers, cursor_offset, line, **kwargs):
             double underscore methods like __len__ in method signatures
     """
 
-    for completer in completers:
+    if not advanced_tab:
+        for completer in completers:
+            try:
+                matches = completer.matches(cursor_offset, line, **kwargs)
+            except Exception as e:
+                # Instead of crashing the UI, log exceptions from autocompleters.
+                logger = logging.getLogger(__name__)
+                logger.debug(
+                    "Completer {} failed with unhandled exception: {}".format(
+                        completer, e
+                    )
+                )
+                continue
+            if matches is not None:
+                return sorted(matches), (completer if matches else None)
+    else:
+        print("in autocomplete")
         try:
-            matches = completer.matches(cursor_offset, line, **kwargs)
+            #self.comleters[1] should match to autocomplete's ImportCompletion class
+            matches = completers[1].try_to_complete(advanced_tab)
         except Exception as e:
             # Instead of crashing the UI, log exceptions from autocompleters.
             logger = logging.getLogger(__name__)
             logger.debug(
                 "Completer {} failed with unhandled exception: {}".format(
-                    completer, e
+                    completers[1], e
                 )
             )
-            continue
         if matches is not None:
-            return sorted(matches), (completer if matches else None)
-
+            print("matches ", matches)
+            return sorted(matches), (completers[1] if matches else None)
     return [], None
 
 
