@@ -14,6 +14,7 @@ import tempfile
 import time
 import unicodedata
 from six.moves import range
+from six.moves import queue
 
 from pygments import format as pygformat
 from bpython._py3compat import PythonLexer
@@ -804,6 +805,13 @@ class BaseRepl(BpythonRepl):
         logging.debug('starting task thread')
         t.start()
         self.interact.wait_for_request_or_notify()
+
+    def switch_two(self, task):
+        """Runs task in another thread"""
+        t = threading.Thread(target=task)
+        logging.debug('starting task thread')
+        t.start()
+        t.join()
 
     def get_last_word(self):
 
@@ -1822,7 +1830,7 @@ class BaseRepl(BpythonRepl):
             if n > 0:
                 self.request_undo(n=n)
 
-        self.switch(prompt_for_undo)
+        self.switch_two(prompt_for_undo)
 
     def redo(self):
         if (self.redo_stack):
