@@ -447,7 +447,9 @@ class Repl(object):
         self.rl_history = History(
             duplicates=config.hist_duplicates, hist_size=config.hist_length
         )
-        self.s_hist = []
+        # all input and output, stored as old style format strings
+        # (\x01, \x02, ...) for cli.py
+        self.screen_hist = []
         self.history = []  # commands executed since beginning of session
         self.redo_stack = []
         self.evaluating = False

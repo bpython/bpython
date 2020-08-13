@@ -967,7 +967,8 @@ class CLIRepl(repl.Repl):
             return ""
 
         elif key in key_dispatch[config.clear_screen_key]:
-            self.s_hist = [self.s_hist[-1]]
+            # clear all but current line
+            self.screen_hist = [self.screen_hist[-1]]
             self.highlighted_paren = None
             self.redraw()
             return ""
@@ -1099,7 +1100,7 @@ class CLIRepl(repl.Repl):
                 self.stdout_hist += self.ps1
             else:
                 self.stdout_hist += self.ps1.encode(getpreferredencoding())
-            self.s_hist.append(
+            self.screen_hist.append(
                 "\x01%s\x03%s\x04"
                 % (self.config.color_scheme["prompt"], self.ps1)
             )
@@ -1110,7 +1111,7 @@ class CLIRepl(repl.Repl):
                 self.stdout_hist += self.ps2
             else:
                 self.stdout_hist += self.ps2.encode(getpreferredencoding())
-            self.s_hist.append(
+            self.screen_hist.append(
                 "\x01%s\x03%s\x04" % (prompt_more_color, self.ps2)
             )
 
@@ -1128,15 +1129,15 @@ class CLIRepl(repl.Repl):
             curses.raw(True)
 
     def redraw(self):
-        """Redraw the screen."""
+        """Redraw the screen using screen_hist"""
         self.scr.erase()
-        for k, s in enumerate(self.s_hist):
+        for k, s in enumerate(self.screen_hist):
             if not s:
                 continue
             self.iy, self.ix = self.scr.getyx()
             for i in s.split("\x04"):
                 self.echo(i, redraw=False)
-            if k < len(self.s_hist) - 1:
+            if k < len(self.screen_hist) - 1:
                 self.scr.addstr("\n")
         self.iy, self.ix = self.scr.getyx()
         self.print_line(self.s)
@@ -1175,7 +1176,7 @@ class CLIRepl(repl.Repl):
                 return self.exit_value
 
             self.history.append(inp)
-            self.s_hist[-1] += self.f_string
+            self.screen_hist[-1] += self.f_string
             if py3:
                 self.stdout_hist += inp + "\n"
             else:
@@ -1234,7 +1235,7 @@ class CLIRepl(repl.Repl):
         self.f_string = ""
         self.buffer = []
         self.scr.erase()
-        self.s_hist = []
+        self.screen_hist = []
         # Set cursor position to -1 to prevent paren matching
         self.cpos = -1
 
@@ -1247,7 +1248,7 @@ class CLIRepl(repl.Repl):
             else:
                 self.stdout_hist += line.encode(getpreferredencoding()) + "\n"
             self.print_line(line)
-            self.s_hist[-1] += self.f_string
+            self.screen_hist[-1] += self.f_string
             # I decided it was easier to just do this manually
             # than to make the print_line and history stuff more flexible.
             self.scr.addstr("\n")
@@ -1288,7 +1289,7 @@ class CLIRepl(repl.Repl):
             self.stdout_hist += t
 
         self.echo(s)
-        self.s_hist.append(s.rstrip())
+        self.screen_hist.append(s.rstrip())
 
     def show_list(
         self, items, arg_pos, topline=None, formatter=None, current_item=None
@@ -1551,7 +1552,7 @@ class CLIRepl(repl.Repl):
                 self.stdout_hist += line.encode(getpreferredencoding()) + "\n"
             self.history.append(line)
             self.print_line(line)
-            self.s_hist[-1] += self.f_string
+            self.screen_hist[-1] += self.f_string
             self.scr.addstr("\n")
             self.more = self.push(line)
             self.prompt(self.more)

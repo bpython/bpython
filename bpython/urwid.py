@@ -908,7 +908,6 @@ class URWIDRepl(repl.Repl):
         self.f_string = ""
         self.buffer = []
         self.scr.erase()
-        self.s_hist = []
         # Set cursor position to -1 to prevent paren matching
         self.cpos = -1
 
@@ -923,7 +922,6 @@ class URWIDRepl(repl.Repl):
                     line.encode(locale.getpreferredencoding()) + "\n"
                 )
             self.print_line(line)
-            self.s_hist[-1] += self.f_string
             # I decided it was easier to just do this manually
             # than to make the print_line and history stuff more flexible.
             self.scr.addstr("\n")
@@ -964,7 +962,6 @@ class URWIDRepl(repl.Repl):
             self.stdout_hist += t
 
         self.echo(s)
-        self.s_hist.append(s.rstrip())
 
     def push(self, s, insert_into_history=True):
         # Restore the original SIGINT handler. This is needed to be able
@@ -1013,7 +1010,6 @@ class URWIDRepl(repl.Repl):
         self.current_output = None
         # XXX is this the right place?
         self.rl_history.reset()
-        # XXX what is s_hist?
 
         # We need the caption to use unicode as urwid normalizes later
         # input to be the same type, using ascii as encoding. If the
@@ -1074,7 +1070,6 @@ class URWIDRepl(repl.Repl):
             inp = self.edit.get_edit_text()
             self.history.append(inp)
             self.edit.make_readonly()
-            # XXX what is this s_hist thing?
             if py3:
                 self.stdout_hist += inp
             else:
