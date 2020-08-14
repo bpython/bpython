@@ -402,7 +402,7 @@ class BaseRepl(BpythonRepl):
         # so we're just using the same object
         self.interact = self.status_bar
 
-        # line currently being edited, without ps1 (usually '>>> ')
+        # logical line currently being edited, without ps1 (usually '>>> ')
         self._current_line = ""
 
         # current line of output - stdout and stdin go here
@@ -744,8 +744,9 @@ class BaseRepl(BpythonRepl):
             )
             and self.config.curtsies_right_arrow_completion
             and self.cursor_offset == len(self.current_line)
+            # if at end of current line and user presses RIGHT (to autocomplete)
         ):
-
+            # then autocomplete
             self.current_line += self.current_suggestion
             self.cursor_offset = len(self.current_line)
         elif e in ("<UP>",) + key_dispatch[self.config.up_one_line_key]:
@@ -1435,6 +1436,23 @@ class BaseRepl(BpythonRepl):
         self.current_stdouterr_line = ""
         self.stdin.current_line = "\n"
 
+    def number_of_padding_chars_on_current_cursor_line(self):
+        """ To avoid cutting off two-column characters at the end of lines where
+        there's only one column left, curtsies adds a padding char (u' ').
+        It's important to know about these for cursor positioning.
+
+        Should return zero unless there are fullwidth characters. """
+        full_line = self.current_cursor_line_without_suggestion
+        line_with_padding = "".join(
+            line.s
+            for line in paint.display_linize(
+                self.current_cursor_line_without_suggestion.s, self.width
+            )
+        )
+
+        # the difference in length here is how much padding there is
+        return len(line_with_padding) - len(full_line)
+
     def paint(
         self,
         about_to_exit=False,
@@ -1620,7 +1638,8 @@ class BaseRepl(BpythonRepl):
                     wcswidth(self.current_cursor_line_without_suggestion.s)
                     - wcswidth(self.current_line)
                     + wcswidth(self.current_line[: self.cursor_offset])
-                ),
+                )
+                + self.number_of_padding_chars_on_current_cursor_line(),
                 width,
             )
             assert cursor_column >= 0, (

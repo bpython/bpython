@@ -271,6 +271,32 @@ class HigherLevelCurtsiesPaintingTest(CurtsiesPaintingTest):
         self.repl.process_event("<SPACE>" if key == " " else key)
         self.repl.paint()  # has some side effects we need to be wary of
 
+class TestWidthAwareness(HigherLevelCurtsiesPaintingTest):
+
+    def test_cursor_position_with_fullwidth_char(self):
+        self.repl.add_normal_character("間")
+
+        cursor_pos = self.repl.paint()[1]
+        self.assertEqual(cursor_pos, (0,6))
+
+    def test_cursor_position_with_padding_char(self):
+        # odd numbered so fullwidth chars don't wrap evenly
+        self.repl.width = 11 
+        [self.repl.add_normal_character(c) for c in "ｗｉｄｔｈ"]
+
+        cursor_pos = self.repl.paint()[1]
+        self.assertEqual(cursor_pos, (1,4))
+
+    def test_display_of_padding_chars(self):
+        self.repl.width = 11 
+        [self.repl.add_normal_character(c) for c in "ｗｉｄｔｈ"]
+
+        self.enter()
+        expected = [
+            '>>> ｗｉｄ ', # <--- note the added trailing space
+            'ｔｈ']
+        result = [d.s for d in self.repl.display_lines[0:2]]
+        self.assertEqual(result, expected) 
 
 class TestCurtsiesRewindRedraw(HigherLevelCurtsiesPaintingTest):
     def test_rewind(self):
