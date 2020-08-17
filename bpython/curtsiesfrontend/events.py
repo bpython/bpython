@@ -45,3 +45,10 @@ class UndoEvent(curtsies.events.Event):
 
     def __init__(self, n=1):
         self.n = n
+
+
+class BackgroundImportEvent(curtsies.events.Event):
+    """Background import for advanced auto complete."""
+
+    def __init__(self, module_name):
+        self.module_name = module_name

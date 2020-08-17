@@ -690,6 +690,11 @@ class BaseRepl(BpythonRepl):
                     _("Reloaded at %s because %s modified.")
                     % (time.strftime("%X"), " & ".join(e.files_modified))
                 )
+        
+        elif isinstance(e, bpythonevents.BackgroundImportEvent):
+            #self.comleters[1] should match to autocomplete's ImportCompletion class
+            self.completers[1].try_to_import(e.module_name)
+            self.status_bar.pop_permanent_message("Imported module %s" % e.module_name)
 
         else:
             raise ValueError("Don't know how to handle event type: %r" % e)
@@ -873,6 +878,7 @@ class BaseRepl(BpythonRepl):
         2) complete the current word with characters common to all completions
         3) select the first or last match
         4) select the next or previous match if already have a match
+        5) if line is `from <module> import` and tab then import module and attr
         """
 
         def only_whitespace_left_of_cursor():
@@ -889,14 +895,19 @@ class BaseRepl(BpythonRepl):
                 self.add_normal_character(" ")
             return
         
-        # if line is `from a import` and tab then import module and attr
+        #5. if line is `from a import` and tab then import module and attr
         line = self.current_line.split()
         module_name = ""
         if "from" in line and "import" in line:
+            #returns <module> name if the line contains: "from <module> import"
             module_name = from_import_tab(self.current_line)
-        if module_name:
-            self.status_bar.message("Importing module %s" % module_name)
-            self.completers[1].try_to_complete(module_name)
+            print(module_name)
+            if module_name:
+                if module_name not in sys.modules:
+                    self.status_bar.push_permanent_message("Imported module %s" % module_name)
+                    self.background_import_event(module_name=module_name)
+                    
+
 
         # run complete() if we don't already have matches
         if len(self.matches_iter.matches) == 0:

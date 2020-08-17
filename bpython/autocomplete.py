@@ -240,8 +240,8 @@ class ImportCompletion(BaseCompletionType):
     def format(self, word):
         return after_last_dot(word)
 
-    def try_to_complete(self, module):
-        return importcompletion.try_to_import(module)
+    def try_to_import(self, module_name):
+        return importcompletion.try_to_import(module_name)
 
 
 class FilenameCompletion(BaseCompletionType):

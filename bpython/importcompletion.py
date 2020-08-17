@@ -93,16 +93,16 @@ def module_attr_matches(name):
 
 
 def try_to_import(module_name):
-    """If this hasn't been imported our goal is to add it to the set of modules and actually import it"""
-    if module_name not in sys.modules:
-        try:
-            module = __import__(module_name)
-            module_path = os.path.dirname(module.__file__)
-            for mod in find_modules(module_path):
-                modules.add("%s.%s" % (module_name, mod))
-            modules.add(module_name)
-        except ImportError:
-            pass
+    """Called by curtsiesfrontend repl on tab to import module 
+    in background for better auto completion: attr completion"""
+    try:
+        module = __import__(module_name)
+        module_path = os.path.dirname(module.__file__)
+        for mod in find_modules(module_path):
+            modules.add("%s.%s" % (module_name, mod))
+        modules.add(module_name)
+    except ImportError:
+        pass
 
 
 def complete(cursor_offset, line):

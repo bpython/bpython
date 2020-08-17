@@ -54,6 +54,9 @@ class FullCurtsiesRepl(BaseRepl):
         self.request_undo = self.input_generator.event_trigger(
             bpythonevents.UndoEvent
         )
+        self.background_import_event = self.input_generator.event_trigger(
+            bpythonevents.BackgroundImportEvent
+        )
 
         with self.input_generator:
             pass  # temp hack to get .original_stty
