@@ -690,11 +690,13 @@ class BaseRepl(BpythonRepl):
                     _("Reloaded at %s because %s modified.")
                     % (time.strftime("%X"), " & ".join(e.files_modified))
                 )
-        
+
         elif isinstance(e, bpythonevents.BackgroundImportEvent):
-            #self.comleters[1] should match to autocomplete's ImportCompletion class
+            # self.comleters[1] should match to autocomplete's ImportCompletion class
             self.completers[1].try_to_import(e.module_name)
-            self.status_bar.pop_permanent_message("Imported module %s" % e.module_name)
+            self.status_bar.pop_permanent_message(
+                "Imported module %s" % e.module_name
+            )
 
         else:
             raise ValueError("Don't know how to handle event type: %r" % e)
@@ -894,20 +896,20 @@ class BaseRepl(BpythonRepl):
             for unused in range(to_add):
                 self.add_normal_character(" ")
             return
-        
-        #5. if line is `from a import` and tab then import module and attr
+
+        # 5. if line is `from a import` and tab then import module and attr
         line = self.current_line.split()
         module_name = ""
         if "from" in line and "import" in line:
-            #returns <module> name if the line contains: "from <module> import"
+            # returns <module> name if the line contains: "from <module> import"
             module_name = from_import_tab(self.current_line)
             print(module_name)
             if module_name:
                 if module_name not in sys.modules:
-                    self.status_bar.push_permanent_message("Imported module %s" % module_name)
+                    self.status_bar.push_permanent_message(
+                        "Imported module %s" % module_name
+                    )
                     self.background_import_event(module_name=module_name)
-                    
-
 
         # run complete() if we don't already have matches
         if len(self.matches_iter.matches) == 0:
