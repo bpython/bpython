@@ -32,6 +32,7 @@ from .line import (
     current_from_import_import,
 )
 
+import fnmatch
 import os
 import sys
 import warnings
@@ -51,6 +52,9 @@ modules = set()
 # List of stored paths to compare against so that real paths are not repeated
 # handles symlinks not mount points
 paths = set()
+# Patterns to skip
+# TODO: This skiplist should be configurable.
+skiplist = (".git", ".config", ".local", ".share", "node_modules")
 fully_loaded = False
 
 
@@ -140,6 +144,10 @@ def find_modules(path):
     if not os.path.isdir(path):
         # Perhaps a zip file
         return
+    basepath = os.path.basename(path)
+    if any(fnmatch.fnmatch(basepath, entry) for entry in skiplist):
+        # Path is on skiplist
+        return
 
     try:
         filenames = os.listdir(path)
@@ -150,7 +158,10 @@ def find_modules(path):
         finder = importlib.machinery.FileFinder(path)
 
     for name in filenames:
-        if not any(name.endswith(suffix) for suffix in SUFFIXES):
+        if any(fnmatch.fnmatch(name, entry) for entry in skiplist):
+            # Path is on skiplist
+            continue
+        elif not any(name.endswith(suffix) for suffix in SUFFIXES):
             # Possibly a package
             if "." in name:
                 continue
