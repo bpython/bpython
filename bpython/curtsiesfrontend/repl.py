@@ -1933,12 +1933,12 @@ class BaseRepl(BpythonRepl):
     def initialize_interp(self):
         self.coderunner.interp.locals["_repl"] = self
         self.coderunner.interp.runsource(
-            "from bpython.curtsiesfrontend._internal " "import _Helper"
+            "from bpython.curtsiesfrontend._internal import _Helper\n"
         )
         self.coderunner.interp.runsource("help = _Helper(_repl)\n")
+        self.coderunner.interp.runsource("del _Helper\n")
 
         del self.coderunner.interp.locals["_repl"]
-        del self.coderunner.interp.locals["_Helper"]
 
     def getstdout(self):
         """
