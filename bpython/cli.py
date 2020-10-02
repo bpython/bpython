@@ -536,7 +536,7 @@ class CLIRepl(repl.Repl):
     def echo(self, s, redraw=True):
         """Parse and echo a formatted string with appropriate attributes. It
         uses the formatting method as defined in formatter.py to parse the
-        srings. It won't update the screen if it's reevaluating the code (as it
+        strings. It won't update the screen if it's reevaluating the code (as it
         does with undo)."""
         if not py3 and isinstance(s, unicode):
             s = s.encode(getpreferredencoding())
@@ -672,7 +672,7 @@ class CLIRepl(repl.Repl):
     def get_line(self):
         """Get a line of text and return it
         This function initialises an empty string and gets the
-        curses cursor position on the screen and stores it
+        cursor position on the screen and stores it
         for the echo() function to use later (I think).
         Then it waits for key presses and passes them to p_key(),
         which returns None if Enter is pressed (that means "Return",
