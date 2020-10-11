@@ -64,7 +64,7 @@ from six.moves import range
 # These are used for syntax highlighting
 from pygments import format
 from pygments.formatters import TerminalFormatter
-from ._py3compat import PythonLexer
+from ._py3compat import PythonLexer, py3
 from pygments.token import Token
 from .formatter import BPythonFormatter
 
@@ -83,7 +83,6 @@ from .translations import _
 
 from . import repl
 from . import args as bpargs
-from ._py3compat import py3
 from .pager import page
 from .args import parse as argsparse
 
@@ -1998,7 +1997,7 @@ def main_curses(scr, args, config, interactive=True, locals_=None, banner=None):
     )
     clirepl.write("\n")
 
-    if sys.version_info[0] == 2:
+    if not py3:
         # XXX these deprecation warnings need to go at some point
         clirepl.write(
             _(

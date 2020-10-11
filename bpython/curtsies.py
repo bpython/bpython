@@ -23,6 +23,7 @@ from .importcompletion import find_iterator
 from .curtsiesfrontend import events as bpythonevents
 from . import inspection
 from .repl import extract_exit_value
+from ._py3compat import py3
 
 logger = logging.getLogger(__name__)
 
@@ -202,7 +203,7 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
     if banner is not None:
         print(banner)
 
-    if sys.version_info[0] == 2:
+    if not py3:
         # XXX these deprecation warnings need to go at some point
         print(
             _(

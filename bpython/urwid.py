@@ -1394,7 +1394,7 @@ def main(args=None, locals_=None, banner=None):
         )
         myrepl.write("\n")
 
-        if sys.version_info[0] == 2:
+        if not py3:
             # XXX these deprecation warnings need to go at some point
             myrepl.write(
                 _(
