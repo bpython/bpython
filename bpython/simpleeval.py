@@ -161,10 +161,10 @@ def simple_eval(node_or_string, namespace=None):
             index = _convert(node.slice.value)
             return safe_getitem(obj, index)
         elif sys.version_info[:2] >= (3, 9) and isinstance(node, ast.Subscript) and isinstance(
-            node.slice, ast.Constant
+            node.slice, (ast.Constant, ast.Name)
         ):
             obj = _convert(node.value)
-            index = node.slice.value
+            index = _convert(node.slice)
             return safe_getitem(obj, index)
 
         # this is a deviation from literal_eval: we allow attribute access
