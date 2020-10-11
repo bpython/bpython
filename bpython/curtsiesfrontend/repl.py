@@ -1164,6 +1164,8 @@ class BaseRepl(BpythonRepl):
 
         If the interpreter successfully runs the code, clear the buffer
         """
+        # Note that push() overrides its parent without calling it, unlike
+        # urwid and cli which implement custom behavior and call repl.Repl.push
         if self.paste_mode:
             self.saved_indent = 0
         else:
