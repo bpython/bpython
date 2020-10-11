@@ -177,7 +177,7 @@ def simple_eval(node_or_string, namespace=None):
             attr = node.attr
             return getattr_safe(obj, attr)
 
-        raise ValueError("malformed string")
+        raise ValueError("malformed node or string: {!r}".format(node))
 
     return _convert(node_or_string)
 
