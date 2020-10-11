@@ -537,7 +537,7 @@ class ExpressionAttributeCompletion(AttrCompletion):
         except EvaluationError:
             return set()
 
-         #        strips leading dot
+        #        strips leading dot
         matches = [m[1:] for m in self.attr_lookup(obj, "", attr.word)]
         return set(m for m in matches if few_enough_underscores(attr.word, m))
 

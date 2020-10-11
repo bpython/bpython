@@ -204,8 +204,10 @@ class OverriddenMRO(object):
         raise AssertionError("custom mro executed")
 
     a = 1
-    
+
+
 member_descriptor = type(Slots.s1)
+
 
 class TestSafeGetAttribute(unittest.TestCase):
     def test_lookup_on_object(self):
@@ -222,12 +224,11 @@ class TestSafeGetAttribute(unittest.TestCase):
         self.assertEqual(inspection.hasattr_safe(b, "y"), True)
         self.assertEqual(inspection.hasattr_safe(b, "b"), True)
 
-
     def test_avoid_running_properties(self):
         p = Property()
         self.assertEqual(inspection.getattr_safe(p, "prop"), Property.prop)
         self.assertEqual(inspection.hasattr_safe(p, "prop"), True)
-    
+
     def test_lookup_with_slots(self):
         s = Slots()
         s.s1 = "s1"
@@ -269,10 +270,14 @@ class TestSafeGetAttribute(unittest.TestCase):
         with self.assertRaises(AttributeError):
             sga(OverriddenMRO(), "b")
 
-        self.assertEqual(inspection.hasattr_safe(OverriddenGetattr(), "b"), False)
-        self.assertEqual(inspection.hasattr_safe(OverriddenGetattribute(), "b"), False)
+        self.assertEqual(
+            inspection.hasattr_safe(OverriddenGetattr(), "b"), False
+        )
+        self.assertEqual(
+            inspection.hasattr_safe(OverriddenGetattribute(), "b"), False
+        )
         self.assertEqual(inspection.hasattr_safe(OverriddenMRO(), "b"), False)
-        
+
 
 if __name__ == "__main__":
     unittest.main()

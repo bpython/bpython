@@ -34,8 +34,7 @@ class TestExecArgs(unittest.TestCase):
             )
             f.flush()
             p = subprocess.Popen(
-                [sys.executable]
-                + ["-m", "bpython.curtsies", f.name],
+                [sys.executable] + ["-m", "bpython.curtsies", f.name],
                 stderr=subprocess.PIPE,
                 universal_newlines=True,
             )

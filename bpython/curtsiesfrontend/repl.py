@@ -297,7 +297,9 @@ class ImportFinder(object):
             if spec is not None:
                 if getattr(spec, "__loader__", None) is not None:
                     # Patch the loader to enable reloading
-                    spec.__loader__ = ImportLoader(self.watcher, spec.__loader__)
+                    spec.__loader__ = ImportLoader(
+                        self.watcher, spec.__loader__
+                    )
                 return spec
 
     def find_module(self, fullname, path=None):
@@ -1040,7 +1042,9 @@ class BaseRepl(BpythonRepl):
             current_line = lines[-1][4:]
         else:
             current_line = ""
-        from_editor = [line for line in lines if line[:6] != "# OUT:" and line[:3] != "###"]
+        from_editor = [
+            line for line in lines if line[:6] != "# OUT:" and line[:3] != "###"
+        ]
         if all(not line.strip() for line in from_editor):
             self.status_bar.message(
                 _("Session not reevaluated because saved file was blank")

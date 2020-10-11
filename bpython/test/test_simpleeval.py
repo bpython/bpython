@@ -133,7 +133,5 @@ class TestEvaluateCurrentExpression(unittest.TestCase):
         self.assertCannotEval("a[1].a|bc", {})
 
 
-
-
 if __name__ == "__main__":
     unittest.main()

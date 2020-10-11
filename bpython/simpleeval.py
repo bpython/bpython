@@ -155,8 +155,10 @@ def simple_eval(node_or_string, namespace=None):
             obj = _convert(node.value)
             index = _convert(node.slice.value)
             return safe_getitem(obj, index)
-        elif sys.version_info[:2] >= (3, 9) and isinstance(node, ast.Subscript) and isinstance(
-            node.slice, (ast.Constant, ast.Name)
+        elif (
+            sys.version_info[:2] >= (3, 9)
+            and isinstance(node, ast.Subscript)
+            and isinstance(node.slice, (ast.Constant, ast.Name))
         ):
             obj = _convert(node.value)
             index = _convert(node.slice)

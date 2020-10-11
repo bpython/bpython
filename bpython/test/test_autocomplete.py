@@ -251,9 +251,11 @@ class Properties(Foo):
 class Slots(object):
     __slots__ = ["a", "b"]
 
+
 class OverriddenGetattribute(Foo):
-    def __getattribute__(self,name):
+    def __getattribute__(self, name):
         raise AssertionError("custom get attribute invoked")
+
 
 class TestAttrCompletion(unittest.TestCase):
     @classmethod
@@ -301,7 +303,7 @@ class TestAttrCompletion(unittest.TestCase):
             com.matches(2, "a.", locals_={"a": Properties()}),
             set(["a.b", "a.a", "a.method", "a.asserts_when_called"]),
         )
-        
+
     def test_custom_get_attribute_not_invoked(self):
         com = autocomplete.AttrCompletion()
         self.assertSetEqual(
@@ -309,12 +311,10 @@ class TestAttrCompletion(unittest.TestCase):
             set(["a.b", "a.a", "a.method"]),
         )
 
-
     def test_slots_not_crash(self):
         com = autocomplete.AttrCompletion()
         self.assertSetEqual(
-            com.matches(2, "A.", locals_={"A": Slots}),
-            set(["A.b", "A.a"]),
+            com.matches(2, "A.", locals_={"A": Slots}), set(["A.b", "A.a"]),
         )
 
 

@@ -67,7 +67,9 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
                 True,
             )
 
-            self.modules = list(find_modules(os.path.abspath(import_test_folder)))
+            self.modules = list(
+                find_modules(os.path.abspath(import_test_folder))
+            )
             self.filepaths = [
                 "Left.toRight.toLeft",
                 "Left.toRight",

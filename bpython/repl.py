@@ -391,6 +391,7 @@ class SourceNotFound(Exception):
 class LineTypeTranslator(object):
     """ Used when adding a tuple to all_logical_lines, to get input / output values
     having to actually type/know the strings """
+
     # TODO use Enum once we drop support for Python 2
 
     INPUT = "input"
