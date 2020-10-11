@@ -903,7 +903,6 @@ class BaseRepl(BpythonRepl):
         if "from" in line and "import" in line:
             # returns <module> name if the line contains: "from <module> import"
             module_name = from_import_tab(self.current_line)
-            print(module_name)
             if module_name:
                 if module_name not in sys.modules:
                     self.status_bar.push_permanent_message(
