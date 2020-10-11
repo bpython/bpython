@@ -11,6 +11,7 @@ New features:
   Thanks to Thomas Babej.
 
 Fixes:
+* #622: Provide encoding attribute for FakeOutput.
 * #806: Prevent symbolic link loops in import completion.
   Thanks to Etienne Richart.
 * #807: Support packages using importlib.metadata API.
