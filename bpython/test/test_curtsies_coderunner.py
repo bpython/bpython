@@ -52,4 +52,4 @@ class TestFakeOutput(unittest.TestCase):
 
     def test_bytes(self):
         out = FakeOutput(mock.Mock(), self.assert_unicode, None)
-        out.write('native string type')
+        out.write("native string type")
