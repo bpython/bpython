@@ -190,7 +190,7 @@ def current_import(cursor_offset, line):
             return LinePart(start, end, m.group(1))
 
 
-current_method_definition_name_re = LazyReCompile("def\s+([a-zA-Z_][\w]*)")
+current_method_definition_name_re = LazyReCompile(r"def\s+([a-zA-Z_][\w]*)")
 
 
 def current_method_definition_name(cursor_offset, line):
