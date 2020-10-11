@@ -2,6 +2,7 @@
 
 import ast
 import numbers
+import sys
 
 from bpython.simpleeval import (
     simple_eval,
@@ -25,6 +26,10 @@ class TestSimpleEval(unittest.TestCase):
     def test_matches_stdlib_py3(self):
         """Should match the stdlib literal_eval if no names or indexing"""
         self.assertMatchesStdlib("{1, 2}")
+
+    @unittest.skipUnless(sys.version_info[:2] >= (3, 9), "Only Python3.9 evaluates set()")
+    def test_matches_stdlib_set_literal(self):
+        """set() is evaluated"""
         self.assertMatchesStdlib("set()")
 
     def test_indexing(self):

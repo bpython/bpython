@@ -111,8 +111,8 @@ def simple_eval(node_or_string, namespace=None):
         elif isinstance(node, ast.Set):
             return set(map(_convert, node.elts))
         elif (
-            isinstance(node, Call)
-            and isinstance(node.func, Name)
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
             and node.func.id == "set"
             and node.args == node.keywords == []
         ):
