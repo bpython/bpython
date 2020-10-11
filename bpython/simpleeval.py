@@ -42,12 +42,7 @@ from .inspection import getattr_safe
 
 _string_type_nodes = (ast.Str, ast.Bytes) if py3 else (ast.Str,)
 _numeric_types = (int, float, complex) + (() if py3 else (long,))
-
-# added in Python 3.4
-if hasattr(ast, "NameConstant"):
-    _name_type_nodes = (ast.Name, ast.NameConstant)
-else:
-    _name_type_nodes = (ast.Name,)
+_name_type_nodes = (ast.Name, ast.NameConstant) if py3 else (ast.Name,)
 
 
 class EvaluationError(Exception):
@@ -98,7 +93,7 @@ def simple_eval(node_or_string, namespace=None):
         node_or_string = node_or_string.body
 
     def _convert(node):
-        if sys.version_info[:2] >= (3, 6) and isinstance(node, ast.Constant):
+        if py3 and isinstance(node, ast.Constant):
             return node.value
         if isinstance(node, _string_type_nodes):
             return node.s
