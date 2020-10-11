@@ -25,17 +25,15 @@ class TestSimpleEval(unittest.TestCase):
     def test_indexing(self):
         """Literals can be indexed into"""
         self.assertEqual(simple_eval("[1,2][0]"), 1)
-        self.assertEqual(simple_eval("a", {"a": 1}), 1)
 
     def test_name_lookup(self):
-        """Names can be lookup up in a namespace"""
+        """Names can be looked up in a namespace"""
         self.assertEqual(simple_eval("a", {"a": 1}), 1)
         self.assertEqual(simple_eval("map"), map)
-        self.assertEqual(simple_eval("a[b]", {"a": {"c": 1}, "b": "c"}), 1)
 
-    def test_allow_name_lookup(self):
-        """Names can be lookup up in a namespace"""
-        self.assertEqual(simple_eval("a", {"a": 1}), 1)
+    def test_name_lookup_indexing(self):
+        """Names can be looked up in a namespace"""
+        self.assertEqual(simple_eval("a[b]", {"a": {"c": 1}, "b": "c"}), 1)
 
     def test_lookup_on_suspicious_types(self):
         class FakeDict(object):
