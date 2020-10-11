@@ -939,11 +939,11 @@ class CLIRepl(repl.Repl):
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif key in ("KEY_NPAGE", "\T"):  # page_down or \T
+        elif key in ("KEY_NPAGE"):  # page_down
             self.hend()
             self.print_line(self.s)
 
-        elif key in ("KEY_PPAGE", "\S"):  # page_up or \S
+        elif key in ("KEY_PPAGE"):  # page_up
             self.hbegin()
             self.print_line(self.s)
 
