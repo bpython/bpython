@@ -205,7 +205,7 @@ class CodeRunner(object):
 
 
 class FakeOutput(object):
-    def __init__(self, coderunner, on_write, fileno=1):
+    def __init__(self, coderunner, on_write, real_fileobj):
         """Fakes sys.stdout or sys.stderr
 
         on_write should always take unicode
@@ -215,7 +215,7 @@ class FakeOutput(object):
         """
         self.coderunner = coderunner
         self.on_write = on_write
-        self.real_fileno = fileno
+        self._real_fileobj = real_fileobj
 
     def write(self, s, *args, **kwargs):
         if not py3 and isinstance(s, str):
@@ -227,7 +227,7 @@ class FakeOutput(object):
     # have a method called fileno. One example is pwntools. This
     # is not a widespread issue, but is annoying.
     def fileno(self):
-        return self.real_fileno
+        return self._real_fileobj.fileno()
 
     def writelines(self, l):
         for s in l:
@@ -238,3 +238,7 @@ class FakeOutput(object):
 
     def isatty(self):
         return True
+
+    @property
+    def encoding(self):
+        return self._real_fileobj.encoding

@@ -223,7 +223,7 @@ class FakeStdin(object):
 
     @property
     def encoding(self):
-        return "UTF8"
+        return sys.__stdin__.encoding
 
     # TODO write a read() method?
 
@@ -447,12 +447,12 @@ class BaseRepl(BpythonRepl):
         self.stdout = FakeOutput(
             self.coderunner,
             self.send_to_stdouterr,
-            fileno=sys.__stdout__.fileno(),
+            real_fileobj=sys.__stdout__,
         )
         self.stderr = FakeOutput(
             self.coderunner,
             self.send_to_stdouterr,
-            fileno=sys.__stderr__.fileno(),
+            real_fileobj=sys.__stderr__,
         )
         self.stdin = FakeStdin(self.coderunner, self, self.edit_keys)
 
