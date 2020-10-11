@@ -20,6 +20,10 @@ class TestSimpleEval(unittest.TestCase):
         """Should match the stdlib literal_eval if no names or indexing"""
         self.assertMatchesStdlib("[1]")
         self.assertMatchesStdlib("{(1,): [2,3,{}]}")
+
+    @unittest.skipUnless(py3, "Only Python3 versions of ast.literal_eval evaluate set literals")
+    def test_matches_stdlib_py3(self):
+        """Should match the stdlib literal_eval if no names or indexing"""
         self.assertMatchesStdlib("{1, 2}")
 
     def test_indexing(self):
