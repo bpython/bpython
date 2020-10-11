@@ -76,7 +76,7 @@ def simple_eval(node_or_string, namespace=None):
 
     The string or node provided may only consist of:
     * the following Python literal structures: strings, numbers, tuples,
-        lists, dicts, sets (Python 3.9+)
+        lists, dicts, and sets
     * variable names causing lookups in the passed in namespace or builtins
     * getitem calls using the [] syntax on objects of the types above
 
@@ -108,7 +108,7 @@ def simple_eval(node_or_string, namespace=None):
                 (_convert(k), _convert(v))
                 for k, v in zip(node.keys, node.values)
             )
-        elif sys.version_info[:2] >= (3, 9) and isinstance(node, ast.Set):
+        elif isinstance(node, ast.Set):
             return set(map(_convert, node.elts))
 
         # this is a deviation from literal_eval: we allow non-literals
