@@ -3,11 +3,12 @@ sudo: false
 dist: bionic
 
 python:
-    - "2.7"
-    - "3.6"
-    - "3.7"
+    - "3.9-dev"
     - "3.8"
-    - "3.9"
+    - "3.7"
+    - "3.6"
+    - "2.7"
+    - "nightly"
     - "pypy"
     - "pypy3"
 
@@ -17,6 +18,7 @@ env:
 
 matrix:
     allow_failures:
+        - python: "nightly"
         - python: "pypy"
         - python: "pypy3"
 
