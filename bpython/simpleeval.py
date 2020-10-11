@@ -95,7 +95,7 @@ def simple_eval(node_or_string, namespace=None):
     def _convert(node):
         if py3 and isinstance(node, ast.Constant):
             return node.value
-        if isinstance(node, _string_type_nodes):
+        elif isinstance(node, _string_type_nodes):
             return node.s
         elif isinstance(node, ast.Num):
             return node.n
@@ -110,6 +110,13 @@ def simple_eval(node_or_string, namespace=None):
             )
         elif isinstance(node, ast.Set):
             return set(map(_convert, node.elts))
+        elif (
+            isinstance(node, Call)
+            and isinstance(node.func, Name)
+            and node.func.id == "set"
+            and node.args == node.keywords == []
+        ):
+            return set()
 
         # this is a deviation from literal_eval: we allow non-literals
         elif isinstance(node, _name_type_nodes):
@@ -256,4 +263,3 @@ def evaluate_current_attribute(cursor_offset, line, namespace=None):
         raise EvaluationError(
             "can't lookup attribute %s on %r" % (attr.word, obj)
         )
-

@@ -25,6 +25,7 @@ class TestSimpleEval(unittest.TestCase):
     def test_matches_stdlib_py3(self):
         """Should match the stdlib literal_eval if no names or indexing"""
         self.assertMatchesStdlib("{1, 2}")
+        self.assertMatchesStdlib("set()")
 
     def test_indexing(self):
         """Literals can be indexed into"""
