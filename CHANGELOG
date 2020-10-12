@@ -19,6 +19,7 @@ Fixes:
 * #809: Fix support for Python 3.9's ast module.
 * #817: Fix cursor position with full-width characters.
   Thanks to Jack Rybarczyk.
+* #853: Fix invalid escape sequences.
 
 Support for Python 3.9 has been added. Support for Python 3.5 has been dropped.
 
