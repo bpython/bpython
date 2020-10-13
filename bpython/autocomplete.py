@@ -30,7 +30,7 @@ import logging
 import os
 import re
 import rlcompleter
-from six.moves import range, builtins
+from six.moves import builtins
 from six import string_types, iteritems
 
 from . import inspection

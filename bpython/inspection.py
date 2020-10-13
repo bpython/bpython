@@ -27,7 +27,6 @@ import io
 import keyword
 import pydoc
 from collections import namedtuple
-from six.moves import range
 
 from pygments.token import Token
 from types import MemberDescriptorType

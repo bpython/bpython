@@ -10,7 +10,6 @@ import sys
 import tempfile
 import time
 import unicodedata
-from six.moves import range
 
 from pygments import format as pygformat
 from bpython._py3compat import PythonLexer

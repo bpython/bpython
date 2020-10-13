@@ -25,7 +25,6 @@ import io
 import os
 import stat
 from itertools import islice
-from six.moves import range
 
 from .translations import _
 from .filelock import FileLock

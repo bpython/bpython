@@ -22,7 +22,6 @@
 
 
 import string
-from six.moves import range
 
 
 class KeyMap(object):

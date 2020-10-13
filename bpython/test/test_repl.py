@@ -1,5 +1,4 @@
 from itertools import islice
-from six.moves import range
 import collections
 import inspect
 import os

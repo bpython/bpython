@@ -33,7 +33,6 @@ import fnmatch
 import os
 import sys
 import warnings
-from six.moves import filter
 
 if py3:
     import importlib.machinery

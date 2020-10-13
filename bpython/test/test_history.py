@@ -1,7 +1,6 @@
 import io
 import os
 
-from six.moves import range
 
 from bpython.config import getpreferredencoding
 from bpython.history import History
