@@ -83,11 +83,8 @@ def attr_matches(cw, prefix="", only_modules=False):
         matches = (
             name
             for name in dir(module)
-            if (
-                name.startswith(name_after_dot)
-                and "%s.%s" % (module_name, name)
-            )
-            in sys.modules
+            if name.startswith(name_after_dot)
+            and "%s.%s" % (module_name, name) in sys.modules
         )
     else:
         matches = (
