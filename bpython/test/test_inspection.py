@@ -57,14 +57,6 @@ class TestInspection(unittest.TestCase):
         self.assertFalse(inspection.is_callable(None))
         self.assertTrue(inspection.is_callable(CallableMethod().method))
 
-    def test_is_new_style_py3(self):
-        self.assertTrue(inspection.is_new_style(spam))
-        self.assertTrue(inspection.is_new_style(Noncallable))
-        self.assertTrue(inspection.is_new_style(OldNoncallable))
-        self.assertTrue(inspection.is_new_style(Noncallable()))
-        self.assertTrue(inspection.is_new_style(OldNoncallable()))
-        self.assertTrue(inspection.is_new_style(None))
-
     def test_parsekeywordpairs(self):
         # See issue #109
         def fails(spam=["-a", "-b"]):

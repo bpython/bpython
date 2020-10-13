@@ -72,20 +72,19 @@ class AttrCleaner(object):
         # original methods. :-(
         # The upshot being that introspecting on an object to display its
         # attributes will avoid unwanted side-effects.
-        if is_new_style(self.obj):
-            __getattr__ = getattr(type_, "__getattr__", None)
-            if __getattr__ is not None:
-                try:
-                    setattr(type_, "__getattr__", (lambda *_, **__: None))
-                except TypeError:
-                    __getattr__ = None
-            __getattribute__ = getattr(type_, "__getattribute__", None)
-            if __getattribute__ is not None:
-                try:
-                    setattr(type_, "__getattribute__", object.__getattribute__)
-                except TypeError:
-                    # XXX: This happens for e.g. built-in types
-                    __getattribute__ = None
+        __getattr__ = getattr(type_, "__getattr__", None)
+        if __getattr__ is not None:
+            try:
+                setattr(type_, "__getattr__", (lambda *_, **__: None))
+            except TypeError:
+                __getattr__ = None
+        __getattribute__ = getattr(type_, "__getattribute__", None)
+        if __getattribute__ is not None:
+            try:
+                setattr(type_, "__getattribute__", object.__getattribute__)
+            except TypeError:
+                # XXX: This happens for e.g. built-in types
+                __getattribute__ = None
         self.attribs = (__getattribute__, __getattr__)
         # /Dark magic
 
@@ -99,10 +98,6 @@ class AttrCleaner(object):
         if __getattr__ is not None:
             setattr(type_, "__getattr__", __getattr__)
         # /Dark magic
-
-
-def is_new_style(obj):
-    return True
 
 
 class _Repr(object):
