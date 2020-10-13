@@ -36,12 +36,12 @@ from bpython.config import (
 from bpython.formatter import BPythonFormatter
 from bpython import autocomplete
 from bpython.translations import _
-from bpython._py3compat import py3, is_main_thread
+from bpython._py3compat import py3
 from bpython.pager import get_pager_command
 
 from bpython.curtsiesfrontend import replpainter as paint
 from bpython.curtsiesfrontend import sitefix
-from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
+from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput, is_main_thread
 from bpython.curtsiesfrontend.filewatch import ModuleChangedEventHandler
 from bpython.curtsiesfrontend.interaction import StatusBar
 from bpython.curtsiesfrontend.manual_readline import edit_keys

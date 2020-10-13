@@ -14,11 +14,16 @@ import code
 import signal
 import greenlet
 import logging
+import threading
 
-from bpython._py3compat import py3, is_main_thread
+from bpython._py3compat import py3
 from bpython.config import getpreferredencoding
 
 logger = logging.getLogger(__name__)
+
+
+def is_main_thread():
+    return threading.main_thread() == threading.current_thread()
 
 
 class SigintHappened(object):
