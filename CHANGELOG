@@ -4,6 +4,12 @@ Changelog
 0.20
 ----
 
+General information:
+
+* The next release of bpython (0.20) will drop support for Python 2. 
+* Support for Python 3.9 has been added. Support for Python 3.5 has been
+  dropped.
+
 New features:
 * #802: Provide redo.
   Thanks to Evan.
@@ -20,9 +26,6 @@ Fixes:
 * #817: Fix cursor position with full-width characters.
   Thanks to Jack Rybarczyk.
 * #853: Fix invalid escape sequences.
-
-Support for Python 3.9 has been added. Support for Python 3.5 has been dropped.
-Version 0.21 (the next release of bpython) will drop support for Python 2.x.
 
 0.19
 ----
