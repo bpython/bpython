@@ -18,18 +18,9 @@ foo_non_ascii = u'''def foo():
 '''
 
 
-class OldCallable:
-    def __call__(self):
-        pass
-
-
 class Callable:
     def __call__(self):
         pass
-
-
-class OldNoncallable:
-    pass
 
 
 class Noncallable:
@@ -50,10 +41,7 @@ class TestInspection(unittest.TestCase):
         self.assertTrue(inspection.is_callable(spam))
         self.assertTrue(inspection.is_callable(Callable))
         self.assertTrue(inspection.is_callable(Callable()))
-        self.assertTrue(inspection.is_callable(OldCallable))
-        self.assertTrue(inspection.is_callable(OldCallable()))
         self.assertFalse(inspection.is_callable(Noncallable()))
-        self.assertFalse(inspection.is_callable(OldNoncallable()))
         self.assertFalse(inspection.is_callable(None))
         self.assertTrue(inspection.is_callable(CallableMethod().method))
 
