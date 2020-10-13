@@ -44,7 +44,7 @@ from pygments.lexers import Python3Lexer
 
 from . import autocomplete
 from . import inspection
-from ._py3compat import py3, prepare_for_exec
+from ._py3compat import py3
 from .clipboard import get_clipboard, CopyFailed
 from .config import getpreferredencoding
 from .formatter import Parenthesis
@@ -1169,14 +1169,12 @@ class Repl(object):
         exited with non-zero"""
 
         encoding = getpreferredencoding()
-        editor_args = shlex.split(
-            prepare_for_exec(self.config.editor, encoding)
-        )
+        editor_args = shlex.split(self.config.editor)
         with tempfile.NamedTemporaryFile(suffix=".py") as temp:
             temp.write(text.encode(encoding))
             temp.flush()
 
-            args = editor_args + [prepare_for_exec(temp.name, encoding)]
+            args = editor_args + [temp.name]
             if subprocess.call(args) == 0:
                 with open(temp.name) as f:
                     if py3:
@@ -1187,11 +1185,8 @@ class Repl(object):
                 return text
 
     def open_in_external_editor(self, filename):
-        encoding = getpreferredencoding()
-        editor_args = shlex.split(
-            prepare_for_exec(self.config.editor, encoding)
-        )
-        args = editor_args + [prepare_for_exec(filename, encoding)]
+        editor_args = shlex.split(self.config.editor)
+        args = editor_args + [filename]
         return subprocess.call(args) == 0
 
     def edit_config(self):

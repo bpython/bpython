@@ -37,18 +37,6 @@ import threading
 py3 = sys.version_info[0] == 3
 
 
-if py3 or sys.version_info[:3] >= (2, 7, 3):
-
-    def prepare_for_exec(arg, encoding=None):
-        return arg
-
-
-else:
-
-    def prepare_for_exec(arg, encoding=None):
-        return arg.encode(encoding)
-
-
 if py3:
 
     def try_decode(s, encoding):
