@@ -445,7 +445,7 @@ class Repl:
                 self.rl_history.load(
                     pythonhist, getpreferredencoding() or "ascii"
                 )
-            except EnvironmentError:
+            except OSError:
                 pass
 
         self.completers = autocomplete.get_default_completer(
@@ -660,7 +660,7 @@ class Repl:
             return inspection.get_source_unicode(obj)
         except (AttributeError, NameError) as e:
             msg = _("Cannot get source: %s") % (e,)
-        except IOError as e:
+        except OSError as e:
             msg = f"{e}"
         except TypeError as e:
             if "built-in" in f"{e}":
@@ -857,7 +857,7 @@ class Repl:
         try:
             with open(fn, mode) as f:
                 f.write(stdout_text)
-        except IOError as e:
+        except OSError as e:
             self.interact.notify(_("Error writing file '%s': %s") % (fn, e))
         else:
             self.interact.notify(_("Saved to %s.") % (fn,))
@@ -1166,7 +1166,7 @@ class Repl:
                         os.makedirs(containing_dir)
                     with open(self.config.config_path, "w") as f:
                         f.write(default_config)
-                except (IOError, OSError) as e:
+                except OSError as e:
                     self.interact.notify(
                         _("Error writing file '%s': %s")
                         % (self.config.config.path, e)

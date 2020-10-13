@@ -136,7 +136,7 @@ def find_modules(path):
 
     try:
         filenames = os.listdir(path)
-    except EnvironmentError:
+    except OSError:
         filenames = []
 
     finder = importlib.machinery.FileFinder(path)
@@ -172,7 +172,7 @@ def find_modules(path):
                     is_package = True
                 else:
                     pathname = spec.origin
-        except (ImportError, IOError, SyntaxError):
+        except (ImportError, OSError, SyntaxError):
             continue
         except UnicodeEncodeError:
             # Happens with Python 3 when there is a filename in some

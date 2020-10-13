@@ -58,7 +58,7 @@ def page(data, use_internal=False):
                 # pager command not found, fall back to internal pager
                 page_internal(data)
                 return
-        except IOError as e:
+        except OSError as e:
             if e.errno != errno.EPIPE:
                 raise
         while True:

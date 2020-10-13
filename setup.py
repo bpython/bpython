@@ -102,7 +102,7 @@ if version == "unknown":
         with open(version_file) as vf:
             version = vf.read().strip().split("=")[-1].replace("'", "")
         version = version.strip()
-    except IOError:
+    except OSError:
         pass
 
 with open(version_file, "w") as vf:

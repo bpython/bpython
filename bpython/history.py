@@ -221,7 +221,7 @@ class History:
                     self.save_to(hfile, entries, self.hist_size)
 
                     self.entries = entries
-        except EnvironmentError as err:
+        except OSError as err:
             raise RuntimeError(
                 _("Error occurred while writing to file %s (%s)")
                 % (filename, err.strerror)

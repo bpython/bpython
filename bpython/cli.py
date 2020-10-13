@@ -168,7 +168,7 @@ class FakeStdin:
     def write(self, value):
         # XXX IPython expects sys.stdin.write to exist, there will no doubt be
         # others, so here's a hack to keep them happy
-        raise IOError(errno.EBADF, "sys.stdin is read-only")
+        raise OSError(errno.EBADF, "sys.stdin is read-only")
 
     def isatty(self):
         return True

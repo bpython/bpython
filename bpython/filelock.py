@@ -80,7 +80,7 @@ class UnixFileLock(BaseLock):
         try:
             fcntl.flock(self.fileobj, self.mode)
             self.locked = True
-        except IOError as e:
+        except OSError as e:
             if e.errno != errno.ENOLCK:
                 raise e
 

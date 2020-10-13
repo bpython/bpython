@@ -268,7 +268,7 @@ def loadini(struct, configfile):
         )
         try:
             load_theme(struct, path, struct.color_scheme, default_colors)
-        except EnvironmentError:
+        except OSError:
             sys.stderr.write(
                 f"Could not load theme '{color_scheme_name}'.\n"
             )

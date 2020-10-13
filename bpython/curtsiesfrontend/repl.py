@@ -198,7 +198,7 @@ class FakeStdin:
     def write(self, value):
         # XXX IPython expects sys.stdin.write to exist, there will no doubt be
         # others, so here's a hack to keep them happy
-        raise IOError(errno.EBADF, "sys.stdin is read-only")
+        raise OSError(errno.EBADF, "sys.stdin is read-only")
 
     def close(self):
         # hack to make closing stdin a nop
@@ -666,7 +666,7 @@ class BaseRepl(BpythonRepl):
         elif isinstance(e, bpythonevents.RunStartupFileEvent):
             try:
                 self.startup()
-            except IOError as e:
+            except OSError as e:
                 self.status_bar.message(
                     _("Executing PYTHONSTARTUP failed: %s") % (e,)
                 )
