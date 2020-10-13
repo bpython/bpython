@@ -30,8 +30,8 @@ import logging
 import os
 import re
 import rlcompleter
-from six.moves import builtins
 from six import iteritems
+import builtins
 
 from . import inspection
 from . import importcompletion

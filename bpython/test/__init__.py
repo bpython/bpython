@@ -1,8 +1,8 @@
 import unittest
+import builtins
 from unittest import mock
 
 from bpython.translations import init
-from six.moves import builtins
 import os
 
 

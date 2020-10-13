@@ -30,7 +30,7 @@ In order to provide fancy completion, some code can be executed safely.
 import ast
 import inspect
 import sys
-from six.moves import builtins
+import builtins
 
 from . import line as line_properties
 from .inspection import getattr_safe

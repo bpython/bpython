@@ -31,8 +31,7 @@ This steals many things from bpython's "cli" backend.
 This is still *VERY* rough.
 """
 
-
-
+import builtins
 import sys
 import os
 import time
