@@ -13,17 +13,6 @@ if [[ $RUN == nosetests ]]; then
     pip install jedi
     # translation specific dependencies
     pip install babel
-    # Python 2.7 specific dependencies
-    if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then
-      # dependencies for crasher tests
-      pip install Twisted urwid
-    fi
-    case $TRAVIS_PYTHON_VERSION in
-      2*|pypy)
-        # test specific dependencies
-        pip install mock
-        ;;
-    esac
     # build and install
     python setup.py install
 elif [[ $RUN == build_sphinx ]]; then

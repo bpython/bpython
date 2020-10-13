@@ -7,9 +7,7 @@ python:
     - "3.8"
     - "3.7"
     - "3.6"
-    - "2.7"
     - "nightly"
-    - "pypy"
     - "pypy3"
 
 env:
@@ -19,7 +17,6 @@ env:
 matrix:
     allow_failures:
         - python: "nightly"
-        - python: "pypy"
         - python: "pypy3"
 
 install:
