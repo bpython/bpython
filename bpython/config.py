@@ -2,7 +2,6 @@ import os
 import sys
 import locale
 from itertools import chain
-from six import iterkeys
 from configparser import ConfigParser
 
 from .autocomplete import SIMPLE as default_completion, ALL_MODES
@@ -43,7 +42,7 @@ def default_config_path():
 
 
 def fill_config_with_default_values(config, default_values):
-    for section in iterkeys(default_values):
+    for section in default_values.keys():
         if not config.has_section(section):
             config.add_section(section)
 
