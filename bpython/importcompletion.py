@@ -56,7 +56,7 @@ def module_matches(cw, prefix=""):
         if (name.startswith(full) and name.find(".", len(full)) == -1)
     )
     if prefix:
-        return set(match[len(prefix) + 1 :] for match in matches)
+        return {match[len(prefix) + 1 :] for match in matches}
     else:
         return set(matches)
 

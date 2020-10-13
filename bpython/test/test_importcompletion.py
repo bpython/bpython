@@ -18,13 +18,13 @@ class TestSimpleComplete(unittest.TestCase):
 
     def test_simple_completion(self):
         self.assertSetEqual(
-            importcompletion.complete(10, "import zza"), set(["zzabc", "zzabd"])
+            importcompletion.complete(10, "import zza"), {"zzabc", "zzabd"}
         )
 
     def test_package_completion(self):
         self.assertSetEqual(
             importcompletion.complete(13, "import zzabc."),
-            set(["zzabc.e", "zzabc.f"]),
+            {"zzabc.e", "zzabc.f"},
         )
 
 
@@ -43,15 +43,15 @@ class TestRealComplete(unittest.TestCase):
 
     def test_from_attribute(self):
         self.assertSetEqual(
-            importcompletion.complete(19, "from sys import arg"), set(["argv"])
+            importcompletion.complete(19, "from sys import arg"), {"argv"}
         )
 
     def test_from_attr_module(self):
         self.assertSetEqual(
-            importcompletion.complete(9, "from os.p"), set(["os.path"])
+            importcompletion.complete(9, "from os.p"), {"os.path"}
         )
 
     def test_from_package(self):
         self.assertSetEqual(
-            importcompletion.complete(17, "from xml import d"), set(["dom"])
+            importcompletion.complete(17, "from xml import d"), {"dom"}
         )

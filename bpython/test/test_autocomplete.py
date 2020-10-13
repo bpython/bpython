@@ -110,7 +110,7 @@ class TestCumulativeCompleter(unittest.TestCase):
         a = self.completer(["a"])
         b = self.completer(["b"])
         cumulative = autocomplete.CumulativeCompleter([a, b])
-        self.assertEqual(cumulative.matches(3, "abc"), set(["a", "b"]))
+        self.assertEqual(cumulative.matches(3, "abc"), {"a", "b"})
 
 
 class TestFilenameCompletion(unittest.TestCase):
@@ -187,7 +187,7 @@ class TestDictKeyCompletion(unittest.TestCase):
         com = autocomplete.DictKeyCompletion()
         local = {"d": {"ab": 1, "cd": 2}}
         self.assertSetEqual(
-            com.matches(2, "d[", locals_=local), set(["'ab']", "'cd']"])
+            com.matches(2, "d[", locals_=local), {"'ab']", "'cd']"}
         )
 
     def test_none_returned_when_eval_error(self):
@@ -254,27 +254,27 @@ class TestAttrCompletion(unittest.TestCase):
     def test_att_matches_found_on_instance(self):
         self.assertSetEqual(
             self.com.matches(2, "a.", locals_={"a": Foo()}),
-            set(["a.method", "a.a", "a.b"]),
+            {"a.method", "a.a", "a.b"},
         )
 
     def test_descriptor_attributes_not_run(self):
         com = autocomplete.AttrCompletion()
         self.assertSetEqual(
             com.matches(2, "a.", locals_={"a": Properties()}),
-            set(["a.b", "a.a", "a.method", "a.asserts_when_called"]),
+            {"a.b", "a.a", "a.method", "a.asserts_when_called"},
         )
 
     def test_custom_get_attribute_not_invoked(self):
         com = autocomplete.AttrCompletion()
         self.assertSetEqual(
             com.matches(2, "a.", locals_={"a": OverriddenGetattribute()}),
-            set(["a.b", "a.a", "a.method"]),
+            {"a.b", "a.a", "a.method"},
         )
 
     def test_slots_not_crash(self):
         com = autocomplete.AttrCompletion()
         self.assertSetEqual(
-            com.matches(2, "A.", locals_={"A": Slots}), set(["A.b", "A.a"]),
+            com.matches(2, "A.", locals_={"A": Slots}), {"A.b", "A.a"},
         )
 
 
@@ -286,7 +286,7 @@ class TestExpressionAttributeCompletion(unittest.TestCase):
     def test_att_matches_found_on_instance(self):
         self.assertSetEqual(
             self.com.matches(5, "a[0].", locals_={"a": [Foo()]}),
-            set(["method", "a", "b"]),
+            {"method", "a", "b"},
         )
 
     def test_other_getitem_methods_not_called(self):
@@ -299,7 +299,7 @@ class TestExpressionAttributeCompletion(unittest.TestCase):
     def test_tuples_complete(self):
         self.assertSetEqual(
             self.com.matches(5, "a[0].", locals_={"a": (Foo(),)}),
-            set(["method", "a", "b"]),
+            {"method", "a", "b"},
         )
 
     @unittest.skip("TODO, subclasses do not complete yet")
@@ -309,7 +309,7 @@ class TestExpressionAttributeCompletion(unittest.TestCase):
 
         self.assertSetEqual(
             self.com.matches(5, "a[0].", locals_={"a": ListSubclass([Foo()])}),
-            set(["method", "a", "b"]),
+            {"method", "a", "b"},
         )
 
     def test_getitem_not_called_in_list_subclasses_overriding_getitem(self):
@@ -322,13 +322,13 @@ class TestExpressionAttributeCompletion(unittest.TestCase):
     def test_literals_complete(self):
         self.assertSetEqual(
             self.com.matches(10, "[a][0][0].", locals_={"a": (Foo(),)}),
-            set(["method", "a", "b"]),
+            {"method", "a", "b"},
         )
 
     def test_dictionaries_complete(self):
         self.assertSetEqual(
             self.com.matches(7, 'a["b"].', locals_={"a": {"b": Foo()}}),
-            set(["method", "a", "b"]),
+            {"method", "a", "b"},
         )
 
 
@@ -391,7 +391,7 @@ class TestMultilineJediCompletion(unittest.TestCase):
             ["adsf"],
             [Comp("Abc", "bc"), Comp("ade", "de")],
         )
-        self.assertSetEqual(matches, set(["ade"]))
+        self.assertSetEqual(matches, {"ade"})
 
     def test_issue_544(self):
         com = autocomplete.MultilineJediCompletion()
@@ -410,12 +410,12 @@ class TestGlobalCompletion(unittest.TestCase):
 
         self.assertEqual(
             self.com.matches(8, "function", locals_={"function": function}),
-            set(("function(",)),
+            {"function("},
         )
 
     def test_completions_are_unicode(self):
         for m in self.com.matches(1, "a", locals_={"abc": 10}):
-            self.assertIsInstance(m, type(u""))
+            self.assertIsInstance(m, type(""))
 
     def test_mock_kwlist(self):
         with mock.patch.object(keyword, "kwlist", new=["abcd"]):
@@ -435,11 +435,11 @@ class TestParameterNameCompletion(unittest.TestCase):
         argspec = ["func", argspec, False]
         com = autocomplete.ParameterNameCompletion()
         self.assertSetEqual(
-            com.matches(1, "a", argspec=argspec), set(["apple=", "apricot="])
+            com.matches(1, "a", argspec=argspec), {"apple=", "apricot="}
         )
         self.assertSetEqual(
-            com.matches(2, "ba", argspec=argspec), set(["banana="])
+            com.matches(2, "ba", argspec=argspec), {"banana="}
         )
         self.assertSetEqual(
-            com.matches(3, "car", argspec=argspec), set(["carrot="])
+            com.matches(3, "car", argspec=argspec), {"carrot="}
         )

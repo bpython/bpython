@@ -297,16 +297,16 @@ class AttrCompletion(BaseCompletionType):
                 i -= 1
                 break
         methodtext = r.word[-i:]
-        matches = set(
+        matches = {
             "".join([r.word[:-i], m])
             for m in self.attr_matches(methodtext, locals_)
-        )
+        }
 
-        return set(
+        return {
             m
             for m in matches
             if few_enough_underscores(r.word.split(".")[-1], m.split(".")[-1])
-        )
+        }
 
     def locate(self, current_offset, line):
         return lineparts.current_dotted_attribute(current_offset, line)
@@ -376,11 +376,11 @@ class DictKeyCompletion(BaseCompletionType):
         except EvaluationError:
             return None
         if isinstance(obj, dict) and obj.keys():
-            matches = set(
+            matches = {
                 "{0!r}]".format(k)
                 for k in obj.keys()
                 if repr(k).startswith(r.word)
-            )
+            }
             return matches if matches else None
         else:
             return None
@@ -403,7 +403,7 @@ class MagicMethodCompletion(BaseCompletionType):
             return None
         if "class" not in current_block:
             return None
-        return set(name for name in MAGIC_METHODS if name.startswith(r.word))
+        return {name for name in MAGIC_METHODS if name.startswith(r.word)}
 
     def locate(self, current_offset, line):
         return lineparts.current_method_definition_name(current_offset, line)
@@ -456,11 +456,11 @@ class ParameterNameCompletion(BaseCompletionType):
         if r is None:
             return None
         if argspec:
-            matches = set(
+            matches = {
                 name + "="
                 for name in argspec[1][0]
                 if isinstance(name, str) and name.startswith(r.word)
-            )
+            }
             matches.update(
                 name + "="
                 for name in argspec[1][4]
@@ -494,7 +494,7 @@ class ExpressionAttributeCompletion(AttrCompletion):
 
         #        strips leading dot
         matches = [m[1:] for m in self.attr_lookup(obj, "", attr.word)]
-        return set(m for m in matches if few_enough_underscores(attr.word, m))
+        return {m for m in matches if few_enough_underscores(attr.word, m)}
 
 
 try:
@@ -547,7 +547,7 @@ else:
                 return None
             else:
                 # case-sensitive matches only
-                return set(m for m in matches if m.startswith(first_letter))
+                return {m for m in matches if m.startswith(first_letter)}
 
         def locate(self, cursor_offset, line):
             start = self._orig_start
