@@ -7,12 +7,12 @@ from bpython.test.fodder import encoding_latin1
 from bpython.test.fodder import encoding_utf8
 
 
-foo_ascii_only = u'''def foo():
+foo_ascii_only = '''def foo():
     """Test"""
     pass
 '''
 
-foo_non_ascii = u'''def foo():
+foo_non_ascii = '''def foo():
     """Test äöü"""
     pass
 '''

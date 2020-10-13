@@ -46,7 +46,7 @@ class TestCodeRunner(unittest.TestCase):
 
 class TestFakeOutput(unittest.TestCase):
     def assert_unicode(self, s):
-        self.assertIsInstance(s, type(u""))
+        self.assertIsInstance(s, type(""))
 
     def test_bytes(self):
         out = FakeOutput(mock.Mock(), self.assert_unicode, None)

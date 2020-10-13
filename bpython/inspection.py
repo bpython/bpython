@@ -121,14 +121,14 @@ def parsekeywordpairs(signature):
     parendepth = 0
     for token, value in tokens:
         if preamble:
-            if token is Token.Punctuation and value == u"(":
+            if token is Token.Punctuation and value == "(":
                 preamble = False
             continue
 
         if token is Token.Punctuation:
-            if value in [u"(", u"{", u"["]:
+            if value in ["(", "{", "["]:
                 parendepth += 1
-            elif value in [u")", u"}", u"]"]:
+            elif value in [")", "}", "]"]:
                 parendepth -= 1
             elif value == ":" and parendepth == -1:
                 # End of signature reached

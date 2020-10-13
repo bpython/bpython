@@ -470,7 +470,7 @@ class Repl:
         try:
             return sys.ps2
         except AttributeError:
-            return u"... "
+            return "... "
 
     def startup(self):
         """
@@ -659,11 +659,11 @@ class Repl:
                     obj = self.get_object(line)
             return inspection.get_source_unicode(obj)
         except (AttributeError, NameError) as e:
-            msg = _(u"Cannot get source: %s") % (e,)
+            msg = _("Cannot get source: %s") % (e,)
         except IOError as e:
-            msg = u"%s" % (e,)
+            msg = f"{e}"
         except TypeError as e:
-            if "built-in" in u"%s" % (e,):
+            if "built-in" in f"{e}":
                 msg = _("Cannot access source of %r") % (obj,)
             else:
                 msg = _("No source code found for %s") % (self.current_line,)
@@ -946,7 +946,7 @@ class Repl:
                 s, pythonhist, getpreferredencoding()
             )
         except RuntimeError as e:
-            self.interact.notify(u"%s" % (e,))
+            self.interact.notify(f"{e}")
 
     def prompt_undo(self):
         """Returns how many lines to undo, 0 means don't undo"""
