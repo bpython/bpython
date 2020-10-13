@@ -1,5 +1,3 @@
-# coding: utf8
-
 import itertools
 import os
 import pydoc

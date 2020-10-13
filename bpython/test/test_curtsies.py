@@ -1,5 +1,3 @@
-# coding: utf-8
-
 from collections import namedtuple
 
 from bpython.curtsies import combined_events

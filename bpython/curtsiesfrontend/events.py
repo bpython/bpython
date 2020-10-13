@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 """Non-keyboard events used in bpython curtsies REPL"""
 import time
 

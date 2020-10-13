@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 """
 Module to handle command line argument parsing, for all front-ends.
 """

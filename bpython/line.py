@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 """Extracting and changing portions of the current line
 
 All functions take cursor offset from the beginning of the line and the line of

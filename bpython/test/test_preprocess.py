@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 from code import compile_command as compiler
 from functools import partial
 import difflib

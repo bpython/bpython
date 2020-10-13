@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import logging
 import itertools
 from six.moves import range

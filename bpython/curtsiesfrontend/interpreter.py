@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 import sys
 from six import iteritems, text_type
 

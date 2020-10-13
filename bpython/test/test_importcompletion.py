@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 from bpython import importcompletion
 from bpython.test import unittest
 

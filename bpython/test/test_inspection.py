@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 
 from bpython._py3compat import py3

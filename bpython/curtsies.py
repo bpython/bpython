@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 import collections
 import io
 import logging

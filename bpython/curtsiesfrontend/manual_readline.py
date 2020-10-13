@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 """implementations of simple readline edit operations
 
 just the ones that fit the model of transforming the current line

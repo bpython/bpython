@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 import greenlet
 import time
 import curtsies.events as events

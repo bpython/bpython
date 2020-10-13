@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 """Tools for preparing code to be run in the REPL (removing blank lines,
 etc)"""
 

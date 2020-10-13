@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 from bpython.curtsiesfrontend.manual_readline import (
     left_arrow,
     right_arrow,

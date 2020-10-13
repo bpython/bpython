@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import code
 import os
 import sys
