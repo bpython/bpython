@@ -143,7 +143,7 @@ def parsekeywordpairs(signature):
         if value and (parendepth > 0 or value.strip()):
             substack.append(value)
 
-    return {item[0]: "".join(item[2:] for item in stack if len(item) >= 3)}
+    return {item[0]: "".join(item[2:]) for item in stack if len(item) >= 3}
 
 
 def fixlongargs(f, argspec):
