@@ -5,7 +5,6 @@ from textwrap import dedent
 from curtsies.fmtfuncs import bold, green, magenta, cyan, red, plain
 
 from bpython.curtsiesfrontend import interpreter
-from bpython._py3compat import py3
 from bpython.test import mock, unittest
 
 pypy = "PyPy" in sys.version
@@ -87,10 +86,7 @@ class TestInterpreter(unittest.TestCase):
 
         i.runsource("gfunc()")
 
-        if pypy and not py3:
-            global_not_found = "global name 'gfunc' is not defined"
-        else:
-            global_not_found = "name 'gfunc' is not defined"
+        global_not_found = "name 'gfunc' is not defined"
 
         expected = (
             "Traceback (most recent call last):\n  File "
@@ -109,41 +105,12 @@ class TestInterpreter(unittest.TestCase):
         self.assertMultiLineEqual(str(plain("").join(a)), str(expected))
         self.assertEqual(plain("").join(a), expected)
 
-    @unittest.skipIf(py3, "runsource() accepts only unicode in Python 3")
-    def test_runsource_bytes(self):
-        i = interpreter.Interp(encoding=b"latin-1")
-
-        i.runsource("a = b'\xfe'".encode("latin-1"), encode=False)
-        self.assertIsInstance(i.locals["a"], str)
-        self.assertEqual(i.locals["a"], b"\xfe")
-
-        i.runsource("b = u'\xfe'".encode("latin-1"), encode=False)
-        self.assertIsInstance(i.locals["b"], unicode)
-        self.assertEqual(i.locals["b"], "\xfe")
-
-    @unittest.skipUnless(py3, "Only a syntax error in Python 3")
     def test_runsource_bytes_over_128_syntax_error_py3(self):
         i = interpreter.Interp(encoding=b"latin-1")
         i.showsyntaxerror = mock.Mock(return_value=None)
 
         i.runsource("a = b'\xfe'")
         i.showsyntaxerror.assert_called_with(mock.ANY)
-
-    @unittest.skipIf(py3, "encode is Python 2 only")
-    def test_runsource_bytes_over_128_syntax_error_py2(self):
-        i = interpreter.Interp(encoding=b"latin-1")
-
-        i.runsource(b"a = b'\xfe'")
-        self.assertIsInstance(i.locals["a"], type(b""))
-        self.assertEqual(i.locals["a"], b"\xfe")
-
-    @unittest.skipIf(py3, "encode is Python 2 only")
-    def test_runsource_unicode(self):
-        i = interpreter.Interp(encoding=b"latin-1")
-
-        i.runsource("a = u'\xfe'")
-        self.assertIsInstance(i.locals["a"], type(""))
-        self.assertEqual(i.locals["a"], "\xfe")
 
     def test_getsource_works_on_interactively_defined_functions(self):
         source = "def foo(x):\n    return x + 1\n"
@@ -153,155 +120,3 @@ class TestInterpreter(unittest.TestCase):
 
         inspected_source = inspect.getsource(i.locals["foo"])
         self.assertEqual(inspected_source, source)
-
-    @unittest.skipIf(py3, "encode only does anything in Python 2")
-    def test_runsource_unicode_autoencode_and_noencode(self):
-        """error line numbers should be fixed"""
-
-        # Since correct behavior for unicode is the same
-        # for auto and False, run the same tests
-        for encode in ["auto", False]:
-            i, a = self.interp_errlog()
-            i.runsource("[1 + 1,\nabcd]", encode=encode)
-            self.assertEqual(self.err_lineno(a), 2)
-
-            i, a = self.interp_errlog()
-            i.runsource("[1 + 1,\nabcd]", encode=encode)
-            self.assertEqual(self.err_lineno(a), 2)
-
-            i, a = self.interp_errlog()
-            i.runsource("#encoding: utf-8\nabcd", encode=encode)
-            self.assertEqual(self.err_lineno(a), 2)
-
-            i, a = self.interp_errlog()
-            i.runsource(
-                "#encoding: utf-8\nabcd", filename="x.py", encode=encode
-            )
-            self.assertIn(
-                "SyntaxError:",
-                "".join("".join(remove_ansi(x.__unicode__()) for x in a)),
-            )
-
-    @unittest.skipIf(py3, "encode only does anything in Python 2")
-    def test_runsource_unicode_encode(self):
-        i, _ = self.interp_errlog()
-        with self.assertRaises(ValueError):
-            i.runsource("1 + 1", encode=True)
-
-        i, _ = self.interp_errlog()
-        with self.assertRaises(ValueError):
-            i.runsource("1 + 1", filename="x.py", encode=True)
-
-    @unittest.skipIf(py3, "encode only does anything in Python 2")
-    def test_runsource_bytestring_noencode(self):
-        i, a = self.interp_errlog()
-        i.runsource(b"[1 + 1,\nabcd]", encode=False)
-        self.assertEqual(self.err_lineno(a), 2)
-
-        i, a = self.interp_errlog()
-        i.runsource(b"[1 + 1,\nabcd]", filename="x.py", encode=False)
-        self.assertEqual(self.err_lineno(a), 2)
-
-        i, a = self.interp_errlog()
-        i.runsource(
-            dedent(
-                b"""\
-                    #encoding: utf-8
-
-                    ["%s",
-                    abcd]"""
-                % ("åß∂ƒ".encode("utf8"),)
-            ),
-            encode=False,
-        )
-        self.assertEqual(self.err_lineno(a), 4)
-
-        i, a = self.interp_errlog()
-        i.runsource(
-            dedent(
-                b"""\
-                    #encoding: utf-8
-
-                    ["%s",
-                    abcd]"""
-                % ("åß∂ƒ".encode("utf8"),)
-            ),
-            filename="x.py",
-            encode=False,
-        )
-        self.assertEqual(self.err_lineno(a), 4)
-
-    @unittest.skipIf(py3, "encode only does anything in Python 2")
-    def test_runsource_bytestring_encode(self):
-        i, a = self.interp_errlog()
-        i.runsource(b"[1 + 1,\nabcd]", encode=True)
-        self.assertEqual(self.err_lineno(a), 2)
-
-        i, a = self.interp_errlog()
-        with self.assertRaises(ValueError):
-            i.runsource(b"[1 + 1,\nabcd]", filename="x.py", encode=True)
-
-        i, a = self.interp_errlog()
-        i.runsource(
-            dedent(
-                b"""\
-                    #encoding: utf-8
-
-                    [u"%s",
-                    abcd]"""
-                % ("åß∂ƒ".encode("utf8"),)
-            ),
-            encode=True,
-        )
-        self.assertEqual(self.err_lineno(a), 4)
-
-        i, a = self.interp_errlog()
-        with self.assertRaises(ValueError):
-            i.runsource(
-                dedent(
-                    b"""\
-                        #encoding: utf-8
-
-                        [u"%s",
-                        abcd]"""
-                    % ("åß∂ƒ".encode("utf8"),)
-                ),
-                filename="x.py",
-                encode=True,
-            )
-
-    @unittest.skipIf(py3, "encode only does anything in Python 2")
-    def test_runsource_bytestring_autoencode(self):
-        i, a = self.interp_errlog()
-        i.runsource(b"[1 + 1,\n abcd]")
-        self.assertEqual(self.err_lineno(a), 2)
-
-        i, a = self.interp_errlog()
-        i.runsource(b"[1 + 1,\nabcd]", filename="x.py")
-        self.assertEqual(self.err_lineno(a), 2)
-
-        i, a = self.interp_errlog()
-        i.runsource(
-            dedent(
-                b"""\
-                    #encoding: utf-8
-
-                    [u"%s",
-                    abcd]"""
-                % ("åß∂ƒ".encode("utf8"),)
-            )
-        )
-        self.assertEqual(self.err_lineno(a), 4)
-
-        i, a = self.interp_errlog()
-        i.runsource(
-            dedent(
-                b"""\
-                    #encoding: utf-8
-
-                    [u"%s",
-                    abcd]"""
-                % ("åß∂ƒ".encode("utf8"),)
-            )
-        )
-        self.assertEqual(self.err_lineno(a), 4)

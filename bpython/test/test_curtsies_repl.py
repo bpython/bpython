@@ -14,7 +14,6 @@ from bpython.repl import LineTypeTranslator as LineType
 from bpython import autocomplete
 from bpython import config
 from bpython import args
-from bpython._py3compat import py3
 from bpython.test import (
     FixLanguageTestCase as TestCase,
     MagicIterMock,
@@ -24,13 +23,7 @@ from bpython.test import (
 )
 
 from curtsies import events
-
-if py3:
-    from importlib import invalidate_caches
-else:
-
-    def invalidate_caches():
-        """Does not exist before Python 3.3"""
+from importlib import invalidate_caches
 
 
 def setup_config(conf):
@@ -110,10 +103,7 @@ class TestCurtsiesRepl(TestCase):
 
 
 def mock_next(obj, return_value):
-    if py3:
-        obj.__next__.return_value = return_value
-    else:
-        obj.next.return_value = return_value
+    obj.__next__.return_value = return_value
 
 
 class TestCurtsiesReplTab(TestCase):

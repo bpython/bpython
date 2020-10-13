@@ -1,6 +1,5 @@
 import os
 
-from bpython._py3compat import py3
 from bpython import inspection
 from bpython.test import unittest
 from bpython.test.fodder import encoding_ascii
@@ -58,16 +57,6 @@ class TestInspection(unittest.TestCase):
         self.assertFalse(inspection.is_callable(None))
         self.assertTrue(inspection.is_callable(CallableMethod().method))
 
-    @unittest.skipIf(py3, "old-style classes only exist in Python 2")
-    def test_is_new_style_py2(self):
-        self.assertTrue(inspection.is_new_style(spam))
-        self.assertTrue(inspection.is_new_style(Noncallable))
-        self.assertFalse(inspection.is_new_style(OldNoncallable))
-        self.assertTrue(inspection.is_new_style(Noncallable()))
-        self.assertFalse(inspection.is_new_style(OldNoncallable()))
-        self.assertTrue(inspection.is_new_style(None))
-
-    @unittest.skipUnless(py3, "only in Python 3 are all classes new-style")
     def test_is_new_style_py3(self):
         self.assertTrue(inspection.is_new_style(spam))
         self.assertTrue(inspection.is_new_style(Noncallable))
@@ -170,12 +159,6 @@ class Property(object):
 class Slots(object):
     __slots__ = ["s1", "s2", "s3"]
 
-    if not py3:
-
-        @property
-        def s3(self):
-            raise AssertionError("Property __get__ executed")
-
 
 class SlotsSubclass(Slots):
     @property
@@ -247,14 +230,6 @@ class TestSafeGetAttribute(unittest.TestCase):
 
         self.assertEqual(inspection.hasattr_safe(s, "s1"), False)
         self.assertEqual(inspection.hasattr_safe(s, "s4"), True)
-
-    @unittest.skipIf(py3, "Py 3 doesn't allow slots and prop in same class")
-    def test_lookup_with_property_and_slots(self):
-        sga = inspection.getattr_safe
-        s = SlotsSubclass()
-        self.assertIsInstance(sga(Slots, "s3"), property)
-        self.assertEqual(inspection.getattr_safe(s, "s3"), Slots.__dict__["s3"])
-        self.assertIsInstance(sga(SlotsSubclass, "s3"), property)
 
     def test_lookup_on_overridden_methods(self):
         sga = inspection.getattr_safe

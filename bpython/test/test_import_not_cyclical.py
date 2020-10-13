@@ -2,12 +2,10 @@ import os
 import sys
 import tempfile
 
-from bpython._py3compat import py3
 from bpython.test import unittest
 from bpython.importcompletion import find_modules
 
 
-@unittest.skipIf(not py3, "Test doesn't work in python 2.")
 class TestAvoidSymbolicLinks(unittest.TestCase):
     def setUp(self):
         with tempfile.TemporaryDirectory() as import_test_folder:

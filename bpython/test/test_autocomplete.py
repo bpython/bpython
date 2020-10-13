@@ -16,13 +16,9 @@ except ImportError:
     has_jedi = False
 
 from bpython import autocomplete
-from bpython._py3compat import py3
 from bpython.test import mock
 
-if py3:
-    glob_function = "glob.iglob"
-else:
-    glob_function = "glob.glob"
+glob_function = "glob.iglob"
 
 
 class TestSafeEval(unittest.TestCase):
@@ -235,11 +231,6 @@ class OldStyleFoo:
         pass
 
 
-skip_old_style = unittest.skipIf(
-    py3, "In Python 3 there are no old style classes"
-)
-
-
 class Properties(Foo):
     @property
     def asserts_when_called(self):
@@ -264,35 +255,6 @@ class TestAttrCompletion(unittest.TestCase):
         self.assertSetEqual(
             self.com.matches(2, "a.", locals_={"a": Foo()}),
             set(["a.method", "a.a", "a.b"]),
-        )
-
-    @skip_old_style
-    def test_att_matches_found_on_old_style_instance(self):
-        self.assertSetEqual(
-            self.com.matches(2, "a.", locals_={"a": OldStyleFoo()}),
-            set(["a.method", "a.a", "a.b"]),
-        )
-        self.assertIn(
-            u"a.__dict__",
-            self.com.matches(4, "a.__", locals_={"a": OldStyleFoo()}),
-        )
-
-    @skip_old_style
-    def test_att_matches_found_on_old_style_class_object(self):
-        self.assertIn(
-            u"A.__dict__",
-            self.com.matches(4, "A.__", locals_={"A": OldStyleFoo}),
-        )
-
-    @skip_old_style
-    def test_issue536(self):
-        class OldStyleWithBrokenGetAttr:
-            def __getattr__(self, attr):
-                raise Exception()
-
-        locals_ = {"a": OldStyleWithBrokenGetAttr()}
-        self.assertIn(
-            u"a.__module__", self.com.matches(4, "a.__", locals_=locals_)
         )
 
     def test_descriptor_attributes_not_run(self):
@@ -324,13 +286,6 @@ class TestExpressionAttributeCompletion(unittest.TestCase):
     def test_att_matches_found_on_instance(self):
         self.assertSetEqual(
             self.com.matches(5, "a[0].", locals_={"a": [Foo()]}),
-            set(["method", "a", "b"]),
-        )
-
-    @skip_old_style
-    def test_att_matches_found_on_old_style_instance(self):
-        self.assertSetEqual(
-            self.com.matches(5, "a[0].", locals_={"a": [OldStyleFoo()]}),
             set(["method", "a", "b"]),
         )
 
@@ -438,7 +393,6 @@ class TestMultilineJediCompletion(unittest.TestCase):
         )
         self.assertSetEqual(matches, set(["ade"]))
 
-    @unittest.skipUnless(py3, "asyncio required")
     def test_issue_544(self):
         com = autocomplete.MultilineJediCompletion()
         code = "@asyncio.coroutine\ndef"
@@ -463,10 +417,6 @@ class TestGlobalCompletion(unittest.TestCase):
         for m in self.com.matches(1, "a", locals_={"abc": 10}):
             self.assertIsInstance(m, type(u""))
 
-    @unittest.skipIf(py3, "in Python 3 invalid identifiers are passed through")
-    def test_ignores_nonascii_encodable(self):
-        self.assertEqual(self.com.matches(3, "abc", locals_={"abcß": 10}), None)
-
     def test_mock_kwlist(self):
         with mock.patch.object(keyword, "kwlist", new=["abcd"]):
             self.assertEqual(self.com.matches(3, "abc", locals_={}), None)
@@ -481,11 +431,7 @@ class TestParameterNameCompletion(unittest.TestCase):
         def func(apple, apricot, banana, carrot):
             pass
 
-        if py3:
-            argspec = list(inspect.getfullargspec(func))
-        else:
-            argspec = list(inspect.getargspec(func))
-
+        argspec = list(inspect.getfullargspec(func))
         argspec = ["func", argspec, False]
         com = autocomplete.ParameterNameCompletion()
         self.assertSetEqual(

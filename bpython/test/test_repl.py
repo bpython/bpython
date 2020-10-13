@@ -8,7 +8,6 @@ import socket
 import sys
 import tempfile
 
-from bpython._py3compat import py3
 from bpython import config, repl, cli, autocomplete
 from bpython.test import MagicIterMock, mock, FixLanguageTestCase as TestCase
 from bpython.test import unittest, TEST_CONFIG
@@ -394,9 +393,7 @@ class TestRepl(unittest.TestCase):
         self.assertTrue(hasattr(self.repl.matches_iter, "matches"))
         self.assertEqual(
             self.repl.matches_iter.matches,
-            ["UnboundLocalError(", "__doc__"]
-            if not py3
-            else ["ChildProcessError(", "UnboundLocalError(", "__doc__"],
+            ["ChildProcessError(", "UnboundLocalError(", "__doc__"],
         )
 
     # 2. Attribute tests
@@ -501,10 +498,7 @@ class TestCliReplTab(unittest.TestCase):
     # 3 Types of tab complete
     def test_simple_tab_complete(self):
         self.repl.matches_iter = MagicIterMock()
-        if py3:
-            self.repl.matches_iter.__bool__.return_value = False
-        else:
-            self.repl.matches_iter.__nonzero__.return_value = False
+        self.repl.matches_iter.__bool__.return_value = False
         self.repl.complete = mock.Mock()
         self.repl.print_line = mock.Mock()
         self.repl.matches_iter.is_cseq.return_value = False
