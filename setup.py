@@ -91,8 +91,7 @@ try:
         stderr=subprocess.PIPE,
     )
     stdout = proc.communicate()[0].strip()
-    if sys.version_info[0] > 2:
-        stdout = stdout.decode("ascii")
+    stdout = stdout.decode("ascii")
 
     if proc.returncode == 0:
         version = git_describe_to_python_version(stdout)
@@ -235,18 +234,6 @@ extras_require = {
     "urwid": ["urwid"],
     "watch": ["watchdog"],
     "jedi": ["jedi"],
-    # need requests[security] for SNI support (only before 2.7.7)
-    ':python_full_version == "2.7.0" or '
-    'python_full_version == "2.7.1" or '
-    'python_full_version == "2.7.2" or '
-    'python_full_version == "2.7.3" or '
-    'python_full_version == "2.7.4" or '
-    'python_full_version == "2.7.5" or '
-    'python_full_version == "2.7.6"': [
-        "pyOpenSSL",
-        "pyasn1",
-        "ndg-httpsclient",
-    ],
 }
 
 packages = [
@@ -266,10 +253,6 @@ entry_points = {
         "bpdb = bpdb:main",
     ]
 }
-
-tests_require = []
-if sys.version_info[0] == 2:
-    tests_require.append("mock")
 
 # translations
 mo_files = []
@@ -291,7 +274,6 @@ setup(
     classifiers=classifiers,
     install_requires=install_requires,
     extras_require=extras_require,
-    tests_require=tests_require,
     packages=packages,
     data_files=data_files,
     package_data={
