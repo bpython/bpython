@@ -22,6 +22,7 @@ Fixes:
 * #853: Fix invalid escape sequences.
 
 Support for Python 3.9 has been added. Support for Python 3.5 has been dropped.
+Version 0.21 (the next release of bpython) will drop support for Python 2.x.
 
 0.19
 ----
