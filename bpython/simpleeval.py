@@ -98,10 +98,10 @@ def simple_eval(node_or_string, namespace=None):
         elif isinstance(node, ast.List):
             return list(map(_convert, node.elts))
         elif isinstance(node, ast.Dict):
-            return dict(
-                (_convert(k), _convert(v))
+            return {
+                _convert(k): _convert(v)
                 for k, v in zip(node.keys, node.values)
-            )
+            }
         elif isinstance(node, ast.Set):
             return set(map(_convert, node.elts))
         elif (

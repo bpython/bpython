@@ -70,7 +70,7 @@ class AbstractEdits:
     def call(self, key, **kwargs):
         func = self[key]
         params = getargspec(func)
-        args = dict((k, v) for k, v in kwargs.items() if k in params)
+        args = {k: v for k, v in kwargs.items() if k in params}
         return func(**args)
 
     def call_without_cut(self, key, **kwargs):
