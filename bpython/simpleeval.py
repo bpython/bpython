@@ -34,12 +34,11 @@ from six import string_types
 from six.moves import builtins
 
 from . import line as line_properties
-from ._py3compat import py3
 from .inspection import getattr_safe
 
-_string_type_nodes = (ast.Str, ast.Bytes) if py3 else (ast.Str,)
-_numeric_types = (int, float, complex) + (() if py3 else (long,))
-_name_type_nodes = (ast.Name, ast.NameConstant) if py3 else (ast.Name,)
+_string_type_nodes = (ast.Str, ast.Bytes)
+_numeric_types = (int, float, complex)
+_name_type_nodes = (ast.Name, ast.NameConstant)
 
 
 class EvaluationError(Exception):
@@ -58,9 +57,8 @@ def safe_eval(expr, namespace):
 
 # This function is under the Python License, Version 2
 # This license requires modifications to the code be reported.
-# Based on ast.literal_eval in Python 2 and Python 3
+# Based on ast.literal_eval
 # Modifications:
-# * Python 2 and Python 3 versions of the function are combined
 # * checks that objects used as operands of + and - are numbers
 #   instead of checking they are constructed with number literals
 # * new docstring describing different functionality
@@ -90,7 +88,7 @@ def simple_eval(node_or_string, namespace=None):
         node_or_string = node_or_string.body
 
     def _convert(node):
-        if py3 and isinstance(node, ast.Constant):
+        if isinstance(node, ast.Constant):
             return node.value
         elif isinstance(node, _string_type_nodes):
             return node.s

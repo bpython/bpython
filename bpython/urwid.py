@@ -45,7 +45,6 @@ from six import iteritems, string_types
 from pygments.token import Token
 
 from . import args as bpargs, repl, translations
-from ._py3compat import py3
 from .config import getpreferredencoding
 from .formatter import theme_map
 from .importcompletion import find_coroutine
@@ -54,9 +53,6 @@ from .translations import _
 from .keys import urwid_key_dispatch as key_dispatch
 
 import urwid
-
-if not py3:
-    import inspect
 
 Parenthesis = Token.Punctuation.Parenthesis
 
@@ -600,7 +596,7 @@ class URWIDRepl(repl.Repl):
         self.tooltip = urwid.ListBox(urwid.SimpleListWalker([]))
         self.tooltip.grid = None
         self.overlay = Tooltip(self.listbox, self.tooltip)
-        self.stdout_hist = ""  # native str (bytes in Py2, unicode in Py3)
+        self.stdout_hist = ""  # native str (unicode in Py3)
 
         self.frame = urwid.Frame(self.overlay)
 
@@ -780,13 +776,10 @@ class URWIDRepl(repl.Repl):
                 func_name, args, is_bound = self.funcprops
                 in_arg = self.arg_pos
                 args, varargs, varkw, defaults = args[:4]
-                if py3:
-                    kwonly = self.funcprops.argspec.kwonly
-                    kwonly_defaults = (
-                        self.funcprops.argspec.kwonly_defaults or {}
-                    )
-                else:
-                    kwonly, kwonly_defaults = [], {}
+                kwonly = self.funcprops.argspec.kwonly
+                kwonly_defaults = (
+                    self.funcprops.argspec.kwonly_defaults or {}
+                )
                 markup = [("bold name", func_name), ("name", ": (")]
 
                 # the isinstance checks if we're in a positional arg
@@ -810,13 +803,7 @@ class URWIDRepl(repl.Repl):
                     if k == in_arg or i == in_arg:
                         color = "bold " + color
 
-                    if not py3:
-                        # See issue #138: We need to format tuple unpacking correctly
-                        # We use the undocumented function inspection.strseq() for
-                        # that. Fortunately, that madness is gone in Python 3.
-                        markup.append((color, inspect.strseq(i, str)))
-                    else:
-                        markup.append((color, str(i)))
+                    markup.append((color, str(i)))
                     if kw is not None:
                         markup.extend([("punctuation", "="), ("token", kw)])
                     if k != len(args) - 1:
@@ -912,12 +899,7 @@ class URWIDRepl(repl.Repl):
 
         self.iy, self.ix = self.scr.getyx()
         for line in self.history:
-            if py3:
-                self.stdout_hist += line + "\n"
-            else:
-                self.stdout_hist += (
-                    line.encode(locale.getpreferredencoding()) + "\n"
-                )
+            self.stdout_hist += line + "\n"
             self.print_line(line)
             # I decided it was easier to just do this manually
             # than to make the print_line and history stuff more flexible.
@@ -949,9 +931,6 @@ class URWIDRepl(repl.Repl):
             t = s.split("\x03")[1]
         else:
             t = s
-
-        if not py3 and isinstance(t, unicode):
-            t = t.encode(locale.getpreferredencoding())
 
         if not self.stdout_hist:
             self.stdout_hist = t
@@ -1013,16 +992,10 @@ class URWIDRepl(repl.Repl):
         # caption is bytes this breaks typing non-ascii into bpython.
         if not more:
             caption = ("prompt", self.ps1)
-            if py3:
-                self.stdout_hist += self.ps1
-            else:
-                self.stdout_hist += self.ps1.encode(getpreferredencoding())
+            self.stdout_hist += self.ps1
         else:
             caption = ("prompt_more", self.ps2)
-            if py3:
-                self.stdout_hist += self.ps2
-            else:
-                self.stdout_hist += self.ps2.encode(getpreferredencoding())
+            self.stdout_hist += self.ps2
         self.edit = BPythonEdit(self.config, caption=caption)
 
         urwid.connect_signal(self.edit, "change", self.on_input_change)
@@ -1067,10 +1040,7 @@ class URWIDRepl(repl.Repl):
             inp = self.edit.get_edit_text()
             self.history.append(inp)
             self.edit.make_readonly()
-            if py3:
-                self.stdout_hist += inp
-            else:
-                self.stdout_hist += inp.encode(locale.getpreferredencoding())
+            self.stdout_hist += inp
             self.stdout_hist += "\n"
             self.edit = None
             # This may take a while, so force a redraw first:
@@ -1372,12 +1342,7 @@ def main(args=None, locals_=None, banner=None):
             filename = os.environ.get("PYTHONSTARTUP")
             if filename and os.path.isfile(filename):
                 with open(filename, "r") as f:
-                    if py3:
-                        interpreter.runsource(f.read(), filename, "exec")
-                    else:
-                        interpreter.runsource(
-                            f.read(), filename, "exec", encode=False
-                        )
+                    interpreter.runsource(f.read(), filename, "exec")
 
         if banner is not None:
             myrepl.write(banner)
@@ -1390,15 +1355,6 @@ def main(args=None, locals_=None, banner=None):
             )
         )
         myrepl.write("\n")
-
-        if not py3:
-            # XXX these deprecation warnings need to go at some point
-            myrepl.write(
-                _(
-                    "WARNING: You are using `bpython` on Python 2. Support for Python 2 has been deprecated in version 0.19 and might disappear in a future version."
-                )
-            )
-            myrepl.write("\n")
 
         myrepl.start()
 

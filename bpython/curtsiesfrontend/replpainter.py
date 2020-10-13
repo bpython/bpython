@@ -6,10 +6,6 @@ from curtsies.formatstring import linesplit
 from curtsies.fmtfuncs import bold
 
 from bpython.curtsiesfrontend.parse import func_for_letter
-from bpython._py3compat import py3
-
-if not py3:
-    import inspect
 
 logger = logging.getLogger(__name__)
 
@@ -99,9 +95,8 @@ def formatted_argspec(funcprops, arg_pos, columns, config):
     _args = funcprops.argspec.varargs
     _kwargs = funcprops.argspec.varkwargs
     is_bound_method = funcprops.is_bound_method
-    if py3:
-        kwonly = funcprops.argspec.kwonly
-        kwonly_defaults = funcprops.argspec.kwonly_defaults or dict()
+    kwonly = funcprops.argspec.kwonly
+    kwonly_defaults = funcprops.argspec.kwonly_defaults or dict()
 
     arg_color = func_for_letter(config.color_scheme["name"])
     func_color = func_for_letter(config.color_scheme["name"].swapcase())
@@ -126,15 +121,10 @@ def formatted_argspec(funcprops, arg_pos, columns, config):
         if i == arg_pos or arg == arg_pos:
             color = bolds[color]
 
-        if not py3:
-            s += color(inspect.strseq(arg, unicode))
-        else:
-            s += color(arg)
+        s += color(arg)
 
         if kw is not None:
             s += punctuation_color("=")
-            if not py3:
-                kw = kw.decode("ascii", "replace")
             s += token_color(kw)
 
         if i != len(args) - 1:
@@ -145,7 +135,7 @@ def formatted_argspec(funcprops, arg_pos, columns, config):
             s += punctuation_color(", ")
         s += token_color("*%s" % (_args,))
 
-    if py3 and kwonly:
+    if kwonly:
         if not _args:
             if args:
                 s += punctuation_color(", ")
@@ -163,7 +153,7 @@ def formatted_argspec(funcprops, arg_pos, columns, config):
                 s += token_color(repr(default))
 
     if _kwargs:
-        if args or _args or (py3 and kwonly):
+        if args or _args or kwonly:
             s += punctuation_color(", ")
         s += token_color("**%s" % (_kwargs,))
     s += punctuation_color(")")
@@ -174,7 +164,7 @@ def formatted_argspec(funcprops, arg_pos, columns, config):
 def formatted_docstring(docstring, columns, config):
     if isinstance(docstring, bytes):
         docstring = docstring.decode("utf8")
-    elif isinstance(docstring, str if py3 else unicode):
+    elif isinstance(docstring, str):
         pass
     else:
         # TODO: fail properly here and catch possible exceptions in callers.

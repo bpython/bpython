@@ -36,7 +36,6 @@ from bpython.config import (
 from bpython.formatter import BPythonFormatter
 from bpython import autocomplete
 from bpython.translations import _
-from bpython._py3compat import py3
 from bpython.pager import get_pager_command
 
 from bpython.curtsiesfrontend import replpainter as paint
@@ -55,11 +54,6 @@ from bpython.curtsiesfrontend.interpreter import (
 )
 
 from curtsies.configfile_keynames import keymap as key_dispatch
-
-if not py3:
-    import imp
-    import pkgutil
-
 
 logger = logging.getLogger(__name__)
 
@@ -97,10 +91,6 @@ EDIT_SESSION_HEADER = """### current bpython session - make changes and save to 
 # more than this many events will be assumed to be a true paste event,
 # i.e. control characters like '<Ctrl-a>' will be stripped
 MAX_EVENTS_POSSIBLY_NOT_PASTE = 20
-
-# This is needed for is_nop and should be removed once is_nop is fixed.
-if py3:
-    unicode = str
 
 
 class FakeStdin(object):
@@ -177,7 +167,7 @@ class FakeStdin(object):
         assert len(e) == 1, "added multiple characters: %r" % e
         logger.debug("adding normal char %r to current line", e)
 
-        c = e if py3 else e.encode("utf8")
+        c = e
         self.current_line = (
             self.current_line[: self.cursor_offset]
             + c
@@ -254,20 +244,6 @@ class ImportLoader(object):
         return module
 
 
-if not py3:
-    # Remember that pkgutil.ImpLoader is an old style class.
-    class ImpImportLoader(pkgutil.ImpLoader):
-        def __init__(self, watcher, *args):
-            self.watcher = watcher
-            pkgutil.ImpLoader.__init__(self, *args)
-
-        def load_module(self, name):
-            module = pkgutil.ImpLoader.load_module(self, name)
-            if hasattr(module, "__file__"):
-                self.watcher.track_module(module.__file__)
-            return module
-
-
 class ImportFinder(object):
     def __init__(self, watcher, old_meta_path):
         self.watcher = watcher
@@ -303,15 +279,6 @@ class ImportFinder(object):
             loader = finder.find_module(fullname, path)
             if loader is not None:
                 return ImportLoader(self.watcher, loader)
-
-        if not py3:
-            # Python 2 does not have the default finders stored in
-            # sys.meta_path. Use imp to perform the actual importing.
-            try:
-                result = imp.find_module(fullname, path)
-                return ImpImportLoader(self.watcher, fullname, *result)
-            except ImportError:
-                return None
 
         return None
 
@@ -1998,7 +1965,7 @@ class BaseRepl(BpythonRepl):
     def pager(self, text):
         """Runs an external pager on text
 
-        text must be a unicode"""
+        text must be a str"""
         command = get_pager_command()
         with tempfile.NamedTemporaryFile() as tmp:
             tmp.write(text.encode(getpreferredencoding()))
@@ -2066,7 +2033,7 @@ class BaseRepl(BpythonRepl):
 
 
 def is_nop(char):
-    return unicodedata.category(unicode(char)) == "Cc"
+    return unicodedata.category(str(char)) == "Cc"
 
 
 def tabs_to_spaces(line):

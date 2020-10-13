@@ -32,13 +32,7 @@ from pygments.token import Token
 from pygments.lexers import Python3Lexer
 from types import MemberDescriptorType
 
-from ._py3compat import py3
 from .lazyre import LazyReCompile
-
-if not py3:
-    import types
-
-    _name = LazyReCompile(r"[a-zA-Z_]\w*$")
 
 ArgSpec = namedtuple(
     "ArgSpec",
@@ -107,17 +101,8 @@ class AttrCleaner(object):
         # /Dark magic
 
 
-if py3:
-
-    def is_new_style(obj):
-        return True
-
-
-else:
-
-    def is_new_style(obj):
-        """Returns True if obj is a new-style class or object"""
-        return type(obj) not in [types.InstanceType, types.ClassType]
+def is_new_style(obj):
+    return True
 
 
 class _Repr(object):
@@ -263,11 +248,7 @@ def getfuncprops(func, f):
         # '__init__' throws xmlrpclib.Fault (see #202)
         return None
     try:
-        if py3:
-            argspec = get_argspec_from_signature(f)
-        else:
-            argspec = list(inspect.getargspec(f))
-
+        argspec = get_argspec_from_signature(f)
         fixlongargs(f, argspec)
         if len(argspec) == 4:
             argspec = argspec + [list(), dict(), None]
@@ -284,16 +265,10 @@ def getfuncprops(func, f):
 
 
 def is_eval_safe_name(string):
-    if py3:
-        return all(
-            part.isidentifier() and not keyword.iskeyword(part)
-            for part in string.split(".")
-        )
-    else:
-        return all(
-            _name.match(part) and not keyword.iskeyword(part)
-            for part in string.split(".")
-        )
+    return all(
+        part.isidentifier() and not keyword.iskeyword(part)
+        for part in string.split(".")
+    )
 
 
 def is_callable(obj):
@@ -389,37 +364,13 @@ def get_encoding_file(fname):
     return "ascii"
 
 
-if not py3:
-
-    def getattr_safe(obj, name):
-        """side effect free getattr"""
-        if not is_new_style(obj):
-            return getattr(obj, name)
-
-        with AttrCleaner(obj):
-            to_look_through = (
-                obj.__mro__
-                if inspect.isclass(obj)
-                else (obj,) + type(obj).__mro__
-            )
-            for cls in to_look_through:
-                if hasattr(cls, "__dict__") and name in cls.__dict__:
-                    result = cls.__dict__[name]
-                    if isinstance(result, MemberDescriptorType):
-                        result = getattr(obj, name)
-                    return result
-            raise AttributeError(name)
-
-
-else:
-
-    def getattr_safe(obj, name):
-        """side effect free getattr (calls getattr_static)."""
-        result = inspect.getattr_static(obj, name)
-        # Slots are a MemberDescriptorType
-        if isinstance(result, MemberDescriptorType):
-            result = getattr(obj, name)
-        return result
+def getattr_safe(obj, name):
+    """side effect free getattr (calls getattr_static)."""
+    result = inspect.getattr_static(obj, name)
+    # Slots are a MemberDescriptorType
+    if isinstance(result, MemberDescriptorType):
+        result = getattr(obj, name)
+    return result
 
 
 def hasattr_safe(obj, name):
@@ -430,15 +381,6 @@ def hasattr_safe(obj, name):
         return False
 
 
-if py3:
-
-    def get_source_unicode(obj):
-        """Returns a decoded source of object"""
-        return inspect.getsource(obj)
-
-
-else:
-
-    def get_source_unicode(obj):
-        """Returns a decoded source of object"""
-        return inspect.getsource(obj).decode(get_encoding(obj))
+def get_source_unicode(obj):
+    """Returns a decoded source of object"""
+    return inspect.getsource(obj)

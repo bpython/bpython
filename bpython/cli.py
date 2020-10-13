@@ -63,7 +63,6 @@ import errno
 from pygments import format
 from pygments.formatters import TerminalFormatter
 from pygments.lexers import Python3Lexer
-from ._py3compat import py3
 from pygments.token import Token
 from .formatter import BPythonFormatter
 
@@ -84,9 +83,6 @@ from . import repl
 from . import args as bpargs
 from .pager import page
 from .args import parse as argsparse
-
-if not py3:
-    import inspect
 
 
 # --- module globals ---
@@ -220,10 +216,7 @@ class FakeStdin(object):
                 self.buffer.append(rest)
             buffer = buffer[:size]
 
-        if py3:
-            return buffer
-        else:
-            return buffer.encode(getpreferredencoding())
+        return buffer
 
     def read(self, size=None):
         if size == 0:
@@ -536,9 +529,6 @@ class CLIRepl(repl.Repl):
         uses the formatting method as defined in formatter.py to parse the
         srings. It won't update the screen if it's reevaluating the code (as it
         does with undo)."""
-        if not py3 and isinstance(s, unicode):
-            s = s.encode(getpreferredencoding())
-
         a = get_colpair(self.config, "output")
         if "\x01" in s:
             rx = re.search("\x01([A-Za-z])([A-Za-z]?)", s)
@@ -629,14 +619,11 @@ class CLIRepl(repl.Repl):
         while True:
             try:
                 key += self.scr.getkey()
-                if py3:
-                    # Seems like we get a in the locale's encoding
-                    # encoded string in Python 3 as well, but of
-                    # type str instead of bytes, hence convert it to
-                    # bytes first and decode then
-                    key = key.encode("latin-1").decode(getpreferredencoding())
-                else:
-                    key = key.decode(getpreferredencoding())
+                # Seems like we get a in the locale's encoding
+                # encoded string in Python 3 as well, but of
+                # type str instead of bytes, hence convert it to
+                # bytes first and decode then
+                key = key.encode("latin-1").decode(getpreferredencoding())
                 self.scr.nodelay(False)
             except UnicodeDecodeError:
                 # Yes, that actually kind of sucks, but I don't see another way to get
@@ -726,9 +713,8 @@ class CLIRepl(repl.Repl):
         _args = topline.argspec.varargs
         _kwargs = topline.argspec.varkwargs
         is_bound_method = topline.is_bound_method
-        if py3:
-            kwonly = topline.argspec.kwonly
-            kwonly_defaults = topline.argspec.kwonly_defaults or dict()
+        kwonly = topline.argspec.kwonly
+        kwonly_defaults = topline.argspec.kwonly_defaults or dict()
         max_w = int(self.scr.getmaxyx()[1] * 0.6)
         self.list_win.erase()
         self.list_win.resize(3, max_w)
@@ -776,13 +762,7 @@ class CLIRepl(repl.Repl):
             if k == in_arg or i == in_arg:
                 color |= curses.A_BOLD
 
-            if not py3:
-                # See issue #138: We need to format tuple unpacking correctly
-                # We use the undocumented function inspection.strseq() for
-                # that. Fortunately, that madness is gone in Python 3.
-                self.list_win.addstr(inspect.strseq(i, str), color)
-            else:
-                self.list_win.addstr(str(i), color)
+            self.list_win.addstr(str(i), color)
             if kw is not None:
                 self.list_win.addstr("=", punctuation_colpair)
                 self.list_win.addstr(kw, get_colpair(self.config, "token"))
@@ -796,7 +776,7 @@ class CLIRepl(repl.Repl):
                 "*%s" % (_args,), get_colpair(self.config, "token")
             )
 
-        if py3 and kwonly:
+        if kwonly:
             if not _args:
                 if args:
                     self.list_win.addstr(", ", punctuation_colpair)
@@ -816,7 +796,7 @@ class CLIRepl(repl.Repl):
                     )
 
         if _kwargs:
-            if args or _args or (py3 and kwonly):
+            if args or _args or kwonly:
                 self.list_win.addstr(", ", punctuation_colpair)
             self.list_win.addstr(
                 "**%s" % (_kwargs,), get_colpair(self.config, "token")
@@ -1094,10 +1074,7 @@ class CLIRepl(repl.Repl):
             self.echo(
                 "\x01%s\x03%s" % (self.config.color_scheme["prompt"], self.ps1)
             )
-            if py3:
-                self.stdout_hist += self.ps1
-            else:
-                self.stdout_hist += self.ps1.encode(getpreferredencoding())
+            self.stdout_hist += self.ps1
             self.screen_hist.append(
                 "\x01%s\x03%s\x04"
                 % (self.config.color_scheme["prompt"], self.ps1)
@@ -1105,10 +1082,7 @@ class CLIRepl(repl.Repl):
         else:
             prompt_more_color = self.config.color_scheme["prompt_more"]
             self.echo("\x01%s\x03%s" % (prompt_more_color, self.ps2))
-            if py3:
-                self.stdout_hist += self.ps2
-            else:
-                self.stdout_hist += self.ps2.encode(getpreferredencoding())
+            self.stdout_hist += self.ps2
             self.screen_hist.append(
                 "\x01%s\x03%s\x04" % (prompt_more_color, self.ps2)
             )
@@ -1175,10 +1149,7 @@ class CLIRepl(repl.Repl):
 
             self.history.append(inp)
             self.screen_hist[-1] += self.f_string
-            if py3:
-                self.stdout_hist += inp + "\n"
-            else:
-                self.stdout_hist += inp.encode(getpreferredencoding()) + "\n"
+            self.stdout_hist += inp + "\n"
             stdout_position = len(self.stdout_hist)
             self.more = self.push(inp)
             if not self.more:
@@ -1241,10 +1212,7 @@ class CLIRepl(repl.Repl):
 
         self.iy, self.ix = self.scr.getyx()
         for line in self.history:
-            if py3:
-                self.stdout_hist += line + "\n"
-            else:
-                self.stdout_hist += line.encode(getpreferredencoding()) + "\n"
+            self.stdout_hist += line + "\n"
             self.print_line(line)
             self.screen_hist[-1] += self.f_string
             # I decided it was easier to just do this manually
@@ -1277,9 +1245,6 @@ class CLIRepl(repl.Repl):
             t = s.split("\x03")[1]
         else:
             t = s
-
-        if not py3 and isinstance(t, unicode):
-            t = t.encode(getpreferredencoding())
 
         if not self.stdout_hist:
             self.stdout_hist = t
@@ -1390,16 +1355,12 @@ class CLIRepl(repl.Repl):
         if v_items:
             self.list_win.addstr("\n ")
 
-        if not py3:
-            encoding = getpreferredencoding()
         for ix, i in enumerate(v_items):
             padding = (wl - len(i)) * " "
             if i == current_item:
                 color = get_colpair(self.config, "operator")
             else:
                 color = get_colpair(self.config, "main")
-            if not py3:
-                i = i.encode(encoding)
             self.list_win.addstr(i + padding, color)
             if (cols == 1 or (ix and not (ix + 1) % cols)) and ix + 1 < len(
                 v_items
@@ -1407,8 +1368,6 @@ class CLIRepl(repl.Repl):
                 self.list_win.addstr("\n ")
 
         if self.docstring is not None:
-            if not py3 and isinstance(docstring_string, unicode):
-                docstring_string = docstring_string.encode(encoding, "ignore")
             self.list_win.addstr(
                 "\n" + docstring_string, get_colpair(self.config, "comment")
             )
@@ -1544,10 +1503,7 @@ class CLIRepl(repl.Repl):
         self.iy, self.ix = self.scr.getyx()
         self.evaluating = True
         for line in lines:
-            if py3:
-                self.stdout_hist += line + "\n"
-            else:
-                self.stdout_hist += line.encode(getpreferredencoding()) + "\n"
+            self.stdout_hist += line + "\n"
             self.history.append(line)
             self.print_line(line)
             self.screen_hist[-1] += self.f_string
@@ -1705,9 +1661,6 @@ class Statusbar(object):
             self.c = c
 
         if s:
-            if not py3 and isinstance(s, unicode):
-                s = s.encode(getpreferredencoding())
-
             if self.c:
                 self.win.addstr(s, self.c)
             else:
@@ -1995,15 +1948,6 @@ def main_curses(scr, args, config, interactive=True, locals_=None, banner=None):
         )
     )
     clirepl.write("\n")
-
-    if not py3:
-        # XXX these deprecation warnings need to go at some point
-        clirepl.write(
-            _(
-                "WARNING: You are using `bpython` on Python 2. Support for Python 2 has been deprecated in version 0.19 and might disappear in a future version."
-            )
-        )
-        clirepl.write("\n")
 
     exit_value = clirepl.repl()
     if hasattr(sys, "exitfunc"):

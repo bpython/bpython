@@ -8,15 +8,11 @@ from bpython.lazyre import LazyReCompile
 
 import inspect
 from six import iteritems
-from bpython._py3compat import py3
 
 INDENT = 4
 
 # TODO Allow user config of keybindings for these actions
-if not py3:
-    getargspec = lambda func: inspect.getargspec(func)[0]
-else:
-    getargspec = lambda func: inspect.signature(func).parameters
+getargspec = lambda func: inspect.signature(func).parameters
 
 
 class AbstractEdits(object):

@@ -37,12 +37,8 @@ from . import inspection
 from . import importcompletion
 from . import line as lineparts
 from .line import LinePart
-from ._py3compat import py3
 from .lazyre import LazyReCompile
 from .simpleeval import safe_eval, evaluate_current_expression, EvaluationError
-
-if not py3:
-    from types import InstanceType, ClassType
 
 
 # Autocomplete modes
@@ -109,10 +105,7 @@ MAGIC_METHODS = tuple(
     )
 )
 
-if py3:
-    KEYWORDS = frozenset(keyword.kwlist)
-else:
-    KEYWORDS = frozenset(name.decode("ascii") for name in keyword.kwlist)
+KEYWORDS = frozenset(keyword.kwlist)
 
 
 def after_last_dot(name):
@@ -253,19 +246,8 @@ class FilenameCompletion(BaseCompletionType):
     def __init__(self, mode=SIMPLE):
         super(FilenameCompletion, self).__init__(False, mode)
 
-    if py3:
-
-        def safe_glob(self, pathname):
-            return glob.iglob(glob.escape(pathname) + "*")
-
-    else:
-
-        def safe_glob(self, pathname):
-            try:
-                return glob.glob(pathname + "*")
-            except re.error:
-                # see #491
-                return tuple()
+    def safe_glob(self, pathname):
+        return glob.iglob(glob.escape(pathname) + "*")
 
     def matches(self, cursor_offset, line, **kwargs):
         cs = lineparts.current_string(cursor_offset, line)
@@ -366,10 +348,6 @@ class AttrCompletion(BaseCompletionType):
                 except ValueError:
                     pass
 
-        if not py3 and isinstance(obj, (InstanceType, ClassType)):
-            # Account for the __dict__ in an old-style class.
-            words.append("__dict__")
-
         matches = []
         n = len(attr)
         for word in words:
@@ -377,28 +355,11 @@ class AttrCompletion(BaseCompletionType):
                 matches.append("%s.%s" % (expr, word))
         return matches
 
-    if py3:
-
-        def list_attributes(self, obj):
-            # TODO: re-implement dir using getattr_static to avoid using
-            # AttrCleaner here?
-            with inspection.AttrCleaner(obj):
-                return dir(obj)
-
-    else:
-
-        def list_attributes(self, obj):
-            with inspection.AttrCleaner(obj):
-                if isinstance(obj, InstanceType):
-                    try:
-                        return dir(obj)
-                    except Exception:
-                        # This is a case where we can not prevent user code from
-                        # running. We return a default list attributes on error
-                        # instead. (#536)
-                        return ["__doc__", "__module__"]
-                else:
-                    return dir(obj)
+    def list_attributes(self, obj):
+        # TODO: re-implement dir using getattr_static to avoid using
+        # AttrCleaner here?
+        with inspection.AttrCleaner(obj):
+            return dir(obj)
 
 
 class DictKeyCompletion(BaseCompletionType):
@@ -501,12 +462,11 @@ class ParameterNameCompletion(BaseCompletionType):
                 for name in argspec[1][0]
                 if isinstance(name, string_types) and name.startswith(r.word)
             )
-            if py3:
-                matches.update(
-                    name + "="
-                    for name in argspec[1][4]
-                    if name.startswith(r.word)
-                )
+            matches.update(
+                name + "="
+                for name in argspec[1][4]
+                if name.startswith(r.word)
+            )
         return matches if matches else None
 
     def locate(self, current_offset, line):

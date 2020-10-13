@@ -21,7 +21,6 @@
 # THE SOFTWARE.
 
 
-from ._py3compat import py3
 from .line import (
     current_word,
     current_import,
@@ -33,15 +32,9 @@ import fnmatch
 import os
 import sys
 import warnings
+import importlib.machinery
 
-if py3:
-    import importlib.machinery
-
-    SUFFIXES = importlib.machinery.all_suffixes()
-else:
-    import imp
-
-    SUFFIXES = [suffix for suffix, mode, type in imp.get_suffixes()]
+SUFFIXES = importlib.machinery.all_suffixes()
 
 # The cached list of all known modules
 modules = set()
@@ -146,8 +139,7 @@ def find_modules(path):
     except EnvironmentError:
         filenames = []
 
-    if py3:
-        finder = importlib.machinery.FileFinder(path)
+    finder = importlib.machinery.FileFinder(path)
 
     for name in filenames:
         if any(fnmatch.fnmatch(name, entry) for entry in skiplist):
@@ -165,29 +157,21 @@ def find_modules(path):
             if name.endswith(suffix):
                 name = name[: -len(suffix)]
                 break
-        if py3 and name == "badsyntax_pep3120":
+        if name == "badsyntax_pep3120":
             # Workaround for issue #166
             continue
         try:
             is_package = False
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", ImportWarning)
-                if py3:
-                    spec = finder.find_spec(name)
-                    if spec is None:
-                        continue
-                    if spec.submodule_search_locations is not None:
-                        pathname = spec.submodule_search_locations[0]
-                        is_package = True
-                    else:
-                        pathname = spec.origin
+                spec = finder.find_spec(name)
+                if spec is None:
+                    continue
+                if spec.submodule_search_locations is not None:
+                    pathname = spec.submodule_search_locations[0]
+                    is_package = True
                 else:
-                    fo, pathname, _ = imp.find_module(name, [path])
-                    if fo is not None:
-                        fo.close()
-                    else:
-                        # Yay, package
-                        is_package = True
+                    pathname = spec.origin
         except (ImportError, IOError, SyntaxError):
             continue
         except UnicodeEncodeError:

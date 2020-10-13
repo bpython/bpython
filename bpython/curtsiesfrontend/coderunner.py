@@ -16,7 +16,6 @@ import greenlet
 import logging
 import threading
 
-from bpython._py3compat import py3
 from bpython.config import getpreferredencoding
 
 logger = logging.getLogger(__name__)
@@ -221,8 +220,6 @@ class FakeOutput(object):
         self._real_fileobj = real_fileobj
 
     def write(self, s, *args, **kwargs):
-        if not py3 and isinstance(s, str):
-            s = s.decode(getpreferredencoding(), "ignore")
         self.on_write(s, *args, **kwargs)
         return self.coderunner.request_from_main_context(force_refresh=True)
 

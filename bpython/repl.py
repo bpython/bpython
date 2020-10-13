@@ -44,7 +44,6 @@ from pygments.lexers import Python3Lexer
 
 from . import autocomplete
 from . import inspection
-from ._py3compat import py3
 from .clipboard import get_clipboard, CopyFailed
 from .config import getpreferredencoding
 from .formatter import Parenthesis
@@ -142,35 +141,12 @@ class Interpreter(code.InteractiveInterpreter, object):
         would cause a syntax error to be thrown which would reference code
         the user did not write, setting encoding to True when source is a
         unicode string in Python 2 will throw a ValueError."""
-        # str means bytestring in Py2
-        if encode and not py3 and isinstance(source, unicode):
-            if encode != "auto":
-                raise ValueError("can't add encoding line to unicode input")
-            encode = False
         if encode and filename is not None:
             # files have encoding comments or implicit encoding of ASCII
             if encode != "auto":
                 raise ValueError("shouldn't add encoding line to file contents")
             encode = False
 
-        if encode and not py3 and isinstance(source, str):
-            # encoding makes sense for bytestrings, so long as there
-            # isn't already an encoding comment
-            comment = inspection.get_encoding_comment(source)
-            if comment:
-                # keep the existing encoding comment, but add two lines
-                # because this interp always adds 2 to stack trace line
-                # numbers in Python 2
-                source = source.replace(comment, b"%s\n\n" % comment, 1)
-            else:
-                source = b"# coding: %s\n\n%s" % (self.encoding, source)
-        elif not py3 and filename is None:
-            # 2 blank lines still need to be added
-            # because this interpreter always adds 2 to stack trace line
-            # numbers in Python 2 when the filename is "<input>"
-            newlines = u"\n\n" if isinstance(source, unicode) else b"\n\n"
-            source = newlines + source
-            # we know we're in Python 2 here, so ok to reference unicode
         if filename is None:
             filename = filename_for_console_input(source)
         with self.timer:
@@ -200,8 +176,6 @@ class Interpreter(code.InteractiveInterpreter, object):
                 # strip linecache line number
                 if self.bpython_input_re.match(filename):
                     filename = "<input>"
-                if filename == "<input>" and not py3:
-                    lineno -= 2
                 value = SyntaxError(msg, (filename, lineno, offset, line))
                 sys.last_value = value
         exc_formatted = traceback.format_exception_only(exc_type, value)
@@ -224,9 +198,6 @@ class Interpreter(code.InteractiveInterpreter, object):
                 if self.bpython_input_re.match(fname):
                     fname = "<input>"
                     tblist[i] = (fname, lineno, module, something)
-                # Set the right lineno (encoding header adds an extra line)
-                if fname == "<input>" and not py3:
-                    tblist[i] = (fname, lineno - 2, module, something)
 
             l = traceback.format_list(tblist)
             if l:
@@ -492,21 +463,14 @@ class Repl(object):
     @property
     def ps1(self):
         try:
-            if not py3:
-                return sys.ps1.decode(getpreferredencoding())
-            else:
-                return sys.ps1
+            return sys.ps1
         except AttributeError:
-            return u">>> "
+            return ">>> "
 
     @property
     def ps2(self):
         try:
-            if not py3:
-                return sys.ps2.decode(getpreferredencoding())
-            else:
-                return sys.ps2
-
+            return sys.ps2
         except AttributeError:
             return u"... "
 
@@ -520,9 +484,6 @@ class Repl(object):
             encoding = inspection.get_encoding_file(filename)
             with io.open(filename, "rt", encoding=encoding) as f:
                 source = f.read()
-                if not py3:
-                    # Early Python 2.7.X need bytes.
-                    source = source.encode(encoding)
                 self.interp.runsource(source, filename, "exec", encode=False)
 
     def current_string(self, concatenate=False):
@@ -1177,10 +1138,7 @@ class Repl(object):
             args = editor_args + [temp.name]
             if subprocess.call(args) == 0:
                 with open(temp.name) as f:
-                    if py3:
-                        return f.read()
-                    else:
-                        return f.read().decode(encoding)
+                    return f.read()
             else:
                 return text
 
@@ -1201,8 +1159,8 @@ class Repl(object):
                     default_config = pkgutil.get_data(
                         "bpython", "sample-config"
                     )
-                    if py3:  # py3 files need unicode
-                        default_config = default_config.decode("ascii")
+                    # Py3  files need unicode
+                    default_config = default_config.decode("ascii")
                     containing_dir = os.path.dirname(
                         os.path.abspath(self.config.config_path)
                     )
