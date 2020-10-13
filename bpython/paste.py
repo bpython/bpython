@@ -22,7 +22,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import absolute_import
 
 from locale import getpreferredencoding
 from six.moves.urllib_parse import quote as urlquote, urljoin, urlparse

@@ -4,7 +4,6 @@
 Module to handle command line argument parsing, for all front-ends.
 """
 
-from __future__ import print_function, absolute_import
 
 import code
 import imp

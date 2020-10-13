@@ -1,7 +1,5 @@
 # encoding: utf-8
 
-from __future__ import unicode_literals
-
 from bpython.test import unittest
 from bpython.curtsiesfrontend import parse
 from curtsies.fmtfuncs import yellow, cyan, green, bold

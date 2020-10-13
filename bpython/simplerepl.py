@@ -25,7 +25,6 @@
 the methods of bpython.curtsiesrepl.repl.BaseRepl that must be overridden.
 """
 
-from __future__ import unicode_literals, print_function, absolute_import
 
 import time
 import logging

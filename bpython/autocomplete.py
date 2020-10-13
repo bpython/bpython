@@ -23,7 +23,6 @@
 # THE SOFTWARE.
 #
 
-from __future__ import unicode_literals, absolute_import
 
 import __main__
 import abc

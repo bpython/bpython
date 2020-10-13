@@ -28,7 +28,6 @@ In order to provide fancy completion, some code can be executed safely.
 
 """
 
-from __future__ import absolute_import
 
 import ast
 import inspect
