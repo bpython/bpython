@@ -38,7 +38,6 @@ import time
 import locale
 import signal
 from optparse import Option
-from six import iteritems
 
 from pygments.token import Token
 
@@ -1188,7 +1187,7 @@ def main(args=None, locals_=None, banner=None):
             "default",
             "bold" if color.isupper() else "default",
         )
-        for name, color in iteritems(config.color_scheme)
+        for name, color in config.color_scheme.items()
     ]
     palette.extend(
         [

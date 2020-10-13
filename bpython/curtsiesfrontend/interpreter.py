@@ -1,5 +1,5 @@
 import sys
-from six import iteritems, text_type
+from six import text_type
 
 from pygments.token import Generic, Token, Keyword, Name, Comment, String
 from pygments.token import Error, Literal, Number, Operator, Punctuation
@@ -45,7 +45,7 @@ class BPythonFormatter(Formatter):
 
     def __init__(self, color_scheme, **options):
         self.f_strings = {}
-        for k, v in iteritems(color_scheme):
+        for k, v in color_scheme.items():
             self.f_strings[k] = "\x01%s" % (v,)
         super().__init__(**options)
 

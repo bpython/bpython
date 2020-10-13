@@ -2,7 +2,7 @@ import os
 import sys
 import locale
 from itertools import chain
-from six import iterkeys, iteritems
+from six import iterkeys
 from configparser import ConfigParser
 
 from .autocomplete import SIMPLE as default_completion, ALL_MODES
@@ -47,7 +47,7 @@ def fill_config_with_default_values(config, default_values):
         if not config.has_section(section):
             config.add_section(section)
 
-        for (opt, val) in iteritems(default_values[section]):
+        for (opt, val) in default_values[section].items():
             if not config.has_option(section, opt):
                 config.set(section, opt, "%s" % (val,))
 
@@ -122,9 +122,9 @@ def loadini(struct, configfile):
         "curtsies": {"list_above": False, "right_arrow_completion": True,},
     }
 
-    default_keys_to_commands = dict(
-        (value, key) for (key, value) in iteritems(defaults["keyboard"])
-    )
+    default_keys_to_commands = {
+        value: key for (key, value) in defaults["keyboard"].items()
+    }
 
     fill_config_with_default_values(config, defaults)
     try:
@@ -314,6 +314,6 @@ def load_theme(struct, path, colors, default_colors):
             colors[k] = theme.get("interface", k)
 
     # Check against default theme to see if all values are defined
-    for k, v in iteritems(default_colors):
+    for k, v in default_colors.items():
         if k not in colors:
             colors[k] = v

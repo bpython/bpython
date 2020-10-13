@@ -30,7 +30,6 @@ import logging
 import os
 import re
 import rlcompleter
-from six import iteritems
 import builtins
 
 from . import inspection
@@ -430,7 +429,7 @@ class GlobalCompletion(BaseCompletionType):
             if self.method_match(word, n, r.word):
                 matches.add(word)
         for nspace in (builtins.__dict__, locals_):
-            for word, val in iteritems(nspace):
+            for word, val in nspace.items():
                 # if identifier isn't ascii, don't complete (syntax error)
                 if word is None:
                     continue

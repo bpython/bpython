@@ -7,7 +7,6 @@ based on http://www.bigsmoke.us/readline/shortcuts"""
 from bpython.lazyre import LazyReCompile
 
 import inspect
-from six import iteritems
 
 INDENT = 4
 
@@ -38,9 +37,9 @@ class AbstractEdits:
             else:
                 raise ValueError("key %r already has a mapping" % (key,))
         params = getargspec(func)
-        args = dict(
-            (k, v) for k, v in iteritems(self.default_kwargs) if k in params
-        )
+        args = {
+            k: v for k, v in self.default_kwargs.items() if k in params
+        }
         r = func(**args)
         if len(r) == 2:
             if hasattr(func, "kills"):

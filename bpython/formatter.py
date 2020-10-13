@@ -39,7 +39,6 @@ from pygments.token import (
     Literal,
     Punctuation,
 )
-from six import iteritems
 
 """These format strings are pretty ugly.
 \x01 represents a colour marker, which
@@ -99,7 +98,7 @@ class BPythonFormatter(Formatter):
 
     def __init__(self, color_scheme, **options):
         self.f_strings = {}
-        for k, v in iteritems(theme_map):
+        for k, v in theme_map.items():
             self.f_strings[k] = "\x01%s" % (color_scheme[v],)
             if k is Parenthesis:
                 # FIXME: Find a way to make this the inverse of the current
