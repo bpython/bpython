@@ -36,7 +36,6 @@ import textwrap
 import time
 import traceback
 from itertools import takewhile
-from six import itervalues
 from types import ModuleType
 
 from pygments.token import Token
@@ -1075,7 +1074,7 @@ class Repl:
                         stack.append(
                             (line, len(line_tokens) - 1, line_tokens, value)
                         )
-                elif value in itervalues(parens):
+                elif value in parens.values():
                     saved_stack = list(stack)
                     try:
                         while True:
