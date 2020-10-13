@@ -3,7 +3,7 @@ import sys
 import locale
 from itertools import chain
 from six import iterkeys, iteritems
-from six.moves.configparser import ConfigParser
+from configparser import ConfigParser
 
 from .autocomplete import SIMPLE as default_completion, ALL_MODES
 
