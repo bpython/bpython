@@ -223,7 +223,6 @@ install_requires = [
     "requests",
     "curtsies >=0.3.0",
     "greenlet",
-    "six >=1.5",
     "wcwidth",
 ]
 

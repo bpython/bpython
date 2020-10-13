@@ -3,4 +3,3 @@ curtsies >=0.3.0
 greenlet
 requests
 setuptools
-six >=1.5
