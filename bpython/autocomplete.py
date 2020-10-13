@@ -37,7 +37,7 @@ from . import inspection
 from . import importcompletion
 from . import line as lineparts
 from .line import LinePart
-from ._py3compat import py3, try_decode
+from ._py3compat import py3
 from .lazyre import LazyReCompile
 from .simpleeval import safe_eval, evaluate_current_expression, EvaluationError
 
@@ -470,7 +470,6 @@ class GlobalCompletion(BaseCompletionType):
                 matches.add(word)
         for nspace in (builtins.__dict__, locals_):
             for word, val in iteritems(nspace):
-                word = try_decode(word, "ascii")
                 # if identifier isn't ascii, don't complete (syntax error)
                 if word is None:
                     continue
@@ -580,7 +579,7 @@ else:
 
             first_letter = line[self._orig_start : self._orig_start + 1]
 
-            matches = [try_decode(c.name, "ascii") for c in completions]
+            matches = [c.name for c in completions]
             if any(
                 not m.lower().startswith(matches[0][0].lower()) for m in matches
             ):

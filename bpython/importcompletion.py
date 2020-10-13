@@ -21,7 +21,7 @@
 # THE SOFTWARE.
 
 
-from ._py3compat import py3, try_decode
+from ._py3compat import py3
 from .line import (
     current_word,
     current_import,
@@ -76,22 +76,21 @@ def attr_matches(cw, prefix="", only_modules=False):
         return set()
     module = sys.modules[module_name]
     if only_modules:
-        matches = (
+        matches = {
             name
             for name in dir(module)
             if name.startswith(name_after_dot)
             and "%s.%s" % (module_name, name) in sys.modules
-        )
+        }
     else:
-        matches = (
+        matches = {
             name for name in dir(module) if name.startswith(name_after_dot)
-        )
+        }
     module_part, _, _ = cw.rpartition(".")
     if module_part:
-        matches = ("%s.%s" % (module_part, m) for m in matches)
+        matches = {"%s.%s" % (module_part, m) for m in matches}
 
-    generator = (try_decode(match, "ascii") for match in matches)
-    return set(filter(lambda x: x is not None, generator))
+    return matches
 
 
 def module_attr_matches(name):
@@ -210,16 +209,13 @@ def find_all_modules(path=None):
     """Return a list with all modules in `path`, which should be a list of
     directory names. If path is not given, sys.path will be used."""
     if path is None:
-        modules.update(try_decode(m, "ascii") for m in sys.builtin_module_names)
+        modules.update(sys.builtin_module_names)
         path = sys.path
 
     for p in path:
         if not p:
             p = os.curdir
         for module in find_modules(p):
-            module = try_decode(module, "ascii")
-            if module is None:
-                continue
             modules.add(module)
             yield
 
