@@ -39,7 +39,7 @@ import time
 import locale
 import signal
 from optparse import Option
-from six import iteritems, string_types
+from six import iteritems
 
 from pygments.token import Token
 
@@ -278,7 +278,7 @@ def decoding_input_filter(keys, raw):
     encoding = locale.getpreferredencoding()
     converted_keys = list()
     for key in keys:
-        if isinstance(key, string_types):
+        if isinstance(key, str):
             converted_keys.append(key.decode(encoding))
         else:
             converted_keys.append(key)

@@ -31,7 +31,7 @@ import os
 import re
 import rlcompleter
 from six.moves import builtins
-from six import string_types, iteritems
+from six import iteritems
 
 from . import inspection
 from . import importcompletion
@@ -460,7 +460,7 @@ class ParameterNameCompletion(BaseCompletionType):
             matches = set(
                 name + "="
                 for name in argspec[1][0]
-                if isinstance(name, string_types) and name.startswith(r.word)
+                if isinstance(name, str) and name.startswith(r.word)
             )
             matches.update(
                 name + "="

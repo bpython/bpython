@@ -30,7 +30,6 @@ In order to provide fancy completion, some code can be executed safely.
 import ast
 import inspect
 import sys
-from six import string_types
 from six.moves import builtins
 
 from . import line as line_properties
@@ -82,7 +81,7 @@ def simple_eval(node_or_string, namespace=None):
     """
     if namespace is None:
         namespace = {}
-    if isinstance(node_or_string, string_types):
+    if isinstance(node_or_string, str):
         node_or_string = ast.parse(node_or_string, mode="eval")
     if isinstance(node_or_string, ast.Expression):
         node_or_string = node_or_string.body
@@ -179,7 +178,7 @@ def simple_eval(node_or_string, namespace=None):
 
 def safe_getitem(obj, index):
     """ Safely tries to access obj[index] """
-    if type(obj) in (list, tuple, dict, bytes) + string_types:
+    if type(obj) in (list, tuple, dict, bytes, str):
         try:
             return obj[index]
         except (KeyError, IndexError):
