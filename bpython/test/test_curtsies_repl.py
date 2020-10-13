@@ -5,7 +5,6 @@ import tempfile
 import io
 from functools import partial
 from contextlib import contextmanager
-from six.moves import StringIO
 
 from bpython.curtsiesfrontend import repl as curtsiesrepl
 from bpython.curtsiesfrontend import interpreter
@@ -222,7 +221,7 @@ class TestCurtsiesReplFilenameCompletion(TestCase):
 # from http://stackoverflow.com/a/17981937/398212 - thanks @rkennedy
 @contextmanager
 def captured_output():
-    new_out, new_err = StringIO(), StringIO()
+    new_out, new_err = io.StringIO(), io.StringIO()
     old_out, old_err = sys.stdout, sys.stderr
     try:
         sys.stdout, sys.stderr = new_out, new_err
