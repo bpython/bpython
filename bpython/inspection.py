@@ -51,7 +51,7 @@ FuncProps = namedtuple("FuncProps", ["func", "argspec", "is_bound_method"])
 
 class AttrCleaner:
     """A context manager that tries to make an object not exhibit side-effects
-       on attribute lookup."""
+    on attribute lookup."""
 
     def __init__(self, obj):
         self.obj = obj
@@ -126,9 +126,9 @@ def parsekeywordpairs(signature):
             continue
 
         if token is Token.Punctuation:
-            if value in ["(", "{", "["]:
+            if value in ("(", "{", "["):
                 parendepth += 1
-            elif value in [")", "}", "]"]:
+            elif value in (")", "}", "]"):
                 parendepth -= 1
             elif value == ":" and parendepth == -1:
                 # End of signature reached
@@ -143,11 +143,7 @@ def parsekeywordpairs(signature):
         if value and (parendepth > 0 or value.strip()):
             substack.append(value)
 
-    d = {}
-    for item in stack:
-        if len(item) >= 3:
-            d[item[0]] = "".join(item[2:])
-    return d
+    return {item[0]: "".join(item[2:] for item in stack if len(item) >= 3)}
 
 
 def fixlongargs(f, argspec):
