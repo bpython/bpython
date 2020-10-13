@@ -21,7 +21,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
 import inspect
 import keyword
 import pydoc
@@ -259,10 +258,6 @@ def is_eval_safe_name(string):
         part.isidentifier() and not keyword.iskeyword(part)
         for part in string.split(".")
     )
-
-
-def is_callable(obj):
-    return callable(obj)
 
 
 def get_argspec_from_signature(f):

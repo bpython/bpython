@@ -632,6 +632,6 @@ def get_completer_bpython(cursor_offset, line, **kwargs):
 
 def _callable_postfix(value, word):
     """rlcompleter's _callable_postfix done right."""
-    if inspection.is_callable(value):
+    if callable(value):
         word += "("
     return word
