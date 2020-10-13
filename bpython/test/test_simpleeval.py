@@ -39,7 +39,7 @@ class TestSimpleEval(unittest.TestCase):
         self.assertEqual(simple_eval("a[b]", {"a": {"c": 1}, "b": "c"}), 1)
 
     def test_lookup_on_suspicious_types(self):
-        class FakeDict(object):
+        class FakeDict:
             pass
 
         with self.assertRaises(ValueError):
@@ -92,7 +92,7 @@ class TestSimpleEval(unittest.TestCase):
             simple_eval("a")
 
     def test_attribute_access(self):
-        class Foo(object):
+        class Foo:
             abc = 1
 
         self.assertEqual(simple_eval("foo.abc", {"foo": Foo()}), 1)

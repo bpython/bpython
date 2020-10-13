@@ -7,7 +7,7 @@ from .pager import page
 pydoc.pager = page
 
 
-class _Helper(object):
+class _Helper:
     def __init__(self):
         if hasattr(pydoc.Helper, "output"):
             # See issue #228

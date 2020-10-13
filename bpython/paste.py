@@ -36,7 +36,7 @@ class PasteFailed(Exception):
     pass
 
 
-class PastePinnwand(object):
+class PastePinnwand:
     def __init__(self, url, expiry):
         self.url = url
         self.expiry = expiry
@@ -64,7 +64,7 @@ class PastePinnwand(object):
         return (paste_url, removal_url)
 
 
-class PasteHelper(object):
+class PasteHelper:
     def __init__(self, executable):
         self.executable = executable
 

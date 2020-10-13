@@ -30,7 +30,7 @@ from .translations import _
 from .filelock import FileLock
 
 
-class History(object):
+class History:
     """Stores readline-style history and current place in it"""
 
     def __init__(self, entries=None, duplicates=True, hist_size=100):

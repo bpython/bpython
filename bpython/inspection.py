@@ -50,7 +50,7 @@ ArgSpec = namedtuple(
 FuncProps = namedtuple("FuncProps", ["func", "argspec", "is_bound_method"])
 
 
-class AttrCleaner(object):
+class AttrCleaner:
     """A context manager that tries to make an object not exhibit side-effects
        on attribute lookup."""
 
@@ -100,7 +100,7 @@ class AttrCleaner(object):
         # /Dark magic
 
 
-class _Repr(object):
+class _Repr:
     """
     Helper for `fixlongargs()`: Returns the given value in `__repr__()`.
     """

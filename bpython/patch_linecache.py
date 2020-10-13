@@ -6,7 +6,7 @@ class BPythonLinecache(dict):
     to also remember (in an unerasable way) bpython console input."""
 
     def __init__(self, *args, **kwargs):
-        super(BPythonLinecache, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.bpython_history = []
 
     def is_bpython_filename(self, fname):
@@ -37,7 +37,7 @@ class BPythonLinecache(dict):
     def __getitem__(self, key):
         if self.is_bpython_filename(key):
             return self.get_bpython_history(key)
-        return super(BPythonLinecache, self).__getitem__(key)
+        return super().__getitem__(key)
 
     def __contains__(self, key):
         if self.is_bpython_filename(key):
@@ -46,11 +46,11 @@ class BPythonLinecache(dict):
                 return True
             except KeyError:
                 return False
-        return super(BPythonLinecache, self).__contains__(key)
+        return super().__contains__(key)
 
     def __delitem__(self, key):
         if not self.is_bpython_filename(key):
-            return super(BPythonLinecache, self).__delitem__(key)
+            return super().__delitem__(key)
 
 
 def _bpython_clear_linecache():

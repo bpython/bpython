@@ -25,7 +25,7 @@ def is_main_thread():
     return threading.main_thread() == threading.current_thread()
 
 
-class SigintHappened(object):
+class SigintHappened:
     """If this class is returned, a SIGINT happened while the main greenlet"""
 
 
@@ -34,7 +34,7 @@ class SystemExitFromCodeRunner(SystemExit):
     greenlet"""
 
 
-class RequestFromCodeRunner(object):
+class RequestFromCodeRunner:
     """Message from the code runner"""
 
 
@@ -61,7 +61,7 @@ class SystemExitRequest(RequestFromCodeRunner):
         self.args = args
 
 
-class CodeRunner(object):
+class CodeRunner:
     """Runs user code in an interpreter.
 
     Running code requests a refresh by calling
@@ -206,7 +206,7 @@ class CodeRunner(object):
         return value
 
 
-class FakeOutput(object):
+class FakeOutput:
     def __init__(self, coderunner, on_write, real_fileobj):
         """Fakes sys.stdout or sys.stderr
 

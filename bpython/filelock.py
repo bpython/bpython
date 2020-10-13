@@ -38,7 +38,7 @@ except ImportError:
     has_msvcrt = False
 
 
-class BaseLock(object):
+class BaseLock:
     """Base class for file locking
     """
 
@@ -70,7 +70,7 @@ class UnixFileLock(BaseLock):
     """
 
     def __init__(self, fileobj, mode=None, filename=None):
-        super(UnixFileLock, self).__init__(fileobj)
+        super().__init__(fileobj)
 
         if mode is None:
             mode = fcntl.LOCK_EX
@@ -94,8 +94,8 @@ class WindowsFileLock(BaseLock):
     """
 
     def __init__(self, fileobj, mode=None, filename=None):
-        super(WindowsFileLock, self).__init__(None)
-        self.filename = "{}.lock".format(filename)
+        super().__init__(None)
+        self.filename = f"{filename}.lock"
 
     def acquire(self):
         # create a lock file and lock it

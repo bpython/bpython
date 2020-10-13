@@ -47,7 +47,7 @@ class StatusBar(BpythonInteraction):
         self.request_refresh = request_refresh
         self.schedule_refresh = schedule_refresh
 
-        super(StatusBar, self).__init__(config)
+        super().__init__(config)
 
     def push_permanent_message(self, msg):
         self._message = ""

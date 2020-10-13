@@ -9,7 +9,7 @@ import curtsies.events
 ScheduledEvent = namedtuple("ScheduledEvent", ["when", "event"])
 
 
-class EventGenerator(object):
+class EventGenerator:
     def __init__(self, initial_events=(), scheduled_events=()):
         self._events = []
         self._current_tick = 0

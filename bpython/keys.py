@@ -24,7 +24,7 @@
 import string
 
 
-class KeyMap(object):
+class KeyMap:
     def __init__(self, default=""):
         self.map = {}
         self.default = default

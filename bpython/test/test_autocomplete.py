@@ -171,7 +171,7 @@ class TestFilenameCompletion(unittest.TestCase):
         self.assertEqual(self.completer.format("/hello/there"), "there")
 
 
-class MockNumPy(object):
+class MockNumPy:
     """This is a mock numpy object that raises an error when there is an attempt
     to convert it to a boolean."""
 
@@ -211,7 +211,7 @@ class TestDictKeyCompletion(unittest.TestCase):
         self.assertEqual(com.matches(7, "mNumPy[", locals_=local), None)
 
 
-class Foo(object):
+class Foo:
     a = 10
 
     def __init__(self):
@@ -237,7 +237,7 @@ class Properties(Foo):
         raise AssertionError("getter method called")
 
 
-class Slots(object):
+class Slots:
     __slots__ = ["a", "b"]
 
 
@@ -290,7 +290,7 @@ class TestExpressionAttributeCompletion(unittest.TestCase):
         )
 
     def test_other_getitem_methods_not_called(self):
-        class FakeList(object):
+        class FakeList:
             def __getitem__(inner_self, i):
                 self.fail("possibly side-effecting __getitem_ method called")
 

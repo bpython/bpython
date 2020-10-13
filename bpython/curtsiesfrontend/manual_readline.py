@@ -15,7 +15,7 @@ INDENT = 4
 getargspec = lambda func: inspect.signature(func).parameters
 
 
-class AbstractEdits(object):
+class AbstractEdits:
 
     default_kwargs = {
         "line": "hello world",
@@ -160,7 +160,7 @@ class ConfiguredEdits(AbstractEdits):
         self.cut_buffer_edits = dict(cut_buffer_edits)
         for attr, func in awaiting_config.items():
             for key in key_dispatch[getattr(config, attr)]:
-                super(ConfiguredEdits, self).add(key, func, overwrite=True)
+                super().add(key, func, overwrite=True)
 
     def add_config_attr(self, config_attr, func):
         raise NotImplementedError("Config already set on this mapping")

@@ -1,7 +1,7 @@
 # careful: whitespace is very important in this file
 # also, this code runs - so everything should be a noop
 
-class BlankLineBetweenMethods(object):
+class BlankLineBetweenMethods:
     def method1(self):
         pass
 

@@ -93,7 +93,7 @@ EDIT_SESSION_HEADER = """### current bpython session - make changes and save to 
 MAX_EVENTS_POSSIBLY_NOT_PASTE = 20
 
 
-class FakeStdin(object):
+class FakeStdin:
     """The stdin object user code will reference
 
     In user code, sys.stdin.read() asks the user for interactive input,
@@ -214,7 +214,7 @@ class FakeStdin(object):
     # TODO write a read() method?
 
 
-class ReevaluateFakeStdin(object):
+class ReevaluateFakeStdin:
     """Stdin mock used during reevaluation (undo) so raw_inputs don't have to
     be reentered"""
 
@@ -232,7 +232,7 @@ class ReevaluateFakeStdin(object):
         return value
 
 
-class ImportLoader(object):
+class ImportLoader:
     def __init__(self, watcher, loader):
         self.watcher = watcher
         self.loader = loader
@@ -244,7 +244,7 @@ class ImportLoader(object):
         return module
 
 
-class ImportFinder(object):
+class ImportFinder:
     def __init__(self, watcher, old_meta_path):
         self.watcher = watcher
         self.old_meta_path = old_meta_path
@@ -359,7 +359,7 @@ class BaseRepl(BpythonRepl):
         )
         self.edit_keys = edit_keys.mapping_with_config(config, key_dispatch)
         logger.debug("starting parent init")
-        super(BaseRepl, self).__init__(interp, config)
+        super().__init__(interp, config)
 
         self.formatter = BPythonFormatter(config.color_scheme)
 

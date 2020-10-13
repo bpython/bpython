@@ -31,7 +31,7 @@ class CopyFailed(Exception):
     pass
 
 
-class XClipboard(object):
+class XClipboard:
     """Manage clipboard with xclip."""
 
     def copy(self, content):
@@ -43,7 +43,7 @@ class XClipboard(object):
             raise CopyFailed()
 
 
-class OSXClipboard(object):
+class OSXClipboard:
     """Manage clipboard with pbcopy."""
 
     def copy(self, content):

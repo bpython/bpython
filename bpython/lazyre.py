@@ -24,7 +24,7 @@
 import re
 
 
-class LazyReCompile(object):
+class LazyReCompile:
     """Compile regular expressions on first use
 
     This class allows one to store regular expressions and compiles them on

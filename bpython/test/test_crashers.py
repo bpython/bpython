@@ -16,7 +16,7 @@ try:
     from twisted.trial.unittest import TestCase as TrialTestCase
 except ImportError:
 
-    class TrialTestCase(object):
+    class TrialTestCase:
         pass
 
     reactor = None
@@ -44,7 +44,7 @@ def set_win_size(fd, rows, columns):
     fcntl.ioctl(fd, termios.TIOCSWINSZ, s)
 
 
-class CrashersTest(object):
+class CrashersTest:
     backend = "cli"
 
     def run_bpython(self, input):

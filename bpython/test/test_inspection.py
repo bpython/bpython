@@ -23,7 +23,7 @@ class OldCallable:
         pass
 
 
-class Callable(object):
+class Callable:
     def __call__(self):
         pass
 
@@ -32,7 +32,7 @@ class OldNoncallable:
     pass
 
 
-class Noncallable(object):
+class Noncallable:
     pass
 
 
@@ -40,7 +40,7 @@ def spam():
     pass
 
 
-class CallableMethod(object):
+class CallableMethod:
     def method(self):
         pass
 
@@ -134,7 +134,7 @@ class TestInspection(unittest.TestCase):
         self.assertEqual(encoding, "utf-8")
 
 
-class A(object):
+class A:
     a = "a"
 
 
@@ -142,13 +142,13 @@ class B(A):
     b = "b"
 
 
-class Property(object):
+class Property:
     @property
     def prop(self):
         raise AssertionError("Property __get__ executed")
 
 
-class Slots(object):
+class Slots:
     __slots__ = ["s1", "s2", "s3"]
 
 
@@ -158,21 +158,21 @@ class SlotsSubclass(Slots):
         raise AssertionError("Property __get__ executed")
 
 
-class OverriddenGetattr(object):
+class OverriddenGetattr:
     def __getattr__(self, attr):
         raise AssertionError("custom __getattr__ executed")
 
     a = 1
 
 
-class OverriddenGetattribute(object):
+class OverriddenGetattribute:
     def __getattribute__(self, attr):
         raise AssertionError("custom __getattribute__ executed")
 
     a = 1
 
 
-class OverriddenMRO(object):
+class OverriddenMRO:
     def __mro__(self):
         raise AssertionError("custom mro executed")
 

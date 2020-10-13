@@ -55,7 +55,7 @@ from .translations import _, ngettext
 from . import simpleeval
 
 
-class RuntimeTimer(object):
+class RuntimeTimer:
     """Calculate running time"""
 
     def __init__(self):
@@ -78,7 +78,7 @@ class RuntimeTimer(object):
         return self.running_time - self.last_command
 
 
-class Interpreter(code.InteractiveInterpreter, object):
+class Interpreter(code.InteractiveInterpreter):
     """Source code interpreter for use in bpython."""
 
     bpython_input_re = LazyReCompile(r"<bpython-input-\d+>")
@@ -215,7 +215,7 @@ class Interpreter(code.InteractiveInterpreter, object):
             self.write(line)
 
 
-class MatchesIterator(object):
+class MatchesIterator:
     """Stores a list of matches and which one is currently selected if any.
 
     Also responsible for doing the actual replacement of the original line with
@@ -336,7 +336,7 @@ class MatchesIterator(object):
         self.index = -1
 
 
-class Interaction(object):
+class Interaction:
     def __init__(self, config, statusbar=None):
         self.config = config
 
@@ -357,7 +357,7 @@ class SourceNotFound(Exception):
     """Exception raised when the requested source could not be found."""
 
 
-class LineTypeTranslator(object):
+class LineTypeTranslator:
     """ Used when adding a tuple to all_logical_lines, to get input / output values
     having to actually type/know the strings """
 
@@ -367,7 +367,7 @@ class LineTypeTranslator(object):
     OUTPUT = "output"
 
 
-class Repl(object):
+class Repl:
     """Implements the necessary guff for a Python-repl-alike interface
 
     The execution of the code entered and all that stuff was taken from the

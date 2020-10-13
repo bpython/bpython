@@ -149,7 +149,7 @@ MODES_MAP = {
 }
 
 
-class BaseCompletionType(object):
+class BaseCompletionType:
     """Describes different completion types"""
 
     def __init__(self, shown_before_tab=True, mode=SIMPLE):
@@ -209,7 +209,7 @@ class CumulativeCompleter(BaseCompletionType):
             )
         self._completers = completers
 
-        super(CumulativeCompleter, self).__init__(True, mode)
+        super().__init__(True, mode)
 
     def locate(self, current_offset, line):
         return self._completers[0].locate(current_offset, line)
@@ -244,7 +244,7 @@ class ImportCompletion(BaseCompletionType):
 
 class FilenameCompletion(BaseCompletionType):
     def __init__(self, mode=SIMPLE):
-        super(FilenameCompletion, self).__init__(False, mode)
+        super().__init__(False, mode)
 
     def safe_glob(self, pathname):
         return glob.iglob(glob.escape(pathname) + "*")
@@ -567,7 +567,7 @@ else:
                     cursor_offset,
                     line,
                 )
-                results = super(MultilineJediCompletion, self).matches(
+                results = super().matches(
                     cursor_offset, line, history=history
                 )
                 return results

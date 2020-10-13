@@ -322,7 +322,7 @@ class TestEdits(unittest.TestCase):
         self.edits.add_config_attr("att", f)
         self.assertNotIn("att", self.edits)
 
-        class config(object):
+        class config:
             att = "c"
 
         key_dispatch = {"c": "c"}

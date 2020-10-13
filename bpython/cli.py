@@ -121,7 +121,7 @@ def forward_if_not_current(func):
     return newfunc
 
 
-class FakeStream(object):
+class FakeStream:
     """Provide a fake file object which calls functions on the interface
     provided."""
 
@@ -147,7 +147,7 @@ class FakeStream(object):
         self.interface.flush()
 
 
-class FakeStdin(object):
+class FakeStdin:
     """Provide a fake stdin type for things like raw_input() etc."""
 
     def __init__(self, interface):
@@ -303,7 +303,7 @@ def make_colors(config):
 
 class CLIInteraction(repl.Interaction):
     def __init__(self, config, statusbar=None):
-        super(CLIInteraction, self).__init__(config, statusbar)
+        super().__init__(config, statusbar)
 
     def confirm(self, q):
         """Ask for yes or no and return boolean"""
@@ -323,7 +323,7 @@ class CLIInteraction(repl.Interaction):
 
 class CLIRepl(repl.Repl):
     def __init__(self, scr, interp, statusbar, config, idle=None):
-        super(CLIRepl, self).__init__(interp, config)
+        super().__init__(interp, config)
         self.interp.writetb = self.writetb
         self.scr = scr
         self.stdout_hist = ""  # native str (bytes in Py2, unicode in Py3)
@@ -1527,7 +1527,7 @@ class CLIRepl(repl.Repl):
         return ""
 
 
-class Statusbar(object):
+class Statusbar:
     """This class provides the status bar at the bottom of the screen.
     It has message() and prompt() methods for user interactivity, as
     well as settext() and clear() methods for changing its appearance.
@@ -1821,7 +1821,7 @@ def do_resize(caller):
     # The list win resizes itself every time it appears so no need to do it here.
 
 
-class FakeDict(object):
+class FakeDict:
     """Very simple dict-alike that returns a constant value for any key -
     used as a hacky solution to using a colours dict containing colour codes if
     colour initialisation fails."""

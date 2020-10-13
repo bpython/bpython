@@ -169,7 +169,7 @@ class StatusbarEdit(urwid.Edit):
 urwid.register_signal(StatusbarEdit, "prompt_enter")
 
 
-class Statusbar(object):
+class Statusbar:
 
     """Statusbar object, ripped off from bpython.cli.
 

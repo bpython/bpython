@@ -1,6 +1,6 @@
 #careful! Whitespace is very important in this file
 
-class BlankLineBetweenMethods(object):
+class BlankLineBetweenMethods:
     def method1(self):
         pass
     

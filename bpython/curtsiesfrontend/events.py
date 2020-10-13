@@ -28,7 +28,7 @@ class ScheduledRefreshRequestEvent(curtsies.events.ScheduledEvent):
     for a few seconds"""
 
     def __init__(self, when):
-        super(ScheduledRefreshRequestEvent, self).__init__(when)
+        super().__init__(when)
 
     def __repr__(self):
         return "<RefreshRequestEvent for %s seconds from now>" % (

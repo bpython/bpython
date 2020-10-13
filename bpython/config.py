@@ -8,7 +8,7 @@ from six.moves.configparser import ConfigParser
 from .autocomplete import SIMPLE as default_completion, ALL_MODES
 
 
-class Struct(object):
+class Struct:
     """Simple class for instantiating objects we can add arbitrary attributes
     to and use for various arbitrary things."""
 

@@ -684,7 +684,7 @@ class TestCurtsiesRewindRedraw(HigherLevelCurtsiesPaintingTest):
 
 
 def completion_target(num_names, chars_in_first_name=1):
-    class Class(object):
+    class Class:
         pass
 
     if chars_in_first_name < 1:

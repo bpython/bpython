@@ -26,7 +26,7 @@ import bpython._internal
 from bpython.repl import getpreferredencoding
 
 
-class NopPydocPager(object):
+class NopPydocPager:
     def __enter__(self):
         self._orig_pager = pydoc.pager
         pydoc.pager = self
@@ -43,7 +43,7 @@ class _Helper(bpython._internal._Helper):
         self._repl = repl
         pydoc.pager = self.pager
 
-        super(_Helper, self).__init__()
+        super().__init__()
 
     def pager(self, output):
         self._repl.pager(output)
@@ -51,9 +51,9 @@ class _Helper(bpython._internal._Helper):
     def __call__(self, *args, **kwargs):
         if self._repl.reevaluating:
             with NopPydocPager():
-                return super(_Helper, self).__call__(*args, **kwargs)
+                return super().__call__(*args, **kwargs)
         else:
-            return super(_Helper, self).__call__(*args, **kwargs)
+            return super().__call__(*args, **kwargs)
 
 
 # vim: sw=4 ts=4 sts=4 ai et
