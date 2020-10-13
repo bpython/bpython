@@ -62,7 +62,8 @@ import errno
 # These are used for syntax highlighting
 from pygments import format
 from pygments.formatters import TerminalFormatter
-from ._py3compat import PythonLexer, py3
+from pygments.lexers import Python3Lexer
+from ._py3compat import py3
 from pygments.token import Token
 from .formatter import BPythonFormatter
 
@@ -1001,7 +1002,7 @@ class CLIRepl(repl.Repl):
             else:
                 if config.highlight_show_source:
                     source = format(
-                        PythonLexer().get_tokens(source), TerminalFormatter()
+                        Python3Lexer().get_tokens(source), TerminalFormatter()
                     )
                 page(source)
             return ""

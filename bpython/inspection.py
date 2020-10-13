@@ -29,9 +29,10 @@ import pydoc
 from collections import namedtuple
 
 from pygments.token import Token
+from pygments.lexers import Python3Lexer
 from types import MemberDescriptorType
 
-from ._py3compat import PythonLexer, py3
+from ._py3compat import py3
 from .lazyre import LazyReCompile
 
 if not py3:
@@ -134,7 +135,7 @@ class _Repr(object):
 
 
 def parsekeywordpairs(signature):
-    tokens = PythonLexer().get_tokens(signature)
+    tokens = Python3Lexer().get_tokens(signature)
     preamble = True
     stack = []
     substack = []

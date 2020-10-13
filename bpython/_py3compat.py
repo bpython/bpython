@@ -27,8 +27,6 @@
 
     Defines the following attributes:
 
-    - PythonLexer: Pygment's Python lexer matching the hosting runtime's
-      Python version.
     - py3: True if the hosting Python runtime is of Python version 3 or later
 """
 
@@ -37,12 +35,6 @@ import sys
 import threading
 
 py3 = sys.version_info[0] == 3
-
-
-if py3:
-    from pygments.lexers import Python3Lexer as PythonLexer
-else:
-    from pygments.lexers import PythonLexer
 
 
 if py3 or sys.version_info[:3] >= (2, 7, 3):

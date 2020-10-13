@@ -12,7 +12,7 @@ import time
 import unicodedata
 
 from pygments import format as pygformat
-from bpython._py3compat import PythonLexer
+from pygments.lexers import Python3Lexer
 from pygments.formatters import TerminalFormatter
 
 from wcwidth import wcswidth
@@ -2013,7 +2013,7 @@ class BaseRepl(BpythonRepl):
         else:
             if self.config.highlight_show_source:
                 source = pygformat(
-                    PythonLexer().get_tokens(source), TerminalFormatter()
+                    Python3Lexer().get_tokens(source), TerminalFormatter()
                 )
             self.pager(source)
 

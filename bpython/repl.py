@@ -40,10 +40,11 @@ from six import itervalues
 from types import ModuleType
 
 from pygments.token import Token
+from pygments.lexers import Python3Lexer
 
 from . import autocomplete
 from . import inspection
-from ._py3compat import PythonLexer, py3, prepare_for_exec
+from ._py3compat import py3, prepare_for_exec
 from .clipboard import get_clipboard, CopyFailed
 from .config import getpreferredencoding
 from .formatter import Parenthesis
@@ -572,7 +573,7 @@ class Repl(object):
         # argument so we're done counting
         stack = [["", "", 0, ""]]
         try:
-            for (token, value) in PythonLexer().get_tokens(line):
+            for (token, value) in Python3Lexer().get_tokens(line):
                 if token is Token.Punctuation:
                     if value in "([{":
                         stack.append(["", "", 0, value])
@@ -1079,7 +1080,7 @@ class Repl(object):
         if self.cpos:
             cursor += 1
         stack = list()
-        all_tokens = list(PythonLexer().get_tokens(source))
+        all_tokens = list(Python3Lexer().get_tokens(source))
         # Unfortunately, Pygments adds a trailing newline and strings with
         # no size, so strip them
         while not all_tokens[-1][1]:
@@ -1250,7 +1251,7 @@ def next_indentation(line, tab_length):
 def next_token_inside_string(code_string, inside_string):
     """Given a code string s and an initial state inside_string, return
     whether the next token will be inside a string or not."""
-    for token, value in PythonLexer().get_tokens(code_string):
+    for token, value in Python3Lexer().get_tokens(code_string):
         if token is Token.String:
             value = value.lstrip("bBrRuU")
             if value in ['"""', "'''", '"', "'"]:
