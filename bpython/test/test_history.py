@@ -1,4 +1,3 @@
-import io
 import os
 
 
@@ -89,7 +88,7 @@ class TestHistoryFileAccess(unittest.TestCase):
         self.filename = "history_temp_file"
         self.encoding = getpreferredencoding()
 
-        with io.open(
+        with open(
             self.filename, "w", encoding=self.encoding, errors="ignore"
         ) as f:
             f.write(b"#1\n#2\n".decode())

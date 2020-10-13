@@ -23,7 +23,6 @@
 
 
 import inspect
-import io
 import keyword
 import pydoc
 from collections import namedtuple
@@ -350,7 +349,7 @@ def get_encoding_comment(source):
 
 def get_encoding_file(fname):
     """Try to obtain encoding information from a Python source file."""
-    with io.open(fname, "rt", encoding="ascii", errors="ignore") as f:
+    with open(fname, "rt", encoding="ascii", errors="ignore") as f:
         for unused in range(2):
             line = f.readline()
             match = get_encoding_line_re.search(line)

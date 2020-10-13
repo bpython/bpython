@@ -1,5 +1,4 @@
 import collections
-import io
 import logging
 import sys
 from optparse import Option
@@ -178,7 +177,7 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
         if options.paste:
             paste = curtsies.events.PasteEvent()
             encoding = inspection.get_encoding_file(exec_args[0])
-            with io.open(exec_args[0], encoding=encoding) as f:
+            with open(exec_args[0], encoding=encoding) as f:
                 sourcecode = f.read()
             paste.events.extend(sourcecode)
         else:

@@ -134,7 +134,7 @@ def exec_code(interpreter, args):
     Helper to execute code in a given interpreter. args should be a [faked]
     sys.argv
     """
-    with open(args[0], "r") as sourcefile:
+    with open(args[0]) as sourcefile:
         source = sourcefile.read()
     old_argv, sys.argv = sys.argv, args
     sys.path.insert(0, os.path.abspath(os.path.dirname(args[0])))

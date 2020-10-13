@@ -304,7 +304,7 @@ def loadini(struct, configfile):
 
 def load_theme(struct, path, colors, default_colors):
     theme = ConfigParser()
-    with open(path, "r") as f:
+    with open(path) as f:
         theme.readfp(f)
     for k, v in chain(theme.items("syntax"), theme.items("interface")):
         if theme.has_option("syntax", k):

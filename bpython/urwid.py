@@ -1338,7 +1338,7 @@ def main(args=None, locals_=None, banner=None):
             # this is CLIRepl.startup inlined.
             filename = os.environ.get("PYTHONSTARTUP")
             if filename and os.path.isfile(filename):
-                with open(filename, "r") as f:
+                with open(filename) as f:
                     interpreter.runsource(f.read(), filename, "exec")
 
         if banner is not None:

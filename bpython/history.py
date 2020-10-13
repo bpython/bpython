@@ -21,7 +21,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import io
 import os
 import stat
 from itertools import islice
@@ -170,7 +169,7 @@ class History:
         self.saved_line = ""
 
     def load(self, filename, encoding):
-        with io.open(
+        with open(
             filename, "r", encoding=encoding, errors="ignore"
         ) as hfile:
             with FileLock(hfile, filename=filename):
@@ -188,7 +187,7 @@ class History:
             os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
             stat.S_IRUSR | stat.S_IWUSR,
         )
-        with io.open(fd, "w", encoding=encoding, errors="ignore") as hfile:
+        with open(fd, "w", encoding=encoding, errors="ignore") as hfile:
             with FileLock(hfile, filename=filename):
                 self.save_to(hfile, self.entries, lines)
 
@@ -209,7 +208,7 @@ class History:
                 os.O_APPEND | os.O_RDWR | os.O_CREAT,
                 stat.S_IRUSR | stat.S_IWUSR,
             )
-            with io.open(fd, "a+", encoding=encoding, errors="ignore") as hfile:
+            with open(fd, "a+", encoding=encoding, errors="ignore") as hfile:
                 with FileLock(hfile, filename=filename):
                     # read entries
                     hfile.seek(0, os.SEEK_SET)
