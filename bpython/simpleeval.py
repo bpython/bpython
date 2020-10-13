@@ -171,7 +171,7 @@ def simple_eval(node_or_string, namespace=None):
             attr = node.attr
             return getattr_safe(obj, attr)
 
-        raise ValueError("malformed node or string: {!r}".format(node))
+        raise ValueError(f"malformed node or string: {node!r}")
 
     return _convert(node_or_string)
 
@@ -182,8 +182,8 @@ def safe_getitem(obj, index):
         try:
             return obj[index]
         except (KeyError, IndexError):
-            raise EvaluationError("can't lookup key %r on %r" % (index, obj))
-    raise ValueError("unsafe to lookup on object of type %s" % (type(obj),))
+            raise EvaluationError(f"can't lookup key {index!r} on {obj!r}")
+    raise ValueError("unsafe to lookup on object of type {}".format(type(obj)))
 
 
 def find_attribute_with_name(node, name):
@@ -255,5 +255,5 @@ def evaluate_current_attribute(cursor_offset, line, namespace=None):
         return getattr(obj, attr.word)
     except AttributeError:
         raise EvaluationError(
-            "can't lookup attribute %s on %r" % (attr.word, obj)
+            f"can't lookup attribute {attr.word} on {obj!r}"
         )

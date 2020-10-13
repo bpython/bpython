@@ -48,7 +48,7 @@ def fill_config_with_default_values(config, default_values):
 
         for (opt, val) in default_values[section].items():
             if not config.has_option(section, opt):
-                config.set(section, opt, "%s" % (val,))
+                config.set(section, opt, f"{val}")
 
 
 def loadini(struct, configfile):
@@ -270,7 +270,7 @@ def loadini(struct, configfile):
             load_theme(struct, path, struct.color_scheme, default_colors)
         except EnvironmentError:
             sys.stderr.write(
-                "Could not load theme '%s'.\n" % (color_scheme_name,)
+                f"Could not load theme '{color_scheme_name}'.\n"
             )
             sys.exit(1)
 

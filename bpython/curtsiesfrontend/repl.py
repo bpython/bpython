@@ -1350,13 +1350,13 @@ class BaseRepl(BpythonRepl):
         if self.incr_search_mode == "reverse_incremental_search":
             return (
                 prompt(
-                    "(reverse-i-search)`{}': ".format(self.incr_search_target)
+                    f"(reverse-i-search)`{self.incr_search_target}': "
                 )
                 + self.current_line_formatted
             )
         elif self.incr_search_mode == "incremental_search":
             return (
-                prompt("(i-search)`%s': ".format(self.incr_search_target))
+                prompt(f"(i-search)`%s': ")
                 + self.current_line_formatted
             )
         return (
@@ -1976,7 +1976,7 @@ class BaseRepl(BpythonRepl):
         try:
             source = self.get_source_of_current_name()
         except SourceNotFound as e:
-            self.status_bar.message("%s" % (e,))
+            self.status_bar.message(f"{e}")
         else:
             if self.config.highlight_show_source:
                 source = pygformat(
@@ -2028,7 +2028,7 @@ class BaseRepl(BpythonRepl):
 
         max_func = max(len(func) for func, key in pairs)
         return "\n".join(
-            "%s : %s" % (func.rjust(max_func), key) for func, key in pairs
+            "{} : {}".format(func.rjust(max_func), key) for func, key in pairs
         )
 
 

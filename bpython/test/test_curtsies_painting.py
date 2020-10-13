@@ -185,7 +185,7 @@ class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
                     docstring, 40, config=setup_config()
                 )
             except Exception:
-                self.fail("bad docstring caused crash: {!r}".format(docstring))
+                self.fail(f"bad docstring caused crash: {docstring!r}")
 
     def test_weird_boto_docstrings(self):
         # Boto does something like this.

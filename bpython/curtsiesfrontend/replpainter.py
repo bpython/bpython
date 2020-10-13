@@ -133,7 +133,7 @@ def formatted_argspec(funcprops, arg_pos, columns, config):
     if _args:
         if args:
             s += punctuation_color(", ")
-        s += token_color("*%s" % (_args,))
+        s += token_color(f"*{_args}")
 
     if kwonly:
         if not _args:
@@ -155,7 +155,7 @@ def formatted_argspec(funcprops, arg_pos, columns, config):
     if _kwargs:
         if args or _args or kwonly:
             s += punctuation_color(", ")
-        s += token_color("**%s" % (_kwargs,))
+        s += token_color(f"**{_kwargs}")
     s += punctuation_color(")")
 
     return linesplit(s, columns)

@@ -19,7 +19,7 @@ class MagicIterMock(mock.MagicMock):
 
 def builtin_target(obj):
     """Returns mock target string of a builtin"""
-    return "%s.%s" % (builtins.__name__, obj.__name__)
+    return f"{builtins.__name__}.{obj.__name__}"
 
 
 TEST_CONFIG = os.path.join(os.path.dirname(__file__), "test.config")

@@ -45,7 +45,7 @@ class BPythonFormatter(Formatter):
     def __init__(self, color_scheme, **options):
         self.f_strings = {}
         for k, v in color_scheme.items():
-            self.f_strings[k] = "\x01%s" % (v,)
+            self.f_strings[k] = f"\x01{v}"
         super().__init__(**options)
 
     def format(self, tokensource, outfile):
@@ -54,7 +54,7 @@ class BPythonFormatter(Formatter):
         for token, text in tokensource:
             while token not in self.f_strings:
                 token = token.parent
-            o += "%s\x03%s\x04" % (self.f_strings[token], text)
+            o += "{}\x03{}\x04".format(self.f_strings[token], text)
         outfile.write(parse(o.rstrip()))
 
 

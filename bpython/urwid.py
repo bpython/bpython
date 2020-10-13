@@ -1172,7 +1172,7 @@ def main(args=None, locals_=None, banner=None):
 
             # Stolen from twisted.application.app (twistd).
             for r in reactors.getReactorTypes():
-                print("    %-4s\t%s" % (r.shortName, r.description))
+                print(f"    {r.shortName:<4}\t{r.description}")
         except ImportError:
             sys.stderr.write(
                 "No reactors are available. Please install "
@@ -1214,7 +1214,7 @@ def main(args=None, locals_=None, banner=None):
             if reactor is None:
                 from twisted.internet import reactor
         except reactors.NoSuchReactor:
-            sys.stderr.write("Reactor %s does not exist\n" % (options.reactor,))
+            sys.stderr.write(f"Reactor {options.reactor} does not exist\n")
             return
         event_loop = TwistedEventLoop(reactor)
     elif options.twisted:
@@ -1249,7 +1249,7 @@ def main(args=None, locals_=None, banner=None):
             if plug.tapname == options.plugin:
                 break
         else:
-            sys.stderr.write("Plugin %s does not exist\n" % (options.plugin,))
+            sys.stderr.write(f"Plugin {options.plugin} does not exist\n")
             return
         plugopts = plug.options()
         plugopts.parseOptions(exec_args)

@@ -35,7 +35,7 @@ class AbstractEdits:
             if overwrite:
                 del self[key]
             else:
-                raise ValueError("key %r already has a mapping" % (key,))
+                raise ValueError(f"key {key!r} already has a mapping")
         params = getargspec(func)
         args = {
             k: v for k, v in self.default_kwargs.items() if k in params
@@ -57,13 +57,13 @@ class AbstractEdits:
             self.cut_buffer_edits[key] = func
         else:
             raise ValueError(
-                "return type of function %r not recognized" % (func,)
+                f"return type of function {func!r} not recognized"
             )
 
     def add_config_attr(self, config_attr, func):
         if config_attr in self.awaiting_config:
             raise ValueError(
-                "config attribute %r already has a mapping" % (config_attr,)
+                f"config attribute {config_attr!r} already has a mapping"
             )
         self.awaiting_config[config_attr] = func
 
@@ -84,7 +84,7 @@ class AbstractEdits:
             return self.simple_edits[key]
         if key in self.cut_buffer_edits:
             return self.cut_buffer_edits[key]
-        raise KeyError("key %r not mapped" % (key,))
+        raise KeyError(f"key {key!r} not mapped")
 
     def __delitem__(self, key):
         if key in self.simple_edits:
@@ -92,7 +92,7 @@ class AbstractEdits:
         elif key in self.cut_buffer_edits:
             del self.cut_buffer_edits[key]
         else:
-            raise KeyError("key %r not mapped" % (key,))
+            raise KeyError(f"key {key!r} not mapped")
 
 
 class UnconfiguredEdits(AbstractEdits):

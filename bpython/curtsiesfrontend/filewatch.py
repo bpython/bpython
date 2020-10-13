@@ -58,7 +58,7 @@ else:
 
         def activate(self):
             if self.activated:
-                raise ValueError("%r is already activated." % (self,))
+                raise ValueError(f"{self!r} is already activated.")
             if not self.started:
                 self.started = True
                 self.observer.start()
@@ -71,7 +71,7 @@ else:
 
         def deactivate(self):
             if not self.activated:
-                raise ValueError("%r is not activated." % (self,))
+                raise ValueError(f"{self!r} is not activated.")
             self.observer.unschedule_all()
             self.activated = False
 

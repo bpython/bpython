@@ -24,7 +24,7 @@ class RaisingOptionParser(OptionParser):
 
 
 def version_banner():
-    return "bpython version %s on top of Python %s %s" % (
+    return "bpython version {} on top of Python {} {}".format(
         __version__,
         sys.version.split()[0],
         sys.executable,

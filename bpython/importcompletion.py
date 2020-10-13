@@ -49,7 +49,7 @@ fully_loaded = False
 
 def module_matches(cw, prefix=""):
     """Modules names to replace cw with"""
-    full = "%s.%s" % (prefix, cw) if prefix else cw
+    full = f"{prefix}.{cw}" if prefix else cw
     matches = (
         name
         for name in modules
@@ -63,7 +63,7 @@ def module_matches(cw, prefix=""):
 
 def attr_matches(cw, prefix="", only_modules=False):
     """Attributes to replace name with"""
-    full = "%s.%s" % (prefix, cw) if prefix else cw
+    full = f"{prefix}.{cw}" if prefix else cw
     module_name, _, name_after_dot = full.rpartition(".")
     if module_name not in sys.modules:
         return set()
@@ -73,7 +73,7 @@ def attr_matches(cw, prefix="", only_modules=False):
             name
             for name in dir(module)
             if name.startswith(name_after_dot)
-            and "%s.%s" % (module_name, name) in sys.modules
+            and f"{module_name}.{name}" in sys.modules
         }
     else:
         matches = {
@@ -81,7 +81,7 @@ def attr_matches(cw, prefix="", only_modules=False):
         }
     module_part, _, _ = cw.rpartition(".")
     if module_part:
-        matches = {"%s.%s" % (module_part, m) for m in matches}
+        matches = {f"{module_part}.{m}" for m in matches}
 
     return matches
 
@@ -185,7 +185,7 @@ def find_modules(path):
                     paths.add(path_real)
                     for subname in find_modules(pathname):
                         if subname != "__init__":
-                            yield "%s.%s" % (name, subname)
+                            yield f"{name}.{subname}"
             yield name
 
 

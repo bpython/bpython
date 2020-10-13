@@ -51,7 +51,7 @@ class SimpleRepl(BaseRepl):
             self.request_refresh()
         else:
             dt = round(when - time.time(), 1)
-            self.out("please refresh in {} seconds".format(dt))
+            self.out(f"please refresh in {dt} seconds")
 
     def _request_reload(self, files_modified=("?",)):
         e = bpythonevents.ReloadEvent()

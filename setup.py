@@ -107,7 +107,7 @@ if version == "unknown":
 
 with open(version_file, "w") as vf:
     vf.write("# Auto-generated file, do not edit!\n")
-    vf.write("__version__ = '%s'\n" % (version,))
+    vf.write(f"__version__ = '{version}'\n")
 
 
 class install(_install):

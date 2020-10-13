@@ -812,7 +812,7 @@ class Repl:
                     elif line.startswith(self.ps2):	
                         yield line[len(self.ps2) :]	
                     elif line.rstrip():	        
-                        yield "# OUT: %s" % (line,)
+                        yield f"# OUT: {line}"
             return '\n'.join(process())
 
     def write2file(self):

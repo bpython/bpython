@@ -773,7 +773,7 @@ class CLIRepl(repl.Repl):
             if args:
                 self.list_win.addstr(", ", punctuation_colpair)
             self.list_win.addstr(
-                "*%s" % (_args,), get_colpair(self.config, "token")
+                f"*{_args}", get_colpair(self.config, "token")
             )
 
         if kwonly:
@@ -799,7 +799,7 @@ class CLIRepl(repl.Repl):
             if args or _args or kwonly:
                 self.list_win.addstr(", ", punctuation_colpair)
             self.list_win.addstr(
-                "**%s" % (_kwargs,), get_colpair(self.config, "token")
+                f"**{_kwargs}", get_colpair(self.config, "token")
             )
         self.list_win.addstr(")", punctuation_colpair)
 
@@ -978,7 +978,7 @@ class CLIRepl(repl.Repl):
             try:
                 source = self.get_source_of_current_name()
             except repl.SourceNotFound as e:
-                self.statusbar.message("%s" % (e,))
+                self.statusbar.message(f"{e}")
             else:
                 if config.highlight_show_source:
                     source = format(
@@ -1072,7 +1072,7 @@ class CLIRepl(repl.Repl):
         """Show the appropriate Python prompt"""
         if not more:
             self.echo(
-                "\x01%s\x03%s" % (self.config.color_scheme["prompt"], self.ps1)
+                "\x01{}\x03{}".format(self.config.color_scheme["prompt"], self.ps1)
             )
             self.stdout_hist += self.ps1
             self.screen_hist.append(
@@ -1081,10 +1081,10 @@ class CLIRepl(repl.Repl):
             )
         else:
             prompt_more_color = self.config.color_scheme["prompt_more"]
-            self.echo("\x01%s\x03%s" % (prompt_more_color, self.ps2))
+            self.echo(f"\x01{prompt_more_color}\x03{self.ps2}")
             self.stdout_hist += self.ps2
             self.screen_hist.append(
-                "\x01%s\x03%s\x04" % (prompt_more_color, self.ps2)
+                f"\x01{prompt_more_color}\x03{self.ps2}\x04"
             )
 
     def push(self, s, insert_into_history=True):
@@ -1480,7 +1480,7 @@ class CLIRepl(repl.Repl):
     def writetb(self, lines):
         for line in lines:
             self.write(
-                "\x01%s\x03%s" % (self.config.color_scheme["error"], line)
+                "\x01{}\x03{}".format(self.config.color_scheme["error"], line)
             )
 
     def yank_from_buffer(self):
@@ -1700,7 +1700,7 @@ def init_wins(scr, config):
     )
 
     message = "  ".join(
-        "<%s> %s" % (key, command) for command, key in commands if key
+        f"<{key}> {command}" for command, key in commands if key
     )
 
     statusbar = Statusbar(

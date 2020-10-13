@@ -99,7 +99,7 @@ class BPythonFormatter(Formatter):
     def __init__(self, color_scheme, **options):
         self.f_strings = {}
         for k, v in theme_map.items():
-            self.f_strings[k] = "\x01%s" % (color_scheme[v],)
+            self.f_strings[k] = "\x01{}".format(color_scheme[v])
             if k is Parenthesis:
                 # FIXME: Find a way to make this the inverse of the current
                 # background colour
@@ -114,7 +114,7 @@ class BPythonFormatter(Formatter):
 
             while token not in self.f_strings:
                 token = token.parent
-            o += "%s\x03%s\x04" % (self.f_strings[token], text)
+            o += "{}\x03{}\x04".format(self.f_strings[token], text)
         outfile.write(o.rstrip())
 
 

@@ -351,7 +351,7 @@ class AttrCompletion(BaseCompletionType):
         n = len(attr)
         for word in words:
             if self.method_match(word, n, attr) and word != "__builtins__":
-                matches.append("%s.%s" % (expr, word))
+                matches.append(f"{expr}.{word}")
         return matches
 
     def list_attributes(self, obj):
@@ -377,7 +377,7 @@ class DictKeyCompletion(BaseCompletionType):
             return None
         if isinstance(obj, dict) and obj.keys():
             matches = {
-                "{0!r}]".format(k)
+                f"{k!r}]"
                 for k in obj.keys()
                 if repr(k).startswith(r.word)
             }
@@ -562,7 +562,7 @@ else:
             history = kwargs["history"]
 
             if "\n" in current_block:
-                assert cursor_offset <= len(line), "%r %r" % (
+                assert cursor_offset <= len(line), "{!r} {!r}".format(
                     cursor_offset,
                     line,
                 )

@@ -15,7 +15,7 @@ preproc = partial(preprocess, compiler=compiler)
 
 
 def get_fodder_source(test_name):
-    pattern = r"#StartTest-%s\n(.*?)#EndTest" % (test_name,)
+    pattern = fr"#StartTest-{test_name}\n(.*?)#EndTest"
     orig, xformed = [
         re.search(pattern, inspect.getsource(module), re.DOTALL)
         for module in [original, processed]
@@ -23,11 +23,11 @@ def get_fodder_source(test_name):
 
     if not orig:
         raise ValueError(
-            "Can't locate test %s in original fodder file" % (test_name,)
+            f"Can't locate test {test_name} in original fodder file"
         )
     if not xformed:
         raise ValueError(
-            "Can't locate test %s in processed fodder file" % (test_name,)
+            f"Can't locate test {test_name} in processed fodder file"
         )
     return orig.group(1), xformed.group(1)
 
