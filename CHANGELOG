@@ -1,6 +1,17 @@
 Changelog
 =========
 
+0.21
+----
+
+General information:
+
+* Support for Python 2 has been dropped.
+
+New features:
+
+Fixes:
+
 0.20
 ----
 
