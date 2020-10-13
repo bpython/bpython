@@ -1,5 +1,4 @@
 import sys
-from six import text_type
 
 from pygments.token import Generic, Token, Keyword, Name, Comment, String
 from pygments.token import Error, Literal, Number, Operator, Punctuation
@@ -74,7 +73,7 @@ class Interp(ReplInterpreter):
             """Default stderr handler for tracebacks
 
             Accepts FmtStrs so interpreters can output them"""
-            sys.stderr.write(text_type(err_line))
+            sys.stderr.write(str(err_line))
 
         self.write = write
         self.outfile = self
