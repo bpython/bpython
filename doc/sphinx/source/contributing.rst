@@ -17,8 +17,8 @@ the time of day.
 Getting your development environment set up
 -------------------------------------------
 
-bpython supports Python 2.7, 3.6 and newer. The code is compatible with all
-supported versions without the need to run post processing like `2to3`.
+bpython supports Python 3.6 and newer. The code is compatible with all
+supported versions.
 
 Using a virtual environment is probably a good idea. Create a virtual
 environment with
@@ -47,7 +47,7 @@ Next install your development copy of bpython and its dependencies:
     # install optional dependencies
     $ pip install watchdog urwid
     # development dependencies
-    $ pip install sphinx mock nose
+    $ pip install sphinx nose
     <modify a file in some way>
     # this runs your modified copy of bpython!
     $ bpython
@@ -60,14 +60,12 @@ Next install your development copy of bpython and its dependencies:
 
     .. code-block:: bash
 
-        $ sudp apt-get install python-greenlet python-pygments python-requests
-        $ sudo apt-get install python-watchdog python-urwid
-        $ sudo apt-get install python-sphinx python-mock python-nose
+        $ sudp apt install python3-greenlet python3-pygments python3-requests
+        $ sudo apt install python3-watchdog python3-urwid
+        $ sudo apt install python3-sphinx python3-nose
 
-    Remember to replace ``python`` with ``python3`` in every package name if
-    you intend to develop with Python 3. You also need to run `virtualenv` with
-    `--system-site-packages` packages, if you want to use the packages provided
-    by your distribution.
+    You also need to run `virtualenv` with `--system-site-packages` packages, if
+    you want to use the packages provided by your distribution.
 
 .. note::
 
@@ -76,7 +74,7 @@ Next install your development copy of bpython and its dependencies:
 
     .. code-block:: bash
 
-        $ sudo apt-get install gcc python-dev
+        $ sudo apt install gcc python3-dev
 
 As a first dev task, I recommend getting `bpython` to print your name every
 time you hit a specific key.

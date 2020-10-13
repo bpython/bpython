@@ -45,7 +45,7 @@ A checklist to perform some manual tests before a release:
 
 Check that all of the following work before a release:
 
-* Runs under Python 2.7, 3.4, 3.5 and 3.6.
+* Runs under Python 3.6 - 3.9
 * Save
 * Rewind
 * Pastebin
@@ -59,4 +59,3 @@ Check that all of the following work before a release:
 * Command line arguments correctly passed to scripts
 * Delegate to standard Python appropriately
 * Update CHANGELOG
-* Update __version__

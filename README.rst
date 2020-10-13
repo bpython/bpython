@@ -100,22 +100,9 @@ Dependencies
 * curtsies >= 0.3.0
 * greenlet
 * Sphinx != 1.1.2 (optional, for the documentation)
-* mock (optional, for the testsuite)
 * babel (optional, for internationalization)
 * watchdog (optional, for monitoring imported modules for changes)
 * jedi (optional, for experimental multiline completion)
-
-Python 2 before 2.7.7
----------------------
-If you are using Python 2 before 2.7.7, the following dependency is also
-required:
-
-* requests[security]
-
-cffi
-----
-If you have problems installing cffi, which is needed by OpenSSL, please take a
-look at `cffi docs`_.
 
 bpython-urwid
 -------------
@@ -188,7 +175,6 @@ may be interested to try.
 .. _ipython: https://ipython.org/
 .. _homepage: http://www.bpython-interpreter.org
 .. _full documentation: http://docs.bpython-interpreter.org/
-.. _cffi docs: https://cffi.readthedocs.org/en/release-0.8/#macos-x
 .. _issues tracker: http://github.com/bpython/bpython/issues/
 .. _pip: https://pip.pypa.io/en/latest/index.html
 .. _project homepage: http://bpython-interpreter.org
