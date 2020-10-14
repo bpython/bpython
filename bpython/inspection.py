@@ -329,15 +329,6 @@ def get_encoding(obj):
     return "ascii"
 
 
-def get_encoding_comment(source):
-    """Returns encoding line without the newline, or None is not found"""
-    for line in source.splitlines()[:2]:
-        m = get_encoding_line_re.search(line)
-        if m:
-            return m.group(0)
-    return None
-
-
 def get_encoding_file(fname):
     """Try to obtain encoding information from a Python source file."""
     with open(fname, "rt", encoding="ascii", errors="ignore") as f:
