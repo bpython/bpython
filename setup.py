@@ -241,7 +241,7 @@ install_requires = [
 extras_require = {
     "urwid": ["urwid"],
     "watch": ["watchdog"],
-    "jedi": ["jedi"],
+    "jedi": ["jedi >=0.16"],
 }
 
 packages = [

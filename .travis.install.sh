@@ -10,7 +10,7 @@ if [[ $RUN == nosetests ]]; then
     # filewatch specific dependencies
     pip install watchdog
     # jedi specific dependencies
-    pip install jedi
+    pip install 'jedi >= 0.16'
     # translation specific dependencies
     pip install babel
     # build and install

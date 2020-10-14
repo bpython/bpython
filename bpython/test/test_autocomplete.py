@@ -367,7 +367,7 @@ class TestMultilineJediCompletion(unittest.TestCase):
     ):
         with mock.patch("bpython.autocomplete.jedi.Script") as Script:
             script = Script.return_value
-            script.completions.return_value = completions
+            script.complete.return_value = completions
             com = autocomplete.MultilineJediCompletion()
             return com.matches(
                 cursor, line, current_block=block, history=history

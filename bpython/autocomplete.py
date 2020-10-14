@@ -520,9 +520,9 @@ else:
 
             try:
                 script = jedi.Script(
-                    history, len(history.splitlines()), cursor_offset, "fake.py"
+                    history, path="fake.py"
                 )
-                completions = script.completions()
+                completions = script.complete(len(history.splitlines()), cursor_offset)
             except (jedi.NotFoundError, IndexError, KeyError):
                 # IndexError for #483
                 # KeyError for #544
