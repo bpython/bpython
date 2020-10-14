@@ -105,6 +105,18 @@ if version == "unknown":
     except OSError:
         pass
 
+if version == "unknown":
+    # get version from directory name (tarballs downloaded from tags)
+    # directories are named bpython-X.Y-release in this case
+    basename = os.path.basename(os.path.dirname(__file__))
+    basename_components = basename.split("-")
+    if (
+        len(basename_components) == 3
+        and basename_components[0] == "bpython"
+        and basename_components[2] == "release"
+    ):
+        version = basename_components[1]
+
 with open(version_file, "w") as vf:
     vf.write("# Auto-generated file, do not edit!\n")
     vf.write(f"__version__ = '{version}'\n")
