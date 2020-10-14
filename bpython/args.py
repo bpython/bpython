@@ -113,7 +113,7 @@ def parse(args, extras=None, ignore_stdin=False):
     if options.version:
         print(version_banner())
         print(
-            "(C) 2008-2016 Bob Farrell, Andreas Stuehrk, Sebastian Ramacher, Thomas Ballinger, et al. "
+            "(C) 2008-2020 Bob Farrell, Andreas Stuehrk, Sebastian Ramacher, Thomas Ballinger, et al. "
             "See AUTHORS for detail."
         )
         raise SystemExit
