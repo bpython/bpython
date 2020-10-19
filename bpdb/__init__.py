@@ -1,7 +1,7 @@
 # The MIT License
 #
 # Copyright (c) 2008 Bob Farrell
-# Copyright (c) 2013 Sebastian Ramacher
+# Copyright (c) 2013-2020 Sebastian Ramacher
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,9 @@ from .debugger import BPdb
 from optparse import OptionParser
 from pdb import Restart
 
+__author__ = bpython.__author__
+__copyright__ = bpython.__copyright__
+__license__ = bpython.__license__
 __version__ = bpython.__version__
 
 

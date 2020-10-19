@@ -20,7 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
 import os.path
 
 try:
@@ -28,6 +27,11 @@ try:
 except ImportError:
     version = "unknown"
 
+__author__ = (
+    "Bob Farrell, Andreas Stuehrk, Sebastian Ramacher, Thomas Ballinger, et al."
+)
+__copyright__ = f"(C) 2008-2020 {__author__}"
+__license__ = "MIT"
 __version__ = version
 package_dir = os.path.abspath(os.path.dirname(__file__))
 
