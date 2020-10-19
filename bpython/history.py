@@ -170,7 +170,7 @@ class History:
 
     def load(self, filename, encoding):
         with open(
-            filename, "r", encoding=encoding, errors="ignore"
+            filename, encoding=encoding, errors="ignore"
         ) as hfile:
             with FileLock(hfile, filename=filename):
                 self.entries = self.load_from(hfile)

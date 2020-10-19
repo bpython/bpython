@@ -480,7 +480,7 @@ class Repl:
         filename = os.environ.get("PYTHONSTARTUP")
         if filename:
             encoding = inspection.get_encoding_file(filename)
-            with open(filename, "rt", encoding=encoding) as f:
+            with open(filename, encoding=encoding) as f:
                 source = f.read()
                 self.interp.runsource(source, filename, "exec", encode=False)
 

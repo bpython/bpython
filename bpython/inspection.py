@@ -331,7 +331,7 @@ def get_encoding(obj):
 
 def get_encoding_file(fname):
     """Try to obtain encoding information from a Python source file."""
-    with open(fname, "rt", encoding="ascii", errors="ignore") as f:
+    with open(fname, encoding="ascii", errors="ignore") as f:
         for unused in range(2):
             line = f.readline()
             match = get_encoding_line_re.search(line)
