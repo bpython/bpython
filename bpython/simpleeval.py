@@ -74,10 +74,10 @@ def simple_eval(node_or_string, namespace=None):
     * variable names causing lookups in the passed in namespace or builtins
     * getitem calls using the [] syntax on objects of the types above
 
-    Like the Python 3 (and unlike the Python 2) literal_eval, unary and binary
-    + and - operations are allowed on all builtin numeric types.
+    Like Python 3's literal_eval, unary and binary + and - operations are
+    allowed on all builtin numeric types.
 
-    The optional namespace dict-like ought not to cause side effects on lookup
+    The optional namespace dict-like ought not to cause side effects on lookup.
     """
     if namespace is None:
         namespace = {}
