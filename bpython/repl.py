@@ -36,6 +36,7 @@ import time
 import traceback
 from itertools import takewhile
 from types import ModuleType
+from enum import Enum
 
 from pygments.token import Token
 from pygments.lexers import Python3Lexer
@@ -355,11 +356,9 @@ class SourceNotFound(Exception):
     """Exception raised when the requested source could not be found."""
 
 
-class LineTypeTranslator:
+class LineTypeTranslator(Enum):
     """Used when adding a tuple to all_logical_lines, to get input / output values
     having to actually type/know the strings"""
-
-    # TODO use Enum once we drop support for Python 2
 
     INPUT = "input"
     OUTPUT = "output"
