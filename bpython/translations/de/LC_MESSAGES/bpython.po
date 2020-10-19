@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: bpython mercurial\n"
 "Report-Msgid-Bugs-To: http://github.com/bpython/bpython/issues\n"
 "POT-Creation-Date: 2020-10-13 21:53+0200\n"
-"PO-Revision-Date: 2020-01-06 12:17+0100\n"
+"PO-Revision-Date: 2020-10-19 20:59+0200\n"
 "Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language: de\n"
 "Language-Team: de <LL@li.org>\n"
@@ -84,7 +84,7 @@ msgstr ""
 
 #: bpython/curtsies.py:147
 msgid "log debug messages to bpython.log"
-msgstr ""
+msgstr "Zeichne debug Nachrichten in bpython.log auf"
 
 #: bpython/curtsies.py:153
 msgid "start by pasting lines of a file into session"
@@ -118,7 +118,7 @@ msgstr "Konnte Ausgabe von Hilfsprogramm nicht verarbeiten."
 
 #: bpython/repl.py:657
 msgid "Nothing to get source of"
-msgstr ""
+msgstr "Nichts um Quellcode abzurufen"
 
 #: bpython/repl.py:662
 #, python-format
@@ -214,6 +214,8 @@ msgstr ""
 #, python-format
 msgid "Undo how many lines? (Undo will take up to ~%.1f seconds) [1]"
 msgstr ""
+"Wie viele Zeilen rückgängig machen? (Rückgängigmachen wird bis zu ~%1.f "
+"Sekunden brauchen) [1]"
 
 #: bpython/repl.py:968 bpython/repl.py:972
 msgid "Undo canceled"
@@ -223,8 +225,8 @@ msgstr "Rückgängigmachen abgebrochen"
 #, python-format
 msgid "Undoing %d line... (est. %.1f seconds)"
 msgid_plural "Undoing %d lines... (est. %.1f seconds)"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Mache %d Zeile rückgängig... (ungefähr %.1f Sekunden)"
+msgstr[1] "Mache %d Zeilen rückgängig... (ungefähr %.1f Sekunden)"
 
 #: bpython/repl.py:1151
 msgid "Config file does not exist - create new from default? (y/N)"
@@ -247,6 +249,8 @@ msgstr "Fehler beim Bearbeiten der Konfigurationsdatei: %s"
 #, python-format
 msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
 msgstr ""
+" <%s> Rückgängigmachen <%s> Speichern <%s> Pastebin <%s> Pager <%s> "
+"Quellcode anzeigen "
 
 #: bpython/urwid.py:1136
 msgid "Run twisted reactor."
