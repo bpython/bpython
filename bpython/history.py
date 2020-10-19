@@ -169,9 +169,7 @@ class History:
         self.saved_line = ""
 
     def load(self, filename, encoding):
-        with open(
-            filename, encoding=encoding, errors="ignore"
-        ) as hfile:
+        with open(filename, encoding=encoding, errors="ignore") as hfile:
             with FileLock(hfile, filename=filename):
                 self.entries = self.load_from(hfile)
 

@@ -117,8 +117,14 @@ def loadini(struct, configfile):
             "up_one_line": "C-p",
             "yank_from_buffer": "C-y",
         },
-        "cli": {"suggestion_width": 0.8, "trim_prompts": False,},
-        "curtsies": {"list_above": False, "right_arrow_completion": True,},
+        "cli": {
+            "suggestion_width": 0.8,
+            "trim_prompts": False,
+        },
+        "curtsies": {
+            "list_above": False,
+            "right_arrow_completion": True,
+        },
     }
 
     default_keys_to_commands = {
@@ -269,9 +275,7 @@ def loadini(struct, configfile):
         try:
             load_theme(struct, path, struct.color_scheme, default_colors)
         except OSError:
-            sys.stderr.write(
-                f"Could not load theme '{color_scheme_name}'.\n"
-            )
+            sys.stderr.write(f"Could not load theme '{color_scheme_name}'.\n")
             sys.exit(1)
 
     # expand path of history file

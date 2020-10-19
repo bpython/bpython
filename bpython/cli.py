@@ -772,9 +772,7 @@ class CLIRepl(repl.Repl):
         if _args:
             if args:
                 self.list_win.addstr(", ", punctuation_colpair)
-            self.list_win.addstr(
-                f"*{_args}", get_colpair(self.config, "token")
-            )
+            self.list_win.addstr(f"*{_args}", get_colpair(self.config, "token"))
 
         if kwonly:
             if not _args:
@@ -1072,7 +1070,9 @@ class CLIRepl(repl.Repl):
         """Show the appropriate Python prompt"""
         if not more:
             self.echo(
-                "\x01{}\x03{}".format(self.config.color_scheme["prompt"], self.ps1)
+                "\x01{}\x03{}".format(
+                    self.config.color_scheme["prompt"], self.ps1
+                )
             )
             self.stdout_hist += self.ps1
             self.screen_hist.append(

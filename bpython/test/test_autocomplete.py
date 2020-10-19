@@ -85,9 +85,7 @@ class TestGetCompleter(unittest.TestCase):
 
 
 class TestCumulativeCompleter(unittest.TestCase):
-    def completer(
-        self, matches,
-    ):
+    def completer(self, matches):
         mock_completer = autocomplete.BaseCompletionType()
         mock_completer.matches = mock.Mock(return_value=matches)
         return mock_completer
@@ -274,7 +272,8 @@ class TestAttrCompletion(unittest.TestCase):
     def test_slots_not_crash(self):
         com = autocomplete.AttrCompletion()
         self.assertSetEqual(
-            com.matches(2, "A.", locals_={"A": Slots}), {"A.b", "A.a"},
+            com.matches(2, "A.", locals_={"A": Slots}),
+            {"A.b", "A.a"},
         )
 
 
@@ -437,9 +436,5 @@ class TestParameterNameCompletion(unittest.TestCase):
         self.assertSetEqual(
             com.matches(1, "a", argspec=argspec), {"apple=", "apricot="}
         )
-        self.assertSetEqual(
-            com.matches(2, "ba", argspec=argspec), {"banana="}
-        )
-        self.assertSetEqual(
-            com.matches(3, "car", argspec=argspec), {"carrot="}
-        )
+        self.assertSetEqual(com.matches(2, "ba", argspec=argspec), {"banana="})
+        self.assertSetEqual(com.matches(3, "car", argspec=argspec), {"carrot="})

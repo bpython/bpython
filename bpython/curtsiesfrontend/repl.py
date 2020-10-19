@@ -40,7 +40,11 @@ from bpython.pager import get_pager_command
 
 from bpython.curtsiesfrontend import replpainter as paint
 from bpython.curtsiesfrontend import sitefix
-from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput, is_main_thread
+from bpython.curtsiesfrontend.coderunner import (
+    CodeRunner,
+    FakeOutput,
+    is_main_thread,
+)
 from bpython.curtsiesfrontend.filewatch import ModuleChangedEventHandler
 from bpython.curtsiesfrontend.interaction import StatusBar
 from bpython.curtsiesfrontend.manual_readline import edit_keys
@@ -971,7 +975,7 @@ class BaseRepl(BpythonRepl):
             self.add_normal_character(e)
 
     def send_current_block_to_external_editor(self, filename=None):
-        """"
+        """
         Sends the current code block to external editor to be edited. Usually bound to C-x.
         """
         text = self.send_to_external_editor(self.get_current_block())
@@ -987,7 +991,7 @@ class BaseRepl(BpythonRepl):
 
     def send_session_to_external_editor(self, filename=None):
         """
-        Sends entire bpython session to external editor to be edited. Usually bound to F7.         
+        Sends entire bpython session to external editor to be edited. Usually bound to F7.
         """
         for_editor = EDIT_SESSION_HEADER
         for_editor += self.get_session_formatted_for_file()
@@ -1349,16 +1353,11 @@ class BaseRepl(BpythonRepl):
         more = func_for_letter(self.config.color_scheme["prompt_more"])
         if self.incr_search_mode == "reverse_incremental_search":
             return (
-                prompt(
-                    f"(reverse-i-search)`{self.incr_search_target}': "
-                )
+                prompt(f"(reverse-i-search)`{self.incr_search_target}': ")
                 + self.current_line_formatted
             )
         elif self.incr_search_mode == "incremental_search":
-            return (
-                prompt(f"(i-search)`%s': ")
-                + self.current_line_formatted
-            )
+            return prompt(f"(i-search)`%s': ") + self.current_line_formatted
         return (
             prompt(self.ps1) if self.done else more(self.ps2)
         ) + self.current_line_formatted
@@ -1407,11 +1406,11 @@ class BaseRepl(BpythonRepl):
         self.stdin.current_line = "\n"
 
     def number_of_padding_chars_on_current_cursor_line(self):
-        """ To avoid cutting off two-column characters at the end of lines where
+        """To avoid cutting off two-column characters at the end of lines where
         there's only one column left, curtsies adds a padding char (u' ').
         It's important to know about these for cursor positioning.
 
-        Should return zero unless there are fullwidth characters. """
+        Should return zero unless there are fullwidth characters."""
         full_line = self.current_cursor_line_without_suggestion
         line_with_padding = "".join(
             line.s

@@ -39,8 +39,7 @@ except ImportError:
 
 
 class BaseLock:
-    """Base class for file locking
-    """
+    """Base class for file locking"""
 
     def __init__(self, fileobj, mode=None, filename=None):
         self.fileobj = fileobj
@@ -66,8 +65,7 @@ class BaseLock:
 
 
 class UnixFileLock(BaseLock):
-    """Simple file locking for Unix using fcntl
-    """
+    """Simple file locking for Unix using fcntl"""
 
     def __init__(self, fileobj, mode=None, filename=None):
         super().__init__(fileobj)
@@ -90,8 +88,7 @@ class UnixFileLock(BaseLock):
 
 
 class WindowsFileLock(BaseLock):
-    """Simple file locking for Windows using msvcrt
-    """
+    """Simple file locking for Windows using msvcrt"""
 
     def __init__(self, fileobj, mode=None, filename=None):
         super().__init__(None)

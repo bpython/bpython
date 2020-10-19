@@ -34,8 +34,8 @@ __version__ = bpython.__version__
 
 
 def set_trace():
-    """ Just like pdb.set_trace(), a helper function that creates
-    a debugger instance and sets the trace. """
+    """Just like pdb.set_trace(), a helper function that creates
+    a debugger instance and sets the trace."""
     debugger = BPdb()
     debugger.set_trace(sys._getframe().f_back)
 

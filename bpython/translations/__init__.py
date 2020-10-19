@@ -7,11 +7,14 @@ from .. import package_dir
 
 translator = None
 
+
 def _(message):
     return translator.gettext(message)
 
+
 def ngettext(singular, plural, n):
     return translator.ngettext(singular, plural, n)
+
 
 def init(locale_dir=None, languages=None):
     try:

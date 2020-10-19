@@ -99,8 +99,7 @@ def simple_eval(node_or_string, namespace=None):
             return list(map(_convert, node.elts))
         elif isinstance(node, ast.Dict):
             return {
-                _convert(k): _convert(v)
-                for k, v in zip(node.keys, node.values)
+                _convert(k): _convert(v) for k, v in zip(node.keys, node.values)
             }
         elif isinstance(node, ast.Set):
             return set(map(_convert, node.elts))
@@ -254,6 +253,4 @@ def evaluate_current_attribute(cursor_offset, line, namespace=None):
     try:
         return getattr(obj, attr.word)
     except AttributeError:
-        raise EvaluationError(
-            f"can't lookup attribute {attr.word} on {obj!r}"
-        )
+        raise EvaluationError(f"can't lookup attribute {attr.word} on {obj!r}")

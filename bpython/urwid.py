@@ -242,7 +242,7 @@ class Statusbar:
     def settext(self, s, permanent=False):
         """Set the text on the status bar to a new value. If permanent is True,
         the new value will be permanent. If that status bar is in prompt mode,
-        the prompt will be aborted. """
+        the prompt will be aborted."""
 
         self._reset_timer()
 
@@ -774,9 +774,7 @@ class URWIDRepl(repl.Repl):
                 in_arg = self.arg_pos
                 args, varargs, varkw, defaults = args[:4]
                 kwonly = self.funcprops.argspec.kwonly
-                kwonly_defaults = (
-                    self.funcprops.argspec.kwonly_defaults or {}
-                )
+                kwonly_defaults = self.funcprops.argspec.kwonly_defaults or {}
                 markup = [("bold name", func_name), ("name", ": (")]
 
                 # the isinstance checks if we're in a positional arg

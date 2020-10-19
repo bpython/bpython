@@ -170,7 +170,7 @@ class BaseCompletionType:
             * determine whether suggestions should be `shown_before_tab`
             * `substitute(cur, line, match)` in a match for what's found with
               `target`
-            """
+        """
         raise NotImplementedError
 
     def locate(self, cursor_offset, line):
@@ -315,8 +315,7 @@ class AttrCompletion(BaseCompletionType):
         return after_last_dot(word)
 
     def attr_matches(self, text, namespace):
-        """Taken from rlcompleter.py and bent to my will.
-        """
+        """Taken from rlcompleter.py and bent to my will."""
 
         m = self.attr_matches_re.match(text)
         if not m:
@@ -377,9 +376,7 @@ class DictKeyCompletion(BaseCompletionType):
             return None
         if isinstance(obj, dict) and obj.keys():
             matches = {
-                f"{k!r}]"
-                for k in obj.keys()
-                if repr(k).startswith(r.word)
+                f"{k!r}]" for k in obj.keys() if repr(k).startswith(r.word)
             }
             return matches if matches else None
         else:
@@ -462,9 +459,7 @@ class ParameterNameCompletion(BaseCompletionType):
                 if isinstance(name, str) and name.startswith(r.word)
             }
             matches.update(
-                name + "="
-                for name in argspec[1][4]
-                if name.startswith(r.word)
+                name + "=" for name in argspec[1][4] if name.startswith(r.word)
             )
         return matches if matches else None
 
@@ -519,10 +514,10 @@ else:
             history = "\n".join(history) + "\n" + line
 
             try:
-                script = jedi.Script(
-                    history, path="fake.py"
+                script = jedi.Script(history, path="fake.py")
+                completions = script.complete(
+                    len(history.splitlines()), cursor_offset
                 )
-                completions = script.complete(len(history.splitlines()), cursor_offset)
             except (jedi.NotFoundError, IndexError, KeyError):
                 # IndexError for #483
                 # KeyError for #544
@@ -566,9 +561,7 @@ else:
                     cursor_offset,
                     line,
                 )
-                results = super().matches(
-                    cursor_offset, line, history=history
-                )
+                results = super().matches(cursor_offset, line, history=history)
                 return results
             else:
                 return None

@@ -37,9 +37,7 @@ class AbstractEdits:
             else:
                 raise ValueError(f"key {key!r} already has a mapping")
         params = getargspec(func)
-        args = {
-            k: v for k, v in self.default_kwargs.items() if k in params
-        }
+        args = {k: v for k, v in self.default_kwargs.items() if k in params}
         r = func(**args)
         if len(r) == 2:
             if hasattr(func, "kills"):
@@ -56,9 +54,7 @@ class AbstractEdits:
                 )
             self.cut_buffer_edits[key] = func
         else:
-            raise ValueError(
-                f"return type of function {func!r} not recognized"
-            )
+            raise ValueError(f"return type of function {func!r} not recognized")
 
     def add_config_attr(self, config_attr, func):
         if config_attr in self.awaiting_config:

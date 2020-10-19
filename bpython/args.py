@@ -81,9 +81,7 @@ def parse(args, extras=None, ignore_stdin=False):
         "--interactive",
         "-i",
         action="store_true",
-        help=_(
-            "Drop to bpython shell after running file  instead of exiting."
-        ),
+        help=_("Drop to bpython shell after running file instead of exiting."),
     )
     parser.add_option(
         "--quiet",

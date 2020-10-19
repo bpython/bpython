@@ -356,8 +356,8 @@ class SourceNotFound(Exception):
 
 
 class LineTypeTranslator:
-    """ Used when adding a tuple to all_logical_lines, to get input / output values
-    having to actually type/know the strings """
+    """Used when adding a tuple to all_logical_lines, to get input / output values
+    having to actually type/know the strings"""
 
     # TODO use Enum once we drop support for Python 2
 
@@ -455,7 +455,8 @@ class Repl:
             self.paster = PasteHelper(self.config.pastebin_helper)
         else:
             self.paster = PastePinnwand(
-                self.config.pastebin_url, self.config.pastebin_expiry,
+                self.config.pastebin_url,
+                self.config.pastebin_expiry,
             )
 
     @property
@@ -789,7 +790,7 @@ class Repl:
         i.e. without >>> and ... at input lines and with "# OUT: " prepended to
         output lines and "### " prepended to current line"""
 
-        if hasattr(self, 'all_logical_lines'):
+        if hasattr(self, "all_logical_lines"):
             # Curtsies
 
             def process():
@@ -807,13 +808,14 @@ class Repl:
 
             def process():
                 for line in session_output.split("\n"):
-                    if line.startswith(self.ps1):	
-                        yield line[len(self.ps1) :]	
-                    elif line.startswith(self.ps2):	
-                        yield line[len(self.ps2) :]	
-                    elif line.rstrip():	        
+                    if line.startswith(self.ps1):
+                        yield line[len(self.ps1) :]
+                    elif line.startswith(self.ps2):
+                        yield line[len(self.ps2) :]
+                    elif line.rstrip():
                         yield f"# OUT: {line}"
-            return '\n'.join(process())
+
+            return "\n".join(process())
 
     def write2file(self):
         """Prompt for a filename and write the current contents of the stdout

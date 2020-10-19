@@ -20,7 +20,9 @@ class TestSimpleEval(unittest.TestCase):
         self.assertMatchesStdlib("{(1,): [2,3,{}]}")
         self.assertMatchesStdlib("{1, 2}")
 
-    @unittest.skipUnless(sys.version_info[:2] >= (3, 9), "Only Python3.9 evaluates set()")
+    @unittest.skipUnless(
+        sys.version_info[:2] >= (3, 9), "Only Python3.9 evaluates set()"
+    )
     def test_matches_stdlib_set_literal(self):
         """set() is evaluated"""
         self.assertMatchesStdlib("set()")

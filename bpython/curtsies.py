@@ -48,8 +48,8 @@ class FullCurtsiesRepl(BaseRepl):
         self._request_reload = self.input_generator.threadsafe_event_trigger(
             bpythonevents.ReloadEvent
         )
-        self.interrupting_refresh = self.input_generator.threadsafe_event_trigger(
-            lambda: None
+        self.interrupting_refresh = (
+            self.input_generator.threadsafe_event_trigger(lambda: None)
         )
         self.request_undo = self.input_generator.event_trigger(
             bpythonevents.UndoEvent

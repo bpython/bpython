@@ -531,7 +531,7 @@ class TestCliReplTab(unittest.TestCase):
     # Edge Cases
     def test_normal_tab(self):
         """make sure pressing the tab key will
-           still in some cases add a tab"""
+        still in some cases add a tab"""
         self.repl.s = ""
         self.repl.config = mock.Mock()
         self.repl.config.tab_length = 4
