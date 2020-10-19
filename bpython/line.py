@@ -123,7 +123,7 @@ from_import_tab_re = LazyReCompile(r"from ([\w0-9_.]*)\s+import")
 def from_import_tab(line):
     matches = from_import_tab_re.finditer(line)
     try:
-        module = matches.__next__()
+        module = next(matches)
     except StopIteration:
         pass
     if module:
