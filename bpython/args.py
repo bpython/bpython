@@ -1,7 +1,29 @@
+# The MIT License
+#
+# Copyright (c) 2008 Bob Farrell
+# Copyright (c) 2012-2020 Sebastian Ramacher
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
 """
 Module to handle command line argument parsing, for all front-ends.
 """
-
 
 import code
 import importlib.util
@@ -9,7 +31,7 @@ import os
 import sys
 from optparse import OptionParser, OptionGroup
 
-from . import __version__
+from . import __version__, __copyright__
 from .config import default_config_path, loadini, Struct
 from .translations import _
 
@@ -23,12 +45,17 @@ class RaisingOptionParser(OptionParser):
         raise OptionParserFailed()
 
 
-def version_banner():
-    return "bpython version {} on top of Python {} {}".format(
+def version_banner(base="bpython"):
+    return "{} version {} on top of Python {} {}".format(
+        base,
         __version__,
         sys.version.split()[0],
         sys.executable,
     )
+
+
+def copyright_banner():
+    return "{} See AUTHORS for details.".format(__copyright__)
 
 
 def parse(args, extras=None, ignore_stdin=False):
@@ -110,10 +137,7 @@ def parse(args, extras=None, ignore_stdin=False):
 
     if options.version:
         print(version_banner())
-        print(
-            "(C) 2008-2020 Bob Farrell, Andreas Stuehrk, Sebastian Ramacher, Thomas Ballinger, et al. "
-            "See AUTHORS for detail."
-        )
+        print(copyright_banner())
         raise SystemExit
 
     if not ignore_stdin and not (sys.stdin.isatty() and sys.stdout.isatty()):

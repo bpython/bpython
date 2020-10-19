@@ -26,6 +26,7 @@ import sys
 import traceback
 
 import bpython
+from bpython.args import version_banner, copyright_banner
 from .debugger import BPdb
 from optparse import OptionParser
 from pdb import Restart
@@ -74,12 +75,8 @@ def main():
     )
     options, args = parser.parse_args(sys.argv)
     if options.version:
-        print("bpdb on top of bpython version", __version__, end="")
-        print("on top of Python", sys.version.split()[0])
-        print(
-            "(C) 2008-2013 Bob Farrell, Andreas Stuehrk et al. "
-            "See AUTHORS for detail."
-        )
+        print(version_banner(base="bpdb"))
+        print(copyright_banner())
         return 0
 
     if len(args) < 2:
