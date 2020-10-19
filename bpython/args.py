@@ -4,7 +4,7 @@ Module to handle command line argument parsing, for all front-ends.
 
 
 import code
-import imp
+import importlib.util
 import os
 import sys
 from optparse import OptionParser, OptionGroup
@@ -82,7 +82,7 @@ def parse(args, extras=None, ignore_stdin=False):
         "-i",
         action="store_true",
         help=_(
-            "Drop to bpython shell after running file " "instead of exiting."
+            "Drop to bpython shell after running file  instead of exiting."
         ),
     )
     parser.add_option(
@@ -138,7 +138,8 @@ def exec_code(interpreter, args):
         source = sourcefile.read()
     old_argv, sys.argv = sys.argv, args
     sys.path.insert(0, os.path.abspath(os.path.dirname(args[0])))
-    mod = imp.new_module("__console__")
+    spec = importlib.util.spec_from_loader("__console__", loader=None)
+    mod = importlib.util.module_from_spec(spec)
     sys.modules["__console__"] = mod
     interpreter.locals = mod.__dict__
     interpreter.locals["__file__"] = args[0]
