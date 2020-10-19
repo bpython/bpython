@@ -55,8 +55,7 @@ def post_mortem(t=None):
         t = sys.exc_info()[2]
         if t is None:
             raise ValueError(
-                "A valid traceback must be passed if no "
-                "exception is being handled"
+                "A valid traceback must be passed if no exception is being handled."
             )
 
     p = BPdb()
@@ -86,7 +85,7 @@ def main():
     # The following code is based on Python's pdb.py.
     mainpyfile = args[1]
     if not os.path.exists(mainpyfile):
-        print("Error:", mainpyfile, "does not exist")
+        print(f"Error: {mainpyfile} does not exist.")
         return 1
 
     # Hide bpdb from argument list.
@@ -101,22 +100,22 @@ def main():
             pdb._runscript(mainpyfile)
             if pdb._user_requested_quit:
                 break
-            print("The program finished and will be restarted")
+            print("The program finished and will be restarted.")
         except Restart:
-            print("Restarting", mainpyfile, "with arguments:")
+            print(f"Restarting {mainpyfile} with arguments:")
             print("\t" + " ".join(sys.argv[1:]))
         except SystemExit:
             # In most cases SystemExit does not warrant a post-mortem session.
-            print("The program exited via sys.exit(). Exit status: ",)
+            print(
+                "The program exited via sys.exit(). Exit status: ",
+            )
             print(sys.exc_info()[1])
         except:
             traceback.print_exc()
-            print("Uncaught exception. Entering post mortem debugging")
-            print("Running 'cont' or 'step' will restart the program")
+            print("Uncaught exception. Entering post mortem debugging.")
+            print("Running 'cont' or 'step' will restart the program.")
             t = sys.exc_info()[2]
             pdb.interaction(None, t)
             print(
-                "Post mortem debugger finished. The "
-                + mainpyfile
-                + " will be restarted"
+                f"Post mortem debugger finished. The {mainpyfile} will be restarted."
             )
