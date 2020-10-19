@@ -93,7 +93,7 @@ def module_attr_matches(name):
 
 
 def try_to_import(module_name):
-    """Called by curtsiesfrontend repl on tab to import module 
+    """Called by curtsiesfrontend repl on tab to import module
     in background for better auto completion: attr completion"""
     try:
         module = __import__(module_name)
@@ -210,16 +210,10 @@ def find_all_modules(path=None):
         modules.update(sys.builtin_module_names)
         path = sys.path
 
-    print("Done2:", done)
-    if done:
-        print("path2:", path)
     for p in path:
         if not p:
             p = os.curdir
         for module in find_modules(p):
-            module = try_decode(module, "ascii")
-            if module is None:
-                continue
             modules.add(module)
             yield
 
