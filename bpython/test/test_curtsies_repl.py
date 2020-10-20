@@ -244,7 +244,6 @@ class TestFutureImports(TestCase):
     def test_repl(self):
         repl = create_repl()
         with captured_output() as (out, err):
-            repl.push("from __future__ import division")
             repl.push("1 / 2")
         self.assertEqual(out.getvalue(), "0.5\n")
 
@@ -252,7 +251,6 @@ class TestFutureImports(TestCase):
         interp = code.InteractiveInterpreter(locals={})
         with captured_output() as (out, err):
             with tempfile.NamedTemporaryFile(mode="w", suffix=".py") as f:
-                f.write("from __future__ import division\n")
                 f.write("print(1/2)\n")
                 f.flush()
                 args.exec_code(interp, [f.name])
@@ -438,7 +436,6 @@ class TestCurtsiesStartup(TestCase):
             f.write("# coding: ")
             f.write(encoding)
             f.write("\n")
-            f.write("from __future__ import unicode_literals\n")
             f.write('a = "äöü"\n')
 
     def test_startup_event_utf8(self):
