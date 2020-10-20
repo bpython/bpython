@@ -190,7 +190,7 @@ class FakeStdin:
         try:
             while not buffer.endswith(("\n", "\r")):
                 key = self.interface.get_key()
-                if key in [curses.erasechar(), "KEY_BACKSPACE"]:
+                if key in (curses.erasechar(), "KEY_BACKSPACE"):
                     y, x = self.interface.scr.getyx()
                     if buffer:
                         self.interface.scr.delch(y, x - 1)

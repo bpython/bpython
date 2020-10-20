@@ -136,10 +136,9 @@ class FakeStdin:
             self.repl.run_code_and_maybe_finish()
         elif e in ("<Esc+.>",):
             self.get_last_word()
-
-        elif e in ["<ESC>"]:
+        elif e in ("<ESC>",):
             pass
-        elif e in ["<Ctrl-d>"]:
+        elif e in ("<Ctrl-d>",):
             if self.current_line == "":
                 self.repl.send_to_stdin("\n")
                 self.has_focus = False
@@ -148,7 +147,7 @@ class FakeStdin:
                 self.repl.run_code_and_maybe_finish(for_code="")
             else:
                 pass
-        elif e in ["\n", "\r", "<Ctrl-j>", "<Ctrl-m>"]:
+        elif e in ("\n", "\r", "<Ctrl-j>", "<Ctrl-m>"):
             line = self.current_line
             self.repl.send_to_stdin(line + "\n")
             self.has_focus = False
@@ -164,7 +163,7 @@ class FakeStdin:
             self.repl.send_to_stdin(self.current_line)
 
     def add_input_character(self, e):
-        if e == "<SPACE>":
+        if e in ("<SPACE>",):
             e = " "
         if e.startswith("<") and e.endswith(">"):
             return
@@ -763,7 +762,7 @@ class BaseRepl(BpythonRepl):
             raise SystemExit()
         elif e in ("\n", "\r", "<PADENTER>", "<Ctrl-j>", "<Ctrl-m>"):
             self.on_enter()
-        elif e == "<TAB>":  # tab
+        elif e in ("<TAB>",):  # tab
             self.on_tab()
         elif e in ("<Shift-TAB>",):
             self.on_tab(back=True)
@@ -784,9 +783,9 @@ class BaseRepl(BpythonRepl):
         # TODO add PAD keys hack as in bpython.cli
         elif e in key_dispatch[self.config.edit_current_block_key]:
             self.send_current_block_to_external_editor()
-        elif e in ["<ESC>"]:
+        elif e in ("<ESC>",):
             self.incr_search_mode = None
-        elif e in ["<SPACE>"]:
+        elif e in ("<SPACE>",):
             self.add_normal_character(" ")
         else:
             self.add_normal_character(e)
@@ -969,7 +968,7 @@ class BaseRepl(BpythonRepl):
                 self.process_event(bpythonevents.RefreshRequestEvent())
         elif isinstance(e, events.Event):
             pass  # ignore events
-        elif e == "<SPACE>":
+        elif e in ("<SPACE>",):
             self.add_normal_character(" ")
         else:
             self.add_normal_character(e)
@@ -2013,11 +2012,11 @@ class BaseRepl(BpythonRepl):
             ["complete history suggestion", "right arrow at end of line"]
         )
         pairs.append(["previous match with current line", "up arrow"])
-        for functionality, key in [
+        for functionality, key in (
             (attr[:-4].replace("_", " "), getattr(self.config, attr))
             for attr in self.config.__dict__
             if attr.endswith("key")
-        ]:
+        ):
             if functionality in NOT_IMPLEMENTED:
                 key = "Not Implemented"
             if key == "":
@@ -2070,7 +2069,7 @@ def just_simple_events(event_list):
             simple_events.append("\n")
         elif isinstance(e, events.Event):
             pass  # ignore events
-        elif e == "<SPACE>":
+        elif e in ("<SPACE>",):
             simple_events.append(" ")
         elif len(e) > 1:
             pass  # get rid of <Ctrl-a> etc.

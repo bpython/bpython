@@ -393,7 +393,7 @@ class BPythonEdit(urwid.Edit):
         return False
 
     def keypress(self, size, key):
-        if urwid.command_map[key] in ["cursor up", "cursor down"]:
+        if urwid.command_map[key] in ("cursor up", "cursor down"):
             # Do not handle up/down arrow, leave them for the repl.
             return key
 
@@ -452,7 +452,7 @@ class BPythonListBox(urwid.ListBox):
     """
 
     def keypress(self, size, key):
-        if key not in ["up", "down"]:
+        if key not in ("up", "down"):
             return urwid.ListBox.keypress(self, size, key)
         return key
 

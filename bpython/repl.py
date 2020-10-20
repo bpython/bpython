@@ -21,7 +21,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
 import code
 import inspect
 import os
@@ -40,9 +39,7 @@ from enum import Enum
 
 from pygments.token import Token
 from pygments.lexers import Python3Lexer
-
-from . import autocomplete
-from . import inspection
+from . import autocomplete, inspection, simpleeval
 from .clipboard import get_clipboard, CopyFailed
 from .config import getpreferredencoding
 from .formatter import Parenthesis
@@ -51,7 +48,6 @@ from .lazyre import LazyReCompile
 from .paste import PasteHelper, PastePinnwand, PasteFailed
 from .patch_linecache import filename_for_console_input
 from .translations import _, ngettext
-from . import simpleeval
 
 
 class RuntimeTimer:
@@ -1206,7 +1202,7 @@ def next_token_inside_string(code_string, inside_string):
     for token, value in Python3Lexer().get_tokens(code_string):
         if token is Token.String:
             value = value.lstrip("bBrRuU")
-            if value in ['"""', "'''", '"', "'"]:
+            if value in ('"""', "'''", '"', "'"):
                 if not inside_string:
                     inside_string = value
                 elif value == inside_string:

@@ -87,7 +87,7 @@ class StatusBar(BpythonInteraction):
             for ee in e.events:
                 # strip control seq
                 self.add_normal_character(ee if len(ee) == 1 else ee[-1])
-        elif e in ["<ESC>"] or isinstance(e, events.SigIntEvent):
+        elif e == "<ESC>" or isinstance(e, events.SigIntEvent):
             self.request_context.switch(False)
             self.escape()
         elif e in edit_keys:
