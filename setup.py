@@ -99,7 +99,7 @@ if version == "unknown":
     try:
         # get version from existing version file
         with open(version_file) as vf:
-            version = vf.read().strip().split("=")[-1].replace("'", "")
+            version = vf.read().strip().split("=")[-1].replace("'", "").replace("\"", "")
         version = version.strip()
     except OSError:
         pass
