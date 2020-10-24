@@ -17,5 +17,5 @@ if [[ $RUN == nosetests ]]; then
     python setup.py install
 elif [[ $RUN == build_sphinx ]]; then
     # documentation specific dependencies
-    pip install 'sphinx >=1.1.3'
+    pip install 'sphinx >=1.5'
 fi

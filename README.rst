@@ -99,7 +99,7 @@ Dependencies
 * requests
 * curtsies >= 0.3.0
 * greenlet
-* Sphinx != 1.1.2 (optional, for the documentation)
+* Sphinx >= 1.5 (optional, for the documentation)
 * babel (optional, for internationalization)
 * watchdog (optional, for monitoring imported modules for changes)
 * jedi (optional, for experimental multiline completion)
