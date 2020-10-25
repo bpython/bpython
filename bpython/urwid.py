@@ -1120,13 +1120,13 @@ def main(args=None, locals_=None, banner=None):
     translations.init()
 
     def options_callback(group):
-        group.add_option(
+        group.add_argument(
             "--twisted",
             "-T",
             action="store_true",
             help=_("Run twisted reactor."),
         )
-        group.add_option(
+        group.add_argument(
             "--reactor",
             "-r",
             help=_(
@@ -1134,12 +1134,12 @@ def main(args=None, locals_=None, banner=None):
                 "Implies --twisted."
             ),
         )
-        group.add_option(
+        group.add_argument(
             "--help-reactors",
             action="store_true",
             help=_("List available reactors for -r."),
         )
-        group.add_option(
+        group.add_argument(
             "--plugin",
             "-p",
             help=_(
@@ -1147,10 +1147,10 @@ def main(args=None, locals_=None, banner=None):
                 'Use "--" to pass further options to the plugin.'
             ),
         )
-        group.add_option(
+        group.add_argument(
             "--server",
             "-s",
-            type="int",
+            type=int,
             help=_("Port to run an eval server on (forces Twisted)."),
         )
 

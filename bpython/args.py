@@ -29,20 +29,20 @@ import code
 import importlib.util
 import os
 import sys
-from optparse import OptionParser, OptionGroup
+import argparse
 
 from . import __version__, __copyright__
 from .config import default_config_path, loadini, Struct
 from .translations import _
 
 
-class OptionParserFailed(ValueError):
+class ArgumentParserFailed(ValueError):
     """Raised by the RaisingOptionParser for a bogus commandline."""
 
 
-class RaisingOptionParser(OptionParser):
+class RaisingArgumentParser(argparse.ArgumentParser):
     def error(self, msg):
-        raise OptionParserFailed()
+        raise ArgumentParserFailed()
 
 
 def version_banner(base="bpython"):
@@ -60,17 +60,17 @@ def copyright_banner():
 
 def parse(args, extras=None, ignore_stdin=False):
     """Receive an argument list - if None, use sys.argv - parse all args and
-    take appropriate action. Also receive optional extra options: this should
-    be a tuple of (title, description, options)
-        title:          The title for the option group
-        description:    A full description of the option group
-        callback:       A callback that adds options to the option group
+    take appropriate action. Also receive optional extra argument: this should
+    be a tuple of (title, description, callback)
+        title:          The title for the argument group
+        description:    A full description of the argument group
+        callback:       A callback that adds argument to the argument group
 
     e.g.:
 
     def callback(group):
-        group.add_option('-f', action='store_true', dest='f', help='Explode')
-        group.add_option('-l', action='store_true', dest='l', help='Love')
+        group.add_argument('-f', action='store_true', dest='f', help='Explode')
+        group.add_argument('-l', action='store_true', dest='l', help='Love')
 
     parse(
         ['-i', '-m', 'foo.py'],
@@ -82,43 +82,38 @@ def parse(args, extras=None, ignore_stdin=False):
     Return a tuple of (config, options, exec_args) wherein "config" is the
     config object either parsed from a default/specified config file or default
     config options, "options" is the parsed options from
-    OptionParser.parse_args, and "exec_args" are the args (if any) to be parsed
+    ArgumentParser.parse_args, and "exec_args" are the args (if any) to be parsed
     to the executed file (if any).
     """
     if args is None:
         args = sys.argv[1:]
 
-    parser = RaisingOptionParser(
+    parser = RaisingArgumentParser(
         usage=_(
-            "Usage: %prog [options] [file [args]]\n"
+            "Usage: %(prog)s [options] [file [args]]\n"
             "NOTE: If bpython sees an argument it does "
             "not know, execution falls back to the "
             "regular Python interpreter."
         )
     )
-    # This is not sufficient if bpython gains its own -m support
-    # (instead of falling back to Python itself for that).
-    # That's probably fixable though, for example by having that
-    # option swallow all remaining arguments in a callback.
-    parser.disable_interspersed_args()
-    parser.add_option(
+    parser.add_argument(
         "--config",
         default=default_config_path(),
         help=_("Use CONFIG instead of default config file."),
     )
-    parser.add_option(
+    parser.add_argument(
         "--interactive",
         "-i",
         action="store_true",
         help=_("Drop to bpython shell after running file instead of exiting."),
     )
-    parser.add_option(
+    parser.add_argument(
         "--quiet",
         "-q",
         action="store_true",
         help=_("Don't flush the output to stdout."),
     )
-    parser.add_option(
+    parser.add_argument(
         "--version",
         "-V",
         action="store_true",
@@ -126,12 +121,14 @@ def parse(args, extras=None, ignore_stdin=False):
     )
 
     if extras is not None:
-        extras_group = OptionGroup(parser, extras[0], extras[1])
+        extras_group = parser.add_argument_group(extras[0], extras[1])
         extras[2](extras_group)
-        parser.add_option_group(extras_group)
+
+    # collect all the remaining arguments into a list
+    parser.add_argument('args', nargs=argparse.REMAINDER)
 
     try:
-        options, args = parser.parse_args(args)
+        options = parser.parse_args(args)
     except OptionParserFailed:
         # Just let Python handle this
         os.execv(sys.executable, [sys.executable] + args)
@@ -149,7 +146,7 @@ def parse(args, extras=None, ignore_stdin=False):
     config = Struct()
     loadini(config, options.config)
 
-    return config, options, args
+    return config, options, options.args
 
 
 def exec_code(interpreter, args):
