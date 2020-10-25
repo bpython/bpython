@@ -134,13 +134,13 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
     translations.init()
 
     def curtsies_arguments(parser):
-        parser.add_argument(
+        parser.add_option(
             "--log",
             "-L",
             action="count",
             help=_("log debug messages to bpython.log"),
         )
-        parser.add_argument(
+        parser.add_option(
             "--paste",
             "-p",
             action="store_true",
