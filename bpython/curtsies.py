@@ -1,7 +1,6 @@
 import collections
 import logging
 import sys
-from optparse import Option
 
 import curtsies
 import curtsies.window
@@ -134,25 +133,26 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
     """
     translations.init()
 
+    def curtsies_arguments(parser):
+        parser.add_argument(
+            "--log",
+            "-L",
+            action="count",
+            help=_("log debug messages to bpython.log"),
+        )
+        parser.add_argument(
+            "--paste",
+            "-p",
+            action="store_true",
+            help=_("start by pasting lines of a file into session"),
+        )
+
     config, options, exec_args = bpargs.parse(
         args,
         (
             "curtsies options",
             None,
-            [
-                Option(
-                    "--log",
-                    "-L",
-                    action="count",
-                    help=_("log debug messages to bpython.log"),
-                ),
-                Option(
-                    "--paste",
-                    "-p",
-                    action="store_true",
-                    help=_("start by pasting lines of a file into session"),
-                ),
-            ],
+            curtsies_arguments,
         ),
     )
     if options.log is None:

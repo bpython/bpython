@@ -37,7 +37,6 @@ import os
 import time
 import locale
 import signal
-from optparse import Option
 
 from pygments.token import Token
 
@@ -1120,47 +1119,48 @@ class URWIDRepl(repl.Repl):
 def main(args=None, locals_=None, banner=None):
     translations.init()
 
+    def options_callback(group):
+        group.add_option(
+            "--twisted",
+            "-T",
+            action="store_true",
+            help=_("Run twisted reactor."),
+        )
+        group.add_option(
+            "--reactor",
+            "-r",
+            help=_(
+                "Select specific reactor (see --help-reactors). "
+                "Implies --twisted."
+            ),
+        )
+        group.add_option(
+            "--help-reactors",
+            action="store_true",
+            help=_("List available reactors for -r."),
+        )
+        group.add_option(
+            "--plugin",
+            "-p",
+            help=_(
+                "twistd plugin to run (use twistd for a list). "
+                'Use "--" to pass further options to the plugin.'
+            ),
+        )
+        group.add_option(
+            "--server",
+            "-s",
+            type="int",
+            help=_("Port to run an eval server on (forces Twisted)."),
+        )
+
     # TODO: maybe support displays other than raw_display?
     config, options, exec_args = bpargs.parse(
         args,
         (
             "Urwid options",
             None,
-            [
-                Option(
-                    "--twisted",
-                    "-T",
-                    action="store_true",
-                    help=_("Run twisted reactor."),
-                ),
-                Option(
-                    "--reactor",
-                    "-r",
-                    help=_(
-                        "Select specific reactor (see --help-reactors). "
-                        "Implies --twisted."
-                    ),
-                ),
-                Option(
-                    "--help-reactors",
-                    action="store_true",
-                    help=_("List available reactors for -r."),
-                ),
-                Option(
-                    "--plugin",
-                    "-p",
-                    help=_(
-                        "twistd plugin to run (use twistd for a list). "
-                        'Use "--" to pass further options to the plugin.'
-                    ),
-                ),
-                Option(
-                    "--server",
-                    "-s",
-                    type="int",
-                    help=_("Port to run an eval server on (forces Twisted)."),
-                ),
-            ],
+            options_callback,
         ),
     )
 

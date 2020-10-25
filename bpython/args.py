@@ -64,17 +64,19 @@ def parse(args, extras=None, ignore_stdin=False):
     be a tuple of (title, description, options)
         title:          The title for the option group
         description:    A full description of the option group
-        options:        A list of optparse.Option objects to be added to the
-                        group
+        callback:       A callback that adds options to the option group
 
     e.g.:
+
+    def callback(group):
+        group.add_option('-f', action='store_true', dest='f', help='Explode')
+        group.add_option('-l', action='store_true', dest='l', help='Love')
 
     parse(
         ['-i', '-m', 'foo.py'],
         ('Front end-specific options',
         'A full description of what these options are for',
-        [optparse.Option('-f', action='store_true', dest='f', help='Explode'),
-        optparse.Option('-l', action='store_true', dest='l', help='Love')]))
+        callback))
 
 
     Return a tuple of (config, options, exec_args) wherein "config" is the
@@ -125,8 +127,7 @@ def parse(args, extras=None, ignore_stdin=False):
 
     if extras is not None:
         extras_group = OptionGroup(parser, extras[0], extras[1])
-        for option in extras[2]:
-            extras_group.add_option(option)
+        extras[2](extras_group)
         parser.add_option_group(extras_group)
 
     try:
