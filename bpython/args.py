@@ -129,7 +129,7 @@ def parse(args, extras=None, ignore_stdin=False):
 
     try:
         options = parser.parse_args(args)
-    except OptionParserFailed:
+    except ArgumentParserFailed:
         # Just let Python handle this
         os.execv(sys.executable, [sys.executable] + args)
 
