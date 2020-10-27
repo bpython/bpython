@@ -139,7 +139,8 @@ def simple_eval(node_or_string, namespace=None):
             left = _convert(node.left)
             right = _convert(node.right)
             if not (
-                type(left) in _numeric_types and type(right) in _numeric_types
+                isinstance(left, _numeric_types)
+                and isinstance(right, _numeric_types)
             ):
                 raise ValueError("binary + and - only allowed on builtin nums")
             if isinstance(node.op, ast.Add):
