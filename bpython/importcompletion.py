@@ -20,6 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import fnmatch
+import os
+import sys
+import warnings
+import importlib.machinery
 
 from .line import (
     current_word,
@@ -27,12 +32,6 @@ from .line import (
     current_from_import_from,
     current_from_import_import,
 )
-
-import fnmatch
-import os
-import sys
-import warnings
-import importlib.machinery
 
 SUFFIXES = importlib.machinery.all_suffixes()
 

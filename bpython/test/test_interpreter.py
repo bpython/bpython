@@ -1,6 +1,5 @@
 import sys
 import re
-from textwrap import dedent
 
 from curtsies.fmtfuncs import bold, green, magenta, cyan, red, plain
 

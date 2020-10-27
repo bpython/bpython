@@ -1,5 +1,4 @@
 import itertools
-import os
 import pydoc
 import string
 import sys

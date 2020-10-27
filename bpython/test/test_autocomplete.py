@@ -1,12 +1,7 @@
-from collections import namedtuple
 import inspect
 import keyword
-import sys
-
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
+import unittest
+from collections import namedtuple
 
 try:
     import jedi
