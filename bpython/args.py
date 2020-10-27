@@ -125,7 +125,13 @@ def parse(args, extras=None, ignore_stdin=False):
         extras[2](extras_group)
 
     # collect all the remaining arguments into a list
-    parser.add_argument('args', nargs=argparse.REMAINDER)
+    parser.add_argument(
+        "args",
+        nargs=argparse.REMAINDER,
+        help=_(
+            "File to extecute and additional arguments passed on to the executed script."
+        ),
+    )
 
     try:
         options = parser.parse_args(args)

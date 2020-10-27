@@ -150,14 +150,14 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
     config, options, exec_args = bpargs.parse(
         args,
         (
-            "curtsies options",
-            None,
+            _("curtsies arguments"),
+            _("Additional arguments specific to the curtsies-based REPL."),
             curtsies_arguments,
         ),
     )
     if options.log is None:
         options.log = 0
-    logging_levels = [logging.ERROR, logging.INFO, logging.DEBUG]
+    logging_levels = (logging.ERROR, logging.INFO, logging.DEBUG)
     level = logging_levels[min(len(logging_levels) - 1, options.log)]
     logging.getLogger("curtsies").setLevel(level)
     logging.getLogger("bpython").setLevel(level)
