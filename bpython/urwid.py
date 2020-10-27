@@ -1,4 +1,3 @@
-#
 # The MIT License
 #
 # Copyright (c) 2010-2011 Marien Zwart
@@ -38,15 +37,11 @@ import locale
 import signal
 import urwid
 
-from pygments.token import Token
-
 from . import args as bpargs, repl, translations
 from .formatter import theme_map
 from .importcompletion import find_coroutine
 from .translations import _
 from .keys import urwid_key_dispatch as key_dispatch
-
-Parenthesis = Token.Punctuation.Parenthesis
 
 # Urwid colors are:
 # 'black', 'dark red', 'dark green', 'brown', 'dark blue',
@@ -147,7 +142,7 @@ class StatusbarEdit(urwid.Edit):
 
     def __init__(self, *args, **kwargs):
         self.single = False
-        urwid.Edit.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def keypress(self, size, key):
         if self.single:
@@ -155,14 +150,13 @@ class StatusbarEdit(urwid.Edit):
         elif key == "enter":
             urwid.emit_signal(self, "prompt_enter", self, self.get_edit_text())
         else:
-            return urwid.Edit.keypress(self, size, key)
+            return super().keypress(size, key)
 
 
 urwid.register_signal(StatusbarEdit, "prompt_enter")
 
 
 class Statusbar:
-
     """Statusbar object, ripped off from bpython.cli.
 
     This class provides the status bar at the bottom of the screen.
@@ -290,7 +284,6 @@ def format_tokens(tokensource):
 
 
 class BPythonEdit(urwid.Edit):
-
     """Customized editor *very* tightly interwoven with URWIDRepl.
 
     Changes include:
@@ -322,10 +315,10 @@ class BPythonEdit(urwid.Edit):
         self._bpy_may_move_cursor = False
         self.config = config
         self.tab_length = config.tab_length
-        urwid.Edit.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def set_edit_pos(self, pos):
-        urwid.Edit.set_edit_pos(self, pos)
+        super().set_edit_pos(pos)
         self._emit("edit-pos-changed", self.edit_pos)
 
     def get_edit_pos(self):
@@ -366,7 +359,7 @@ class BPythonEdit(urwid.Edit):
         # urwid gets confused if a nonselectable widget has a cursor position.
         if not self._bpy_selectable:
             return None
-        return urwid.Edit.get_cursor_coords(self, *args, **kwargs)
+        return super().get_cursor_coords(*args, **kwargs)
 
     def render(self, size, focus=False):
         # XXX I do not want to have to do this, but listbox gets confused
@@ -374,17 +367,17 @@ class BPythonEdit(urwid.Edit):
         # we just became unselectable, then having this render a cursor)
         if not self._bpy_selectable:
             focus = False
-        return urwid.Edit.render(self, size, focus=focus)
+        return super().render(size, focus=focus)
 
     def get_pref_col(self, size):
         # Need to make this deal with us being nonselectable
         if not self._bpy_selectable:
             return "left"
-        return urwid.Edit.get_pref_col(self, size)
+        return super().get_pref_col(size)
 
     def move_cursor_to_coords(self, *args):
         if self._bpy_may_move_cursor:
-            return urwid.Edit.move_cursor_to_coords(self, *args)
+            return super().move_cursor_to_coords(*args)
         return False
 
     def keypress(self, size, key):
@@ -425,10 +418,10 @@ class BPythonEdit(urwid.Edit):
                 if not (cpos or len(line) % self.tab_length or line.strip()):
                     self.set_edit_text(line[: -self.tab_length])
                 else:
-                    return urwid.Edit.keypress(self, size, key)
+                    return super().keypress(size, key)
             else:
                 # TODO: Add in specific keypress fetching code here
-                return urwid.Edit.keypress(self, size, key)
+                return super().keypress(size, key)
             return None
         finally:
             self._bpy_may_move_cursor = False
@@ -436,7 +429,7 @@ class BPythonEdit(urwid.Edit):
     def mouse_event(self, *args):
         self._bpy_may_move_cursor = True
         try:
-            return urwid.Edit.mouse_event(self, *args)
+            return super().mouse_event(*args)
         finally:
             self._bpy_may_move_cursor = False
 
@@ -453,7 +446,6 @@ class BPythonListBox(urwid.ListBox):
 
 
 class Tooltip(urwid.BoxWidget):
-
     """Container inspired by Overlay to position our tooltip.
 
     bottom_w should be a BoxWidget.
@@ -466,7 +458,7 @@ class Tooltip(urwid.BoxWidget):
     """
 
     def __init__(self, bottom_w, listbox):
-        self.__super.__init__()
+        super().__init__()
 
         self.bottom_w = bottom_w
         self.listbox = listbox
@@ -534,7 +526,7 @@ class Tooltip(urwid.BoxWidget):
 
 class URWIDInteraction(repl.Interaction):
     def __init__(self, config, statusbar, frame):
-        repl.Interaction.__init__(self, config, statusbar)
+        super().__init__(config, statusbar)
         self.frame = frame
         urwid.connect_signal(statusbar, "prompt_result", self._prompt_result)
         self.callback = None
@@ -577,7 +569,7 @@ class URWIDRepl(repl.Repl):
     _time_between_redraws = 0.05  # seconds
 
     def __init__(self, event_loop, palette, interpreter, config):
-        repl.Repl.__init__(self, interpreter, config)
+        super().__init__(interpreter, config)
 
         self._redraw_handle = None
         self._redraw_pending = False
