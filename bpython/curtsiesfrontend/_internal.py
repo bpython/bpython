@@ -21,9 +21,7 @@
 # THE SOFTWARE.
 
 import pydoc
-
 import bpython._internal
-from bpython.repl import getpreferredencoding
 
 
 class NopPydocPager:

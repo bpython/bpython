@@ -31,24 +31,20 @@ This steals many things from bpython's "cli" backend.
 This is still *VERY* rough.
 """
 
-import builtins
 import sys
 import os
 import time
 import locale
 import signal
+import urwid
 
 from pygments.token import Token
 
 from . import args as bpargs, repl, translations
-from .config import getpreferredencoding
 from .formatter import theme_map
 from .importcompletion import find_coroutine
 from .translations import _
-
 from .keys import urwid_key_dispatch as key_dispatch
-
-import urwid
 
 Parenthesis = Token.Punctuation.Parenthesis
 

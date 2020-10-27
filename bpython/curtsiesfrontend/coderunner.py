@@ -11,12 +11,10 @@ makes more sense to you.
 """
 
 import code
-import signal
 import greenlet
 import logging
+import signal
 import threading
-
-from bpython.config import getpreferredencoding
 
 logger = logging.getLogger(__name__)
 

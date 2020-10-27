@@ -1,6 +1,6 @@
 # The MIT License
 #
-# Copyright (c) 2014-2015 Sebastian Ramacher
+# Copyright (c) 2014-2020 Sebastian Ramacher
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
-from locale import getpreferredencoding
-from urllib.parse import quote as urlquote, urljoin, urlparse
-from string import Template
 import errno
 import requests
 import subprocess
 import unicodedata
+
+from locale import getpreferredencoding
+from urllib.parse import urljoin, urlparse
 
 from .translations import _
 
