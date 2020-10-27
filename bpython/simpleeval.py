@@ -28,7 +28,6 @@ In order to provide fancy completion, some code can be executed safely.
 
 
 import ast
-import inspect
 import sys
 import builtins
 
