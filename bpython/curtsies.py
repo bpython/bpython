@@ -21,10 +21,6 @@ from .repl import extract_exit_value
 logger = logging.getLogger(__name__)
 
 
-repl = None  # global for `from bpython.curtsies import repl`
-# WARNING Will be a problem if more than one repl is ever instantiated this way
-
-
 class FullCurtsiesRepl(BaseRepl):
     def __init__(self, config, locals_, banner, interp=None):
         self.input_generator = curtsies.input.Input(
@@ -197,7 +193,6 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
     if banner is not None:
         print(banner)
 
-    global repl
     repl = FullCurtsiesRepl(config, locals_, welcome_message, interp)
     try:
         with repl.input_generator:
