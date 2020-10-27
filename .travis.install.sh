@@ -7,6 +7,8 @@ pip install setuptools
 if [[ $RUN == nosetests ]]; then
     # core dependencies
     pip install -r requirements.txt
+    # urwid specific dependencies
+    pip install urwid twisted
     # filewatch specific dependencies
     pip install watchdog
     # jedi specific dependencies
