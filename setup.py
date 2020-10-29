@@ -10,10 +10,7 @@ from setuptools import setup
 from setuptools.command.install import install as _install
 
 try:
-    from babel.messages.frontend import compile_catalog as _compile_catalog
-    from babel.messages.frontend import extract_messages as _extract_messages
-    from babel.messages.frontend import update_catalog as _update_catalog
-    from babel.messages.frontend import init_catalog as _init_catalog
+    from babel.messages import frontend as babel
 
     using_translations = True
 except ImportError:
@@ -136,52 +133,12 @@ translations_dir = os.path.join(package_dir, "translations")
 
 # localization options
 if using_translations:
-
-    class compile_catalog(_compile_catalog):
-        def initialize_options(self):
-            """Simply set default domain and directory attributes to the
-            correct path for bpython."""
-            _compile_catalog.initialize_options(self)
-
-            self.domain = "bpython"
-            self.directory = translations_dir
-            self.use_fuzzy = True
-
-    class update_catalog(_update_catalog):
-        def initialize_options(self):
-            """Simply set default domain and directory attributes to the
-            correct path for bpython."""
-            _update_catalog.initialize_options(self)
-
-            self.domain = "bpython"
-            self.output_dir = translations_dir
-            self.input_file = os.path.join(translations_dir, "bpython.pot")
-
-    class extract_messages(_extract_messages):
-        def initialize_options(self):
-            """Simply set default domain and output file attributes to the
-            correct values for bpython."""
-            _extract_messages.initialize_options(self)
-
-            self.domain = "bpython"
-            self.output_file = os.path.join(translations_dir, "bpython.pot")
-
-    class init_catalog(_init_catalog):
-        def initialize_options(self):
-            """Simply set default domain, input file and output directory
-            attributes to the correct values for bpython."""
-            _init_catalog.initialize_options(self)
-
-            self.domain = "bpython"
-            self.output_dir = translations_dir
-            self.input_file = os.path.join(translations_dir, "bpython.pot")
-
     build.sub_commands.insert(0, ("compile_catalog", None))
 
-    cmdclass["compile_catalog"] = compile_catalog
-    cmdclass["extract_messages"] = extract_messages
-    cmdclass["update_catalog"] = update_catalog
-    cmdclass["init_catalog"] = init_catalog
+    cmdclass["compile_catalog"] = babel.compile_catalog
+    cmdclass["extract_messages"] = babel.extract_messages
+    cmdclass["update_catalog"] = babel.update_catalog
+    cmdclass["init_catalog"] = babel.init_catalog
 
 if using_sphinx:
 
