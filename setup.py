@@ -122,7 +122,7 @@ class install(_install):
 
     def run(self):
         self.run_command("build")
-        _install.run(self)
+        super().run()
 
 
 cmdclass = {"build": build, "install": install}
@@ -144,7 +144,7 @@ if using_sphinx:
 
     class BuildDocMan(BuildDoc):
         def initialize_options(self):
-            BuildDoc.initialize_options(self)
+            super().initialize_options()
             self.builder = "man"
             self.source_dir = "doc/sphinx/source"
             self.build_dir = "build"
