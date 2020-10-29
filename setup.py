@@ -132,18 +132,10 @@ if using_translations:
     cmdclass["init_catalog"] = babel.init_catalog
 
 if using_sphinx:
-
-    class BuildDocMan(BuildDoc):
-        def initialize_options(self):
-            super().initialize_options()
-            self.builder = "man"
-            self.source_dir = "doc/sphinx/source"
-            self.build_dir = "build"
-
     build.sub_commands.insert(0, ("build_sphinx_man", None))
-    cmdclass["build_sphinx_man"] = BuildDocMan
+    cmdclass["build_sphinx_man"] = BuildDoc
 
-    if platform.system() in ["FreeBSD", "OpenBSD"]:
+    if platform.system() in ("FreeBSD", "OpenBSD"):
         man_dir = "man"
     else:
         man_dir = "share/man"
