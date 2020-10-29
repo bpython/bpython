@@ -127,7 +127,7 @@ class install(_install):
 
 cmdclass = {"build": build, "install": install}
 
-from bpython import package_dir
+from bpython import package_dir, __author__
 
 translations_dir = os.path.join(package_dir, "translations")
 
@@ -227,7 +227,7 @@ for language in os.listdir(translations_dir):
 setup(
     name="bpython",
     version=version,
-    author="Bob Farrell, Andreas Stuehrk et al.",
+    author=__author__,
     author_email="robertanthonyfarrell@gmail.com",
     description="Fancy Interface to the Python Interpreter",
     license="MIT/X",
