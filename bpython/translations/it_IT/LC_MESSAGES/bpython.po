@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: bpython 0.9.7\n"
 "Report-Msgid-Bugs-To: http://github.com/bpython/bpython/issues\n"
-"POT-Creation-Date: 2020-10-13 21:53+0200\n"
+"POT-Creation-Date: 2020-10-29 12:28+0100\n"
 "PO-Revision-Date: 2015-02-02 00:34+0100\n"
 "Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language: it_IT\n"
@@ -18,34 +18,41 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.8.0\n"
 
-#: bpython/args.py:63
+#: bpython/args.py:92
+#, python-format
 msgid ""
-"Usage: %prog [options] [file [args]]\n"
+"Usage: %(prog)s [options] [file [args]]\n"
 "NOTE: If bpython sees an argument it does not know, execution falls back "
 "to the regular Python interpreter."
 msgstr ""
 
-#: bpython/args.py:78
+#: bpython/args.py:102
 msgid "Use CONFIG instead of default config file."
 msgstr ""
 
-#: bpython/args.py:84
+#: bpython/args.py:108
 msgid "Drop to bpython shell after running file instead of exiting."
 msgstr ""
 
-#: bpython/args.py:92
+#: bpython/args.py:114
 msgid "Don't flush the output to stdout."
 msgstr ""
 
-#: bpython/args.py:98
+#: bpython/args.py:120
 msgid "Print version and exit."
 msgstr ""
 
-#: bpython/cli.py:315 bpython/urwid.py:551
+#: bpython/args.py:131
+msgid ""
+"File to extecute and additional arguments passed on to the executed "
+"script."
+msgstr ""
+
+#: bpython/cli.py:315 bpython/urwid.py:538
 msgid "y"
 msgstr "s"
 
-#: bpython/cli.py:315 bpython/urwid.py:551
+#: bpython/cli.py:315 bpython/urwid.py:538
 msgid "yes"
 msgstr "si"
 
@@ -76,242 +83,250 @@ msgid ""
 " future version."
 msgstr ""
 
-#: bpython/curtsies.py:147
+#: bpython/curtsies.py:137
 msgid "log debug messages to bpython.log"
 msgstr ""
 
-#: bpython/curtsies.py:153
+#: bpython/curtsies.py:143
 msgid "start by pasting lines of a file into session"
 msgstr ""
 
-#: bpython/history.py:226
+#: bpython/curtsies.py:149
+msgid "curtsies arguments"
+msgstr ""
+
+#: bpython/curtsies.py:150
+msgid "Additional arguments specific to the curtsies-based REPL."
+msgstr ""
+
+#: bpython/history.py:224
 #, python-format
 msgid "Error occurred while writing to file %s (%s)"
 msgstr ""
 
-#: bpython/paste.py:86
+#: bpython/paste.py:85
 msgid "Helper program not found."
 msgstr ""
 
-#: bpython/paste.py:88
+#: bpython/paste.py:87
 msgid "Helper program could not be run."
 msgstr ""
 
-#: bpython/paste.py:94
+#: bpython/paste.py:93
 #, python-format
 msgid "Helper program returned non-zero exit status %d."
 msgstr ""
 
-#: bpython/paste.py:99
+#: bpython/paste.py:98
 msgid "No output from helper program."
 msgstr ""
 
-#: bpython/paste.py:106
+#: bpython/paste.py:105
 msgid "Failed to recognize the helper program's output as an URL."
 msgstr ""
 
-#: bpython/repl.py:657
+#: bpython/repl.py:653
 msgid "Nothing to get source of"
 msgstr ""
 
-#: bpython/repl.py:662
+#: bpython/repl.py:658
 #, python-format
 msgid "Cannot get source: %s"
 msgstr ""
 
-#: bpython/repl.py:667
+#: bpython/repl.py:663
 #, python-format
 msgid "Cannot access source of %r"
 msgstr ""
 
-#: bpython/repl.py:669
+#: bpython/repl.py:665
 #, python-format
 msgid "No source code found for %s"
 msgstr ""
 
-#: bpython/repl.py:823
+#: bpython/repl.py:820
 msgid "Save to file (Esc to cancel): "
 msgstr ""
 
-#: bpython/repl.py:825 bpython/repl.py:828 bpython/repl.py:852
+#: bpython/repl.py:822 bpython/repl.py:825 bpython/repl.py:849
 msgid "Save cancelled."
 msgstr ""
 
-#: bpython/repl.py:839
+#: bpython/repl.py:836
 #, python-format
 msgid "%s already exists. Do you want to (c)ancel,  (o)verwrite or (a)ppend? "
 msgstr ""
 
-#: bpython/repl.py:847
+#: bpython/repl.py:844
 msgid "overwrite"
 msgstr ""
 
-#: bpython/repl.py:849
+#: bpython/repl.py:846
 msgid "append"
 msgstr ""
 
-#: bpython/repl.py:861 bpython/repl.py:1171
+#: bpython/repl.py:858 bpython/repl.py:1168
 #, python-format
 msgid "Error writing file '%s': %s"
 msgstr ""
 
-#: bpython/repl.py:863
+#: bpython/repl.py:860
 #, python-format
 msgid "Saved to %s."
 msgstr ""
 
-#: bpython/repl.py:869
+#: bpython/repl.py:866
 msgid "No clipboard available."
 msgstr ""
 
-#: bpython/repl.py:876
+#: bpython/repl.py:873
 msgid "Could not copy to clipboard."
 msgstr ""
 
-#: bpython/repl.py:878
+#: bpython/repl.py:875
 msgid "Copied content to clipboard."
 msgstr ""
 
-#: bpython/repl.py:887
+#: bpython/repl.py:884
 msgid "Pastebin buffer? (y/N) "
 msgstr ""
 
-#: bpython/repl.py:889
+#: bpython/repl.py:886
 msgid "Pastebin aborted."
 msgstr ""
 
-#: bpython/repl.py:897
+#: bpython/repl.py:894
 #, python-format
 msgid "Duplicate pastebin. Previous URL: %s. Removal URL: %s"
 msgstr ""
 
-#: bpython/repl.py:903
+#: bpython/repl.py:900
 msgid "Posting data to pastebin..."
 msgstr ""
 
-#: bpython/repl.py:907
+#: bpython/repl.py:904
 #, python-format
 msgid "Upload failed: %s"
 msgstr ""
 
-#: bpython/repl.py:916
+#: bpython/repl.py:913
 #, python-format
 msgid "Pastebin URL: %s - Removal URL: %s"
 msgstr ""
 
-#: bpython/repl.py:921
+#: bpython/repl.py:918
 #, python-format
 msgid "Pastebin URL: %s"
 msgstr ""
 
-#: bpython/repl.py:960
+#: bpython/repl.py:957
 #, python-format
 msgid "Undo how many lines? (Undo will take up to ~%.1f seconds) [1]"
 msgstr ""
 
-#: bpython/repl.py:968 bpython/repl.py:972
+#: bpython/repl.py:965 bpython/repl.py:969
 msgid "Undo canceled"
 msgstr ""
 
-#: bpython/repl.py:975
+#: bpython/repl.py:972
 #, python-format
 msgid "Undoing %d line... (est. %.1f seconds)"
 msgid_plural "Undoing %d lines... (est. %.1f seconds)"
 msgstr[0] ""
 msgstr[1] ""
 
-#: bpython/repl.py:1151
+#: bpython/repl.py:1148
 msgid "Config file does not exist - create new from default? (y/N)"
 msgstr ""
 
-#: bpython/repl.py:1181
+#: bpython/repl.py:1178
 msgid "bpython config file edited. Restart bpython for changes to take effect."
 msgstr ""
 
-#: bpython/repl.py:1187
+#: bpython/repl.py:1184
 #, python-format
 msgid "Error editing config file: %s"
 msgstr ""
 
-#: bpython/urwid.py:618
+#: bpython/urwid.py:605
 #, python-format
 msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
 msgstr " <%s> Rewind  <%s> Salva  <%s> Pastebin  <%s> Pager  <%s> Mostra Sorgente"
 
-#: bpython/urwid.py:1136
+#: bpython/urwid.py:1115
 msgid "Run twisted reactor."
 msgstr ""
 
-#: bpython/urwid.py:1141
+#: bpython/urwid.py:1120
 msgid "Select specific reactor (see --help-reactors). Implies --twisted."
 msgstr ""
 
-#: bpython/urwid.py:1149
+#: bpython/urwid.py:1128
 msgid "List available reactors for -r."
 msgstr ""
 
-#: bpython/urwid.py:1154
+#: bpython/urwid.py:1133
 msgid ""
 "twistd plugin to run (use twistd for a list). Use \"--\" to pass further "
 "options to the plugin."
 msgstr ""
 
-#: bpython/urwid.py:1163
+#: bpython/urwid.py:1142
 msgid "Port to run an eval server on (forces Twisted)."
 msgstr ""
 
-#: bpython/urwid.py:1350
+#: bpython/urwid.py:1336
 msgid ""
 "WARNING: You are using `bpython-urwid`, the urwid backend for `bpython`. "
 "This backend has been deprecated in version 0.19 and might disappear in a"
 " future version."
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:340
+#: bpython/curtsiesfrontend/repl.py:343
 msgid "Welcome to bpython!"
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:342
+#: bpython/curtsiesfrontend/repl.py:345
 #, python-format
 msgid "Press <%s> for help."
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:671
+#: bpython/curtsiesfrontend/repl.py:674
 #, python-format
 msgid "Executing PYTHONSTARTUP failed: %s"
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:689
+#: bpython/curtsiesfrontend/repl.py:692
 #, python-format
 msgid "Reloaded at %s because %s modified."
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:998
+#: bpython/curtsiesfrontend/repl.py:1001
 msgid "Session not reevaluated because it was not edited"
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:1013
+#: bpython/curtsiesfrontend/repl.py:1016
 msgid "Session not reevaluated because saved file was blank"
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:1023
+#: bpython/curtsiesfrontend/repl.py:1026
 msgid "Session edited and reevaluated"
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:1034
+#: bpython/curtsiesfrontend/repl.py:1037
 #, python-format
 msgid "Reloaded at %s by user."
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:1040
+#: bpython/curtsiesfrontend/repl.py:1043
 msgid "Auto-reloading deactivated."
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:1045
+#: bpython/curtsiesfrontend/repl.py:1048
 msgid "Auto-reloading active, watching for file changes..."
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:1051
+#: bpython/curtsiesfrontend/repl.py:1054
 msgid "Auto-reloading not available because watchdog not installed."
 msgstr ""
 
