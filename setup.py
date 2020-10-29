@@ -7,7 +7,6 @@ import subprocess
 
 from distutils.command.build import build
 from setuptools import setup
-from setuptools.command.install import install as _install
 
 try:
     from babel.messages import frontend as babel
@@ -117,15 +116,7 @@ with open(version_file, "w") as vf:
     vf.write(f"__version__ = \"{version}\"\n")
 
 
-class install(_install):
-    """Force install to run build target."""
-
-    def run(self):
-        self.run_command("build")
-        super().run()
-
-
-cmdclass = {"build": build, "install": install}
+cmdclass = {"build": build}
 
 from bpython import package_dir, __author__
 
