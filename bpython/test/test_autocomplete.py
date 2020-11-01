@@ -409,7 +409,7 @@ class TestGlobalCompletion(unittest.TestCase):
 
     def test_completions_are_unicode(self):
         for m in self.com.matches(1, "a", locals_={"abc": 10}):
-            self.assertIsInstance(m, type(""))
+            self.assertIsInstance(m, str)
 
     def test_mock_kwlist(self):
         with mock.patch.object(keyword, "kwlist", new=["abcd"]):

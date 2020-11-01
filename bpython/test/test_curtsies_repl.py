@@ -405,7 +405,7 @@ class TestCurtsiesPagerText(TestCase):
         self.repl.pager = self.assert_pager_gets_unicode
 
     def assert_pager_gets_unicode(self, text):
-        self.assertIsInstance(text, type(""))
+        self.assertIsInstance(text, str)
 
     def test_help(self):
         self.repl.pager(self.repl.help_text())
