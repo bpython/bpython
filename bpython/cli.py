@@ -916,11 +916,11 @@ class CLIRepl(repl.Repl):
             # Redraw (as there might have been highlighted parens)
             self.print_line(self.s)
 
-        elif key in ("KEY_NPAGE"):  # page_down
+        elif key in ("KEY_NPAGE",):  # page_down
             self.hend()
             self.print_line(self.s)
 
-        elif key in ("KEY_PPAGE"):  # page_up
+        elif key in ("KEY_PPAGE",):  # page_up
             self.hbegin()
             self.print_line(self.s)
 
