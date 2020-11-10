@@ -13,6 +13,12 @@ New features:
 Fixes:
 * #857: Replace remaining use of deprecated imp with importlib
 
+0.20.1
+------
+
+Fixes:
+* Fix check of key code (fixes #859)
+
 0.20
 ----
 
