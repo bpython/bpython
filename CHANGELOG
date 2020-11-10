@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.20.1
+------
+
+Fixes:
+* Fix check of key code (fixes #859)
+ 
 0.20
 ----
 
