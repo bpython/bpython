@@ -225,7 +225,7 @@ classifiers = [
 install_requires = [
     "pygments",
     "requests",
-    "curtsies >=0.3.0",
+    "curtsies >=0.3.3",
     "greenlet",
     "six >=1.5",
     "wcwidth",
