@@ -4,8 +4,8 @@
 .. image:: https://travis-ci.org/bpython/bpython.svg?branch=master
     :target: https://travis-ci.org/bpython/bpython
 
-.. image:: https://readthedocs.org/projects/pinnwand/badge/?version=latest
-    :target: https://pinnwand.readthedocs.io/en/latest/
+.. image:: https://readthedocs.org/projects/bpython/badge/?version=latest
+    :target: https://docs.bpython-interpreter.org/en/latest/
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/ambv/black
