@@ -55,7 +55,7 @@ def version_banner(base="bpython"):
 
 
 def copyright_banner():
-    return "{} See AUTHORS for details.".format(__copyright__)
+    return "{} See AUTHORS.rst for details.".format(__copyright__)
 
 
 def parse(args, extras=None, ignore_stdin=False):

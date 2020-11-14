@@ -1,6 +1,6 @@
 include .pycheckrc
-include AUTHORS
-include CHANGELOG
+include AUTHORS.rst
+include CHANGELOG.rst
 include LICENSE
 include data/bpython.png
 include data/org.bpython-interpreter.bpython.desktop
