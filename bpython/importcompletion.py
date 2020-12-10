@@ -42,7 +42,18 @@ modules = set()
 paths = set()
 # Patterns to skip
 # TODO: This skiplist should be configurable.
-skiplist = (".git", ".config", ".local", ".share", "node_modules")
+skiplist = (
+    # version tracking
+    ".git", ".svn", ".hg"
+    # XDG
+    ".config", ".local", ".share",
+    # nodejs
+    "node_modules",
+    # PlayOnLinux
+    "PlayOnLinux's virtual drives",
+    # wine
+    "dosdevices",
+)
 fully_loaded = False
 
 
