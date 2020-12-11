@@ -28,16 +28,6 @@ try:
 except ImportError:
     have_urwid = False
 
-try:
-    from nose.plugins.attrib import attr
-except ImportError:
-
-    def attr(*args, **kwargs):
-        def identity(func):
-            return func
-
-        return identity
-
 
 def set_win_size(fd, rows, columns):
     s = struct.pack("HHHH", rows, columns, 0, 0)
@@ -109,7 +99,6 @@ class CrashersTest:
         )
         return result
 
-    @attr(speed="slow")
     def test_issue108(self):
         input = textwrap.dedent(
             """\
@@ -121,7 +110,6 @@ class CrashersTest:
         deferred = self.run_bpython(input)
         return deferred.addCallback(self.check_no_traceback)
 
-    @attr(speed="slow")
     def test_issue133(self):
         input = textwrap.dedent(
             """\

@@ -7,18 +7,7 @@ from textwrap import dedent
 from bpython import args
 from bpython.test import FixLanguageTestCase as TestCase, unittest
 
-try:
-    from nose.plugins.attrib import attr
-except ImportError:
 
-    def attr(*args, **kwargs):
-        def identity(func):
-            return func
-
-        return identity
-
-
-@attr(speed="slow")
 class TestExecArgs(unittest.TestCase):
     def test_exec_dunder_file(self):
         with tempfile.NamedTemporaryFile(mode="w") as f:
