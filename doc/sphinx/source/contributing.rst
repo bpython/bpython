@@ -47,7 +47,7 @@ Next install your development copy of bpython and its dependencies:
     # install optional dependencies
     $ pip install watchdog urwid
     # development dependencies
-    $ pip install sphinx nose
+    $ pip install sphinx pytest
     <modify a file in some way>
     # this runs your modified copy of bpython!
     $ bpython
@@ -62,7 +62,7 @@ Next install your development copy of bpython and its dependencies:
 
         $ sudp apt install python3-greenlet python3-pygments python3-requests
         $ sudo apt install python3-watchdog python3-urwid
-        $ sudo apt install python3-sphinx python3-nose
+        $ sudo apt install python3-sphinx python3-pytest
 
     You also need to run `virtualenv` with `--system-site-packages` packages, if
     you want to use the packages provided by your distribution.
@@ -83,14 +83,8 @@ To run tests from the bpython directory:
 
 .. code-block:: bash
 
-    $ nosetests
+    $ pytest
 
-If you want to skip test cases that are known to be slow, run `nosetests` in
-the following way:
-
-.. code-block:: bash
-
-    $ nosetests -A "speed != 'slow'"
 
 Building the documentation
 --------------------------
