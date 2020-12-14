@@ -1,9 +1,6 @@
 .. image:: https://img.shields.io/pypi/v/bpython
     :target: https://pypi.org/project/bpython
 
-.. image:: https://travis-ci.org/bpython/bpython.svg?branch=master
-    :target: https://travis-ci.org/bpython/bpython
-
 .. image:: https://readthedocs.org/projects/bpython/badge/?version=latest
     :target: https://docs.bpython-interpreter.org/en/latest/
 
