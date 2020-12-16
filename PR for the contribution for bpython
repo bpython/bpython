@@ -1,0 +1,140 @@
+diff --git a/README.rst b/README.rst
+index ad90007..380ec8e 100644
+--- a/README.rst
++++ b/README.rst
+@@ -45,6 +45,10 @@ You can find more about bpython - including `full documentation`_ - at our
+ ==========================
+ Installation & Basic Usage
+ ==========================
++
++Installation using Pip
++----------------------
++
+ If you have `pip`_ installed, you can simply run:
+ 
+ .. code-block:: bash
+@@ -55,6 +59,58 @@ Start bpython by typing ``bpython`` in your terminal. You can exit bpython by
+ using the ``exit()`` command or by pressing control-D like regular interactive
+ Python.
+ 
++Installation via OS Package Manager
++-----------------------------------
++
++The majority of operating system of desktop computers comes with a package
++manager system, if you are any user of them, you can install ``bpython``
++using the package manager.
++
++Ubuntu/Debian
++~~~~~~~~~~~~~
++Ubuntu/Debian family Linux users and install bpython using the apt package manager, using the
++command:
++
++.. code-block:: bash
++
++    $ sudo apt-get install bpython
++
++ArchLinux
++~~~~~~~~~
++Arch linux uses pacman as the default package manager, and you can use it to install bpython:
++
++.. code-block:: bash
++
++    $ pacman -S bpython
++
++
++Windows
++~~~~~~~
++**Caveats:** As ``bpython`` makes use of the ncurses library of \*nix-family operating systems,
++bpython on Windows is not officially supported and tested.
++
++However, you can still use bpython on Windows using a somewhat work around. Briefly, you should install
++these two packages using pip:
++
++.. code-block:: bash
++
++    $ pip install bpython windows-curses
++
++Then you should invoke a program called ``bpython-curses.exe`` instead of ``bpython.exe`` to use bpython:
++
++.. code-block:: bash
++
++    $ bpython-curses
++
++Mac OS
++~~~~~~
++Like Windows, Mac OS does not include a package manager by default. If you have installed any
++third-party pacakge manager like MacPorts, you can install it via
++
++.. code-block:: bash
++
++    $ sudo port install py-bpython
++
+ ===================
+ Features & Examples
+ ===================
+@@ -159,18 +215,65 @@ To correct this I have provided a windows.theme file.
+ This curses implementation has 16 colors (dark and light versions of the
+ colours)
+ 
++===
++FAQ
++===
++**Q: Is bpython better than IPython**
++
++Generally bpython currently has less feature than IPython,
++however it is more convinient to use if you want to use it as a
++"better Python REPL" (much better than vanilla Python!)
++
++**Q: Can I contribute to the development?**
++
++Sure! Any kind of contribution, including development, bug issue, documentation improvement
++are welcomed!
++
++===============
++Troubleshooting
++===============
++**I get installation error**
++
++A: There are more than 1 way to install bpython, if you're experiencing error
++using pip or package manager, you can switch to another way to see if the problem
++is solved.
++
++**F1 key does not work**
++
++Some terminals caputure the F1 key as GUI function key, so you can disable it
++in terminal settings or use another terminal application.
+ 
+ ============
+ Alternatives
+ ============
+ 
++Here are two alternatives to bpython:
++
+ `ptpython`_
+ 
+ `IPython`_
+ 
++Those two alternatives are very much similar to bpython,
++but in general since they provide more functionalities,
++they take more time to learn and configure, and more heavy weight than
++bpython.
++
++Bpython is very lightweight, and is very handy even you're using it for
++the first time.
++
+ Feel free to get in touch if you know of any other alternatives that people
+ may be interested to try.
+ 
++==========
++Need Help?
++==========
++If you need any help on using bpython, feel free to join us on Freenode
++online chatting on #bpython channel!
++And our community has much more ways to communicate. Check it out here
++
++`community`_
++
++
+ .. _ptpython: https://github.com/jonathanslenders/ptpython
+ .. _ipython: https://ipython.org/
+ .. _homepage: http://www.bpython-interpreter.org
