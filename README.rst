@@ -79,7 +79,7 @@ In case you are using an older version, run
     $ apt-get install bpython
 
 Arch Linux
-~~~~~~~~~
+~~~~~~~~~~
 Arch linux uses pacman as the default package manager, and you can use it to install bpython:
 
 .. code-block:: bash
