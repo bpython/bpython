@@ -42,6 +42,10 @@ You can find more about bpython - including `full documentation`_ - at our
 ==========================
 Installation & Basic Usage
 ==========================
+
+Installation using Pip
+----------------------
+
 If you have `pip`_ installed, you can simply run:
 
 .. code-block:: bash
@@ -51,6 +55,64 @@ If you have `pip`_ installed, you can simply run:
 Start bpython by typing ``bpython`` in your terminal. You can exit bpython by
 using the ``exit()`` command or by pressing control-D like regular interactive
 Python.
+
+Installation via OS Package Manager
+-----------------------------------
+
+The majority of operating system of desktop computers comes with a package
+manager system, if you are any user of them, you can install ``bpython``
+using the package manager.
+
+Ubuntu/Debian
+~~~~~~~~~~~~~
+Ubuntu/Debian family Linux users and install bpython using the apt package manager, using the
+command with sudo priviledge:
+
+.. code-block:: bash
+
+    $ apt install bpython
+
+In case you are using an older version, run
+
+.. code-block:: bash
+
+    $ apt-get install bpython
+
+Arch Linux
+~~~~~~~~~
+Arch linux uses pacman as the default package manager, and you can use it to install bpython:
+
+.. code-block:: bash
+
+    $ pacman -S bpython
+
+
+Windows
+~~~~~~~
+**Caveats:** As ``bpython`` makes use of the ncurses library of \*nix-family operating systems,
+bpython on Windows is not officially supported and tested.
+
+However, you can still use bpython on Windows using a somewhat work around. Briefly, you should install
+these two packages using pip:
+
+.. code-block:: bash
+
+    $ pip install bpython windows-curses
+
+Then you should invoke a program called ``bpython-curses.exe`` instead of ``bpython.exe`` to use bpython:
+
+.. code-block:: bash
+
+    $ bpython-curses
+
+Mac OS
+~~~~~~
+Like Windows, Mac OS does not include a package manager by default. If you have installed any
+third-party pacakge manager like MacPorts, you can install it via
+
+.. code-block:: bash
+
+    $ sudo port install py-bpython
 
 ===================
 Features & Examples
