@@ -48,6 +48,7 @@ from .lazyre import LazyReCompile
 from .paste import PasteHelper, PastePinnwand, PasteFailed
 from .patch_linecache import filename_for_console_input
 from .translations import _, ngettext
+from .importcompletion import ModuleGatherer
 
 
 class RuntimeTimer:
@@ -443,8 +444,9 @@ class Repl:
             except OSError:
                 pass
 
+        self.module_gatherer = ModuleGatherer()
         self.completers = autocomplete.get_default_completer(
-            config.autocomplete_mode
+            config.autocomplete_mode, self.module_gatherer
         )
         if self.config.pastebin_helper:
             self.paster = PasteHelper(self.config.pastebin_helper)

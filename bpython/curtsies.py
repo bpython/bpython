@@ -13,7 +13,6 @@ from .curtsiesfrontend.interpreter import Interp
 from . import args as bpargs
 from . import translations
 from .translations import _
-from .importcompletion import find_coroutine
 from .curtsiesfrontend import events as bpythonevents
 from . import inspection
 from .repl import extract_exit_value
@@ -113,7 +112,7 @@ class FullCurtsiesRepl(BaseRepl):
         # do a display before waiting for first event
         self.process_event_and_paint(None)
         inputs = combined_events(self.input_generator)
-        while find_coroutine():
+        while self.module_gatherer.find_coroutine():
             e = inputs.send(0)
             if e is not None:
                 self.process_event_and_paint(e)

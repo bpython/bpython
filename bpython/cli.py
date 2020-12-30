@@ -66,9 +66,6 @@ from pygments.lexers import Python3Lexer
 from pygments.token import Token
 from .formatter import BPythonFormatter
 
-# This for completion
-from . import importcompletion
-
 # This for config
 from .config import Struct, getpreferredencoding
 
@@ -1784,7 +1781,7 @@ def idle(caller):
     sure it happens conveniently."""
     global DO_RESIZE
 
-    if importcompletion.find_coroutine() or caller.paste_mode:
+    if caller.module_gatherer.find_coroutine() or caller.paste_mode:
         caller.scr.nodelay(True)
         key = caller.scr.getch()
         caller.scr.nodelay(False)

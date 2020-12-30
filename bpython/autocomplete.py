@@ -1,6 +1,7 @@
 # The MIT License
 #
 # Copyright (c) 2009-2015 the bpython authors.
+# Copyright (c) 2015-2020 Sebastian Ramacher
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +35,6 @@ import builtins
 
 from enum import Enum
 from . import inspection
-from . import importcompletion
 from . import line as lineparts
 from .line import LinePart
 from .lazyre import LazyReCompile
@@ -285,8 +285,12 @@ class CumulativeCompleter(BaseCompletionType):
 
 
 class ImportCompletion(BaseCompletionType):
+    def __init__(self, module_gatherer, mode=AutocompleteModes.SIMPLE):
+        super().__init__(False, mode)
+        self.module_gatherer = module_gatherer
+
     def matches(self, cursor_offset, line, **kwargs):
-        return importcompletion.complete(cursor_offset, line)
+        return self.module_gatherer.complete(cursor_offset, line)
 
     def locate(self, current_offset, line):
         return lineparts.current_word(current_offset, line)
@@ -656,10 +660,10 @@ def get_completer(completers, cursor_offset, line, **kwargs):
     return [], None
 
 
-def get_default_completer(mode=AutocompleteModes.SIMPLE):
+def get_default_completer(mode=AutocompleteModes.SIMPLE, module_gatherer=None):
     return (
         DictKeyCompletion(mode=mode),
-        ImportCompletion(mode=mode),
+        ImportCompletion(module_gatherer, mode=mode),
         FilenameCompletion(mode=mode),
         MagicMethodCompletion(mode=mode),
         MultilineJediCompletion(mode=mode),

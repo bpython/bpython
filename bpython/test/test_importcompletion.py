@@ -1,11 +1,11 @@
-from bpython import importcompletion
+from bpython.importcompletion import ModuleGatherer
 from bpython.test import unittest
 
 
 class TestSimpleComplete(unittest.TestCase):
     def setUp(self):
-        self.original_modules = importcompletion.modules
-        importcompletion.modules = [
+        self.module_gatherer = ModuleGatherer()
+        self.module_gatherer.modules = [
             "zzabc",
             "zzabd",
             "zzefg",
@@ -13,39 +13,37 @@ class TestSimpleComplete(unittest.TestCase):
             "zzabc.f",
         ]
 
-    def tearDown(self):
-        importcompletion.modules = self.original_modules
-
     def test_simple_completion(self):
         self.assertSetEqual(
-            importcompletion.complete(10, "import zza"), {"zzabc", "zzabd"}
+            self.module_gatherer.complete(10, "import zza"), {"zzabc", "zzabd"}
         )
 
     def test_package_completion(self):
         self.assertSetEqual(
-            importcompletion.complete(13, "import zzabc."),
+            self.module_gatherer.complete(13, "import zzabc."),
             {"zzabc.e", "zzabc.f"},
         )
 
 
 class TestRealComplete(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        importcompletion.reload()
+    def setUp(self):
+        self.module_gatherer = ModuleGatherer()
+        while self.module_gatherer.find_coroutine():
+            pass
         __import__("sys")
         __import__("os")
 
     def test_from_attribute(self):
         self.assertSetEqual(
-            importcompletion.complete(19, "from sys import arg"), {"argv"}
+            self.module_gatherer.complete(19, "from sys import arg"), {"argv"}
         )
 
     def test_from_attr_module(self):
         self.assertSetEqual(
-            importcompletion.complete(9, "from os.p"), {"os.path"}
+            self.module_gatherer.complete(9, "from os.p"), {"os.path"}
         )
 
     def test_from_package(self):
         self.assertSetEqual(
-            importcompletion.complete(17, "from xml import d"), {"dom"}
+            self.module_gatherer.complete(17, "from xml import d"), {"dom"}
         )

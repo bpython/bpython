@@ -27,10 +27,10 @@ the methods of bpython.curtsiesrepl.repl.BaseRepl that must be overridden.
 import time
 import logging
 
-from .curtsiesfrontend.repl import BaseRepl
-from .curtsiesfrontend import events as bpythonevents
 from . import translations
-from . import importcompletion
+from .curtsiesfrontend import events as bpythonevents
+from .curtsiesfrontend.repl import BaseRepl
+from .importcompletion import ModuleGatherer
 
 from curtsies.configfile_keynames import keymap as key_dispatch
 
@@ -116,7 +116,8 @@ class SimpleRepl(BaseRepl):
 
 def main(args=None, locals_=None, banner=None):
     translations.init()
-    while importcompletion.find_coroutine():
+    module_gatherer = ModuleGatherer()
+    while module_gatherer.find_coroutine():
         pass
     with SimpleRepl() as r:
         r.width = 50

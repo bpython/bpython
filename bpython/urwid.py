@@ -39,7 +39,6 @@ import urwid
 
 from . import args as bpargs, repl, translations
 from .formatter import theme_map
-from .importcompletion import find_coroutine
 from .translations import _
 from .keys import urwid_key_dispatch as key_dispatch
 
@@ -1344,7 +1343,7 @@ def main(args=None, locals_=None, banner=None):
         # This bypasses main_loop.set_alarm_in because we must *not*
         # hit the draw_screen call (it's unnecessary and slow).
         def run_find_coroutine():
-            if find_coroutine():
+            if myrepl.module_gatherer.find_coroutine():
                 main_loop.event_loop.alarm(0, run_find_coroutine)
 
         run_find_coroutine()

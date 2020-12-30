@@ -2,7 +2,7 @@ import os
 import tempfile
 
 from bpython.test import unittest
-from bpython.importcompletion import find_modules
+from bpython.importcompletion import ModuleGatherer
 
 
 class TestAvoidSymbolicLinks(unittest.TestCase):
@@ -62,9 +62,11 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
                 True,
             )
 
-            self.modules = list(
-                find_modules(os.path.abspath(import_test_folder))
+            self.module_gatherer = ModuleGatherer(
+                [os.path.abspath(import_test_folder)]
             )
+            while self.module_gatherer.find_coroutine():
+                pass
             self.filepaths = [
                 "Left.toRight.toLeft",
                 "Left.toRight",
@@ -79,7 +81,7 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
             ]
 
     def test_simple_symbolic_link_loop(self):
-        for thing in self.modules:
+        for thing in self.module_gatherer.modules:
             self.assertTrue(thing in self.filepaths)
             if thing == "Left.toRight.toLeft":
                 self.filepaths.remove("Right.toLeft")
