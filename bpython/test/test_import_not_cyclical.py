@@ -1,7 +1,7 @@
 import os
 import tempfile
+import unittest
 
-from bpython.test import unittest
 from bpython.importcompletion import ModuleGatherer
 
 

@@ -1,16 +1,16 @@
-from code import compile_command as compiler
-from functools import partial
 import difflib
 import inspect
 import re
+import unittest
+
+from code import compile_command as compiler
+from functools import partial
 
 from bpython.curtsiesfrontend.interpreter import code_finished_will_parse
 from bpython.curtsiesfrontend.preprocess import preprocess
-from bpython.test import unittest
 from bpython.test.fodder import original, processed
 
 
-skip = unittest.skip
 preproc = partial(preprocess, compiler=compiler)
 
 
@@ -85,14 +85,14 @@ class TestPreprocessing(unittest.TestCase):
     def test_blank_lines_in_for_loop(self):
         self.assertIndented("blank_lines_in_for_loop")
 
-    @skip(
+    @unittest.skip(
         "More advanced technique required: need to try compiling and "
         "backtracking"
     )
     def test_blank_line_in_try_catch(self):
         self.assertIndented("blank_line_in_try_catch")
 
-    @skip(
+    @unittest.skip(
         "More advanced technique required: need to try compiling and "
         "backtracking"
     )

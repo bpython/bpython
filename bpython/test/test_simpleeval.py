@@ -1,13 +1,13 @@
 import ast
 import numbers
 import sys
+import unittest
 
 from bpython.simpleeval import (
     simple_eval,
     evaluate_current_expression,
     EvaluationError,
 )
-from bpython.test import unittest
 
 
 class TestSimpleEval(unittest.TestCase):

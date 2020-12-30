@@ -1,8 +1,8 @@
 import os
 import tempfile
 import textwrap
+import unittest
 
-from bpython.test import unittest
 from bpython import config
 
 TEST_THEME_PATH = os.path.join(os.path.dirname(__file__), "test.theme")

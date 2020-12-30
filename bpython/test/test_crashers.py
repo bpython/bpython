@@ -5,8 +5,9 @@ import struct
 import sys
 import termios
 import textwrap
+import unittest
 
-from bpython.test import unittest, TEST_CONFIG
+from bpython.test import TEST_CONFIG
 from bpython.config import getpreferredencoding
 
 try:

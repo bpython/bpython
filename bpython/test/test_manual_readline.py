@@ -1,3 +1,5 @@
+import unittest
+
 from bpython.curtsiesfrontend.manual_readline import (
     left_arrow,
     right_arrow,
@@ -16,7 +18,6 @@ from bpython.curtsiesfrontend.manual_readline import (
     UnconfiguredEdits,
     delete_word_from_cursor_back,
 )
-from bpython.test import unittest
 
 
 class TestManualReadline(unittest.TestCase):

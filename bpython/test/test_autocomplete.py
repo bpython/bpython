@@ -2,6 +2,7 @@ import inspect
 import keyword
 import unittest
 from collections import namedtuple
+from unittest import mock
 
 try:
     import jedi
@@ -11,7 +12,6 @@ except ImportError:
     has_jedi = False
 
 from bpython import autocomplete
-from bpython.test import mock
 
 glob_function = "glob.iglob"
 

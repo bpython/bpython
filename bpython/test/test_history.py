@@ -1,9 +1,8 @@
 import os
-
+import unittest
 
 from bpython.config import getpreferredencoding
 from bpython.history import History
-from bpython.test import unittest
 
 
 class TestHistory(unittest.TestCase):

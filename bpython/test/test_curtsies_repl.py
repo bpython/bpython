@@ -3,8 +3,11 @@ import os
 import sys
 import tempfile
 import io
-from functools import partial
+import unittest
+
 from contextlib import contextmanager
+from functools import partial
+from unittest import mock
 
 from bpython.curtsiesfrontend import repl as curtsiesrepl
 from bpython.curtsiesfrontend import interpreter
@@ -16,8 +19,6 @@ from bpython import args
 from bpython.test import (
     FixLanguageTestCase as TestCase,
     MagicIterMock,
-    mock,
-    unittest,
     TEST_CONFIG,
 )
 

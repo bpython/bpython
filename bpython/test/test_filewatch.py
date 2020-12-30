@@ -1,4 +1,5 @@
 import os
+import unittest
 
 try:
     import watchdog
@@ -8,7 +9,7 @@ try:
 except ImportError:
     has_watchdog = False
 
-from bpython.test import mock, unittest
+from unittest import mock
 
 
 @unittest.skipUnless(has_watchdog, "watchdog required")

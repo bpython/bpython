@@ -2,10 +2,11 @@ import re
 import subprocess
 import sys
 import tempfile
-from textwrap import dedent
+import unittest
 
+from textwrap import dedent
 from bpython import args
-from bpython.test import FixLanguageTestCase as TestCase, unittest
+from bpython.test import FixLanguageTestCase as TestCase
 
 
 class TestExecArgs(unittest.TestCase):

@@ -1,7 +1,8 @@
-from collections import namedtuple
+import unittest
 
+from collections import namedtuple
 from bpython.curtsies import combined_events
-from bpython.test import FixLanguageTestCase as TestCase, unittest
+from bpython.test import FixLanguageTestCase as TestCase
 
 import curtsies.events
 

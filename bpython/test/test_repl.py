@@ -1,4 +1,3 @@
-from itertools import islice
 import collections
 import inspect
 import os
@@ -6,10 +5,14 @@ import shutil
 import socket
 import sys
 import tempfile
+import unittest
+
+from itertools import islice
+from unittest import mock
 
 from bpython import config, repl, cli, autocomplete
-from bpython.test import MagicIterMock, mock, FixLanguageTestCase as TestCase
-from bpython.test import unittest, TEST_CONFIG
+from bpython.test import MagicIterMock, FixLanguageTestCase as TestCase
+from bpython.test import TEST_CONFIG
 
 
 pypy = "PyPy" in sys.version

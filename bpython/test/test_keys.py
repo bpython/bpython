@@ -1,5 +1,6 @@
+import unittest
+
 from bpython import keys
-from bpython.test import unittest
 
 
 class TestCLIKeys(unittest.TestCase):

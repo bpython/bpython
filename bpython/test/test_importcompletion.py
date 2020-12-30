@@ -1,5 +1,6 @@
+import unittest
+
 from bpython.importcompletion import ModuleGatherer
-from bpython.test import unittest
 
 
 class TestSimpleComplete(unittest.TestCase):

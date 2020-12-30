@@ -2,13 +2,13 @@ import itertools
 import pydoc
 import string
 import sys
-from contextlib import contextmanager
 
+from contextlib import contextmanager
 from curtsies.formatstringarray import FormatStringTest, fsarray
 from curtsies.fmtfuncs import cyan, bold, green, yellow, on_magenta, red
+from unittest import mock
 
 from bpython.curtsiesfrontend.events import RefreshRequestEvent
-from bpython.test import mock
 from bpython import config, inspection
 from bpython.curtsiesfrontend.repl import BaseRepl
 from bpython.curtsiesfrontend import replpainter

@@ -1,6 +1,6 @@
 import re
+import unittest
 
-from bpython.test import unittest
 from bpython.line import (
     current_word,
     current_dict_key,

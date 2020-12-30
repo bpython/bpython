@@ -1,6 +1,7 @@
 import sys
+import unittest
 
-from bpython.test import mock, unittest
+from unittest import mock
 from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
 
 
