@@ -31,15 +31,9 @@ class TestSimpleComplete(unittest.TestCase):
 class TestRealComplete(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        for _ in importcompletion.find_iterator:
-            pass
+        importcompletion.reload()
         __import__("sys")
         __import__("os")
-
-    @classmethod
-    def tearDownClass(cls):
-        importcompletion.find_iterator = importcompletion.find_all_modules()
-        importcompletion.modules = set()
 
     def test_from_attribute(self):
         self.assertSetEqual(
