@@ -5,35 +5,42 @@ Changelog
 ----
 
 General information:
+
 * Support for Python 2 has been dropped.
 
 New features:
+
 * #643: Provide bpython._version if built from Github tarballs
 
 Fixes:
+
 * #857: Replace remaining use of deprecated imp with importlib
 
 0.20.1
 ------
 
 Fixes:
+
 * Fix check of key code (fixes #859)
 
 0.20
 ----
 
 General information:
+
 * The next release of bpython (0.20) will drop support for Python 2.
 * Support for Python 3.9 has been added. Support for Python 3.5 has been
   dropped.
 
 New features:
+
 * #802: Provide redo.
   Thanks to Evan.
 * #835: Add support for importing namespace packages.
   Thanks to Thomas Babej.
 
 Fixes:
+
 * #622: Provide encoding attribute for FakeOutput.
 * #806: Prevent symbolic link loops in import completion.
   Thanks to Etienne Richart.
@@ -48,6 +55,7 @@ Fixes:
 ----
 
 General information:
+
 * The bpython-cli and bpython-urwid rendering backends have been deprecated and
   will show a warning that they'll be removed in a future release when started.
 * Usage in combination with Python 2 has been deprecated. This does not mean that
@@ -61,6 +69,7 @@ General information:
 New features:
 
 Fixes:
+
 * #765: Display correct signature for decorated functions.
   Thanks to Benedikt Rascher-Friesenhausen.
 * #776: Protect get_args from user code exceptions
@@ -73,10 +82,12 @@ Support for Python 3.8 has been added. Support for Python 3.4 has been dropped.
 ----
 
 New features:
+
 * #713 expose globals in bpdb debugging.
   Thanks to toejough.
 
 Fixes:
+
 * Fix file locking on Windows.
 * Exit gracefully if config file fails to be loaded due to encoding errors.
 * #744: Fix newline handling.
@@ -98,11 +109,13 @@ Fixes:
 ----
 
 New features:
+
 * #641: Implement Ctrl+O.
 * Add default_autoreload config option.
   Thanks to Alex Frieder.
 
 Fixes:
+
 * Fix deprecation warnings.
 * Do not call signal outside of main thread.
   Thanks to Max Nordlund.
@@ -122,9 +135,11 @@ Fixes:
 ----
 
 New features:
+
 * #466: Improve handling of completion box height.
 
 Fixes:
+
 * Fix various spelling mistakes.
   Thanks to Josh Soref and Simeon Visser.
 * #601: Fix Python 2 issues on Windows.
