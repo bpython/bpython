@@ -364,7 +364,9 @@ class TestRepl(unittest.TestCase):
     # COMPLETE TESTS
     # 1. Global tests
     def test_simple_global_complete(self):
-        self.repl = FakeRepl({"autocomplete_mode": autocomplete.SIMPLE})
+        self.repl = FakeRepl(
+            {"autocomplete_mode": autocomplete.AutocompleteModes.SIMPLE}
+        )
         self.set_input_line("d")
 
         self.assertTrue(self.repl.complete())
@@ -375,7 +377,9 @@ class TestRepl(unittest.TestCase):
         )
 
     def test_substring_global_complete(self):
-        self.repl = FakeRepl({"autocomplete_mode": autocomplete.SUBSTRING})
+        self.repl = FakeRepl(
+            {"autocomplete_mode": autocomplete.AutocompleteModes.SUBSTRING}
+        )
         self.set_input_line("time")
 
         self.assertTrue(self.repl.complete())
@@ -385,7 +389,9 @@ class TestRepl(unittest.TestCase):
         )
 
     def test_fuzzy_global_complete(self):
-        self.repl = FakeRepl({"autocomplete_mode": autocomplete.FUZZY})
+        self.repl = FakeRepl(
+            {"autocomplete_mode": autocomplete.AutocompleteModes.FUZZY}
+        )
         self.set_input_line("doc")
 
         self.assertTrue(self.repl.complete())
@@ -397,7 +403,9 @@ class TestRepl(unittest.TestCase):
 
     # 2. Attribute tests
     def test_simple_attribute_complete(self):
-        self.repl = FakeRepl({"autocomplete_mode": autocomplete.SIMPLE})
+        self.repl = FakeRepl(
+            {"autocomplete_mode": autocomplete.AutocompleteModes.SIMPLE}
+        )
         self.set_input_line("Foo.b")
 
         code = "class Foo():\n\tdef bar(self):\n\t\tpass\n"
@@ -409,7 +417,9 @@ class TestRepl(unittest.TestCase):
         self.assertEqual(self.repl.matches_iter.matches, ["Foo.bar"])
 
     def test_substring_attribute_complete(self):
-        self.repl = FakeRepl({"autocomplete_mode": autocomplete.SUBSTRING})
+        self.repl = FakeRepl(
+            {"autocomplete_mode": autocomplete.AutocompleteModes.SUBSTRING}
+        )
         self.set_input_line("Foo.az")
 
         code = "class Foo():\n\tdef baz(self):\n\t\tpass\n"
@@ -421,7 +431,9 @@ class TestRepl(unittest.TestCase):
         self.assertEqual(self.repl.matches_iter.matches, ["Foo.baz"])
 
     def test_fuzzy_attribute_complete(self):
-        self.repl = FakeRepl({"autocomplete_mode": autocomplete.FUZZY})
+        self.repl = FakeRepl(
+            {"autocomplete_mode": autocomplete.AutocompleteModes.FUZZY}
+        )
         self.set_input_line("Foo.br")
 
         code = "class Foo():\n\tdef bar(self):\n\t\tpass\n"
@@ -434,7 +446,9 @@ class TestRepl(unittest.TestCase):
 
     # 3. Edge cases
     def test_updating_namespace_complete(self):
-        self.repl = FakeRepl({"autocomplete_mode": autocomplete.SIMPLE})
+        self.repl = FakeRepl(
+            {"autocomplete_mode": autocomplete.AutocompleteModes.SIMPLE}
+        )
         self.set_input_line("foo")
         self.repl.push("foobar = 2")
 
@@ -443,7 +457,9 @@ class TestRepl(unittest.TestCase):
         self.assertEqual(self.repl.matches_iter.matches, ["foobar"])
 
     def test_file_should_not_appear_in_complete(self):
-        self.repl = FakeRepl({"autocomplete_mode": autocomplete.SIMPLE})
+        self.repl = FakeRepl(
+            {"autocomplete_mode": autocomplete.AutocompleteModes.SIMPLE}
+        )
         self.set_input_line("_")
         self.assertTrue(self.repl.complete())
         self.assertTrue(hasattr(self.repl.matches_iter, "matches"))
@@ -451,7 +467,9 @@ class TestRepl(unittest.TestCase):
 
     # 4. Parameter names
     def test_paremeter_name_completion(self):
-        self.repl = FakeRepl({"autocomplete_mode": autocomplete.SIMPLE})
+        self.repl = FakeRepl(
+            {"autocomplete_mode": autocomplete.AutocompleteModes.SIMPLE}
+        )
         self.set_input_line("foo(ab")
 
         code = "def foo(abc=1, abd=2, xyz=3):\n\tpass\n"
@@ -515,7 +533,9 @@ class TestCliReplTab(unittest.TestCase):
     @unittest.skip("disabled while non-simple completion is disabled")
     def test_substring_tab_complete(self):
         self.repl.s = "bar"
-        self.repl.config.autocomplete_mode = autocomplete.FUZZY
+        self.repl.config.autocomplete_mode = (
+            autocomplete.AutocompleteModes.FUZZY
+        )
         self.repl.tab()
         self.assertEqual(self.repl.s, "foobar")
         self.repl.tab()
@@ -524,7 +544,9 @@ class TestCliReplTab(unittest.TestCase):
     @unittest.skip("disabled while non-simple completion is disabled")
     def test_fuzzy_tab_complete(self):
         self.repl.s = "br"
-        self.repl.config.autocomplete_mode = autocomplete.FUZZY
+        self.repl.config.autocomplete_mode = (
+            autocomplete.AutocompleteModes.FUZZY
+        )
         self.repl.tab()
         self.assertEqual(self.repl.s, "foobar")
 
@@ -561,7 +583,9 @@ class TestCliReplTab(unittest.TestCase):
     def test_fuzzy_attribute_tab_complete(self):
         """Test fuzzy attribute with no text"""
         self.repl.s = "Foo."
-        self.repl.config.autocomplete_mode = autocomplete.FUZZY
+        self.repl.config.autocomplete_mode = (
+            autocomplete.AutocompleteModes.FUZZY
+        )
 
         self.repl.tab()
         self.assertEqual(self.repl.s, "Foo.foobar")
@@ -570,7 +594,9 @@ class TestCliReplTab(unittest.TestCase):
     def test_fuzzy_attribute_tab_complete2(self):
         """Test fuzzy attribute with some text"""
         self.repl.s = "Foo.br"
-        self.repl.config.autocomplete_mode = autocomplete.FUZZY
+        self.repl.config.autocomplete_mode = (
+            autocomplete.AutocompleteModes.FUZZY
+        )
 
         self.repl.tab()
         self.assertEqual(self.repl.s, "Foo.foobar")
@@ -588,7 +614,9 @@ class TestCliReplTab(unittest.TestCase):
 
     @unittest.skip("disabled while non-simple completion is disabled")
     def test_substring_expand_forward(self):
-        self.repl.config.autocomplete_mode = autocomplete.SUBSTRING
+        self.repl.config.autocomplete_mode = (
+            autocomplete.AutocompleteModes.SUBSTRING
+        )
         self.repl.s = "ba"
         self.repl.tab()
         self.assertEqual(self.repl.s, "bar")

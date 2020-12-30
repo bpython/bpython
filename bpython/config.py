@@ -4,7 +4,9 @@ import locale
 from itertools import chain
 from configparser import ConfigParser
 
-from .autocomplete import SIMPLE as default_completion, ALL_MODES
+from .autocomplete import AutocompleteModes
+
+default_completion = AutocompleteModes.SIMPLE
 
 
 class Struct:
@@ -234,7 +236,9 @@ def loadini(struct, configfile):
     struct.complete_magic_methods = config.getboolean(
         "general", "complete_magic_methods"
     )
-    struct.autocomplete_mode = config.get("general", "autocomplete_mode")
+    struct.autocomplete_mode = AutocompleteModes.from_string(
+        config.get("general", "autocomplete_mode")
+    )
     struct.save_append_py = config.getboolean("general", "save_append_py")
 
     struct.curtsies_list_above = config.getboolean("curtsies", "list_above")
@@ -282,7 +286,7 @@ def loadini(struct, configfile):
     struct.hist_file = os.path.expanduser(struct.hist_file)
 
     # verify completion mode
-    if struct.autocomplete_mode not in ALL_MODES:
+    if struct.autocomplete_mode is None:
         struct.autocomplete_mode = default_completion
 
     # set box drawing characters

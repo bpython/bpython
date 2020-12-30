@@ -32,6 +32,7 @@ import re
 import rlcompleter
 import builtins
 
+from enum import Enum
 from . import inspection
 from . import importcompletion
 from . import line as lineparts
@@ -41,11 +42,17 @@ from .simpleeval import safe_eval, evaluate_current_expression, EvaluationError
 
 
 # Autocomplete modes
-SIMPLE = "simple"
-SUBSTRING = "substring"
-FUZZY = "fuzzy"
+class AutocompleteModes(Enum):
+    SIMPLE = "simple"
+    SUBSTRING = "substring"
+    FUZZY = "fuzzy"
 
-ALL_MODES = (SIMPLE, SUBSTRING, FUZZY)
+    @classmethod
+    def from_string(cls, value):
+        if value in cls.__members__:
+            return cls.__members__[value]
+        return None
+
 
 MAGIC_METHODS = tuple(
     f"__{s}__"
@@ -189,16 +196,16 @@ def method_match_fuzzy(word, size, text):
 
 
 MODES_MAP = {
-    SIMPLE: method_match_simple,
-    SUBSTRING: method_match_substring,
-    FUZZY: method_match_fuzzy,
+    AutocompleteModes.SIMPLE: method_match_simple,
+    AutocompleteModes.SUBSTRING: method_match_substring,
+    AutocompleteModes.FUZZY: method_match_fuzzy,
 }
 
 
 class BaseCompletionType:
     """Describes different completion types"""
 
-    def __init__(self, shown_before_tab=True, mode=SIMPLE):
+    def __init__(self, shown_before_tab=True, mode=AutocompleteModes.SIMPLE):
         self._shown_before_tab = shown_before_tab
         self.method_match = MODES_MAP[mode]
 
@@ -248,7 +255,7 @@ class BaseCompletionType:
 class CumulativeCompleter(BaseCompletionType):
     """Returns combined matches from several completers"""
 
-    def __init__(self, completers, mode=SIMPLE):
+    def __init__(self, completers, mode=AutocompleteModes.SIMPLE):
         if not completers:
             raise ValueError(
                 "CumulativeCompleter requires at least one completer"
@@ -289,7 +296,7 @@ class ImportCompletion(BaseCompletionType):
 
 
 class FilenameCompletion(BaseCompletionType):
-    def __init__(self, mode=SIMPLE):
+    def __init__(self, mode=AutocompleteModes.SIMPLE):
         super().__init__(False, mode)
 
     def safe_glob(self, pathname):
@@ -649,7 +656,7 @@ def get_completer(completers, cursor_offset, line, **kwargs):
     return [], None
 
 
-def get_default_completer(mode=SIMPLE):
+def get_default_completer(mode=AutocompleteModes.SIMPLE):
     return (
         DictKeyCompletion(mode=mode),
         ImportCompletion(mode=mode),
