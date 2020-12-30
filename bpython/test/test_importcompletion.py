@@ -2,6 +2,7 @@ import os
 import tempfile
 import unittest
 
+from pathlib import Path
 from bpython.importcompletion import ModuleGatherer
 
 
@@ -60,36 +61,24 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
             os.mkdir(os.path.join(import_test_folder, "Left"))
 
             current_path = os.path.join(import_test_folder, "Level0")
-            with open(
-                os.path.join(current_path, "__init__.py"), "x"
-            ) as init_file:
-                pass
+            Path(os.path.join(current_path, "__init__.py")).touch()
 
             current_path = os.path.join(current_path, "Level1")
             os.mkdir(current_path)
-            with open(
-                os.path.join(current_path, "__init__.py"), "x"
-            ) as init_file:
-                pass
+            Path(os.path.join(current_path, "__init__.py")).touch()
 
             current_path = os.path.join(current_path, "Level2")
             os.mkdir(current_path)
-            with open(
-                os.path.join(current_path, "__init__.py"), "x"
-            ) as init_file:
-                pass
+            Path(os.path.join(current_path, "__init__.py")).touch()
 
             os.symlink(
-                os.path.join(import_test_folder, "Level0/Level1"),
+                os.path.join(import_test_folder, "Level0", "Level1"),
                 os.path.join(current_path, "Level3"),
                 True,
             )
 
             current_path = os.path.join(import_test_folder, "Right")
-            with open(
-                os.path.join(current_path, "__init__.py"), "x"
-            ) as init_file:
-                pass
+            Path(os.path.join(current_path, "__init__.py")).touch()
 
             os.symlink(
                 os.path.join(import_test_folder, "Left"),
@@ -98,10 +87,7 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
             )
 
             current_path = os.path.join(import_test_folder, "Left")
-            with open(
-                os.path.join(current_path, "__init__.py"), "x"
-            ) as init_file:
-                pass
+            Path(os.path.join(current_path, "__init__.py")).touch()
 
             os.symlink(
                 os.path.join(import_test_folder, "Right"),
