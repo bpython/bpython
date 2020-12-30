@@ -444,7 +444,9 @@ class Repl:
             except OSError:
                 pass
 
-        self.module_gatherer = ModuleGatherer()
+        self.module_gatherer = ModuleGatherer(
+            skiplist=self.config.import_completion_skiplist
+        )
         self.completers = autocomplete.get_default_completer(
             config.autocomplete_mode, self.module_gatherer
         )

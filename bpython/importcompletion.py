@@ -38,32 +38,14 @@ SUFFIXES = importlib.machinery.all_suffixes()
 
 
 class ModuleGatherer:
-    def __init__(self, path=None):
+    def __init__(self, path=None, skiplist=None):
         # The cached list of all known modules
         self.modules = set()
         # List of stored paths to compare against so that real paths are not repeated
         # handles symlinks not mount points
         self.paths = set()
         # Patterns to skip
-        # TODO: This skiplist should be configurable.
-        self.skiplist = (
-            # version tracking
-            ".git",
-            ".svn",
-            ".hg"
-            # XDG
-            ".config",
-            ".local",
-            ".share",
-            # nodejs
-            "node_modules",
-            # PlayOnLinux
-            "PlayOnLinux's virtual drives",
-            # wine
-            "dosdevices",
-            # cache
-            "__pycache__",
-        )
+        self.skiplist = skiplist if skiplist is not None else tuple()
         self.fully_loaded = False
         self.find_iterator = self.find_all_modules(path)
 

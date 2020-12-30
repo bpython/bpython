@@ -174,6 +174,12 @@ Whether to use Unicode characters to draw boxes.
 
 .. versionadded:: 0.14
 
+import_completion_skiplist
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+A `:`-seperated list of patterns to skip when processing modules for import completion.
+
+.. versionadded:: 0.21
+
 Keyboard
 --------
 This section refers to the ``[keyboard]`` section in your

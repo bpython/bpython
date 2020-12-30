@@ -70,6 +70,26 @@ def loadini(struct, configfile):
             "default_autoreload": False,
             "editor": os.environ.get("VISUAL", os.environ.get("EDITOR", "vi")),
             "flush_output": True,
+            "import_completion_skiplist": ":".join(
+                (
+                    # version tracking
+                    ".git",
+                    ".svn",
+                    ".hg"
+                    # XDG
+                    ".config",
+                    ".local",
+                    ".share",
+                    # nodejs
+                    "node_modules",
+                    # PlayOnLinux
+                    "PlayOnLinux's virtual drives",
+                    # wine
+                    "dosdevices",
+                    # Python byte code cache
+                    "__pycache__",
+                )
+            ),
             "highlight_show_source": True,
             "hist_duplicates": True,
             "hist_file": "~/.pythonhist",
@@ -188,6 +208,9 @@ def loadini(struct, configfile):
     struct.default_autoreload = config.getboolean(
         "general", "default_autoreload"
     )
+    struct.import_completion_skiplist = config.get(
+        "general", "import_completion_skiplist"
+    ).split(":")
 
     struct.pastebin_key = get_key_no_doublebind("pastebin")
     struct.copy_clipboard_key = get_key_no_doublebind("copy_clipboard")
