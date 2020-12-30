@@ -13,7 +13,7 @@ class FixLanguageTestCase(unittest.TestCase):
 
 class MagicIterMock(unittest.mock.MagicMock):
 
-    __next__ = mock.Mock(return_value=None)
+    __next__ = unittest.mock.Mock(return_value=None)
 
 
 TEST_CONFIG = os.path.join(os.path.dirname(__file__), "test.config")
