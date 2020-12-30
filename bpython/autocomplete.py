@@ -672,11 +672,6 @@ def get_default_completer(mode=AutocompleteModes.SIMPLE):
     )
 
 
-def get_completer_bpython(cursor_offset, line, **kwargs):
-    """"""
-    return get_completer(get_default_completer(), cursor_offset, line, **kwargs)
-
-
 def _callable_postfix(value, word):
     """rlcompleter's _callable_postfix done right."""
     if callable(value):
