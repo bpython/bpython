@@ -155,15 +155,7 @@ def loadini(struct, configfile):
 
     fill_config_with_default_values(config, defaults)
     try:
-        if not config.read(config_path):
-            # No config file. If the user has it in the old place then complain
-            if os.path.isfile(os.path.expanduser("~/.bpython.ini")):
-                sys.stderr.write(
-                    "Error: It seems that you have a config file at "
-                    "~/.bpython.ini. Please move your config file to "
-                    "%s\n" % default_config_path()
-                )
-                sys.exit(1)
+        config.read(config_path)
     except UnicodeDecodeError as e:
         sys.stderr.write(
             "Error: Unable to parse config file at '{}' due to an "
