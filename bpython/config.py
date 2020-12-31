@@ -3,6 +3,7 @@ import sys
 import locale
 from itertools import chain
 from configparser import ConfigParser
+from xdg import BaseDirectory
 
 from .autocomplete import AutocompleteModes
 
@@ -34,8 +35,7 @@ def supports_box_chars():
 
 def get_config_home():
     """Returns the base directory for bpython's configuration files."""
-    xdg_config_home = os.environ.get("XDG_CONFIG_HOME", "~/.config")
-    return os.path.join(xdg_config_home, "bpython")
+    return os.path.join(BaseDirectory.xdg_config_home, "bpython")
 
 
 def default_config_path():

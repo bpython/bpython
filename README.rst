@@ -155,13 +155,14 @@ your config file as **~/.config/bpython/config** (i.e.
 Dependencies
 ============
 * Pygments
-* requests
 * curtsies >= 0.3.3
 * greenlet
+* requests
+* xdg
 * Sphinx >= 1.5 (optional, for the documentation)
 * babel (optional, for internationalization)
-* watchdog (optional, for monitoring imported modules for changes)
 * jedi (optional, for experimental multiline completion)
+* watchdog (optional, for monitoring imported modules for changes)
 
 bpython-urwid
 -------------

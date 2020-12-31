@@ -3,3 +3,4 @@ curtsies >=0.3.3
 greenlet
 requests
 setuptools
+xdg
