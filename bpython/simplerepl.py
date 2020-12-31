@@ -64,7 +64,7 @@ class SimpleRepl(BaseRepl):
 
     def out(self, msg):
         if hasattr(self, "orig_stdout"):
-            self.orig_stdout.write((msg + "\n").encode("utf8"))
+            self.orig_stdout.write(f"{msg}\n")
             self.orig_stdout.flush()
         else:
             print(msg)
@@ -89,7 +89,7 @@ class SimpleRepl(BaseRepl):
         print_padded("")
         self.out("X``" + ("`" * (self.width + 2)) + "``X")
         for line in arr:
-            self.out("X```" + unicode(line.ljust(self.width)) + "```X")
+            self.out("X```" + line.ljust(self.width) + "```X")
         logger.debug("line:")
         logger.debug(repr(line))
         self.out("X``" + ("`" * (self.width + 2)) + "``X")
