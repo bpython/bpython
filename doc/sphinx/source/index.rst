@@ -23,3 +23,4 @@ Contents:
    bpaste
    tips
    bpdb
+   simplerepl
