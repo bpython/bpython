@@ -1,8 +1,9 @@
 import os
 import sys
 import locale
-from itertools import chain
 from configparser import ConfigParser
+from itertools import chain
+from pathlib import Path
 from xdg import BaseDirectory
 
 from .autocomplete import AutocompleteModes
@@ -35,12 +36,12 @@ def supports_box_chars():
 
 def get_config_home():
     """Returns the base directory for bpython's configuration files."""
-    return os.path.join(BaseDirectory.xdg_config_home, "bpython")
+    return Path(BaseDirectory.xdg_config_home) / "bpython"
 
 
 def default_config_path():
     """Returns bpython's default configuration file path."""
-    return os.path.join(get_config_home(), "config")
+    return get_config_home() / "config"
 
 
 def fill_config_with_default_values(config, default_values):
@@ -53,10 +54,8 @@ def fill_config_with_default_values(config, default_values):
                 config.set(section, opt, f"{val}")
 
 
-def loadini(struct, configfile):
+def loadini(struct, config_path):
     """Loads .ini configuration file and stores its values in struct"""
-
-    config_path = os.path.expanduser(configfile)
 
     config = ConfigParser()
     defaults = {
@@ -287,18 +286,15 @@ def loadini(struct, configfile):
     else:
         struct.color_scheme = dict()
 
-        theme_filename = color_scheme_name + ".theme"
-        path = os.path.expanduser(
-            os.path.join(get_config_home(), theme_filename)
-        )
+        path = get_config_home() / f"{color_scheme_name}.theme"
         try:
             load_theme(struct, path, struct.color_scheme, default_colors)
         except OSError:
-            sys.stderr.write(f"Could not load theme '{color_scheme_name}'.\n")
+            sys.stderr.write(f"Could not load theme '{color_scheme_name}' from {path}.\n")
             sys.exit(1)
 
     # expand path of history file
-    struct.hist_file = os.path.expanduser(struct.hist_file)
+    struct.hist_file = Path(struct.hist_file).expanduser()
 
     # verify completion mode
     if struct.autocomplete_mode is None:
