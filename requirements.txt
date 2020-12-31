@@ -1,6 +1,6 @@
 Pygments
 curtsies >=0.3.3
 greenlet
+pyxdg
 requests
 setuptools
-xdg

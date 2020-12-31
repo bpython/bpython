@@ -157,8 +157,8 @@ Dependencies
 * Pygments
 * curtsies >= 0.3.3
 * greenlet
+* pyxdg
 * requests
-* xdg
 * Sphinx >= 1.5 (optional, for the documentation)
 * babel (optional, for internationalization)
 * jedi (optional, for experimental multiline completion)

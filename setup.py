@@ -174,7 +174,7 @@ install_requires = [
     "curtsies >=0.3.3",
     "greenlet",
     "wcwidth",
-    "xdg",
+    "pyxdg",
 ]
 
 extras_require = {
