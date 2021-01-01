@@ -68,6 +68,11 @@ def default_config_path():
     return get_config_home() / "config"
 
 
+def default_editor():
+    """Returns the default editor."""
+    return os.environ.get("VISUAL", os.environ.get("EDITOR", "vi"))
+
+
 def fill_config_with_default_values(config, default_values):
     for section in default_values.keys():
         if not config.has_section(section):
@@ -91,7 +96,7 @@ def loadini(struct, config_path):
             "complete_magic_methods": True,
             "dedent_after": 1,
             "default_autoreload": False,
-            "editor": os.environ.get("VISUAL", os.environ.get("EDITOR", "vi")),
+            "editor": default_editor(),
             "flush_output": True,
             "import_completion_skiplist": ":".join(
                 (
