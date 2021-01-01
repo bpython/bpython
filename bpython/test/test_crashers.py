@@ -93,7 +93,7 @@ class CrashersTest:
                 "-m",
                 "bpython." + self.backend,
                 "--config",
-                TEST_CONFIG,
+                str(TEST_CONFIG),
             ),
             env=dict(TERM="vt100", LANG=os.environ.get("LANG", "")),
             usePTY=(master, slave, os.ttyname(slave)),

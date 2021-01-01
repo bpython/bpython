@@ -1,6 +1,5 @@
 import collections
 import inspect
-import os
 import socket
 import sys
 import tempfile
@@ -334,7 +333,7 @@ class TestEditConfig(TestCase):
             config_path = Path(tmp_dir) / "newdir" / "config"
             self.repl.config.config_path = config_path
             self.repl.edit_config()
-            self.assertTrue(os.path.exists(config_path))
+            self.assertTrue(config_path.exists())
 
 
 class TestRepl(unittest.TestCase):
