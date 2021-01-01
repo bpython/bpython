@@ -314,7 +314,9 @@ def loadini(struct, config_path):
         try:
             load_theme(struct, path, struct.color_scheme, default_colors)
         except OSError:
-            sys.stderr.write(f"Could not load theme '{color_scheme_name}' from {path}.\n")
+            sys.stderr.write(
+                f"Could not load theme '{color_scheme_name}' from {path}.\n"
+            )
             sys.exit(1)
 
     # expand path of history file
