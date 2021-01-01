@@ -58,27 +58,6 @@ logger = logging.getLogger(__name__)
 
 INCONSISTENT_HISTORY_MSG = "#<---History inconsistent with output shown--->"
 CONTIGUITY_BROKEN_MSG = "#<---History contiguity broken by rewind--->"
-HELP_MESSAGE = """
-Thanks for using bpython!
-
-See http://bpython-interpreter.org/ for more information and http://docs.bpython-interpreter.org/ for docs.
-Please report issues at https://github.com/bpython/bpython/issues
-
-Features:
-Try using undo ({config.undo_key})!
-Edit the current line ({config.edit_current_block_key}) or the entire session ({config.external_editor_key}) in an external editor. (currently {config.editor})
-Save sessions ({config.save_key}) or post them to pastebins ({config.pastebin_key})! Current pastebin helper: {config.pastebin_helper}
-Reload all modules and rerun session ({config.reimport_key}) to test out changes to a module.
-Toggle auto-reload mode ({config.toggle_file_watch_key}) to re-execute the current session when a module you've imported is modified.
-
-bpython -i your_script.py runs a file in interactive mode
-bpython -t your_script.py pastes the contents of a file into the session
-
-A config file at {config.config_path} customizes keys and behavior of bpython.
-You can also set which pastebin helper and which external editor to use.
-See {example_config_url} for an example config file.
-Press {config.edit_config_key} to edit this config file.
-"""
 EXAMPLE_CONFIG_URL = "https://raw.githubusercontent.com/bpython/bpython/master/bpython/sample-config"
 EDIT_SESSION_HEADER = """### current bpython session - make changes and save to reevaluate session.
 ### lines beginning with ### will be ignored.
@@ -1976,16 +1955,29 @@ class BaseRepl(BpythonRepl):
         return self.version_help_text() + "\n" + self.key_help_text()
 
     def version_help_text(self):
-        return (
-            ("bpython-curtsies version %s" % bpython.__version__)
-            + " "
-            + ("using curtsies version %s" % curtsies.__version__)
-            + "\n"
-            + HELP_MESSAGE.format(
-                example_config_url=EXAMPLE_CONFIG_URL,
-                config=self.config,
-            )
-        )
+        help_message = _("""
+Thanks for using bpython!
+
+See http://bpython-interpreter.org/ for more information and http://docs.bpython-interpreter.org/ for docs.
+Please report issues at https://github.com/bpython/bpython/issues
+
+Features:
+Try using undo ({config.undo_key})!
+Edit the current line ({config.edit_current_block_key}) or the entire session ({config.external_editor_key}) in an external editor. (currently {config.editor})
+Save sessions ({config.save_key}) or post them to pastebins ({config.pastebin_key})! Current pastebin helper: {config.pastebin_helper}
+Reload all modules and rerun session ({config.reimport_key}) to test out changes to a module.
+Toggle auto-reload mode ({config.toggle_file_watch_key}) to re-execute the current session when a module you've imported is modified.
+
+bpython -i your_script.py runs a file in interactive mode
+bpython -t your_script.py pastes the contents of a file into the session
+
+A config file at {config.config_path} customizes keys and behavior of bpython.
+You can also set which pastebin helper and which external editor to use.
+See {example_config_url} for an example config file.
+Press {config.edit_config_key} to edit this config file.
+""").format(example_config_url=EXAMPLE_CONFIG_URL, config=self.config)
+
+        return f"bpython-curtsies version {bpython.__version__} using curtsies version {curtsies.__version__}\n{help_message}"
 
     def key_help_text(self):
         NOT_IMPLEMENTED = (
