@@ -27,7 +27,7 @@ from curtsies import events
 import bpython
 from bpython.repl import Repl as BpythonRepl, SourceNotFound
 from bpython.repl import LineTypeTranslator as LineType
-from bpython.config import getpreferredencoding, default_config_path
+from bpython.config import getpreferredencoding
 from bpython.formatter import BPythonFormatter
 from bpython import autocomplete
 from bpython.translations import _
@@ -61,8 +61,7 @@ CONTIGUITY_BROKEN_MSG = "#<---History contiguity broken by rewind--->"
 HELP_MESSAGE = """
 Thanks for using bpython!
 
-See http://bpython-interpreter.org/ for more information and
-http://docs.bpython-interpreter.org/ for docs.
+See http://bpython-interpreter.org/ for more information and http://docs.bpython-interpreter.org/ for docs.
 Please report issues at https://github.com/bpython/bpython/issues
 
 Features:
@@ -75,7 +74,7 @@ Toggle auto-reload mode ({config.toggle_file_watch_key}) to re-execute the curre
 bpython -i your_script.py runs a file in interactive mode
 bpython -t your_script.py pastes the contents of a file into the session
 
-A config file at {config_file_location} customizes keys and behavior of bpython.
+A config file at {config.config_path} customizes keys and behavior of bpython.
 You can also set which pastebin helper and which external editor to use.
 See {example_config_url} for an example config file.
 Press {config.edit_config_key} to edit this config file.
@@ -1983,7 +1982,6 @@ class BaseRepl(BpythonRepl):
             + ("using curtsies version %s" % curtsies.__version__)
             + "\n"
             + HELP_MESSAGE.format(
-                config_file_location=default_config_path(),
                 example_config_url=EXAMPLE_CONFIG_URL,
                 config=self.config,
             )
