@@ -27,12 +27,7 @@ from curtsies import events
 import bpython
 from bpython.repl import Repl as BpythonRepl, SourceNotFound
 from bpython.repl import LineTypeTranslator as LineType
-from bpython.config import (
-    Struct,
-    loadini,
-    default_config_path,
-    getpreferredencoding,
-)
+from bpython.config import getpreferredencoding, default_config_path
 from bpython.formatter import BPythonFormatter
 from bpython import autocomplete
 from bpython.translations import _
@@ -310,8 +305,8 @@ class BaseRepl(BpythonRepl):
 
     def __init__(
         self,
+        config,
         locals_=None,
-        config=None,
         banner=None,
         interp=None,
         orig_tcattrs=None,
@@ -325,10 +320,6 @@ class BaseRepl(BpythonRepl):
         """
 
         logger.debug("starting init")
-
-        if config is None:
-            config = Struct()
-            loadini(config, default_config_path())
 
         # If creating a new interpreter on undo would be unsafe because initial
         # state was passed in

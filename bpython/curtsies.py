@@ -53,8 +53,8 @@ class FullCurtsiesRepl(BaseRepl):
             pass  # temp hack to get .original_stty
 
         super().__init__(
+            config,
             locals_=locals_,
-            config=config,
             banner=banner,
             interp=interp,
             orig_tcattrs=self.input_generator.original_stty,

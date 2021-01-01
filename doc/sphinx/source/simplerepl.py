@@ -27,10 +27,11 @@ the methods of bpython.curtsiesrepl.repl.BaseRepl that must be overridden.
 import time
 import logging
 
-from . import translations
-from .curtsiesfrontend import events as bpythonevents
-from .curtsiesfrontend.repl import BaseRepl
-from .importcompletion import ModuleGatherer
+from bpython import translations
+from bpython.config import Struct, loadini, default_config_path
+from bpython.curtsiesfrontend import events as bpythonevents
+from bpython.curtsiesfrontend.repl import BaseRepl
+from bpython.importcompletion import ModuleGatherer
 
 from curtsies.configfile_keynames import keymap as key_dispatch
 
@@ -39,9 +40,9 @@ logger = logging.getLogger(__name__)
 
 
 class SimpleRepl(BaseRepl):
-    def __init__(self):
+    def __init__(self, config):
         self.requested_events = []
-        BaseRepl.__init__(self)
+        BaseRepl.__init__(self, config)
 
     def _request_refresh(self):
         self.requested_events.append(bpythonevents.RefreshRequestEvent())
@@ -116,10 +117,12 @@ class SimpleRepl(BaseRepl):
 
 def main(args=None, locals_=None, banner=None):
     translations.init()
+    config = Struct()
+    loadini(config, default_config_path())
     module_gatherer = ModuleGatherer()
     while module_gatherer.find_coroutine():
         pass
-    with SimpleRepl() as r:
+    with SimpleRepl(config) as r:
         r.width = 50
         r.height = 10
         while True:
