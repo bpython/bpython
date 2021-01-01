@@ -1,7 +1,6 @@
 import collections
 import inspect
 import os
-import shutil
 import socket
 import sys
 import tempfile
@@ -331,15 +330,11 @@ class TestEditConfig(TestCase):
         self.repl.config.editor = "true"
 
     def test_create_config(self):
-        tmp_dir = tempfile.mkdtemp()
-        try:
+        with tempfile.TemporaryDirectory() as tmp_dir:
             config_path = Path(tmp_dir) / "newdir" / "config"
             self.repl.config.config_path = config_path
             self.repl.edit_config()
             self.assertTrue(os.path.exists(config_path))
-        finally:
-            shutil.rmtree(tmp_dir)
-            self.assertFalse(os.path.exists(config_path))
 
 
 class TestRepl(unittest.TestCase):
