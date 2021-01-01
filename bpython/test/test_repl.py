@@ -8,6 +8,7 @@ import tempfile
 import unittest
 
 from itertools import islice
+from pathlib import Path
 from unittest import mock
 
 from bpython import config, repl, cli, autocomplete
@@ -332,7 +333,7 @@ class TestEditConfig(TestCase):
     def test_create_config(self):
         tmp_dir = tempfile.mkdtemp()
         try:
-            config_path = os.path.join(tmp_dir, "newdir", "config")
+            config_path = Path(tmp_dir) / "newdir" / "config"
             self.repl.config.config_path = config_path
             self.repl.edit_config()
             self.assertTrue(os.path.exists(config_path))

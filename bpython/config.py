@@ -203,7 +203,7 @@ def loadini(struct, config_path):
 
         return requested_key
 
-    struct.config_path = config_path
+    struct.config_path = Path(config_path).absolute()
 
     struct.dedent_after = config.getint("general", "dedent_after")
     struct.tab_length = config.getint("general", "tab_length")

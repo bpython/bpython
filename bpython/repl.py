@@ -33,9 +33,10 @@ import tempfile
 import textwrap
 import time
 import traceback
-from itertools import takewhile
-from types import ModuleType
 from enum import Enum
+from itertools import takewhile
+from pathlib import Path
+from types import ModuleType
 
 from pygments.token import Token
 from pygments.lexers import Python3Lexer
@@ -435,11 +436,10 @@ class Repl:
         self.closed = False
         self.clipboard = get_clipboard()
 
-        pythonhist = os.path.expanduser(self.config.hist_file)
-        if os.path.exists(pythonhist):
+        if self.config.hist_file.exists():
             try:
                 self.rl_history.load(
-                    pythonhist, getpreferredencoding() or "ascii"
+                    self.config.hist_file, getpreferredencoding() or "ascii"
                 )
             except OSError:
                 pass
@@ -829,13 +829,13 @@ class Repl:
             self.interact.notify(_("Save cancelled."))
             return
 
-        if fn.startswith("~"):
-            fn = os.path.expanduser(fn)
-        if not fn.endswith(".py") and self.config.save_append_py:
-            fn = fn + ".py"
+        fn = Path(fn).expanduser()
+        if fn.suffix != ".py" and self.config.save_append_py:
+            # fn.with_suffix(".py") does not append if fn has a non-empty suffix
+            fn = Path(f"{fn}.py")
 
         mode = "w"
-        if os.path.exists(fn):
+        if fn.exists():
             mode = self.interact.file_prompt(
                 _(
                     "%s already exists. Do you "
@@ -941,10 +941,9 @@ class Repl:
         return more
 
     def insert_into_history(self, s):
-        pythonhist = os.path.expanduser(self.config.hist_file)
         try:
             self.rl_history.append_reload_and_write(
-                s, pythonhist, getpreferredencoding()
+                s, self.config.hist_file, getpreferredencoding()
             )
         except RuntimeError as e:
             self.interact.notify(f"{e}")
@@ -1147,7 +1146,7 @@ class Repl:
         return subprocess.call(args) == 0
 
     def edit_config(self):
-        if not os.path.isfile(self.config.config_path):
+        if not self.config.config_path.is_file():
             if self.interact.confirm(
                 _(
                     "Config file does not exist - create "
@@ -1160,17 +1159,15 @@ class Repl:
                     )
                     # Py3  files need unicode
                     default_config = default_config.decode("ascii")
-                    containing_dir = os.path.dirname(
-                        os.path.abspath(self.config.config_path)
-                    )
-                    if not os.path.exists(containing_dir):
-                        os.makedirs(containing_dir)
+                    containing_dir = self.config.config_path.parent
+                    if not containing_dir.exists():
+                        containing_dir.mkdir(parents=True)
                     with open(self.config.config_path, "w") as f:
                         f.write(default_config)
                 except OSError as e:
                     self.interact.notify(
                         _("Error writing file '%s': %s")
-                        % (self.config.config.path, e)
+                        % (self.config.config_path, e)
                     )
                     return False
             else:
