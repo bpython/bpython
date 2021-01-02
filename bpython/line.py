@@ -17,11 +17,10 @@ current_word_re = LazyReCompile(r"(?<![)\]\w_.])" r"([\w_][\w0-9._]*[(]?)")
 def current_word(cursor_offset, line):
     """the object.attribute.attribute just before or under the cursor"""
     pos = cursor_offset
-    matches = current_word_re.finditer(line)
     start = pos
     end = pos
     word = None
-    for m in matches:
+    for m in current_word_re.finditer(line):
         if m.start(1) < pos and m.end(1) >= pos:
             start = m.start(1)
             end = m.end(1)
@@ -36,8 +35,7 @@ current_dict_key_re = LazyReCompile(r"""[\w_][\w0-9._]*\[([\w0-9._(), '"]*)""")
 
 def current_dict_key(cursor_offset, line):
     """If in dictionary completion, return the current key"""
-    matches = current_dict_key_re.finditer(line)
-    for m in matches:
+    for m in current_dict_key_re.finditer(line):
         if m.start(1) <= cursor_offset and m.end(1) >= cursor_offset:
             return LinePart(m.start(1), m.end(1), m.group(1))
     return None
@@ -48,8 +46,7 @@ current_dict_re = LazyReCompile(r"""([\w_][\w0-9._]*)\[([\w0-9._(), '"]*)""")
 
 def current_dict(cursor_offset, line):
     """If in dictionary completion, return the dict that should be used"""
-    matches = current_dict_re.finditer(line)
-    for m in matches:
+    for m in current_dict_re.finditer(line):
         if m.start(2) <= cursor_offset and m.end(2) >= cursor_offset:
             return LinePart(m.start(1), m.end(1), m.group(1))
     return None
@@ -84,9 +81,8 @@ def current_object(cursor_offset, line):
     if match is None:
         return None
     start, end, word = match
-    matches = current_object_re.finditer(word)
     s = ""
-    for m in matches:
+    for m in current_object_re.finditer(word):
         if m.end(1) + start < cursor_offset:
             if s:
                 s += "."
@@ -132,8 +128,7 @@ def current_from_import_from(cursor_offset, line):
     tokens = line.split()
     if not ("from" in tokens or "import" in tokens):
         return None
-    matches = current_from_import_from_re.finditer(line)
-    for m in matches:
+    for m in current_from_import_from_re.finditer(line):
         if (m.start(1) < cursor_offset and m.end(1) >= cursor_offset) or (
             m.start(2) < cursor_offset and m.end(2) >= cursor_offset
         ):
@@ -157,8 +152,10 @@ def current_from_import_import(cursor_offset, line):
     match1 = current_from_import_import_re_2.search(line[baseline.end() :])
     if match1 is None:
         return None
-    matches = current_from_import_import_re_3.finditer(line[baseline.end() :])
-    for m in chain((match1,), matches):
+    for m in chain(
+        (match1,),
+        current_from_import_import_re_3.finditer(line[baseline.end() :]),
+    ):
         start = baseline.end() + m.start(1)
         end = baseline.end() + m.end(1)
         if start < cursor_offset and end >= cursor_offset:
@@ -179,8 +176,9 @@ def current_import(cursor_offset, line):
     match1 = current_import_re_2.search(line[baseline.end() :])
     if match1 is None:
         return None
-    matches = current_import_re_3.finditer(line[baseline.end() :])
-    for m in chain((match1,), matches):
+    for m in chain(
+        (match1,), current_import_re_3.finditer(line[baseline.end() :])
+    ):
         start = baseline.end() + m.start(1)
         end = baseline.end() + m.end(1)
         if start < cursor_offset and end >= cursor_offset:
@@ -192,8 +190,7 @@ current_method_definition_name_re = LazyReCompile(r"def\s+([a-zA-Z_][\w]*)")
 
 def current_method_definition_name(cursor_offset, line):
     """The name of a method being defined"""
-    matches = current_method_definition_name_re.finditer(line)
-    for m in matches:
+    for m in current_method_definition_name_re.finditer(line):
         if m.start(1) <= cursor_offset and m.end(1) >= cursor_offset:
             return LinePart(m.start(1), m.end(1), m.group(1))
     return None
@@ -204,8 +201,7 @@ current_single_word_re = LazyReCompile(r"(?<![.])\b([a-zA-Z_][\w]*)")
 
 def current_single_word(cursor_offset, line):
     """the un-dotted word just before or under the cursor"""
-    matches = current_single_word_re.finditer(line)
-    for m in matches:
+    for m in current_single_word_re.finditer(line):
         if m.start(1) <= cursor_offset and m.end(1) >= cursor_offset:
             return LinePart(m.start(1), m.end(1), m.group(1))
     return None
@@ -229,8 +225,7 @@ current_expression_attribute_re = LazyReCompile(
 def current_expression_attribute(cursor_offset, line):
     """If after a dot, the attribute being completed"""
     # TODO replace with more general current_expression_attribute
-    matches = current_expression_attribute_re.finditer(line)
-    for m in matches:
+    for m in current_expression_attribute_re.finditer(line):
         if m.start(1) <= cursor_offset and m.end(1) >= cursor_offset:
             return LinePart(m.start(1), m.end(1), m.group(1))
     return None
