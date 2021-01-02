@@ -23,16 +23,27 @@ class TestSimpleComplete(unittest.TestCase):
         self.assertSetEqual(
             self.module_gatherer.complete(10, "import zza"), {"zzabc", "zzabd"}
         )
+        self.assertSetEqual(
+            self.module_gatherer.complete(11, "import  zza"), {"zzabc", "zzabd"}
+        )
 
     def test_import_empty(self):
         self.assertSetEqual(
             self.module_gatherer.complete(13, "import zzabc."),
             {"zzabc.e", "zzabc.f"},
         )
+        self.assertSetEqual(
+            self.module_gatherer.complete(14, "import  zzabc."),
+            {"zzabc.e", "zzabc.f"},
+        )
 
     def test_import(self):
         self.assertSetEqual(
             self.module_gatherer.complete(14, "import zzefg.a"),
+            {"zzefg.a1", "zzefg.a2"},
+        )
+        self.assertSetEqual(
+            self.module_gatherer.complete(15, "import  zzefg.a"),
             {"zzefg.a1", "zzefg.a2"},
         )
 
@@ -42,16 +53,50 @@ class TestSimpleComplete(unittest.TestCase):
             self.module_gatherer.complete(7, "import "),
             {"zzabc", "zzabd", "zzefg"},
         )
+        self.assertSetEqual(
+            self.module_gatherer.complete(8, "import  "),
+            {"zzabc", "zzabd", "zzefg"},
+        )
 
     @unittest.expectedFailure
     def test_from_import_empty(self):
         self.assertSetEqual(
-            self.module_gatherer.complete(18, "from zzabc import "), {"e", "f"}
+            self.module_gatherer.complete(5, "from "), {"zzabc", "zzabd", "zzefg"}
+        )
+        self.assertSetEqual(
+            self.module_gatherer.complete(6, "from  "), {"zzabc", "zzabd", "zzefg"}
         )
 
-    def test_from_import(self):
+    @unittest.expectedFailure
+    def test_from_module_import_empty(self):
+        self.assertSetEqual(
+            self.module_gatherer.complete(18, "from zzabc import "), {"e", "f"}
+        )
+        self.assertSetEqual(
+            self.module_gatherer.complete(19, "from  zzabc import "), {"e", "f"}
+        )
+        self.assertSetEqual(
+            self.module_gatherer.complete(19, "from zzabc  import "), {"e", "f"}
+        )
+        self.assertSetEqual(
+            self.module_gatherer.complete(19, "from zzabc import  "), {"e", "f"}
+        )
+
+    def test_from_module_import(self):
         self.assertSetEqual(
             self.module_gatherer.complete(19, "from zzefg import a"),
+            {"a1", "a2"},
+        )
+        self.assertSetEqual(
+            self.module_gatherer.complete(20, "from  zzefg import a"),
+            {"a1", "a2"},
+        )
+        self.assertSetEqual(
+            self.module_gatherer.complete(20, "from zzefg  import a"),
+            {"a1", "a2"},
+        )
+        self.assertSetEqual(
+            self.module_gatherer.complete(20, "from zzefg import  a"),
             {"a1", "a2"},
         )
 
@@ -150,3 +195,7 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
                 filepaths.remove("Left.toRight")
             filepaths.remove(thing)
         self.assertFalse(filepaths)
+
+
+if __name__ == "__main__":
+    unittest.main()
