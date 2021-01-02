@@ -16,7 +16,7 @@ class TestSimpleComplete(unittest.TestCase):
             "zzabc.e",
             "zzabc.f",
             "zzefg.a1",
-            "zzefg.a2"
+            "zzefg.a2",
         ]
 
     def test_simple_completion(self):
@@ -36,11 +36,11 @@ class TestSimpleComplete(unittest.TestCase):
             {"zzefg.a1", "zzefg.a2"},
         )
 
-
     @unittest.expectedFailure
     def test_import_empty(self):
         self.assertSetEqual(
-            self.module_gatherer.complete(7, "import "), {"zzabc", "zzabd", "zzefg"}
+            self.module_gatherer.complete(7, "import "),
+            {"zzabc", "zzabd", "zzefg"},
         )
 
     @unittest.expectedFailure
@@ -51,7 +51,8 @@ class TestSimpleComplete(unittest.TestCase):
 
     def test_from_import(self):
         self.assertSetEqual(
-            self.module_gatherer.complete(19, "from zzefg import a"), {"a1", "a2"}
+            self.module_gatherer.complete(19, "from zzefg import a"),
+            {"a1", "a2"},
         )
 
 
