@@ -61,10 +61,12 @@ class TestSimpleComplete(unittest.TestCase):
     @unittest.expectedFailure
     def test_from_import_empty(self):
         self.assertSetEqual(
-            self.module_gatherer.complete(5, "from "), {"zzabc", "zzabd", "zzefg"}
+            self.module_gatherer.complete(5, "from "),
+            {"zzabc", "zzabd", "zzefg"},
         )
         self.assertSetEqual(
-            self.module_gatherer.complete(6, "from  "), {"zzabc", "zzabd", "zzefg"}
+            self.module_gatherer.complete(6, "from  "),
+            {"zzabc", "zzabd", "zzefg"},
         )
 
     @unittest.expectedFailure
