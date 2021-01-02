@@ -114,7 +114,7 @@ def current_object_attribute(cursor_offset, line):
 
 
 current_from_import_from_re = LazyReCompile(
-    r"from ([\w0-9_.]*)(?:\s+import\s+([\w0-9_]+[,]?\s*)+)*"
+    r"from +([\w0-9_.]*)(?:\s+import\s+([\w0-9_]+[,]?\s*)+)*"
 )
 
 
@@ -136,9 +136,9 @@ def current_from_import_from(cursor_offset, line):
     return None
 
 
-current_from_import_import_re_1 = LazyReCompile(r"from\s([\w0-9_.]*)\s+import")
+current_from_import_import_re_1 = LazyReCompile(r"from\s+([\w0-9_.]*)\s+import")
 current_from_import_import_re_2 = LazyReCompile(r"([\w0-9_]+)")
-current_from_import_import_re_3 = LazyReCompile(r"[,][ ]([\w0-9_]*)")
+current_from_import_import_re_3 = LazyReCompile(r", *([\w0-9_]*)")
 
 
 def current_from_import_import(cursor_offset, line):
@@ -165,7 +165,7 @@ def current_from_import_import(cursor_offset, line):
 
 current_import_re_1 = LazyReCompile(r"import")
 current_import_re_2 = LazyReCompile(r"([\w0-9_.]+)")
-current_import_re_3 = LazyReCompile(r"[,][ ]([\w0-9_.]*)")
+current_import_re_3 = LazyReCompile(r"[,][ ]*([\w0-9_.]*)")
 
 
 def current_import(cursor_offset, line):
