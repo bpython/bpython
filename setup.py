@@ -94,7 +94,13 @@ if version == "unknown":
     try:
         # get version from existing version file
         with open(version_file) as vf:
-            version = vf.read().strip().split("=")[-1].replace("'", "").replace("\"", "")
+            version = (
+                vf.read()
+                .strip()
+                .split("=")[-1]
+                .replace("'", "")
+                .replace('"', "")
+            )
         version = version.strip()
     except OSError:
         pass
@@ -113,7 +119,7 @@ if version == "unknown":
 
 with open(version_file, "w") as vf:
     vf.write("# Auto-generated file, do not edit!\n")
-    vf.write(f"__version__ = \"{version}\"\n")
+    vf.write(f'__version__ = "{version}"\n')
 
 
 cmdclass = {"build": build}

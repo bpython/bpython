@@ -1955,7 +1955,8 @@ class BaseRepl(BpythonRepl):
         return self.version_help_text() + "\n" + self.key_help_text()
 
     def version_help_text(self):
-        help_message = _("""
+        help_message = _(
+            """
 Thanks for using bpython!
 
 See http://bpython-interpreter.org/ for more information and http://docs.bpython-interpreter.org/ for docs.
@@ -1975,7 +1976,8 @@ A config file at {config.config_path} customizes keys and behavior of bpython.
 You can also set which pastebin helper and which external editor to use.
 See {example_config_url} for an example config file.
 Press {config.edit_config_key} to edit this config file.
-""").format(example_config_url=EXAMPLE_CONFIG_URL, config=self.config)
+"""
+        ).format(example_config_url=EXAMPLE_CONFIG_URL, config=self.config)
 
         return f"bpython-curtsies version {bpython.__version__} using curtsies version {curtsies.__version__}\n{help_message}"
 
