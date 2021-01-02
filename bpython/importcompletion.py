@@ -23,9 +23,9 @@
 
 import fnmatch
 import importlib.machinery
-import os
 import sys
 import warnings
+from pathlib import Path
 
 from .line import (
     current_word,
@@ -129,33 +129,27 @@ class ModuleGatherer:
 
     def find_modules(self, path):
         """Find all modules (and packages) for a given directory."""
-        if not os.path.isdir(path):
+        if not path.is_dir():
             # Perhaps a zip file
             return
-        basepath = os.path.basename(path)
-        if any(fnmatch.fnmatch(basepath, entry) for entry in self.skiplist):
+        if any(fnmatch.fnmatch(path.name, entry) for entry in self.skiplist):
             # Path is on skiplist
             return
 
-        try:
-            filenames = os.listdir(path)
-        except OSError:
-            filenames = []
-
-        finder = importlib.machinery.FileFinder(path)
-
-        for name in filenames:
-            if any(fnmatch.fnmatch(name, entry) for entry in self.skiplist):
+        finder = importlib.machinery.FileFinder(str(path))
+        for p in path.iterdir():
+            if any(fnmatch.fnmatch(p.name, entry) for entry in self.skiplist):
                 # Path is on skiplist
                 continue
-            elif not any(name.endswith(suffix) for suffix in SUFFIXES):
+            elif not any(p.name.endswith(suffix) for suffix in SUFFIXES):
                 # Possibly a package
-                if "." in name:
+                if "." in p.name:
                     continue
-            elif os.path.isdir(os.path.join(path, name)):
+            elif p.is_dir():
                 # Unfortunately, CPython just crashes if there is a directory
                 # which ends with a python extension, so work around.
                 continue
+            name = p.name
             for suffix in SUFFIXES:
                 if name.endswith(suffix):
                     name = name[: -len(suffix)]
@@ -183,10 +177,10 @@ class ModuleGatherer:
                 continue
             else:
                 if is_package:
-                    path_real = os.path.realpath(pathname)
+                    path_real = Path(pathname).resolve()
                     if path_real not in self.paths:
                         self.paths.add(path_real)
-                        for subname in self.find_modules(pathname):
+                        for subname in self.find_modules(path_real):
                             if subname != "__init__":
                                 yield f"{name}.{subname}"
                 yield name
@@ -200,8 +194,7 @@ class ModuleGatherer:
             path = sys.path
 
         for p in path:
-            if not p:
-                p = os.curdir
+            p = Path(p).resolve() if p else Path.cwd()
             for module in self.find_modules(p):
                 self.modules.add(module)
                 yield
