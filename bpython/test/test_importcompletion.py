@@ -15,6 +15,8 @@ class TestSimpleComplete(unittest.TestCase):
             "zzefg",
             "zzabc.e",
             "zzabc.f",
+            "zzefg.a1",
+            "zzefg.a2"
         ]
 
     def test_simple_completion(self):
@@ -22,10 +24,34 @@ class TestSimpleComplete(unittest.TestCase):
             self.module_gatherer.complete(10, "import zza"), {"zzabc", "zzabd"}
         )
 
-    def test_package_completion(self):
+    def test_import_empty(self):
         self.assertSetEqual(
             self.module_gatherer.complete(13, "import zzabc."),
             {"zzabc.e", "zzabc.f"},
+        )
+
+    def test_import(self):
+        self.assertSetEqual(
+            self.module_gatherer.complete(14, "import zzefg.a"),
+            {"zzefg.a1", "zzefg.a2"},
+        )
+
+
+    @unittest.expectedFailure
+    def test_import_empty(self):
+        self.assertSetEqual(
+            self.module_gatherer.complete(7, "import "), {"zzabc", "zzabd", "zzefg"}
+        )
+
+    @unittest.expectedFailure
+    def test_from_import_empty(self):
+        self.assertSetEqual(
+            self.module_gatherer.complete(18, "from zzabc import "), {"e", "f"}
+        )
+
+    def test_from_import(self):
+        self.assertSetEqual(
+            self.module_gatherer.complete(19, "from zzefg import a"), {"a1", "a2"}
         )
 
 
@@ -45,6 +71,11 @@ class TestRealComplete(unittest.TestCase):
     def test_from_attr_module(self):
         self.assertSetEqual(
             self.module_gatherer.complete(9, "from os.p"), {"os.path"}
+        )
+
+    def test_from_package(self):
+        self.assertSetEqual(
+            self.module_gatherer.complete(17, "from xml import d"), {"dom"}
         )
 
     def test_from_package(self):
