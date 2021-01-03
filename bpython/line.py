@@ -125,9 +125,6 @@ def current_from_import_from(cursor_offset, line):
     parts of an import: from (module) import (name1, name2)
     """
     # TODO allow for as's
-    tokens = line.split()
-    if not ("from" in tokens or "import" in tokens):
-        return None
     for m in current_from_import_from_re.finditer(line):
         if (m.start(1) < cursor_offset and m.end(1) >= cursor_offset) or (
             m.start(2) < cursor_offset and m.end(2) >= cursor_offset
