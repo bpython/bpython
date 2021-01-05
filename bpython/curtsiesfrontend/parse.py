@@ -3,11 +3,13 @@ import re
 
 from bpython.lazyre import LazyReCompile
 
-from curtsies.termformatconstants import FG_COLORS, BG_COLORS, colors
+import curtsies.termformatconstants
+from curtsies.termformatconstants import FG_COLORS, BG_COLORS
 from curtsies.formatstring import fmtstr, FmtStr
 
 
-cnames = dict(zip("krgybmcwd", colors + ("default",)))
+colors = curtsies.termformatconstants.colors + ("default", )
+cnames = dict(zip("krgybmcwd", colors))
 
 
 def func_for_letter(l, default="k"):
