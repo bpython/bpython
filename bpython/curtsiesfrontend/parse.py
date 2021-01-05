@@ -1,15 +1,15 @@
-from functools import partial
+import curtsies.termformatconstants
 import re
+
+from curtsies.formatstring import fmtstr, FmtStr
+from curtsies.termformatconstants import FG_COLORS, BG_COLORS
+from functools import partial
 
 from bpython.lazyre import LazyReCompile
 
-import curtsies.termformatconstants
-from curtsies.termformatconstants import FG_COLORS, BG_COLORS
-from curtsies.formatstring import fmtstr, FmtStr
 
-
-colors = curtsies.termformatconstants.colors + ("default", )
-cnames = dict(zip("krgybmcwd", colors))
+COLORS = curtsies.termformatconstants.colors + ("default",)
+CNAMES = dict(zip("krgybmcwd", COLORS))
 
 
 def func_for_letter(l, default="k"):
@@ -18,13 +18,13 @@ def func_for_letter(l, default="k"):
         l = default
     elif l == "D":
         l = default.upper()
-    return partial(fmtstr, fg=cnames[l.lower()], bold=l.isupper())
+    return partial(fmtstr, fg=CNAMES[l.lower()], bold=l.isupper())
 
 
 def color_for_letter(l, default="k"):
     if l == "d":
         l = default
-    return cnames[l.lower()]
+    return CNAMES[l.lower()]
 
 
 def parse(s):
@@ -46,23 +46,22 @@ def parse(s):
 def fs_from_match(d):
     atts = {}
     if d["fg"]:
-
         # this isn't according to spec as I understand it
         if d["fg"].isupper():
             d["bold"] = True
         # TODO figure out why boldness isn't based on presence of \x02
 
-        color = cnames[d["fg"].lower()]
+        color = CNAMES[d["fg"].lower()]
         if color != "default":
             atts["fg"] = FG_COLORS[color]
     if d["bg"]:
         if d["bg"] == "I":
             # hack for finding the "inverse"
-            color = colors[
-                (colors.index(color) + (len(colors) // 2)) % len(colors)
+            color = COLORS[
+                (COLORS.index(color) + (len(COLORS) // 2)) % len(COLORS)
             ]
         else:
-            color = cnames[d["bg"].lower()]
+            color = CNAMES[d["bg"].lower()]
         if color != "default":
             atts["bg"] = BG_COLORS[color]
     if d["bold"]:
