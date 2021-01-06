@@ -1,15 +1,26 @@
-import curtsies.termformatconstants
 import re
 
 from curtsies.formatstring import fmtstr, FmtStr
-from curtsies.termformatconstants import FG_COLORS, BG_COLORS
+from curtsies.termformatconstants import (
+    FG_COLORS,
+    BG_COLORS,
+    colors as CURTSIES_COLORS,
+)
 from functools import partial
 
 from bpython.lazyre import LazyReCompile
 
 
-COLORS = curtsies.termformatconstants.colors + ("default",)
+COLORS = CURTSIES_COLORS + ("default",)
 CNAMES = dict(zip("krgybmcwd", COLORS))
+# hack for finding the "inverse"
+INVERSE_COLORS = {
+    CURTSIES_COLORS[idx]: CURTSIES_COLORS[
+        (idx + (len(CURTSIES_COLORS) // 2)) % len(CURTSIES_COLORS)
+    ]
+    for idx in range(len(CURTSIES_COLORS))
+}
+INVERSE_COLORS["default"] = INVERSE_COLORS[CURTSIES_COLORS[0]]
 
 
 def func_for_letter(l, default="k"):
@@ -57,9 +68,7 @@ def fs_from_match(d):
     if d["bg"]:
         if d["bg"] == "I":
             # hack for finding the "inverse"
-            color = COLORS[
-                (COLORS.index(color) + (len(COLORS) // 2)) % len(COLORS)
-            ]
+            color = INVERSE_COLORS[color]
         else:
             color = CNAMES[d["bg"].lower()]
         if color != "default":
