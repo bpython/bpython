@@ -214,16 +214,6 @@ class Foo:
         pass
 
 
-class OldStyleFoo:
-    a = 10
-
-    def __init__(self):
-        self.b = 20
-
-    def method(self, x):
-        pass
-
-
 class Properties(Foo):
     @property
     def asserts_when_called(self):
