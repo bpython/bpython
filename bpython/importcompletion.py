@@ -40,10 +40,7 @@ LOADERS = (
         importlib.machinery.ExtensionFileLoader,
         importlib.machinery.EXTENSION_SUFFIXES,
     ),
-    (
-        importlib.machinery.SourceFileLoader,
-        importlib.machinery.SOURCE_SUFFIXES
-    ),
+    (importlib.machinery.SourceFileLoader, importlib.machinery.SOURCE_SUFFIXES),
 )
 
 
