@@ -1,7 +1,7 @@
 # The MIT License
 #
 # Copyright (c) 2009-2011 Andreas Stuehrk
-# Copyright (c) 2020 Sebastian Ramacher
+# Copyright (c) 2020-2021 Sebastian Ramacher
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,16 @@ from .line import (
 )
 
 SUFFIXES = importlib.machinery.all_suffixes()
+LOADERS = (
+    (
+        importlib.machinery.ExtensionFileLoader,
+        importlib.machinery.EXTENSION_SUFFIXES,
+    ),
+    (
+        importlib.machinery.SourceFileLoader,
+        importlib.machinery.SOURCE_SUFFIXES
+    ),
+)
 
 
 class ModuleGatherer:
@@ -144,7 +154,7 @@ class ModuleGatherer:
             # Path is not readable
             return
 
-        finder = importlib.machinery.FileFinder(str(path))
+        finder = importlib.machinery.FileFinder(str(path), *LOADERS)
         for p in children:
             if any(fnmatch.fnmatch(p.name, entry) for entry in self.skiplist):
                 # Path is on skiplist
