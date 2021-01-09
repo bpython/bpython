@@ -136,8 +136,17 @@ class ModuleGatherer:
             # Path is on skiplist
             return
 
+        try:
+            # https://bugs.python.org/issue34541
+            # Once we migrate to Python 3.8, we can change it back to directly iterator over
+            # path.iterdir().
+            children = tuple(path.iterdir())
+        except OSError:
+            # Path is not readable
+            return
+
         finder = importlib.machinery.FileFinder(str(path))
-        for p in path.iterdir():
+        for p in children:
             if any(fnmatch.fnmatch(p.name, entry) for entry in self.skiplist):
                 # Path is on skiplist
                 continue
