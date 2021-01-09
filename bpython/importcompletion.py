@@ -41,8 +41,7 @@ class ModuleGatherer:
     def __init__(self, path=None, skiplist=None):
         # The cached list of all known modules
         self.modules = set()
-        # List of stored paths to compare against so that real paths are not repeated
-        # handles symlinks not mount points
+        # List of (st_dev, st_ino) to compare against so that paths are not repeated
         self.paths = set()
         # Patterns to skip
         self.skiplist = skiplist if skiplist is not None else tuple()
@@ -187,8 +186,9 @@ class ModuleGatherer:
             else:
                 if is_package:
                     path_real = Path(pathname).resolve()
-                    if path_real not in self.paths:
-                        self.paths.add(path_real)
+                    stat = path_real.stat()
+                    if (stat.st_dev, stat.st_ino) not in self.paths:
+                        self.paths.add((stat.st_dev, stat.st_ino))
                         for subname in self.find_modules(path_real):
                             if subname != "__init__":
                                 yield f"{name}.{subname}"
