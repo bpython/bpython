@@ -91,7 +91,7 @@ class CrashersTest:
             (
                 sys.executable,
                 "-m",
-                "bpython." + self.backend,
+                f"bpython.{self.backend}",
                 "--config",
                 str(TEST_CONFIG),
             ),
