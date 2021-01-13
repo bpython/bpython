@@ -17,5 +17,16 @@ jobs:
         pip install black codespell
     - name: Check with black
       run: black --check .
+
+  codespell:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install codespell
     - name: Find typos with codespell
-      run: codespell --ignore-words-list="ba,te" --quiet-level=2 --skip="*.po" || true
+      run: codespell --ignore-words-list="ba,te" --quiet-level=2 --skip="*.po"
