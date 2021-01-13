@@ -524,7 +524,7 @@ class CLIRepl(repl.Repl):
     def echo(self, s, redraw=True):
         """Parse and echo a formatted string with appropriate attributes. It
         uses the formatting method as defined in formatter.py to parse the
-        srings. It won't update the screen if it's reevaluating the code (as it
+        strings. It won't update the screen if it's reevaluating the code (as it
         does with undo)."""
         a = get_colpair(self.config, "output")
         if "\x01" in s:

@@ -773,7 +773,7 @@ Suggestions/bug reports/patches are welcome regarding this.
 -----
 Well, hopefully we're one step closer to making the list sizing
 stuff work. I really hate doing code for that kind of thing as I
-never get it quite right, but with perseverence it should end up
+never get it quite right, but with perseverance it should end up
 being completely stable; it's not the hardest thing in the world.
 
 Various cosmetic fixes have been put in at the request of a bunch

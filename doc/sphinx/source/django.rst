@@ -12,15 +12,15 @@ out of the box models and views for a lot of stuff.
 For those people wanting to use bpython with their Django installation you can
 follow the following steps. Written by Chanita Siridechkun. The following
 instructions make bpython try to import a setting module in the current folder
-and let django set up its enviroment with the settings module (if found) if
-bpython can't find the settings module nothing happens and no enviroment gets
+and let django set up its environment with the settings module (if found) if
+bpython can't find the settings module nothing happens and no environment gets
 set up.
 
 The addition also checks if settings contains a PINAX_ROOT (if you use Pinax),
 if it finds this key it will do some additional Pinax setup. The Pinax addition
 was written by Skylar Saveland.
 
-bpython uses something called the PYTHONSTARTUP enviroment variable. This is
+bpython uses something called the PYTHONSTARTUP environment variable. This is
 also used by the vanilla Python REPL.
 
 Add the following lines to your ``.profile`` or equivalent file on your operating

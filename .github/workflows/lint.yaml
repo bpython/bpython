@@ -29,4 +29,4 @@ jobs:
         python -m pip install --upgrade pip
         pip install codespell
     - name: Find typos with codespell
-      run: codespell --ignore-words-list="ba,te" --quiet-level=2 --skip="*.po"
+      run: codespell --ignore-words-list="ba,te,deltion" --quiet-level=2 --skip="*.po"

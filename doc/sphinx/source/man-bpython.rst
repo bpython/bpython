@@ -19,7 +19,7 @@ The idea is to provide the user with all the features in-line, much like modern
 IDEs, but in a simple, lightweight package that can be run in a terminal window.
 
 In-line syntax highlighting.
-    Hilights commands as you type!
+    Highlights commands as you type!
 
 Readline-like autocomplete with suggestions displayed as you type.
     Press tab to complete expressions when there's only one suggestion.

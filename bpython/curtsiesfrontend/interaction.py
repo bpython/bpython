@@ -57,7 +57,7 @@ class StatusBar(BpythonInteraction):
         if msg in self.permanent_stack:
             self.permanent_stack.remove(msg)
         else:
-            raise ValueError("Messsage %r was not in permanent_stack" % msg)
+            raise ValueError("Message %r was not in permanent_stack" % msg)
 
     @property
     def has_focus(self):

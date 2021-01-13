@@ -402,7 +402,7 @@ yank_from_buffer
 ^^^^^^^^^^^^^^^^
 Default: C-y
 
-Pastes the current line from the buffer (the one you previously cutted)
+Pastes the current line from the buffer (the one you previously cut)
 
 CLI
 ---

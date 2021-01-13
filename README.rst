@@ -66,7 +66,7 @@ using the package manager.
 Ubuntu/Debian
 ~~~~~~~~~~~~~
 Ubuntu/Debian family Linux users and install bpython using the apt package manager, using the
-command with sudo priviledge:
+command with sudo privilege:
 
 .. code-block:: bash
 
@@ -108,7 +108,7 @@ Then you should invoke a program called ``bpython-curses.exe`` instead of ``bpyt
 Mac OS
 ~~~~~~
 Like Windows, Mac OS does not include a package manager by default. If you have installed any
-third-party pacakge manager like MacPorts, you can install it via
+third-party package manager like MacPorts, you can install it via
 
 .. code-block:: bash
 
