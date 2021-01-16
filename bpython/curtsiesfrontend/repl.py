@@ -18,40 +18,45 @@ from pygments.formatters import TerminalFormatter
 
 from wcwidth import wcswidth
 
-import curtsies
-from curtsies import FSArray, fmtstr, FmtStr, Termmode
-from curtsies import fmtfuncs
-from curtsies import events
+from curtsies import (
+    FSArray,
+    fmtstr,
+    FmtStr,
+    Termmode,
+    fmtfuncs,
+    events,
+    __version__ as curtsies_version,
+)
+from curtsies.configfile_keynames import keymap as key_dispatch
 
-import bpython
-from bpython.repl import Repl as BpythonRepl, SourceNotFound
-from bpython.repl import LineTypeTranslator as LineType
+from bpython import __version__
+from bpython.repl import (
+    Repl as BpythonRepl,
+    SourceNotFound,
+    LineTypeTranslator as LineType,
+)
 from bpython.config import getpreferredencoding
 from bpython.formatter import BPythonFormatter
 from bpython import autocomplete
 from bpython.translations import _
 from bpython.pager import get_pager_command
 
-from bpython.curtsiesfrontend import replpainter as paint
-from bpython.curtsiesfrontend import sitefix
-from bpython.curtsiesfrontend.coderunner import (
+from . import events as bpythonevents, sitefix, replpainter as paint
+from .coderunner import (
     CodeRunner,
     FakeOutput,
     is_main_thread,
 )
-from bpython.curtsiesfrontend.filewatch import ModuleChangedEventHandler
-from bpython.curtsiesfrontend.interaction import StatusBar
-from bpython.curtsiesfrontend.manual_readline import edit_keys
-from bpython.curtsiesfrontend import events as bpythonevents
-from bpython.curtsiesfrontend.parse import parse as bpythonparse
-from bpython.curtsiesfrontend.parse import func_for_letter, color_for_letter
-from bpython.curtsiesfrontend.preprocess import preprocess
-from bpython.curtsiesfrontend.interpreter import (
+from .filewatch import ModuleChangedEventHandler
+from .interaction import StatusBar
+from .manual_readline import edit_keys
+from .parse import parse as bpythonparse, func_for_letter, color_for_letter
+from .preprocess import preprocess
+from .interpreter import (
     Interp,
     code_finished_will_parse,
 )
 
-from curtsies.configfile_keynames import keymap as key_dispatch
 
 logger = logging.getLogger(__name__)
 
@@ -1996,7 +2001,7 @@ Press {config.edit_config_key} to edit this config file.
 """
         ).format(example_config_url=EXAMPLE_CONFIG_URL, config=self.config)
 
-        return f"bpython-curtsies version {bpython.__version__} using curtsies version {curtsies.__version__}\n{help_message}"
+        return f"bpython-curtsies version {__version__} using curtsies version {curtsies_version}\n{help_message}"
 
     def key_help_text(self):
         NOT_IMPLEMENTED = (
