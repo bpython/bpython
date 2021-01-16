@@ -221,7 +221,10 @@ class ImportLoader:
 
     def _create_module(self, spec):
         spec = self.loader.create_module(spec)
-        if getattr(spec, "origin", None) is not None and spec.origin != "builtin":
+        if (
+            getattr(spec, "origin", None) is not None
+            and spec.origin != "builtin"
+        ):
             self.watcher.track_module(spec.origin)
         return spec
 

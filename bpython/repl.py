@@ -130,9 +130,7 @@ class Interpreter(code.InteractiveInterpreter):
         files should always already have an encoding comment or be ASCII.
         By default an encoding line will be added if no filename is given.
 
-        In Python 3, source must be a unicode string
-        In Python 2, source may be latin-1 bytestring or unicode string,
-        following the interface of code.InteractiveInterpreter.
+        source must be a string
 
         Because adding an encoding comment to a unicode string in Python 2
         would cause a syntax error to be thrown which would reference code

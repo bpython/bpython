@@ -95,7 +95,10 @@ class CrashersTest:
                 "--config",
                 str(TEST_CONFIG),
             ),
-            env=dict(TERM="vt100", LANG=os.environ.get("LANG", "")),
+            env={
+                "TERM": "vt100",
+                "LANG": os.environ.get("LANG", ""),
+            },
             usePTY=(master, slave, os.ttyname(slave)),
         )
         return result
