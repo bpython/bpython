@@ -212,7 +212,20 @@ class ImportLoader:
         self.watcher = watcher
         self.loader = loader
 
-    def load_module(self, name):
+    def __getattr__(self, name):
+        if name == "create_module" and hasattr(self.loader, name):
+            return self._create_module
+        if name == "load_module" and hasattr(self.loader, name):
+            return self._load_module
+        return getattr(self.loader, name)
+
+    def _create_module(self, spec):
+        spec = self.loader.create_module(spec)
+        if getattr(spec, "origin", None) is not None and spec.origin != "builtin":
+            self.watcher.track_module(spec.origin)
+        return spec
+
+    def _load_module(self, name):
         module = self.loader.load_module(name)
         if hasattr(module, "__file__"):
             self.watcher.track_module(module.__file__)
@@ -220,42 +233,30 @@ class ImportLoader:
 
 
 class ImportFinder:
-    def __init__(self, watcher, old_meta_path):
+    def __init__(self, finder, watcher):
         self.watcher = watcher
-        self.old_meta_path = old_meta_path
+        self.finder = finder
 
-    def find_distributions(self, context):
-        for finder in self.old_meta_path:
-            distribution_finder = getattr(finder, "find_distributions", None)
-            if distribution_finder is not None:
-                loader = finder.find_distributions(context)
-                if loader is not None:
-                    return loader
+    def __getattr__(self, name):
+        if name == "find_spec" and hasattr(self.finder, name):
+            return self._find_spec
+        if name == "find_module" and hasattr(self.finder, name):
+            return self._find_module
+        return getattr(self.finder, name)
 
-        return None
+    def _find_spec(self, fullname, path, target=None):
+        # Attempt to find the spec
+        spec = self.finder.find_spec(fullname, path, target)
+        if spec is not None:
+            if getattr(spec, "__loader__", None) is not None:
+                # Patch the loader to enable reloading
+                spec.__loader__ = ImportLoader(self.watcher, spec.__loader__)
+        return spec
 
-    def find_spec(self, fullname, path, target=None):
-        for finder in self.old_meta_path:
-            # Consider the finder only if it implements find_spec
-            if getattr(finder, "find_spec", None) is None:
-                continue
-            # Attempt to find the spec
-            spec = finder.find_spec(fullname, path, target)
-            if spec is not None:
-                if getattr(spec, "__loader__", None) is not None:
-                    # Patch the loader to enable reloading
-                    spec.__loader__ = ImportLoader(
-                        self.watcher, spec.__loader__
-                    )
-                return spec
-
-    def find_module(self, fullname, path=None):
-        for finder in self.old_meta_path:
-            loader = finder.find_module(fullname, path)
-            if loader is not None:
-                return ImportLoader(self.watcher, loader)
-
-        return None
+    def _find_module(self, fullname, path=None):
+        loader = self.finder.find_module(fullname, path)
+        if loader is not None:
+            return ImportLoader(self.watcher, loader)
 
 
 class BaseRepl(BpythonRepl):
@@ -531,7 +532,17 @@ class BaseRepl(BpythonRepl):
 
         self.orig_meta_path = sys.meta_path
         if self.watcher:
-            sys.meta_path = [ImportFinder(self.watcher, self.orig_meta_path)]
+            meta_path = []
+            for finder in sys.meta_path:
+                # All elements get wrapped in ImportFinder instances execepted for instances of
+                # _SixMetaPathImporter (from six). When importing six, it will check if the importer
+                # is already part of sys.meta_path and will remove instances. We do not want to
+                # break this feature (see also #874).
+                if type(finder).__name__ == "_SixMetaPathImporter":
+                    meta_path.append(finder)
+                else:
+                    meta_path.append(ImportFinder(finder, self.watcher))
+            sys.meta_path = meta_path
 
         sitefix.monkeypatch_quit()
         return self
