@@ -11,10 +11,16 @@ General information:
 New features:
 
 * #643: Provide bpython._version if built from Github tarballs
+* #849: Make import completion skip list configurable
 
 Fixes:
 
+* #847: Fix import completion of modles
 * #857: Replace remaining use of deprecated imp with importlib
+* #866: Add more directories to the default import completion skip list
+* #873: Handle 'd' when mapping colors
+* #874: Avoid breakage with six's importer
+
 
 0.20.1
 ------
