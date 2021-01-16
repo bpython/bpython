@@ -1,3 +1,4 @@
+import blessings
 import contextlib
 import errno
 import greenlet
@@ -16,8 +17,6 @@ from pygments.lexers import Python3Lexer
 from pygments.formatters import TerminalFormatter
 
 from wcwidth import wcswidth
-
-import blessings
 
 import curtsies
 from curtsies import FSArray, fmtstr, FmtStr, Termmode
