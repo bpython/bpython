@@ -208,6 +208,8 @@ class ReevaluateFakeStdin:
 
 
 class ImportLoader:
+    """Wrapper for module loaders to watch their paths with watchdog."""
+
     def __init__(self, watcher, loader):
         self.watcher = watcher
         self.loader = loader
@@ -236,6 +238,8 @@ class ImportLoader:
 
 
 class ImportFinder:
+    """Wrapper for finders in sys.meta_path to replace wrap all loaders with ImportLoader."""
+
     def __init__(self, finder, watcher):
         self.watcher = watcher
         self.finder = finder
