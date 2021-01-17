@@ -110,9 +110,7 @@ class Interpreter(code.InteractiveInterpreter):
             sys.modules["__main__"] = main_mod = ModuleType("__main__")
             locals = main_mod.__dict__
 
-        # Unfortunately code.InteractiveInterpreter is a classic class, so no
-        # super()
-        code.InteractiveInterpreter.__init__(self, locals)
+        super().__init__(locals)
         self.timer = RuntimeTimer()
 
     def reset_running_time(self):
