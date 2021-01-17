@@ -14,13 +14,10 @@ import code
 import greenlet
 import logging
 import signal
-import threading
+
+from curtsies.input import is_main_thread
 
 logger = logging.getLogger(__name__)
-
-
-def is_main_thread():
-    return threading.main_thread() == threading.current_thread()
 
 
 class SigintHappened:

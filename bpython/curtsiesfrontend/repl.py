@@ -28,6 +28,7 @@ from curtsies import (
     __version__ as curtsies_version,
 )
 from curtsies.configfile_keynames import keymap as key_dispatch
+from curtsies.input import is_main_thread
 
 from bpython import __version__
 from bpython.repl import (
@@ -45,7 +46,6 @@ from . import events as bpythonevents, sitefix, replpainter as paint
 from .coderunner import (
     CodeRunner,
     FakeOutput,
-    is_main_thread,
 )
 from .filewatch import ModuleChangedEventHandler
 from .interaction import StatusBar
