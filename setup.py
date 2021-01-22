@@ -225,6 +225,7 @@ setup(
     long_description="""bpython is a fancy interface to the Python
     interpreter for Unix-like operating systems.""",
     classifiers=classifiers,
+    python_requires=">=3.6",
     install_requires=install_requires,
     extras_require=extras_require,
     packages=packages,
