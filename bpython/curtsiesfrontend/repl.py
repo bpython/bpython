@@ -16,7 +16,7 @@ from pygments import format as pygformat
 from pygments.lexers import Python3Lexer
 from pygments.formatters import TerminalFormatter
 
-from wcwidth import wcswidth
+from cwcwidth import wcswidth
 
 from curtsies import (
     FSArray,

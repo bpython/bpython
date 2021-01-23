@@ -1,5 +1,6 @@
 Pygments
 curtsies >=0.3.3
+cwcwidth
 greenlet
 pyxdg
 requests

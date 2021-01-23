@@ -179,7 +179,7 @@ install_requires = [
     "requests",
     "curtsies >=0.3.3",
     "greenlet",
-    "wcwidth",
+    "cwcwidth",
     "pyxdg",
 ]
 
