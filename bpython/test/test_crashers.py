@@ -97,7 +97,7 @@ class CrashersTest:
             ),
             env={
                 "TERM": "vt100",
-                "LANG": os.environ.get("LANG", ""),
+                "LANG": os.environ.get("LANG", "C.UTF-8"),
             },
             usePTY=(master, slave, os.ttyname(slave)),
         )

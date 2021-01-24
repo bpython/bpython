@@ -1,4 +1,5 @@
 import itertools
+import os
 import pydoc
 import string
 import sys
@@ -34,7 +35,12 @@ class ClearEnviron(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.mock_environ = mock.patch.dict(
-            "os.environ", {"LC_LANG": "C.UTF-8", "LANG": "C.UTF-8"}, clear=True
+            "os.environ",
+            {
+                "LC_ALL": os.environ.get("LC_ALL", "C.UTF-8"),
+                "LANG": os.environ.get("LANG", "C.UTF-8"),
+            },
+            clear=True,
         )
         cls.mock_environ.start()
         TestCase.setUpClass()
