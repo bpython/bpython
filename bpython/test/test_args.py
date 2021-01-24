@@ -10,7 +10,9 @@ from bpython.test import FixLanguageTestCase as TestCase
 
 
 class TestExecArgs(unittest.TestCase):
-    @unittest.skip("test broken under pytest")
+    # These tests are currently not very useful. Under pytest neither stdout nor stdin are ttys,
+    # hence bpython.args.parse will just exectute code by falling back to Python.
+
     def test_exec_dunder_file(self):
         with tempfile.NamedTemporaryFile(mode="w") as f:
             f.write(
@@ -25,7 +27,7 @@ class TestExecArgs(unittest.TestCase):
             p = subprocess.Popen(
                 [sys.executable] + ["-m", "bpython.curtsies", f.name],
                 stderr=subprocess.PIPE,
-                universal_newlines=True,
+                text=True,
             )
             (_, stderr) = p.communicate()
 
@@ -36,7 +38,6 @@ class TestExecArgs(unittest.TestCase):
             f.write(
                 dedent(
                     """\
-                #!/usr/bin/env python
                 # coding: utf-8
                 "你好 # nonascii"
                 """
@@ -50,7 +51,6 @@ class TestExecArgs(unittest.TestCase):
             except subprocess.CalledProcessError:
                 self.fail("Error running module with nonascii characters")
 
-    @unittest.skip("test broken under pytest")
     def test_exec_nonascii_file_linenums(self):
         with tempfile.NamedTemporaryFile(mode="w") as f:
             f.write(
@@ -66,7 +66,7 @@ class TestExecArgs(unittest.TestCase):
             p = subprocess.Popen(
                 [sys.executable, "-m", "bpython.curtsies", f.name],
                 stderr=subprocess.PIPE,
-                universal_newlines=True,
+                text=True,
             )
             (_, stderr) = p.communicate()
 
