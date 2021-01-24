@@ -65,6 +65,18 @@ class CurtsiesPaintingTest(FormatStringTest, ClearEnviron):
         if cursor_row_col is not None:
             self.assertEqual(cursor_pos, cursor_row_col)
 
+    def process_box_characters(self, screen):
+        if not self.repl.config.unicode_box or not config.supports_box_chars():
+            return [
+                line.replace("┌", "+")
+                .replace("└", "+")
+                .replace("┘", "+")
+                .replace("┐", "+")
+                .replace("─", "-")
+                for line in screen
+            ]
+        return screen
+
 
 class TestCurtsiesPaintingTest(CurtsiesPaintingTest):
     def test_history_is_cleared(self):
@@ -108,22 +120,15 @@ class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
         self.repl.height, self.repl.width = (5, 32)
         self.repl.current_line = "an"
         self.cursor_offset = 2
-        if config.supports_box_chars():
-            screen = [
+        screen = self.process_box_characters(
+            [
                 ">>> an",
                 "┌──────────────────────────────┐",
                 "│ and  any(                    │",
                 "└──────────────────────────────┘",
                 "Welcome to bpython! Press <F1> f",
             ]
-        else:
-            screen = [
-                ">>> an",
-                "+------------------------------+",
-                "| and  any(                    |",
-                "+------------------------------+",
-                "Welcome to bpython! Press <F1> f",
-            ]
+        )
         self.assert_paint_ignoring_formatting(screen, (0, 4))
 
     def test_argspec(self):
@@ -729,14 +734,16 @@ class TestCurtsiesInfoboxPaint(HigherLevelCurtsiesPaintingTest):
         self.repl.current_line = "abc"
         self.repl.cursor_offset = 3
         self.repl.process_event(".")
-        screen = [
-            ">>> abc.",
-            "+------------------+",
-            "| aaaaaaaaaaaaaaaa |",
-            "| b                |",
-            "| c                |",
-            "+------------------+",
-        ]
+        screen = self.process_box_characters(
+            [
+                ">>> abc.",
+                "┌──────────────────┐",
+                "│ aaaaaaaaaaaaaaaa │",
+                "│ b                │",
+                "│ c                │",
+                "└──────────────────┘",
+            ]
+        )
         self.assert_paint_ignoring_formatting(screen, (0, 8))
 
     def test_fill_screen(self):
@@ -745,23 +752,25 @@ class TestCurtsiesInfoboxPaint(HigherLevelCurtsiesPaintingTest):
         self.repl.current_line = "abc"
         self.repl.cursor_offset = 3
         self.repl.process_event(".")
-        screen = [
-            ">>> abc.",
-            "+------------------+",
-            "| aaaaaaaaaaaaaaaa |",
-            "| b                |",
-            "| c                |",
-            "| d                |",
-            "| e                |",
-            "| f                |",
-            "| g                |",
-            "| h                |",
-            "| i                |",
-            "| j                |",
-            "| k                |",
-            "| l                |",
-            "+------------------+",
-        ]
+        screen = self.process_box_characters(
+            [
+                ">>> abc.",
+                "┌──────────────────┐",
+                "│ aaaaaaaaaaaaaaaa │",
+                "│ b                │",
+                "│ c                │",
+                "│ d                │",
+                "│ e                │",
+                "│ f                │",
+                "│ g                │",
+                "│ h                │",
+                "│ i                │",
+                "│ j                │",
+                "│ k                │",
+                "│ l                │",
+                "└──────────────────┘",
+            ]
+        )
         self.assert_paint_ignoring_formatting(screen, (0, 8))
 
     def test_lower_on_screen(self):
@@ -771,37 +780,41 @@ class TestCurtsiesInfoboxPaint(HigherLevelCurtsiesPaintingTest):
         self.repl.current_line = "abc"
         self.repl.cursor_offset = 3
         self.repl.process_event(".")
-        screen = [
-            ">>> abc.",
-            "+------------------+",
-            "| aaaaaaaaaaaaaaaa |",
-            "| b                |",
-            "| c                |",
-            "| d                |",
-            "| e                |",
-            "| f                |",
-            "| g                |",
-            "| h                |",
-            "| i                |",
-            "| j                |",
-            "| k                |",
-            "| l                |",
-            "+------------------+",
-        ]
+        screen = self.process_box_characters(
+            [
+                ">>> abc.",
+                "┌──────────────────┐",
+                "│ aaaaaaaaaaaaaaaa │",
+                "│ b                │",
+                "│ c                │",
+                "│ d                │",
+                "│ e                │",
+                "│ f                │",
+                "│ g                │",
+                "│ h                │",
+                "│ i                │",
+                "│ j                │",
+                "│ k                │",
+                "│ l                │",
+                "└──────────────────┘",
+            ]
+        )
         # behavior before issue #466
         self.assert_paint_ignoring_formatting(
             screen, try_preserve_history_height=0
         )
         self.assert_paint_ignoring_formatting(screen, min_infobox_height=100)
         # behavior after issue #466
-        screen = [
-            ">>> abc.",
-            "+------------------+",
-            "| aaaaaaaaaaaaaaaa |",
-            "| b                |",
-            "| c                |",
-            "+------------------+",
-        ]
+        screen = self.process_box_characters(
+            [
+                ">>> abc.",
+                "┌──────────────────┐",
+                "│ aaaaaaaaaaaaaaaa │",
+                "│ b                │",
+                "│ c                │",
+                "└──────────────────┘",
+            ]
+        )
         self.assert_paint_ignoring_formatting(screen)
 
     def test_at_bottom_of_screen(self):
@@ -811,35 +824,39 @@ class TestCurtsiesInfoboxPaint(HigherLevelCurtsiesPaintingTest):
         self.repl.current_line = "abc"
         self.repl.cursor_offset = 3
         self.repl.process_event(".")
-        screen = [
-            ">>> abc.",
-            "+------------------+",
-            "| aaaaaaaaaaaaaaaa |",
-            "| b                |",
-            "| c                |",
-            "| d                |",
-            "| e                |",
-            "| f                |",
-            "| g                |",
-            "| h                |",
-            "| i                |",
-            "| j                |",
-            "| k                |",
-            "| l                |",
-            "+------------------+",
-        ]
+        screen = self.process_box_characters(
+            [
+                ">>> abc.",
+                "┌──────────────────┐",
+                "│ aaaaaaaaaaaaaaaa │",
+                "│ b                │",
+                "│ c                │",
+                "│ d                │",
+                "│ e                │",
+                "│ f                │",
+                "│ g                │",
+                "│ h                │",
+                "│ i                │",
+                "│ j                │",
+                "│ k                │",
+                "│ l                │",
+                "└──────────────────┘",
+            ]
+        )
         # behavior before issue #466
         self.assert_paint_ignoring_formatting(
             screen, try_preserve_history_height=0
         )
         self.assert_paint_ignoring_formatting(screen, min_infobox_height=100)
         # behavior after issue #466
-        screen = [
-            ">>> abc.",
-            "+------------------+",
-            "| aaaaaaaaaaaaaaaa |",
-            "| b                |",
-            "| c                |",
-            "+------------------+",
-        ]
+        screen = self.process_box_characters(
+            [
+                ">>> abc.",
+                "┌──────────────────┐",
+                "│ aaaaaaaaaaaaaaaa │",
+                "│ b                │",
+                "│ c                │",
+                "└──────────────────┘",
+            ]
+        )
         self.assert_paint_ignoring_formatting(screen)
