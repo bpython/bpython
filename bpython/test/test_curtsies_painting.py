@@ -4,7 +4,11 @@ import string
 import sys
 
 from contextlib import contextmanager
-from curtsies.formatstringarray import FormatStringTest, fsarray
+from curtsies.formatstringarray import (
+    fsarray,
+    assertFSArraysEqual,
+    assertFSArraysEqualIgnoringFormatting,
+)
 from curtsies.fmtfuncs import cyan, bold, green, yellow, on_magenta, red
 from unittest import mock
 
@@ -41,7 +45,7 @@ class ClearEnviron(TestCase):
         TestCase.tearDownClass()
 
 
-class CurtsiesPaintingTest(FormatStringTest, ClearEnviron):
+class CurtsiesPaintingTest(ClearEnviron):
     def setUp(self):
         class TestRepl(BaseRepl):
             def _request_refresh(inner_self):
@@ -56,14 +60,14 @@ class CurtsiesPaintingTest(FormatStringTest, ClearEnviron):
 
     def assert_paint(self, screen, cursor_row_col):
         array, cursor_pos = self.repl.paint()
-        self.assertFSArraysEqual(array, screen)
+        assertFSArraysEqual(array, screen)
         self.assertEqual(cursor_pos, cursor_row_col)
 
     def assert_paint_ignoring_formatting(
         self, screen, cursor_row_col=None, **paint_kwargs
     ):
         array, cursor_pos = self.repl.paint(**paint_kwargs)
-        self.assertFSArraysEqualIgnoringFormatting(array, screen)
+        assertFSArraysEqualIgnoringFormatting(array, screen)
         if cursor_row_col is not None:
             self.assertEqual(cursor_pos, cursor_row_col)
 
@@ -156,7 +160,7 @@ class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
             + bold(cyan("10"))
             + yellow(")")
         ]
-        self.assertFSArraysEqual(fsarray(array), fsarray(screen))
+        assertFSArraysEqual(fsarray(array), fsarray(screen))
 
     def test_formatted_docstring(self):
         actual = replpainter.formatted_docstring(
@@ -165,7 +169,7 @@ class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
             config=setup_config(),
         )
         expected = fsarray(["Returns the results", "", "Also has side effects"])
-        self.assertFSArraysEqualIgnoringFormatting(actual, expected)
+        assertFSArraysEqualIgnoringFormatting(actual, expected)
 
     def test_unicode_docstrings(self):
         "A bit of a special case in Python 2"
@@ -178,7 +182,7 @@ class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
             foo.__doc__, 40, config=setup_config()
         )
         expected = fsarray(["åß∂ƒ"])
-        self.assertFSArraysEqualIgnoringFormatting(actual, expected)
+        assertFSArraysEqualIgnoringFormatting(actual, expected)
 
     def test_nonsense_docstrings(self):
         for docstring in [
@@ -208,7 +212,7 @@ class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
         wd = pydoc.getdoc(foo)
         actual = replpainter.formatted_docstring(wd, 40, config=setup_config())
         expected = fsarray(["asdfåß∂ƒ"])
-        self.assertFSArraysEqualIgnoringFormatting(actual, expected)
+        assertFSArraysEqualIgnoringFormatting(actual, expected)
 
     def test_paint_lasts_events(self):
         actual = replpainter.paint_last_events(
@@ -219,7 +223,7 @@ class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
         else:
             expected = fsarray(["+-+", "|c|", "|b|", "+-+"])
 
-        self.assertFSArraysEqualIgnoringFormatting(actual, expected)
+        assertFSArraysEqualIgnoringFormatting(actual, expected)
 
 
 @contextmanager

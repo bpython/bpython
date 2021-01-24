@@ -177,7 +177,7 @@ classifiers = [
 install_requires = [
     "pygments",
     "requests",
-    "curtsies >=0.3.3",
+    "curtsies >=0.3.5",
     "greenlet",
     "cwcwidth",
     "pyxdg",
