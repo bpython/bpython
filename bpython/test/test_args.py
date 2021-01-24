@@ -53,8 +53,9 @@ def run_with_tty(command):
         if p.poll() is None:
             p.kill()
         p.wait()
-        if p.returncode:
-            raise RuntimeError(f"Subprocess exited with {p.returncode}")
+
+    if p.returncode:
+        raise RuntimeError(f"Subprocess exited with {p.returncode}")
 
     return (
         result[master_stdout].decode(getpreferredencoding()),
