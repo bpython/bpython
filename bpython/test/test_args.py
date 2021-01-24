@@ -27,7 +27,7 @@ class TestExecArgs(unittest.TestCase):
             p = subprocess.Popen(
                 [sys.executable] + ["-m", "bpython.curtsies", f.name],
                 stderr=subprocess.PIPE,
-                text=True,
+                universal_newlines=True,
             )
             (_, stderr) = p.communicate()
 
@@ -66,7 +66,7 @@ class TestExecArgs(unittest.TestCase):
             p = subprocess.Popen(
                 [sys.executable, "-m", "bpython.curtsies", f.name],
                 stderr=subprocess.PIPE,
-                text=True,
+                universal_newlines=True,
             )
             (_, stderr) = p.communicate()
 
