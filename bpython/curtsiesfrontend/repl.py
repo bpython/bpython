@@ -1576,7 +1576,10 @@ class BaseRepl(BpythonRepl):
                 + wcswidth(self.stdin.current_line, self.stdin.cursor_offset),
                 width,
             )
-            assert cursor_row >= 0 and cursor_column >= 0, (cursor_row, cursor_column)
+            assert cursor_row >= 0 and cursor_column >= 0, (
+                cursor_row,
+                cursor_column,
+            )
         elif self.coderunner.running:  # TODO does this ever happen?
             cursor_row, cursor_column = divmod(
                 (
