@@ -1573,7 +1573,9 @@ class BaseRepl(BpythonRepl):
         if self.stdin.has_focus:
             cursor_row, cursor_column = divmod(
                 wcswidth(self.current_stdouterr_line)
-                + wcswidth(self.stdin.current_line, self.stdin.cursor_offset),
+                + wcswidth(
+                    self.stdin.current_line, max(0, self.stdin.cursor_offset)
+                ),
                 width,
             )
             assert cursor_row >= 0 and cursor_column >= 0, (
@@ -1600,7 +1602,7 @@ class BaseRepl(BpythonRepl):
                 (
                     wcswidth(self.current_cursor_line_without_suggestion.s)
                     - wcswidth(self.current_line)
-                    + wcswidth(self.current_line, self.cursor_offset)
+                    + wcswidth(self.current_line, max(0, self.cursor_offset))
                 )
                 + self.number_of_padding_chars_on_current_cursor_line(),
                 width,
