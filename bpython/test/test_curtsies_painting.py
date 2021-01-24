@@ -29,7 +29,9 @@ def setup_config():
 class ClearEnviron(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.mock_environ = mock.patch.dict("os.environ", {}, clear=True)
+        cls.mock_environ = mock.patch.dict(
+            "os.environ", {"LC_LANG": "C.UTF-8", "LANG": "C.UTF-8"}, clear=True
+        )
         cls.mock_environ.start()
         TestCase.setUpClass()
 
