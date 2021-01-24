@@ -1576,7 +1576,7 @@ class BaseRepl(BpythonRepl):
                 + wcswidth(self.stdin.current_line[: self.stdin.cursor_offset]),
                 width,
             )
-            assert cursor_column >= 0, cursor_column
+            assert cursor_row >= 0 and cursor_column >= 0, (cursor_row, cursor_column)
         elif self.coderunner.running:  # TODO does this ever happen?
             cursor_row, cursor_column = divmod(
                 (
@@ -1585,7 +1585,8 @@ class BaseRepl(BpythonRepl):
                 ),
                 width,
             )
-            assert cursor_column >= 0, (
+            assert cursor_row >= 0 and cursor_column >= 0, (
+                cursor_row,
                 cursor_column,
                 len(self.current_cursor_line),
                 len(self.current_line),
@@ -1601,7 +1602,8 @@ class BaseRepl(BpythonRepl):
                 + self.number_of_padding_chars_on_current_cursor_line(),
                 width,
             )
-            assert cursor_column >= 0, (
+            assert cursor_row >= 0 and cursor_column >= 0, (
+                cursor_row,
                 cursor_column,
                 len(self.current_cursor_line),
                 len(self.current_line),
