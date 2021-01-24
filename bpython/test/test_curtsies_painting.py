@@ -659,7 +659,7 @@ class TestCurtsiesRewindRedraw(HigherLevelCurtsiesPaintingTest):
                 cyan(">>> ") + on_magenta(bold(red("("))),
                 green("... ") + on_magenta(bold(red(")"))),
             ],
-            width=32
+            width=32,
         )
         self.assert_paint(screen, (1, 5))
 
@@ -670,7 +670,7 @@ class TestCurtsiesRewindRedraw(HigherLevelCurtsiesPaintingTest):
                 cyan(">>> ") + yellow("("),
                 green("... ") + yellow(")") + bold(cyan(" ")),
             ],
-            width=32
+            width=32,
         )
         self.assert_paint(screen, (1, 6))
 

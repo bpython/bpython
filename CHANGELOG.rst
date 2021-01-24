@@ -27,6 +27,12 @@ Fixes:
 * #873: Handle 'd' when mapping colors
 * #874: Avoid breakage with six's importer
 
+Changes to dependencies:
+
+* curtsies >= 0.3.5 is now required
+* pyxdg is now required
+* wcwidth has been replaced with cwcwidth
+
 0.20.1
 ------
 
