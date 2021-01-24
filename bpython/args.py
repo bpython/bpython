@@ -25,7 +25,6 @@
 Module to handle command line argument parsing, for all front-ends.
 """
 
-import code
 import importlib.util
 import os
 import sys
@@ -145,9 +144,8 @@ def parse(args, extras=None, ignore_stdin=False):
         raise SystemExit
 
     if not ignore_stdin and not (sys.stdin.isatty() and sys.stdout.isatty()):
-        interpreter = code.InteractiveInterpreter()
-        interpreter.runsource(sys.stdin.read())
-        raise SystemExit
+        # Just let Python handle this
+        os.execv(sys.executable, [sys.executable] + args)
 
     config = Struct()
     loadini(config, options.config)
