@@ -641,6 +641,7 @@ class TestCurtsiesRewindRedraw(HigherLevelCurtsiesPaintingTest):
     def test_unhighlight_paren_bugs(self):
         """two previous bugs, parent didn't highlight until next render
         and paren didn't unhighlight until enter"""
+        self.repl.width = 32
         self.assertEqual(self.repl.rl_history.entries, [""])
         self.enter("(")
         self.assertEqual(self.repl.rl_history.entries, [""])
@@ -657,7 +658,8 @@ class TestCurtsiesRewindRedraw(HigherLevelCurtsiesPaintingTest):
             [
                 cyan(">>> ") + on_magenta(bold(red("("))),
                 green("... ") + on_magenta(bold(red(")"))),
-            ]
+            ],
+            width=32
         )
         self.assert_paint(screen, (1, 5))
 
@@ -667,7 +669,8 @@ class TestCurtsiesRewindRedraw(HigherLevelCurtsiesPaintingTest):
             [
                 cyan(">>> ") + yellow("("),
                 green("... ") + yellow(")") + bold(cyan(" ")),
-            ]
+            ],
+            width=32
         )
         self.assert_paint(screen, (1, 6))
 
