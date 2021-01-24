@@ -288,6 +288,7 @@ def loadini(struct, config_path):
     struct.curtsies_right_arrow_completion = config.getboolean(
         "curtsies", "right_arrow_completion"
     )
+    struct.unicode_box = config.getboolean("general", "unicode_box")
 
     color_scheme_name = config.get("general", "color_scheme")
 
@@ -332,7 +333,7 @@ def loadini(struct, config_path):
         struct.autocomplete_mode = default_completion
 
     # set box drawing characters
-    if config.getboolean("general", "unicode_box") and supports_box_chars():
+    if struct.unicode_box and supports_box_chars():
         struct.left_border = "│"
         struct.right_border = "│"
         struct.top_border = "─"
