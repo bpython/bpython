@@ -64,9 +64,6 @@ def run_with_tty(command):
 
 
 class TestExecArgs(unittest.TestCase):
-    # These tests are currently not very useful. Under pytest neither stdout nor stdin are ttys,
-    # hence bpython.args.parse will just exectute code by falling back to Python.
-
     def test_exec_dunder_file(self):
         with tempfile.NamedTemporaryFile(mode="w") as f:
             f.write(
