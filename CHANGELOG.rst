@@ -17,7 +17,7 @@ New features:
 
 Fixes:
 
-* #847: Fix import completion of modles
+* #847: Fix import completion of modules
 * #857: Replace remaining use of deprecated imp with importlib
 * #862: Upgrade curtsies version requirements
   Thanks to Kelsey Blair
