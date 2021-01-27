@@ -5,7 +5,7 @@ include LICENSE
 include data/bpython.png
 include data/org.bpython-interpreter.bpython.desktop
 include data/org.bpython-interpreter.bpython.appdata.xml
-include doc/sphinx/source/conf.py
+include doc/sphinx/source/*.py
 include doc/sphinx/source/*.rst
 include doc/sphinx/source/logo.png
 include bpython/test/*.py
