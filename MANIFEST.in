@@ -8,9 +8,9 @@ include data/org.bpython-interpreter.bpython.appdata.xml
 include doc/sphinx/source/conf.py
 include doc/sphinx/source/*.rst
 include doc/sphinx/source/logo.png
-include *.theme
 include bpython/test/*.py
 include bpython/test/*.theme
 include bpython/translations/*/LC_MESSAGES/bpython.po
 include bpython/translations/*/LC_MESSAGES/bpython.mo
 include bpython/sample-config
+include theme/*.theme
