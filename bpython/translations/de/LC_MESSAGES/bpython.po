@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: bpython mercurial\n"
 "Report-Msgid-Bugs-To: http://github.com/bpython/bpython/issues\n"
-"POT-Creation-Date: 2021-01-01 15:21+0100\n"
-"PO-Revision-Date: 2020-10-29 12:26+0100\n"
+"POT-Creation-Date: 2021-01-29 22:59+0100\n"
+"PO-Revision-Date: 2021-01-29 22:58+0100\n"
 "Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language: de\n"
 "Language-Team: de <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.8.0\n"
 
-#: bpython/args.py:92
+#: bpython/args.py:91
 #, python-format
 msgid ""
 "Usage: %(prog)s [options] [file [args]]\n"
@@ -29,26 +29,24 @@ msgstr ""
 "Hinweis: Wenn bpython Argumente übergeben bekommt, die nicht verstanden "
 "werden, wird der normale Python Interpreter ausgeführt."
 
-#: bpython/args.py:102
+#: bpython/args.py:101
 msgid "Use CONFIG instead of default config file."
 msgstr "Verwende CONFIG antatt der standardmäßigen Konfigurationsdatei."
 
-#: bpython/args.py:108
+#: bpython/args.py:107
 msgid "Drop to bpython shell after running file instead of exiting."
 msgstr "Verbleibe in bpython nach dem Ausführen der Datei."
 
-#: bpython/args.py:114
+#: bpython/args.py:113
 msgid "Don't flush the output to stdout."
 msgstr "Gib Ausgabe beim Beenden nicht ernaut auf stdout aus."
 
-#: bpython/args.py:120
+#: bpython/args.py:119
 msgid "Print version and exit."
 msgstr "Zeige Versionsinformationen an und beende."
 
-#: bpython/args.py:131
-msgid ""
-"File to extecute and additional arguments passed on to the executed "
-"script."
+#: bpython/args.py:130
+msgid "File to execute and additional arguments passed on to the executed script."
 msgstr ""
 
 #: bpython/cli.py:312 bpython/urwid.py:537
@@ -69,7 +67,7 @@ msgstr "Speichern"
 
 #: bpython/cli.py:1694
 msgid "Pastebin"
-msgstr ""
+msgstr "Pastebin"
 
 #: bpython/cli.py:1695
 msgid "Pager"
@@ -99,7 +97,7 @@ msgstr ""
 
 #: bpython/curtsies.py:148
 msgid "curtsies arguments"
-msgstr ""
+msgstr "Argumente für curtsies"
 
 #: bpython/curtsies.py:149
 msgid "Additional arguments specific to the curtsies-based REPL."
@@ -131,131 +129,131 @@ msgstr "Keine Ausgabe von Hilfsprogramm vorhanden."
 msgid "Failed to recognize the helper program's output as an URL."
 msgstr "Konnte Ausgabe von Hilfsprogramm nicht verarbeiten."
 
-#: bpython/repl.py:657
+#: bpython/repl.py:653
 msgid "Nothing to get source of"
 msgstr "Nichts um Quellcode abzurufen"
 
-#: bpython/repl.py:662
+#: bpython/repl.py:658
 #, python-format
 msgid "Cannot get source: %s"
 msgstr "Kann Quellcode nicht finden: %s"
 
-#: bpython/repl.py:667
+#: bpython/repl.py:663
 #, python-format
 msgid "Cannot access source of %r"
 msgstr "Kann auf Quellcode nicht zugreifen: %r"
 
-#: bpython/repl.py:669
+#: bpython/repl.py:665
 #, python-format
 msgid "No source code found for %s"
 msgstr "Quellcode für %s nicht gefunden"
 
-#: bpython/repl.py:824
+#: bpython/repl.py:820
 msgid "Save to file (Esc to cancel): "
 msgstr "In Datei speichern (Esc um abzubrechen): "
 
-#: bpython/repl.py:826 bpython/repl.py:829 bpython/repl.py:853
+#: bpython/repl.py:822 bpython/repl.py:825 bpython/repl.py:849
 msgid "Save cancelled."
 msgstr "Speichern abgebrochen."
 
-#: bpython/repl.py:840
+#: bpython/repl.py:836
 #, python-format
 msgid "%s already exists. Do you want to (c)ancel,  (o)verwrite or (a)ppend? "
 msgstr "%s existiert bereit. (C) abbrechen, (o) überschrieben oder (a) anhängen? "
 
-#: bpython/repl.py:848
+#: bpython/repl.py:844
 msgid "overwrite"
 msgstr "überschreiben"
 
-#: bpython/repl.py:850
+#: bpython/repl.py:846
 msgid "append"
 msgstr "anhängen"
 
-#: bpython/repl.py:862 bpython/repl.py:1169
+#: bpython/repl.py:858 bpython/repl.py:1165
 #, python-format
 msgid "Error writing file '%s': %s"
 msgstr "Fehler beim Schreiben in Datei '%s': %s"
 
-#: bpython/repl.py:864
+#: bpython/repl.py:860
 #, python-format
 msgid "Saved to %s."
 msgstr "Nach %s gespeichert."
 
-#: bpython/repl.py:870
+#: bpython/repl.py:866
 msgid "No clipboard available."
 msgstr "Zwischenablage ist nicht verfügbar."
 
-#: bpython/repl.py:877
+#: bpython/repl.py:873
 msgid "Could not copy to clipboard."
 msgstr "Konnte nicht in Zwischenablage kopieren."
 
-#: bpython/repl.py:879
+#: bpython/repl.py:875
 msgid "Copied content to clipboard."
 msgstr "Inhalt wurde in Zwischenablage kopiert."
 
-#: bpython/repl.py:888
+#: bpython/repl.py:884
 msgid "Pastebin buffer? (y/N) "
 msgstr ""
 
-#: bpython/repl.py:890
+#: bpython/repl.py:886
 msgid "Pastebin aborted."
 msgstr ""
 
-#: bpython/repl.py:898
+#: bpython/repl.py:894
 #, python-format
 msgid "Duplicate pastebin. Previous URL: %s. Removal URL: %s"
 msgstr ""
 
-#: bpython/repl.py:904
+#: bpython/repl.py:900
 msgid "Posting data to pastebin..."
 msgstr "Lade Daten hoch..."
 
-#: bpython/repl.py:908
+#: bpython/repl.py:904
 #, python-format
 msgid "Upload failed: %s"
 msgstr "Hochladen ist fehlgeschlagen: %s"
 
-#: bpython/repl.py:917
+#: bpython/repl.py:913
 #, python-format
 msgid "Pastebin URL: %s - Removal URL: %s"
-msgstr ""
+msgstr "Pastebin URL: %s - URL zum Löschen: %s"
 
-#: bpython/repl.py:922
+#: bpython/repl.py:918
 #, python-format
 msgid "Pastebin URL: %s"
-msgstr ""
+msgstr "Pastebin URL: %s"
 
-#: bpython/repl.py:960
+#: bpython/repl.py:956
 #, python-format
 msgid "Undo how many lines? (Undo will take up to ~%.1f seconds) [1]"
 msgstr ""
 "Wie viele Zeilen rückgängig machen? (Rückgängigmachen wird bis zu ~%.1f "
 "Sekunden brauchen) [1]"
 
-#: bpython/repl.py:968 bpython/repl.py:972
+#: bpython/repl.py:964 bpython/repl.py:968
 msgid "Undo canceled"
 msgstr "Rückgängigmachen abgebrochen"
 
-#: bpython/repl.py:975
+#: bpython/repl.py:971
 #, python-format
 msgid "Undoing %d line... (est. %.1f seconds)"
 msgid_plural "Undoing %d lines... (est. %.1f seconds)"
 msgstr[0] "Mache %d Zeile rückgängig... (ungefähr %.1f Sekunden)"
 msgstr[1] "Mache %d Zeilen rückgängig... (ungefähr %.1f Sekunden)"
 
-#: bpython/repl.py:1151
+#: bpython/repl.py:1147
 msgid "Config file does not exist - create new from default? (y/N)"
 msgstr ""
 "Konfigurationsdatei existiert nicht. Soll eine neue Datei erstellt "
 "werden? (j/N)"
 
-#: bpython/repl.py:1179
+#: bpython/repl.py:1175
 msgid "bpython config file edited. Restart bpython for changes to take effect."
 msgstr ""
 "bpython Konfigurationsdatei bearbeitet. Starte bpython neu damit die "
 "Änderungen übernommen werden."
 
-#: bpython/repl.py:1185
+#: bpython/repl.py:1181
 #, python-format
 msgid "Error editing config file: %s"
 msgstr "Fehler beim Bearbeiten der Konfigurationsdatei: %s"
@@ -301,57 +299,57 @@ msgstr ""
 "`bpython`. Diese Implementierung wird ab Version 0.19 nicht mehr aktiv "
 "unterstützt und wird in einer zukünftigen Version entfernt werden."
 
-#: bpython/curtsiesfrontend/repl.py:312
+#: bpython/curtsiesfrontend/repl.py:324
 msgid "Welcome to bpython!"
 msgstr "Willkommen by bpython!"
 
-#: bpython/curtsiesfrontend/repl.py:314
+#: bpython/curtsiesfrontend/repl.py:326
 #, python-format
 msgid "Press <%s> for help."
 msgstr "Drücke <%s> für Hilfe."
 
-#: bpython/curtsiesfrontend/repl.py:643
+#: bpython/curtsiesfrontend/repl.py:663
 #, python-format
 msgid "Executing PYTHONSTARTUP failed: %s"
 msgstr "Fehler beim Ausführen von PYTHONSTARTUP: %s"
 
-#: bpython/curtsiesfrontend/repl.py:661
+#: bpython/curtsiesfrontend/repl.py:681
 #, python-format
 msgid "Reloaded at %s because %s modified."
 msgstr "Bei %s neugeladen, da %s modifiziert wurde."
 
-#: bpython/curtsiesfrontend/repl.py:970
+#: bpython/curtsiesfrontend/repl.py:990
 msgid "Session not reevaluated because it was not edited"
 msgstr "Die Sitzung wurde nicht neu ausgeführt, da sie nicht berabeitet wurde"
 
-#: bpython/curtsiesfrontend/repl.py:985
+#: bpython/curtsiesfrontend/repl.py:1005
 msgid "Session not reevaluated because saved file was blank"
 msgstr "Die Sitzung wurde nicht neu ausgeführt, da die gespeicherte Datei leer war"
 
-#: bpython/curtsiesfrontend/repl.py:995
+#: bpython/curtsiesfrontend/repl.py:1015
 msgid "Session edited and reevaluated"
 msgstr "Sitzung bearbeitet und neu ausgeführt"
 
-#: bpython/curtsiesfrontend/repl.py:1006
+#: bpython/curtsiesfrontend/repl.py:1026
 #, python-format
 msgid "Reloaded at %s by user."
 msgstr "Bei %s vom Benutzer neu geladen."
 
-#: bpython/curtsiesfrontend/repl.py:1012
+#: bpython/curtsiesfrontend/repl.py:1032
 msgid "Auto-reloading deactivated."
 msgstr "Automatisches Neuladen deaktiviert."
 
-#: bpython/curtsiesfrontend/repl.py:1017
+#: bpython/curtsiesfrontend/repl.py:1037
 msgid "Auto-reloading active, watching for file changes..."
 msgstr "Automatisches Neuladen ist aktiv; beobachte Dateiänderungen..."
 
-#: bpython/curtsiesfrontend/repl.py:1023
+#: bpython/curtsiesfrontend/repl.py:1043
 msgid "Auto-reloading not available because watchdog not installed."
 msgstr ""
 "Automatisches Neuladen ist nicht verfügbar da watchdog nicht installiert "
 "ist."
 
-#: bpython/curtsiesfrontend/repl.py:1958
+#: bpython/curtsiesfrontend/repl.py:1985
 msgid ""
 "\n"
 "Thanks for using bpython!\n"
