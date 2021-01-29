@@ -128,7 +128,7 @@ def parse(args, extras=None, ignore_stdin=False):
         "args",
         nargs=argparse.REMAINDER,
         help=_(
-            "File to extecute and additional arguments passed on to the executed script."
+            "File to execute and additional arguments passed on to the executed script."
         ),
     )
 
