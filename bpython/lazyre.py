@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import functools
 import re
 
 
@@ -35,6 +36,7 @@ class LazyReCompile:
         self.compiled = None
 
     def compile_regex(method):
+        @functools.wraps(method)
         def _impl(self, *args, **kwargs):
             if self.compiled is None:
                 self.compiled = re.compile(self.regex, self.flags)
