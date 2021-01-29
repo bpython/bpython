@@ -511,7 +511,7 @@ class ParameterNameCompletion(BaseCompletionType):
             return None
         if argspec:
             matches = {
-                name + "="
+                f"{name}="
                 for name in argspec[1][0]
                 if isinstance(name, str) and name.startswith(r.word)
             }
