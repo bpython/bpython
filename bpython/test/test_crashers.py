@@ -72,7 +72,7 @@ class CrashersTest:
                         self.data = self.data[index + 4 :]
                         self.transport.write(input.encode(encoding))
                         self.state = next(self.states)
-                    elif self.data == '\x1b[6n':
+                    elif self.data == "\x1b[6n":
                         # this is a cursor position query
                         # respond that cursor is on row 2, column 1
                         self.transport.write("\x1b[2;1R".encode(encoding))
@@ -98,7 +98,7 @@ class CrashersTest:
                 f"bpython.{self.backend}",
                 "--config",
                 str(TEST_CONFIG),
-                "-q", # prevents version greeting
+                "-q",  # prevents version greeting
             ),
             env={
                 "TERM": "vt100",
