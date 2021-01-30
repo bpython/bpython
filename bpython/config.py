@@ -31,8 +31,15 @@ from pathlib import Path
 from xdg import BaseDirectory
 
 from .autocomplete import AutocompleteModes
+from .curtsiesfrontend.parse import CNAMES
 
 default_completion = AutocompleteModes.SIMPLE
+
+
+class UnknownColorCode(Exception):
+    def __init__(self, key, color):
+        self.key = key
+        self.color = color
 
 
 class Struct:
@@ -324,6 +331,11 @@ def loadini(struct, config_path):
                 f"Could not load theme '{color_scheme_name}' from {path}.\n"
             )
             sys.exit(1)
+        except UnknownColorCode as ucc:
+            sys.stderr.write(
+                f"Theme '{color_scheme_name}' contains invalid color: {ucc.key} = {ucc.color}.\n"
+            )
+            sys.exit(1)
 
     # expand path of history file
     struct.hist_file = Path(struct.hist_file).expanduser()
@@ -362,6 +374,8 @@ def load_theme(struct, path, colors, default_colors):
             colors[k] = theme.get("syntax", k)
         else:
             colors[k] = theme.get("interface", k)
+        if colors[k].lower() not in CNAMES:
+            raise UnknownColorCode(k, colors[k])
 
     # Check against default theme to see if all values are defined
     for k, v in default_colors.items():
