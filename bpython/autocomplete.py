@@ -175,10 +175,7 @@ def few_enough_underscores(current, match):
         return True
     elif current.startswith("_") and not match.startswith("__"):
         return True
-    elif match.startswith("_"):
-        return False
-    else:
-        return True
+    return not match.startswith("_")
 
 
 def method_match_simple(word, size, text):
