@@ -72,6 +72,10 @@ class CrashersTest:
                         self.data = self.data[index + 4 :]
                         self.transport.write(input.encode(encoding))
                         self.state = next(self.states)
+                    elif self.data == "\x1b[6n":
+                        # this is a cursor position query
+                        # respond that cursor is on row 2, column 1
+                        self.transport.write("\x1b[2;1R".encode(encoding))
                 else:
                     self.transport.closeStdin()
                     if self.transport.pid is not None:
@@ -94,6 +98,7 @@ class CrashersTest:
                 f"bpython.{self.backend}",
                 "--config",
                 str(TEST_CONFIG),
+                "-q",  # prevents version greeting
             ),
             env={
                 "TERM": "vt100",
@@ -126,6 +131,11 @@ class CrashersTest:
 
     def check_no_traceback(self, data):
         self.assertNotIn("Traceback", data)
+
+
+@unittest.skipIf(reactor is None, "twisted is not available")
+class CurtsiesCrashersTest(TrialTestCase, CrashersTest):
+    backend = "curtsies"
 
 
 @unittest.skipIf(reactor is None, "twisted is not available")
