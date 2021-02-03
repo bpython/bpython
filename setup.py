@@ -162,8 +162,8 @@ data_files = [
     ),
     # AppData
     (
-        os.path.join("share", "appinfo"),
-        ["data/org.bpython-interpreter.bpython.appdata.xml"],
+        os.path.join("share", "metainfo"),
+        ["data/org.bpython-interpreter.bpython.metainfo.xml"],
     ),
     # icon
     (os.path.join("share", "pixmaps"), ["data/bpython.png"]),
