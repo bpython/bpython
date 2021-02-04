@@ -327,8 +327,6 @@ class BaseRepl(BpythonRepl):
                 )
             else:
                 banner = None
-        # only one implemented currently
-        config.autocomplete_mode = autocomplete.AutocompleteModes.SIMPLE
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 1
 
