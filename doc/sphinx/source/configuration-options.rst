@@ -15,11 +15,10 @@ When this is off, you can hit tab to see the suggestions.
 
 autocomplete_mode
 ^^^^^^^^^^^^^^^^^
-There are three modes for autocomplete. simple, substring, and fuzzy.  Simple
-matches methods with a common prefix, substring matches methods with a common
-subsequence, and fuzzy matches methods with common characters (default: simple).
-
-As of version 0.14 this option has no effect, but is reserved for later use.
+There are four modes for autocomplete: ``none``, ``simple``, ``substring``, and
+``fuzzy``. Simple matches methods with a common prefix, substring matches
+methods with a common subsequence, and fuzzy matches methods with common
+characters (default: simple). None disables autocompletion.
 
 .. versionadded:: 0.12
 
