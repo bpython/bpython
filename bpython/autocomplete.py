@@ -664,18 +664,25 @@ def get_completer(completers, cursor_offset, line, **kwargs):
 
 def get_default_completer(mode=AutocompleteModes.SIMPLE, module_gatherer=None):
     return (
-        DictKeyCompletion(mode=mode),
-        ImportCompletion(module_gatherer, mode=mode),
-        FilenameCompletion(mode=mode),
-        MagicMethodCompletion(mode=mode),
-        MultilineJediCompletion(mode=mode),
-        CumulativeCompleter(
-            (GlobalCompletion(mode=mode), ParameterNameCompletion(mode=mode)),
-            mode=mode,
-        ),
-        AttrCompletion(mode=mode),
-        ExpressionAttributeCompletion(mode=mode),
-    ) if mode != AutocompleteModes.NONE else tuple()
+        (
+            DictKeyCompletion(mode=mode),
+            ImportCompletion(module_gatherer, mode=mode),
+            FilenameCompletion(mode=mode),
+            MagicMethodCompletion(mode=mode),
+            MultilineJediCompletion(mode=mode),
+            CumulativeCompleter(
+                (
+                    GlobalCompletion(mode=mode),
+                    ParameterNameCompletion(mode=mode),
+                ),
+                mode=mode,
+            ),
+            AttrCompletion(mode=mode),
+            ExpressionAttributeCompletion(mode=mode),
+        )
+        if mode != AutocompleteModes.NONE
+        else tuple()
+    )
 
 
 def _callable_postfix(value, word):
