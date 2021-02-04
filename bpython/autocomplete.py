@@ -48,8 +48,8 @@ class AutocompleteModes(Enum):
 
     @classmethod
     def from_string(cls, value):
-        if value in cls.__members__:
-            return cls.__members__[value]
+        if value.upper() in cls.__members__:
+            return cls.__members__[value.upper()]
         return None
 
 
