@@ -42,6 +42,7 @@ from .simpleeval import safe_eval, evaluate_current_expression, EvaluationError
 
 # Autocomplete modes
 class AutocompleteModes(Enum):
+    NONE = "none"
     SIMPLE = "simple"
     SUBSTRING = "substring"
     FUZZY = "fuzzy"
@@ -178,6 +179,10 @@ def few_enough_underscores(current, match):
     return not match.startswith("_")
 
 
+def method_match_none(word, size, text):
+    return False
+
+
 def method_match_simple(word, size, text):
     return word[:size] == text
 
@@ -192,6 +197,7 @@ def method_match_fuzzy(word, size, text):
 
 
 MODES_MAP = {
+    AutocompleteModes.NONE: method_match_none,
     AutocompleteModes.SIMPLE: method_match_simple,
     AutocompleteModes.SUBSTRING: method_match_substring,
     AutocompleteModes.FUZZY: method_match_fuzzy,
@@ -669,7 +675,7 @@ def get_default_completer(mode=AutocompleteModes.SIMPLE, module_gatherer=None):
         ),
         AttrCompletion(mode=mode),
         ExpressionAttributeCompletion(mode=mode),
-    )
+    ) if mode != AutocompleteModes.NONE else tuple()
 
 
 def _callable_postfix(value, word):
