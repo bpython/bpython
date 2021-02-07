@@ -1,7 +1,7 @@
 """Tools for preparing code to be run in the REPL (removing blank lines,
 etc)"""
 
-from bpython.lazyre import LazyReCompile
+from ..lazyre import LazyReCompile
 
 # TODO specifically catch IndentationErrors instead of any syntax errors
 
