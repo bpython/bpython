@@ -1240,8 +1240,6 @@ class BaseRepl(BpythonRepl):
 
         Must be able to handle FmtStrs because interpreter pass in
         tracebacks already formatted."""
-        if not output:
-            return
         lines = output.split("\n")
         logger.debug("display_lines: %r", self.display_lines)
         self.current_stdouterr_line += lines[0]
