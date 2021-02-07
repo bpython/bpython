@@ -2,9 +2,9 @@
 etc)"""
 
 from ..lazyre import LazyReCompile
+from itertools import tee, islice, chain
 
 # TODO specifically catch IndentationErrors instead of any syntax errors
-
 
 indent_empty_lines_re = LazyReCompile(r"\s*")
 tabs_to_spaces_re = LazyReCompile(r"^\t+")
@@ -21,7 +21,11 @@ def indent_empty_lines(s, compiler):
         lines.pop()
     result_lines = []
 
-    for p_line, line, n_line in zip([""] + lines[:-1], lines, lines[1:] + [""]):
+    prevs, lines, nexts = tee(lines, 3)
+    prevs = chain(("",), prevs)
+    nexts = chain(islice(nexts, 1, None), ("",))
+
+    for p_line, line, n_line in zip(prevs, lines, nexts):
         if len(line) == 0:
             p_indent = indent_empty_lines_re.match(p_line).group()
             n_indent = indent_empty_lines_re.match(n_line).group()
