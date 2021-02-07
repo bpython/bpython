@@ -2,6 +2,7 @@ import blessings
 import contextlib
 import errno
 import greenlet
+import itertools
 import logging
 import os
 import re
@@ -1259,7 +1260,9 @@ class BaseRepl(BpythonRepl):
                 )
             )
             # These can be FmtStrs, but self.all_logical_lines only wants strings
-            for line in [self.current_stdouterr_line] + lines[1:-1]:
+            for line in itertools.chain(
+                (self.current_stdouterr_line,), lines[1:-1]
+            ):
                 if isinstance(line, FmtStr):
                     self.all_logical_lines.append((line.s, LineType.OUTPUT))
                 else:
