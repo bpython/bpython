@@ -103,38 +103,42 @@ following helper program can be used to create `gists
   #!/usr/bin/env python
 
   import sys
-  import urllib2
+  import requests
   import json
 
   def do_gist_json(s):
       """ Use json to post to github. """
       gist_public = False
-      gist_url = 'https://api.github.com/gists'
+      gist_url = "https://api.github.com/gists"
 
-      data = {'description': None,
-              'public': None,
-              'files' : {
-                  'sample': { 'content': None }
-              }}
-      data['description'] = 'Gist from BPython'
-      data['public'] = gist_public
-      data['files']['sample']['content'] = s
+      data = {
+          "description": "Gist from bpython",
+          "public": gist_public,
+          "files": {
+              "sample": {
+                  "content": s
+              },
+          },
+      }
 
-      req = urllib2.Request(gist_url, json.dumps(data), {'Content-Type': 'application/json'})
+      headers = {
+          "Content-Type": "application/json",
+          "X-Github-Username": "YOUR_USERNAME",
+          "Authorization": "token YOUR_TOKEN",
+      }
+
       try:
-          res = urllib2.urlopen(req)
-      except HTTPError, e:
-          return e
-
-      try:
+          res = requests.post(gist_url, data=json.dumps(payload), headers=headers)
+          res.raise_for_status()
           json_res = json.loads(res.read())
-          return json_res['html_url']
-      except HTTPError, e:
-          return e
+          return json_res["html_url"]
+      except requests.exceptions.HTTPError as err:
+          return err
+
 
   if __name__ == "__main__":
     s = sys.stdin.read()
-    print do_gist_json(s)
+    print(do_gist_json(s))
 
 
 .. versionadded:: 0.12
