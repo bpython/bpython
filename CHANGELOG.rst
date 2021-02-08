@@ -130,6 +130,7 @@ Support for Python 3.3 has been dropped.
 ------
 
 Fixes:
+
 * Reverted #670 temporarily due to performance impact
   on large strings being output.
 
