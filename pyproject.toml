@@ -1,3 +1,9 @@
+[build-system]
+requires = [
+  "setuptools >= 43",
+  "wheel",
+]
+
 [tool.black]
 line-length = 80
 target_version = ["py36"]

@@ -170,43 +170,6 @@ data_files = [
 ]
 data_files.extend(man_pages)
 
-classifiers = [
-    "Programming Language :: Python :: 3",
-]
-
-install_requires = [
-    "pygments",
-    "requests",
-    "curtsies >=0.3.5",
-    "greenlet",
-    "cwcwidth",
-    "pyxdg",
-]
-
-extras_require = {
-    "urwid": ["urwid"],
-    "watch": ["watchdog"],
-    "jedi": ["jedi >=0.16"],
-}
-
-packages = [
-    "bpython",
-    "bpython.curtsiesfrontend",
-    "bpython.test",
-    "bpython.test.fodder",
-    "bpython.translations",
-    "bpdb",
-]
-
-entry_points = {
-    "console_scripts": [
-        "bpython = bpython.curtsies:main",
-        "bpython-curses = bpython.cli:main",
-        "bpython-urwid = bpython.urwid:main [urwid]",
-        "bpdb = bpdb:main",
-    ]
-}
-
 # translations
 mo_files = []
 for language in os.listdir(translations_dir):
@@ -215,27 +178,15 @@ for language in os.listdir(translations_dir):
         mo_files.append(mo_subpath)
 
 setup(
-    name="bpython",
     version=version,
     author=__author__,
     author_email="robertanthonyfarrell@gmail.com",
-    description="Fancy Interface to the Python Interpreter",
-    license="MIT/X",
-    url="https://www.bpython-interpreter.org/",
-    long_description="""bpython is a fancy interface to the Python
-    interpreter for Unix-like operating systems.""",
-    classifiers=classifiers,
-    python_requires=">=3.6",
-    install_requires=install_requires,
-    extras_require=extras_require,
-    packages=packages,
     data_files=data_files,
     package_data={
         "bpython": ["sample-config"],
         "bpython.translations": mo_files,
         "bpython.test": ["test.config", "test.theme"],
     },
-    entry_points=entry_points,
     cmdclass=cmdclass,
     test_suite="bpython.test",
 )
