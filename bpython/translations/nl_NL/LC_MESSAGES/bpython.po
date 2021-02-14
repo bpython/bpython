@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: bpython 0.9.7.1\n"
 "Report-Msgid-Bugs-To: http://github.com/bpython/bpython/issues\n"
-"POT-Creation-Date: 2021-01-29 22:59+0100\n"
+"POT-Creation-Date: 2021-02-14 17:29+0100\n"
 "PO-Revision-Date: 2020-10-29 12:20+0100\n"
 "Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language: nl_NL\n"
@@ -18,7 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.8.0\n"
 
-#: bpython/args.py:91
+#: bpython/args.py:49
+msgid "{} version {} on top of Python {} {}"
+msgstr ""
+
+#: bpython/args.py:58
+msgid "{} See AUTHORS.rst for details."
+msgstr ""
+
+#: bpython/args.py:95
 #, python-format
 msgid ""
 "Usage: %(prog)s [options] [file [args]]\n"
@@ -26,23 +34,31 @@ msgid ""
 "to the regular Python interpreter."
 msgstr ""
 
-#: bpython/args.py:101
+#: bpython/args.py:105
 msgid "Use CONFIG instead of default config file."
 msgstr ""
 
-#: bpython/args.py:107
+#: bpython/args.py:111
 msgid "Drop to bpython shell after running file instead of exiting."
 msgstr ""
 
-#: bpython/args.py:113
+#: bpython/args.py:117
 msgid "Don't flush the output to stdout."
 msgstr ""
 
-#: bpython/args.py:119
+#: bpython/args.py:123
 msgid "Print version and exit."
 msgstr ""
 
 #: bpython/args.py:130
+msgid "Set log level for logging"
+msgstr ""
+
+#: bpython/args.py:135
+msgid "Log output file"
+msgstr ""
+
+#: bpython/args.py:146
 msgid "File to execute and additional arguments passed on to the executed script."
 msgstr ""
 
@@ -82,18 +98,14 @@ msgid ""
 msgstr ""
 
 #: bpython/curtsies.py:136
-msgid "log debug messages to bpython.log"
-msgstr ""
-
-#: bpython/curtsies.py:142
 msgid "start by pasting lines of a file into session"
 msgstr ""
 
-#: bpython/curtsies.py:148
+#: bpython/curtsies.py:142
 msgid "curtsies arguments"
 msgstr ""
 
-#: bpython/curtsies.py:149
+#: bpython/curtsies.py:143
 msgid "Additional arguments specific to the curtsies-based REPL."
 msgstr ""
 
@@ -280,55 +292,55 @@ msgid ""
 " future version."
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:324
+#: bpython/curtsiesfrontend/repl.py:325
 msgid "Welcome to bpython!"
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:326
+#: bpython/curtsiesfrontend/repl.py:327
 #, python-format
 msgid "Press <%s> for help."
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:663
+#: bpython/curtsiesfrontend/repl.py:664
 #, python-format
 msgid "Executing PYTHONSTARTUP failed: %s"
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:681
+#: bpython/curtsiesfrontend/repl.py:682
 #, python-format
 msgid "Reloaded at %s because %s modified."
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:990
+#: bpython/curtsiesfrontend/repl.py:991
 msgid "Session not reevaluated because it was not edited"
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:1005
+#: bpython/curtsiesfrontend/repl.py:1006
 msgid "Session not reevaluated because saved file was blank"
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:1015
+#: bpython/curtsiesfrontend/repl.py:1016
 msgid "Session edited and reevaluated"
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:1026
+#: bpython/curtsiesfrontend/repl.py:1027
 #, python-format
 msgid "Reloaded at %s by user."
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:1032
+#: bpython/curtsiesfrontend/repl.py:1033
 msgid "Auto-reloading deactivated."
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:1037
+#: bpython/curtsiesfrontend/repl.py:1038
 msgid "Auto-reloading active, watching for file changes..."
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:1043
+#: bpython/curtsiesfrontend/repl.py:1044
 msgid "Auto-reloading not available because watchdog not installed."
 msgstr ""
 
-#: bpython/curtsiesfrontend/repl.py:1985
+#: bpython/curtsiesfrontend/repl.py:1986
 msgid ""
 "\n"
 "Thanks for using bpython!\n"

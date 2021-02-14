@@ -7,45 +7,62 @@ msgid ""
 msgstr ""
 "Project-Id-Version: bpython mercurial\n"
 "Report-Msgid-Bugs-To: http://github.com/bpython/bpython/issues\n"
-"POT-Creation-Date: 2021-01-29 22:59+0100\n"
-"PO-Revision-Date: 2021-01-29 22:58+0100\n"
+"POT-Creation-Date: 2021-02-14 17:29+0100\n"
+"PO-Revision-Date: 2021-02-14 17:31+0100\n"
 "Last-Translator: Sebastian Ramacher <sebastian+dev@ramacher.at>\n"
 "Language: de\n"
 "Language-Team: de <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.8.0\n"
+"X-Generator: Poedit 2.4.2\n"
 
-#: bpython/args.py:91
+#: bpython/args.py:49
+msgid "{} version {} on top of Python {} {}"
+msgstr "{} Version {} mit Python {} {}"
+
+#: bpython/args.py:58
+msgid "{} See AUTHORS.rst for details."
+msgstr "{} Siehe AUTHORS.rst für mehr Details."
+
+#: bpython/args.py:95
 #, python-format
 msgid ""
 "Usage: %(prog)s [options] [file [args]]\n"
-"NOTE: If bpython sees an argument it does not know, execution falls back "
-"to the regular Python interpreter."
+"NOTE: If bpython sees an argument it does not know, execution falls back to the "
+"regular Python interpreter."
 msgstr ""
 "Verwendung: %(prog)s [Optionen] [Datei [Argumente]]\n"
-"Hinweis: Wenn bpython Argumente übergeben bekommt, die nicht verstanden "
-"werden, wird der normale Python Interpreter ausgeführt."
+"Hinweis: Wenn bpython Argumente übergeben bekommt, die nicht verstanden werden, "
+"wird der normale Python Interpreter ausgeführt."
 
-#: bpython/args.py:101
+#: bpython/args.py:105
 msgid "Use CONFIG instead of default config file."
 msgstr "Verwende CONFIG antatt der standardmäßigen Konfigurationsdatei."
 
-#: bpython/args.py:107
+#: bpython/args.py:111
 msgid "Drop to bpython shell after running file instead of exiting."
 msgstr "Verbleibe in bpython nach dem Ausführen der Datei."
 
-#: bpython/args.py:113
+#: bpython/args.py:117
 msgid "Don't flush the output to stdout."
 msgstr "Gib Ausgabe beim Beenden nicht ernaut auf stdout aus."
 
-#: bpython/args.py:119
+#: bpython/args.py:123
 msgid "Print version and exit."
 msgstr "Zeige Versionsinformationen an und beende."
 
 #: bpython/args.py:130
+msgid "Set log level for logging"
+msgstr "Log-Stufe"
+
+#: bpython/args.py:135
+msgid "Log output file"
+msgstr "Datei für Ausgabe von Log-Nachrichten"
+
+#: bpython/args.py:146
 msgid "File to execute and additional arguments passed on to the executed script."
 msgstr ""
 
@@ -79,27 +96,23 @@ msgstr "Quellcode anzeigen"
 
 #: bpython/cli.py:1943
 msgid ""
-"WARNING: You are using `bpython-cli`, the curses backend for `bpython`. "
-"This backend has been deprecated in version 0.19 and might disappear in a"
-" future version."
+"WARNING: You are using `bpython-cli`, the curses backend for `bpython`. This "
+"backend has been deprecated in version 0.19 and might disappear in a future "
+"version."
 msgstr ""
-"ACHTUNG: `bpython-cli` wird verwendet, die curses Implementierung von "
-"`bpython`. Diese Implementierung wird ab Version 0.19 nicht mehr aktiv "
-"unterstützt und wird in einer zukünftigen Version entfernt werden."
+"ACHTUNG: `bpython-cli` wird verwendet, die curses Implementierung von `bpython`. "
+"Diese Implementierung wird ab Version 0.19 nicht mehr aktiv unterstützt und wird "
+"in einer zukünftigen Version entfernt werden."
 
 #: bpython/curtsies.py:136
-msgid "log debug messages to bpython.log"
-msgstr "Zeichne debug Nachrichten in bpython.log auf"
-
-#: bpython/curtsies.py:142
 msgid "start by pasting lines of a file into session"
 msgstr ""
 
-#: bpython/curtsies.py:148
+#: bpython/curtsies.py:142
 msgid "curtsies arguments"
 msgstr "Argumente für curtsies"
 
-#: bpython/curtsies.py:149
+#: bpython/curtsies.py:143
 msgid "Additional arguments specific to the curtsies-based REPL."
 msgstr "Zusätzliche Argumente spezifisch für die curtsies-basierte REPL."
 
@@ -227,8 +240,8 @@ msgstr "Pastebin URL: %s"
 #, python-format
 msgid "Undo how many lines? (Undo will take up to ~%.1f seconds) [1]"
 msgstr ""
-"Wie viele Zeilen rückgängig machen? (Rückgängigmachen wird bis zu ~%.1f "
-"Sekunden brauchen) [1]"
+"Wie viele Zeilen rückgängig machen? (Rückgängigmachen wird bis zu ~%.1f Sekunden "
+"brauchen) [1]"
 
 #: bpython/repl.py:964 bpython/repl.py:968
 msgid "Undo canceled"
@@ -244,14 +257,13 @@ msgstr[1] "Mache %d Zeilen rückgängig... (ungefähr %.1f Sekunden)"
 #: bpython/repl.py:1147
 msgid "Config file does not exist - create new from default? (y/N)"
 msgstr ""
-"Konfigurationsdatei existiert nicht. Soll eine neue Datei erstellt "
-"werden? (j/N)"
+"Konfigurationsdatei existiert nicht. Soll eine neue Datei erstellt werden? (j/N)"
 
 #: bpython/repl.py:1175
 msgid "bpython config file edited. Restart bpython for changes to take effect."
 msgstr ""
-"bpython Konfigurationsdatei bearbeitet. Starte bpython neu damit die "
-"Änderungen übernommen werden."
+"bpython Konfigurationsdatei bearbeitet. Starte bpython neu damit die Änderungen "
+"übernommen werden."
 
 #: bpython/repl.py:1181
 #, python-format
@@ -262,8 +274,8 @@ msgstr "Fehler beim Bearbeiten der Konfigurationsdatei: %s"
 #, python-format
 msgid " <%s> Rewind  <%s> Save  <%s> Pastebin  <%s> Pager  <%s> Show Source "
 msgstr ""
-" <%s> Rückgängigmachen <%s> Speichern <%s> Pastebin <%s> Pager <%s> "
-"Quellcode anzeigen "
+" <%s> Rückgängigmachen <%s> Speichern <%s> Pastebin <%s> Pager <%s> Quellcode "
+"anzeigen "
 
 #: bpython/urwid.py:1114
 msgid "Run twisted reactor."
@@ -279,11 +291,11 @@ msgstr "Liste verfügbare reactors für -r auf."
 
 #: bpython/urwid.py:1132
 msgid ""
-"twistd plugin to run (use twistd for a list). Use \"--\" to pass further "
-"options to the plugin."
+"twistd plugin to run (use twistd for a list). Use \"--\" to pass further options "
+"to the plugin."
 msgstr ""
-"Auszuführendes twistd Plugin (starte twistd für eine Liste). Verwende "
-"\"--\" um Optionen an das Plugin zu übergeben."
+"Auszuführendes twistd Plugin (starte twistd für eine Liste). Verwende \"--\" um "
+"Optionen an das Plugin zu übergeben."
 
 #: bpython/urwid.py:1141
 msgid "Port to run an eval server on (forces Twisted)."
@@ -291,91 +303,88 @@ msgstr ""
 
 #: bpython/urwid.py:1335
 msgid ""
-"WARNING: You are using `bpython-urwid`, the urwid backend for `bpython`. "
-"This backend has been deprecated in version 0.19 and might disappear in a"
-" future version."
+"WARNING: You are using `bpython-urwid`, the urwid backend for `bpython`. This "
+"backend has been deprecated in version 0.19 and might disappear in a future "
+"version."
 msgstr ""
 "ACHTUNG: `bpython-urwid` wird verwendet, die curses Implementierung von "
 "`bpython`. Diese Implementierung wird ab Version 0.19 nicht mehr aktiv "
 "unterstützt und wird in einer zukünftigen Version entfernt werden."
 
-#: bpython/curtsiesfrontend/repl.py:324
+#: bpython/curtsiesfrontend/repl.py:325
 msgid "Welcome to bpython!"
 msgstr "Willkommen by bpython!"
 
-#: bpython/curtsiesfrontend/repl.py:326
+#: bpython/curtsiesfrontend/repl.py:327
 #, python-format
 msgid "Press <%s> for help."
 msgstr "Drücke <%s> für Hilfe."
 
-#: bpython/curtsiesfrontend/repl.py:663
+#: bpython/curtsiesfrontend/repl.py:664
 #, python-format
 msgid "Executing PYTHONSTARTUP failed: %s"
 msgstr "Fehler beim Ausführen von PYTHONSTARTUP: %s"
 
-#: bpython/curtsiesfrontend/repl.py:681
+#: bpython/curtsiesfrontend/repl.py:682
 #, python-format
 msgid "Reloaded at %s because %s modified."
 msgstr "Bei %s neugeladen, da %s modifiziert wurde."
 
-#: bpython/curtsiesfrontend/repl.py:990
+#: bpython/curtsiesfrontend/repl.py:991
 msgid "Session not reevaluated because it was not edited"
 msgstr "Die Sitzung wurde nicht neu ausgeführt, da sie nicht berabeitet wurde"
 
-#: bpython/curtsiesfrontend/repl.py:1005
+#: bpython/curtsiesfrontend/repl.py:1006
 msgid "Session not reevaluated because saved file was blank"
 msgstr "Die Sitzung wurde nicht neu ausgeführt, da die gespeicherte Datei leer war"
 
-#: bpython/curtsiesfrontend/repl.py:1015
+#: bpython/curtsiesfrontend/repl.py:1016
 msgid "Session edited and reevaluated"
 msgstr "Sitzung bearbeitet und neu ausgeführt"
 
-#: bpython/curtsiesfrontend/repl.py:1026
+#: bpython/curtsiesfrontend/repl.py:1027
 #, python-format
 msgid "Reloaded at %s by user."
 msgstr "Bei %s vom Benutzer neu geladen."
 
-#: bpython/curtsiesfrontend/repl.py:1032
+#: bpython/curtsiesfrontend/repl.py:1033
 msgid "Auto-reloading deactivated."
 msgstr "Automatisches Neuladen deaktiviert."
 
-#: bpython/curtsiesfrontend/repl.py:1037
+#: bpython/curtsiesfrontend/repl.py:1038
 msgid "Auto-reloading active, watching for file changes..."
 msgstr "Automatisches Neuladen ist aktiv; beobachte Dateiänderungen..."
 
-#: bpython/curtsiesfrontend/repl.py:1043
+#: bpython/curtsiesfrontend/repl.py:1044
 msgid "Auto-reloading not available because watchdog not installed."
 msgstr ""
-"Automatisches Neuladen ist nicht verfügbar da watchdog nicht installiert "
-"ist."
+"Automatisches Neuladen ist nicht verfügbar da watchdog nicht installiert ist."
 
-#: bpython/curtsiesfrontend/repl.py:1985
+#: bpython/curtsiesfrontend/repl.py:1986
 msgid ""
 "\n"
 "Thanks for using bpython!\n"
 "\n"
-"See http://bpython-interpreter.org/ for more information and http://docs"
-".bpython-interpreter.org/ for docs.\n"
+"See http://bpython-interpreter.org/ for more information and http://docs.bpython-"
+"interpreter.org/ for docs.\n"
 "Please report issues at https://github.com/bpython/bpython/issues\n"
 "\n"
 "Features:\n"
 "Try using undo ({config.undo_key})!\n"
-"Edit the current line ({config.edit_current_block_key}) or the entire "
-"session ({config.external_editor_key}) in an external editor. (currently "
-"{config.editor})\n"
-"Save sessions ({config.save_key}) or post them to pastebins "
-"({config.pastebin_key})! Current pastebin helper: "
-"{config.pastebin_helper}\n"
-"Reload all modules and rerun session ({config.reimport_key}) to test out "
-"changes to a module.\n"
-"Toggle auto-reload mode ({config.toggle_file_watch_key}) to re-execute "
-"the current session when a module you've imported is modified.\n"
+"Edit the current line ({config.edit_current_block_key}) or the entire session "
+"({config.external_editor_key}) in an external editor. (currently {config."
+"editor})\n"
+"Save sessions ({config.save_key}) or post them to pastebins ({config."
+"pastebin_key})! Current pastebin helper: {config.pastebin_helper}\n"
+"Reload all modules and rerun session ({config.reimport_key}) to test out changes "
+"to a module.\n"
+"Toggle auto-reload mode ({config.toggle_file_watch_key}) to re-execute the "
+"current session when a module you've imported is modified.\n"
 "\n"
 "bpython -i your_script.py runs a file in interactive mode\n"
 "bpython -t your_script.py pastes the contents of a file into the session\n"
 "\n"
-"A config file at {config.config_path} customizes keys and behavior of "
-"bpython.\n"
+"A config file at {config.config_path} customizes keys and behavior of bpython.\n"
 "You can also set which pastebin helper and which external editor to use.\n"
 "See {example_config_url} for an example config file.\n"
 "Press {config.edit_config_key} to edit this config file.\n"
