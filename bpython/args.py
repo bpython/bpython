@@ -25,10 +25,11 @@
 Module to handle command line argument parsing, for all front-ends.
 """
 
+import argparse
 import importlib.util
+import logging
 import os
 import sys
-import argparse
 
 from . import __version__, __copyright__
 from .config import default_config_path, loadini, Struct
@@ -118,6 +119,18 @@ def parse(args, extras=None, ignore_stdin=False):
         action="store_true",
         help=_("Print version and exit."),
     )
+    parser.add_argument(
+        "--log-level",
+        "-l",
+        choices=("debug", "info", "warning", "error", "critical"),
+        default="error",
+        help=_("Set log level for logging"),
+    )
+    parser.add_argument(
+        "--log-output",
+        "-L",
+        help=_("Log output file"),
+    )
 
     if extras is not None:
         extras_group = parser.add_argument_group(extras[0], extras[1])
@@ -146,6 +159,25 @@ def parse(args, extras=None, ignore_stdin=False):
     if not ignore_stdin and not (sys.stdin.isatty() and sys.stdout.isatty()):
         # Just let Python handle this
         os.execv(sys.executable, [sys.executable] + args)
+
+    # Configure logging handler
+    bpython_logger = logging.getLogger("bpython")
+    curtsies_logger = logging.getLogger("curtsies")
+    bpython_logger.setLevel(options.log_level.upper())
+    curtsies_logger.setLevel(options.log_level.upper())
+    if options.log_output:
+        handler = logging.FileHandler(filename=options.log_output)
+        handler.setFormatter(
+            logging.Formatter(
+                "%(asctime)s: %(name)s: %(levelname)s: %(message)s"
+            )
+        )
+        bpython_logger.addHandler(handler)
+        curtsies_logger.addHandler(handler)
+        bpython_logger.propagate = curtsies_logger.propagate = False
+    else:
+        bpython_logger.addHandler(logging.NullHandler())
+        curtsies_logger.addHandler(logging.NullHandler())
 
     config = Struct()
     loadini(config, options.config)

@@ -57,12 +57,12 @@ The following options are supported by all frontends:
                        exiting. The PYTHONSTARTUP file is not read.
 -q, --quiet            Do not flush the output to stdout.
 -V, --version          Print :program:`bpython`'s version and exit.
+-l <level>, --log-level=<level>   Set logging level
+-L <file>, --log-output=<file>    Set log output file
 
 In addition to the above options, :program:`bpython` also supports the following
 options:
 
--L, --log              Write debugging messages to the file bpython.log. Use
-                       -LL for more verbose logging.
 -p file, --paste=file  Paste in the contents of a file at startup.
 
 In addition to the common options, :program:`bpython-urwid` also supports the

@@ -130,12 +130,6 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
 
     def curtsies_arguments(parser):
         parser.add_argument(
-            "--log",
-            "-L",
-            action="count",
-            help=_("log debug messages to bpython.log"),
-        )
-        parser.add_argument(
             "--paste",
             "-p",
             action="store_true",
@@ -150,18 +144,6 @@ def main(args=None, locals_=None, banner=None, welcome_message=None):
             curtsies_arguments,
         ),
     )
-    if options.log is None:
-        options.log = 0
-    logging_levels = (logging.ERROR, logging.INFO, logging.DEBUG)
-    level = logging_levels[min(len(logging_levels) - 1, options.log)]
-    logging.getLogger("curtsies").setLevel(level)
-    logging.getLogger("bpython").setLevel(level)
-    if options.log:
-        handler = logging.FileHandler(filename="bpython.log")
-        logging.getLogger("curtsies").addHandler(handler)
-        logging.getLogger("curtsies").propagate = False
-        logging.getLogger("bpython").addHandler(handler)
-        logging.getLogger("bpython").propagate = False
 
     interp = None
     paste = None
