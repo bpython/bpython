@@ -46,7 +46,7 @@ class RaisingArgumentParser(argparse.ArgumentParser):
 
 
 def version_banner(base="bpython"):
-    return "{} version {} on top of Python {} {}".format(
+    return _("{} version {} on top of Python {} {}").format(
         base,
         __version__,
         sys.version.split()[0],
@@ -55,7 +55,7 @@ def version_banner(base="bpython"):
 
 
 def copyright_banner():
-    return "{} See AUTHORS.rst for details.".format(__copyright__)
+    return _("{} See AUTHORS.rst for details.").format(__copyright__)
 
 
 def parse(args, extras=None, ignore_stdin=False):
