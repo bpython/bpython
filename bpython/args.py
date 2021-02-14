@@ -74,9 +74,12 @@ def parse(args, extras=None, ignore_stdin=False):
 
     parse(
         ['-i', '-m', 'foo.py'],
-        ('Front end-specific options',
-        'A full description of what these options are for',
-        callback))
+        (
+            'Front end-specific options',
+            'A full description of what these options are for',
+            callback
+        ),
+    )
 
 
     Return a tuple of (config, options, exec_args) wherein "config" is the
