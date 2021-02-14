@@ -163,6 +163,7 @@ Dependencies
 * babel (optional, for internationalization)
 * jedi (optional, for experimental multiline completion)
 * watchdog (optional, for monitoring imported modules for changes)
+* pyperclip (optional, for copying to the clipboard)
 
 bpython-urwid
 -------------

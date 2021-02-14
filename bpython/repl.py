@@ -36,12 +36,17 @@ import traceback
 from enum import Enum
 from itertools import takewhile
 from pathlib import Path
+from pygments.lexers import Python3Lexer
+from pygments.token import Token
 from types import ModuleType
 
-from pygments.token import Token
-from pygments.lexers import Python3Lexer
+have_pyperclip = True
+try:
+    import pyperclip
+except ImportError:
+    have_pyperclip = False
+
 from . import autocomplete, inspection, simpleeval
-from .clipboard import get_clipboard, CopyFailed
 from .config import getpreferredencoding
 from .formatter import Parenthesis
 from .history import History
@@ -430,7 +435,6 @@ class Repl:
         # Necessary to fix mercurial.ui.ui expecting sys.stderr to have this
         # attribute
         self.closed = False
-        self.clipboard = get_clipboard()
 
         if self.config.hist_file.exists():
             try:
@@ -862,14 +866,14 @@ class Repl:
     def copy2clipboard(self):
         """Copy current content to clipboard."""
 
-        if self.clipboard is None:
+        if not have_pyperclip:
             self.interact.notify(_("No clipboard available."))
             return
 
         content = self.get_session_formatted_for_file()
         try:
-            self.clipboard.copy(content)
-        except CopyFailed:
+            pyperclip.copy(content)
+        except pyperclip.PyperclipException:
             self.interact.notify(_("Could not copy to clipboard."))
         else:
             self.interact.notify(_("Copied content to clipboard."))
