@@ -1,6 +1,6 @@
 # The MIT License
 #
-# Copyright (c) 2015-2019 Sebastian Ramacher
+# Copyright (c) 2015-2021 Sebastian Ramacher
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,20 +20,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
+has_fcntl = True
 try:
     import fcntl
     import errno
-
-    has_fcntl = True
 except ImportError:
     has_fcntl = False
 
+has_msvcrt = True
 try:
     import msvcrt
     import os
-
-    has_msvcrt = True
 except ImportError:
     has_msvcrt = False
 
@@ -41,7 +38,7 @@ except ImportError:
 class BaseLock:
     """Base class for file locking"""
 
-    def __init__(self, fileobj, mode=None, filename=None):
+    def __init__(self, fileobj=None):
         self.fileobj = fileobj
         self.locked = False
 
@@ -67,12 +64,9 @@ class BaseLock:
 class UnixFileLock(BaseLock):
     """Simple file locking for Unix using fcntl"""
 
-    def __init__(self, fileobj, mode=None, filename=None):
+    def __init__(self, fileobj, mode=0):
         super().__init__(fileobj)
-
-        if mode is None:
-            mode = fcntl.LOCK_EX
-        self.mode = mode
+        self.mode = mode | fcntl.LOCK_EX
 
     def acquire(self):
         try:
@@ -90,8 +84,8 @@ class UnixFileLock(BaseLock):
 class WindowsFileLock(BaseLock):
     """Simple file locking for Windows using msvcrt"""
 
-    def __init__(self, fileobj, mode=None, filename=None):
-        super().__init__(None)
+    def __init__(self, filename):
+        super().__init__()
         self.filename = f"{filename}.lock"
 
     def acquire(self):
@@ -117,11 +111,12 @@ class WindowsFileLock(BaseLock):
             pass
 
 
-if has_fcntl:
-    FileLock = UnixFileLock
-elif has_msvcrt:
-    FileLock = WindowsFileLock
-else:
-    FileLock = BaseLock
+def FileLock(fileobj, mode=0, filename=None):
+    if has_fcntl:
+        return UnixFileLock(fileobj, mode)
+    elif has_msvcrt:
+        return WindowsFileLock(filename)
+    return BaseLock(fileobj)
+
 
 # vim: sw=4 ts=4 sts=4 ai et
