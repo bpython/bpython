@@ -267,7 +267,10 @@ class CumulativeCompleter(BaseCompletionType):
         super().__init__(True, mode)
 
     def locate(self, current_offset, line):
-        return self._completers[0].locate(current_offset, line)
+        for completer in self._completers:
+            return_value = completer.locate(current_offset, line)
+            if return_value is not None:
+                return return_value
 
     def format(self, word):
         return self._completers[0].format(word)
