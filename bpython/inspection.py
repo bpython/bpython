@@ -326,7 +326,7 @@ def get_encoding(obj):
         m = get_encoding_line_re.search(line)
         if m:
             return m.group(1)
-    return "ascii"
+    return "utf8"
 
 
 def get_encoding_file(fname):
@@ -337,7 +337,7 @@ def get_encoding_file(fname):
             match = get_encoding_line_re.search(line)
             if match:
                 return match.group(1)
-    return "ascii"
+    return "utf8"
 
 
 def getattr_safe(obj, name):
