@@ -24,6 +24,7 @@
 import inspect
 import keyword
 import pydoc
+import re
 from collections import namedtuple
 
 from pygments.token import Token
@@ -173,7 +174,9 @@ def fixlongargs(f, argspec):
     argspec[3] = values
 
 
-getpydocspec_re = LazyReCompile(r"([a-zA-Z_][a-zA-Z0-9_]*?)\((.*?)\)")
+getpydocspec_re = LazyReCompile(
+    r"([a-zA-Z_][a-zA-Z0-9_]*?)\((.*?)\)", re.DOTALL
+)
 
 
 def getpydocspec(f, func):
@@ -189,10 +192,10 @@ def getpydocspec(f, func):
     if not hasattr_safe(f, "__name__") or s.groups()[0] != f.__name__:
         return None
 
-    args = list()
-    defaults = list()
+    args = []
+    defaults = []
     varargs = varkwargs = None
-    kwonly_args = list()
+    kwonly_args = []
     kwonly_defaults = dict()
     for arg in s.group(2).split(","):
         arg = arg.strip()

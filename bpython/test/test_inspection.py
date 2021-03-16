@@ -6,6 +6,11 @@ from bpython.test.fodder import encoding_ascii
 from bpython.test.fodder import encoding_latin1
 from bpython.test.fodder import encoding_utf8
 
+try:
+    import numpy
+except ImportError:
+    numpy = None
+
 
 foo_ascii_only = '''def foo():
     """Test"""
@@ -112,6 +117,15 @@ class TestInspection(unittest.TestCase):
             os.path.join(path, "encoding_utf8.py")
         )
         self.assertEqual(encoding, "utf-8")
+
+    @unittest.skipUnless(numpy is not None, "requires numpy")
+    def test_getfuncprops_numpy_array(self):
+        props = inspection.getfuncprops("array", numpy.array)
+
+        self.assertEqual(props.func, "array")
+        # This check might need an update in the future, but at least numpy >= 1.18 has
+        # np.array(object, dtype=None, *, ...).
+        self.assertEqual(props.argspec.args, ["object", "dtype"])
 
 
 class A:
