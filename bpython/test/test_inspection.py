@@ -118,6 +118,17 @@ class TestInspection(unittest.TestCase):
         )
         self.assertEqual(encoding, "utf-8")
 
+    def test_getfuncprops_print(self):
+        props = inspection.getfuncprops("print", print)
+
+        self.assertEqual(props.func, "print")
+        self.assertIn("end", props.argspec.kwonly)
+        self.assertIn("file", props.argspec.kwonly)
+        self.assertIn("flush", props.argspec.kwonly)
+        self.assertIn("sep", props.argspec.kwonly)
+        self.assertEqual(props.argspec.kwonly_defaults["file"], "sys.stdout")
+        self.assertEqual(props.argspec.kwonly_defaults["flush"], "False")
+
     @unittest.skipUnless(numpy is not None, "requires numpy")
     def test_getfuncprops_numpy_array(self):
         props = inspection.getfuncprops("array", numpy.array)

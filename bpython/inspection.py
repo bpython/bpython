@@ -203,6 +203,9 @@ def getpydocspec(f, func):
             varkwargs = arg[2:]
         elif arg.startswith("*"):
             varargs = arg[1:]
+        elif arg == "...":
+            # At least print denotes "..." as separator between varargs and kwonly args.
+            varargs = ""
         else:
             arg, _, default = arg.partition("=")
             if varargs is not None:
