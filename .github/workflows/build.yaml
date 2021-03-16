@@ -37,7 +37,7 @@ jobs:
         python setup.py build_sphinx_man
     - name: Test with pytest
       run: |
-        pytest --cov=bpython --cov-report=xml
+        pytest --cov=bpython --cov-report=xml -v
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       env:
