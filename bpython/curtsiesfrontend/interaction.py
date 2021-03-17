@@ -2,6 +2,7 @@ import greenlet
 import time
 import curtsies.events as events
 
+from bpython.translations import _
 from bpython.repl import Interaction as BpythonInteraction
 from bpython.curtsiesfrontend.events import RefreshRequestEvent
 from bpython.curtsiesfrontend.manual_readline import edit_keys
@@ -103,7 +104,7 @@ class StatusBar(BpythonInteraction):
             self.escape()
             self.request_context.switch(line)
         elif self.in_confirm:
-            if e in ("y", "Y"):
+            if e.lower() == _("y"):
                 self.request_context.switch(True)
             else:
                 self.request_context.switch(False)
