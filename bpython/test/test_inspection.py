@@ -129,7 +129,10 @@ class TestInspection(unittest.TestCase):
         self.assertEqual(props.argspec.kwonly_defaults["file"], "sys.stdout")
         self.assertEqual(props.argspec.kwonly_defaults["flush"], "False")
 
-    @unittest.skipUnless(numpy is not None, "requires numpy")
+    @unittest.skipUnless(
+        numpy is not None and numpy.__version__ >= "1.18",
+        "requires numpy >= 1.18",
+    )
     def test_getfuncprops_numpy_array(self):
         props = inspection.getfuncprops("array", numpy.array)
 
