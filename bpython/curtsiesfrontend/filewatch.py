@@ -1,7 +1,7 @@
 import os
 from collections import defaultdict
 
-from bpython import importcompletion
+from .. import importcompletion
 
 try:
     from watchdog.observers import Observer

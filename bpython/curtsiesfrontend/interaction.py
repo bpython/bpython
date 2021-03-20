@@ -2,10 +2,10 @@ import greenlet
 import time
 import curtsies.events as events
 
-from bpython.translations import _
-from bpython.repl import Interaction as BpythonInteraction
-from bpython.curtsiesfrontend.events import RefreshRequestEvent
-from bpython.curtsiesfrontend.manual_readline import edit_keys
+from ..translations import _
+from ..repl import Interaction as BpythonInteraction
+from ..curtsiesfrontend.events import RefreshRequestEvent
+from ..curtsiesfrontend.manual_readline import edit_keys
 
 
 class StatusBar(BpythonInteraction):

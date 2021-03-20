@@ -6,8 +6,8 @@ from pygments.token import Whitespace
 from pygments.formatter import Formatter
 from pygments.lexers import get_lexer_by_name
 
-from bpython.curtsiesfrontend.parse import parse
-from bpython.repl import Interpreter as ReplInterpreter
+from ..curtsiesfrontend.parse import parse
+from ..repl import Interpreter as ReplInterpreter
 
 
 default_colors = {

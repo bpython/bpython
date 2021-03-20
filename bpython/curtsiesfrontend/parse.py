@@ -8,7 +8,7 @@ from curtsies.termformatconstants import (
 )
 from functools import partial
 
-from bpython.lazyre import LazyReCompile
+from ..lazyre import LazyReCompile
 
 
 COLORS = CURTSIES_COLORS + ("default",)

@@ -21,7 +21,7 @@
 # THE SOFTWARE.
 
 import pydoc
-import bpython._internal
+from .. import _internal
 
 
 class NopPydocPager:
@@ -36,7 +36,7 @@ class NopPydocPager:
         return None
 
 
-class _Helper(bpython._internal._Helper):
+class _Helper(_internal._Helper):
     def __init__(self, repl=None):
         self._repl = repl
         pydoc.pager = self.pager

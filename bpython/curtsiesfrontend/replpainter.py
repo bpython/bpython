@@ -5,7 +5,7 @@ from curtsies import fsarray, fmtstr, FSArray
 from curtsies.formatstring import linesplit
 from curtsies.fmtfuncs import bold
 
-from bpython.curtsiesfrontend.parse import func_for_letter
+from .parse import func_for_letter
 
 logger = logging.getLogger(__name__)
 

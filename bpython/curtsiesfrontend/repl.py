@@ -31,17 +31,16 @@ from curtsies import (
 from curtsies.configfile_keynames import keymap as key_dispatch
 from curtsies.input import is_main_thread
 
-from bpython import __version__
-from bpython.repl import (
+from .. import __version__, autocomplete
+from ..repl import (
     Repl as BpythonRepl,
     SourceNotFound,
     LineTypeTranslator as LineType,
 )
-from bpython.config import getpreferredencoding
-from bpython.formatter import BPythonFormatter
-from bpython import autocomplete
-from bpython.translations import _
-from bpython.pager import get_pager_command
+from ..config import getpreferredencoding
+from ..formatter import BPythonFormatter
+from ..translations import _
+from ..pager import get_pager_command
 
 from . import events as bpythonevents, sitefix, replpainter as paint
 from .coderunner import (

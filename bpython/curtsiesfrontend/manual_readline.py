@@ -4,7 +4,7 @@ just the ones that fit the model of transforming the current line
 and the cursor location
 based on http://www.bigsmoke.us/readline/shortcuts"""
 
-from bpython.lazyre import LazyReCompile
+from ..lazyre import LazyReCompile
 
 import inspect
 
