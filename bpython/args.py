@@ -30,6 +30,7 @@ import importlib.util
 import logging
 import os
 import sys
+from pathlib import Path
 
 from . import __version__, __copyright__
 from .config import default_config_path, loadini, Struct
@@ -102,6 +103,7 @@ def parse(args, extras=None, ignore_stdin=False):
     parser.add_argument(
         "--config",
         default=default_config_path(),
+        type=Path,
         help=_("Use CONFIG instead of default config file."),
     )
     parser.add_argument(
