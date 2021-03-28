@@ -20,16 +20,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
 import string
+from typing import TypeVar, Generic, Tuple, Dict
+
+T = TypeVar("T")
 
 
-class KeyMap:
-    def __init__(self, default=""):
-        self.map = {}
+class KeyMap(Generic[T]):
+    def __init__(self, default: T) -> None:
+        self.map: Dict[str, T] = {}
         self.default = default
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> T:
         if not key:
             # Unbound key
             return self.default
@@ -40,14 +42,14 @@ class KeyMap:
                 f"Configured keymap ({key}) does not exist in bpython.keys"
             )
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str):
         del self.map[key]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: T):
         self.map[key] = value
 
 
-cli_key_dispatch = KeyMap(tuple())
+cli_key_dispatch: KeyMap[Tuple[str, ...]] = KeyMap(tuple())
 urwid_key_dispatch = KeyMap("")
 
 # fill dispatch with letters
