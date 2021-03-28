@@ -20,6 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from typing import Optional, Type, IO
+from types import TracebackType
+
 has_fcntl = True
 try:
     import fcntl
@@ -38,25 +41,29 @@ except ImportError:
 class BaseLock:
     """Base class for file locking"""
 
-    def __init__(self, fileobj=None):
-        self.fileobj = fileobj
+    def __init__(self) -> None:
         self.locked = False
 
-    def acquire(self):
+    def acquire(self) -> None:
         pass
 
-    def release(self):
+    def release(self) -> None:
         pass
 
-    def __enter__(self):
+    def __enter__(self) -> "BaseLock":
         self.acquire()
         return self
 
-    def __exit__(self, *args):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
         if self.locked:
             self.release()
 
-    def __del__(self):
+    def __del__(self) -> None:
         if self.locked:
             self.release()
 
@@ -64,11 +71,12 @@ class BaseLock:
 class UnixFileLock(BaseLock):
     """Simple file locking for Unix using fcntl"""
 
-    def __init__(self, fileobj, mode=0):
-        super().__init__(fileobj)
+    def __init__(self, fileobj, mode: int = 0) -> None:
+        super().__init__()
+        self.fileobj = fileobj
         self.mode = mode | fcntl.LOCK_EX
 
-    def acquire(self):
+    def acquire(self) -> None:
         try:
             fcntl.flock(self.fileobj, self.mode)
             self.locked = True
@@ -76,7 +84,7 @@ class UnixFileLock(BaseLock):
             if e.errno != errno.ENOLCK:
                 raise e
 
-    def release(self):
+    def release(self) -> None:
         self.locked = False
         fcntl.flock(self.fileobj, fcntl.LOCK_UN)
 
@@ -84,11 +92,12 @@ class UnixFileLock(BaseLock):
 class WindowsFileLock(BaseLock):
     """Simple file locking for Windows using msvcrt"""
 
-    def __init__(self, filename):
+    def __init__(self, filename: str) -> None:
         super().__init__()
         self.filename = f"{filename}.lock"
+        self.fileobj = -1
 
-    def acquire(self):
+    def acquire(self) -> None:
         # create a lock file and lock it
         self.fileobj = os.open(
             self.filename, os.O_RDWR | os.O_CREAT | os.O_TRUNC
@@ -97,13 +106,13 @@ class WindowsFileLock(BaseLock):
 
         self.locked = True
 
-    def release(self):
+    def release(self) -> None:
         self.locked = False
 
         # unlock lock file and remove it
         msvcrt.locking(self.fileobj, msvcrt.LK_UNLCK, 1)
         os.close(self.fileobj)
-        self.fileobj = None
+        self.fileobj = -1
 
         try:
             os.remove(self.filename)
@@ -111,12 +120,14 @@ class WindowsFileLock(BaseLock):
             pass
 
 
-def FileLock(fileobj, mode=0, filename=None):
+def FileLock(
+    fileobj: IO, mode: int = 0, filename: Optional[str] = None
+) -> BaseLock:
     if has_fcntl:
         return UnixFileLock(fileobj, mode)
-    elif has_msvcrt:
+    elif has_msvcrt and filename is not None:
         return WindowsFileLock(filename)
-    return BaseLock(fileobj)
+    return BaseLock()
 
 
 # vim: sw=4 ts=4 sts=4 ai et
