@@ -126,11 +126,6 @@ class TestRealComplete(unittest.TestCase):
             self.module_gatherer.complete(17, "from xml import d"), {"dom"}
         )
 
-    def test_from_package(self):
-        self.assertSetEqual(
-            self.module_gatherer.complete(17, "from xml import d"), {"dom"}
-        )
-
 
 class TestAvoidSymbolicLinks(unittest.TestCase):
     def setUp(self):
