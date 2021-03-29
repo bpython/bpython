@@ -185,8 +185,6 @@ class ModuleGatherer:
                     if spec.submodule_search_locations is not None:
                         pathname = spec.submodule_search_locations[0]
                         is_package = True
-                    else:
-                        pathname = spec.origin
             except (ImportError, OSError, SyntaxError):
                 continue
             except UnicodeEncodeError:
