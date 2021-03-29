@@ -26,6 +26,7 @@ import importlib.machinery
 import sys
 import warnings
 from pathlib import Path
+from typing import Optional, Set, Generator, Tuple, List
 
 from .line import (
     current_word,
@@ -48,17 +49,17 @@ LOADERS = (
 
 
 class ModuleGatherer:
-    def __init__(self, path=None, skiplist=None):
+    def __init__(self, path: Optional[Path] = None, skiplist=None) -> None:
         # The cached list of all known modules
-        self.modules = set()
+        self.modules: Set[str] = set()
         # List of (st_dev, st_ino) to compare against so that paths are not repeated
-        self.paths = set()
+        self.paths: Set[Tuple[int, int]] = set()
         # Patterns to skip
         self.skiplist = skiplist if skiplist is not None else tuple()
         self.fully_loaded = False
         self.find_iterator = self.find_all_modules(path)
 
-    def module_matches(self, cw, prefix=""):
+    def module_matches(self, cw: str, prefix: str = "") -> Set[str]:
         """Modules names to replace cw with"""
 
         full = f"{prefix}.{cw}" if prefix else cw
@@ -72,7 +73,9 @@ class ModuleGatherer:
         else:
             return set(matches)
 
-    def attr_matches(self, cw, prefix="", only_modules=False):
+    def attr_matches(
+        self, cw: str, prefix: str = "", only_modules: bool = False
+    ) -> Set[str]:
         """Attributes to replace name with"""
         full = f"{prefix}.{cw}" if prefix else cw
         module_name, _, name_after_dot = full.rpartition(".")
@@ -96,11 +99,11 @@ class ModuleGatherer:
 
         return matches
 
-    def module_attr_matches(self, name):
+    def module_attr_matches(self, name: str) -> Set[str]:
         """Only attributes which are modules to replace name with"""
         return self.attr_matches(name, prefix="", only_modules=True)
 
-    def complete(self, cursor_offset, line):
+    def complete(self, cursor_offset: int, line: str) -> Optional[Set[str]]:
         """Construct a full list of possibly completions for imports."""
         tokens = line.split()
         if "from" not in tokens and "import" not in tokens:
@@ -136,7 +139,7 @@ class ModuleGatherer:
         else:
             return None
 
-    def find_modules(self, path):
+    def find_modules(self, path: Path) -> Generator[str, None, None]:
         """Find all modules (and packages) for a given directory."""
         if not path.is_dir():
             # Perhaps a zip file
@@ -154,7 +157,7 @@ class ModuleGatherer:
             # Path is not readable
             return
 
-        finder = importlib.machinery.FileFinder(str(path), *LOADERS)
+        finder = importlib.machinery.FileFinder(str(path), *LOADERS)  # type: ignore
         for p in children:
             if any(fnmatch.fnmatch(p.name, entry) for entry in self.skiplist):
                 # Path is on skiplist
