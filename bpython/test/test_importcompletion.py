@@ -48,7 +48,7 @@ class TestSimpleComplete(unittest.TestCase):
         )
 
     @unittest.expectedFailure
-    def test_import_empty(self):
+    def test_import_blank(self):
         self.assertSetEqual(
             self.module_gatherer.complete(7, "import "),
             {"zzabc", "zzabd", "zzefg"},
