@@ -23,9 +23,7 @@
 """simple evaluation of side-effect free code
 
 In order to provide fancy completion, some code can be executed safely.
-
 """
-
 
 import ast
 import sys
@@ -34,9 +32,12 @@ import builtins
 from . import line as line_properties
 from .inspection import getattr_safe
 
+_is_py38 = sys.version_info[:2] >= (3, 8)
+_is_py39 = sys.version_info[:2] >= (3, 9)
+
 _string_type_nodes = (ast.Str, ast.Bytes)
 _numeric_types = (int, float, complex)
-_name_type_nodes = (ast.Name, ast.NameConstant)
+_name_type_nodes = (ast.Name,) if _is_py38 else (ast.Name, ast.NameConstant)
 
 
 class EvaluationError(Exception):
@@ -88,9 +89,9 @@ def simple_eval(node_or_string, namespace=None):
     def _convert(node):
         if isinstance(node, ast.Constant):
             return node.value
-        elif isinstance(node, _string_type_nodes):
+        elif not _is_py38 and isinstance(node, _string_type_nodes):
             return node.s
-        elif isinstance(node, ast.Num):
+        elif not _is_py38 and isinstance(node, ast.Num):
             return node.n
         elif isinstance(node, ast.Tuple):
             return tuple(map(_convert, node.elts))
@@ -149,14 +150,16 @@ def simple_eval(node_or_string, namespace=None):
                 return left - right
 
         # this is a deviation from literal_eval: we allow indexing
-        elif isinstance(node, ast.Subscript) and isinstance(
-            node.slice, ast.Index
+        elif (
+            not _is_py39
+            and isinstance(node, ast.Subscript)
+            and isinstance(node.slice, ast.Index)
         ):
             obj = _convert(node.value)
             index = _convert(node.slice.value)
             return safe_getitem(obj, index)
         elif (
-            sys.version_info[:2] >= (3, 9)
+            _is_py39
             and isinstance(node, ast.Subscript)
             and isinstance(node.slice, (ast.Constant, ast.Name))
         ):
