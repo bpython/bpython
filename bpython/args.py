@@ -202,7 +202,7 @@ def exec_code(interpreter, args):
     spec = importlib.util.spec_from_loader("__console__", loader=None)
     mod = importlib.util.module_from_spec(spec)
     sys.modules["__console__"] = mod
-    interpreter.locals = mod.__dict__
+    interpreter.locals.update(mod.__dict__)
     interpreter.locals["__file__"] = args[0]
     interpreter.runsource(source, args[0], "exec")
     sys.argv = old_argv
