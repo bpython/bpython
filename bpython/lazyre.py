@@ -43,13 +43,13 @@ class LazyReCompile:
     def compiled(self):
         return re.compile(self.regex, self.flags)
 
-    def finditer(self, *args, **kwargs) -> Iterator[re.Match]:
+    def finditer(self, *args, **kwargs):
         return self.compiled.finditer(*args, **kwargs)
 
-    def search(self, *args, **kwargs) -> Optional[re.Match]:
+    def search(self, *args, **kwargs):
         return self.compiled.search(*args, **kwargs)
 
-    def match(self, *args, **kwargs) -> Optional[re.Match]:
+    def match(self, *args, **kwargs):
         return self.compiled.match(*args, **kwargs)
 
     def sub(self, *args, **kwargs) -> str:
