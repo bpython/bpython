@@ -25,7 +25,7 @@ import bpython
 
 
 class BPdb(pdb.Pdb):
-    """ PDB with BPython support. """
+    """PDB with BPython support."""
 
     def __init__(self, *args, **kwargs):
         pdb.Pdb.__init__(self, *args, **kwargs)

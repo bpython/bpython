@@ -179,7 +179,7 @@ def simple_eval(node_or_string, namespace=None):
 
 
 def safe_getitem(obj, index):
-    """ Safely tries to access obj[index] """
+    """Safely tries to access obj[index]"""
     if type(obj) in (list, tuple, dict, bytes, str):
         try:
             return obj[index]
