@@ -22,13 +22,6 @@ class AbstractEdits:
         "cut_buffer": "there",
     }
 
-    def __contains__(self, key):
-        try:
-            self[key]
-        except KeyError:
-            return False
-        else:
-            return True
 
     def add(self, key, func, overwrite=False):
         if key in self:
@@ -74,6 +67,9 @@ class AbstractEdits:
         offset"""
         r = self.call_for_two(key, **kwargs)
         return r[:2]
+
+    def __contains__(self, key):
+        return key in self.simple_edits or key in self.cut_buffer_edits
 
     def __getitem__(self, key):
         if key in self.simple_edits:
