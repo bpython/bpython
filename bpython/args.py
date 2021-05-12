@@ -1,7 +1,7 @@
 # The MIT License
 #
 # Copyright (c) 2008 Bob Farrell
-# Copyright (c) 2012-2020 Sebastian Ramacher
+# Copyright (c) 2012-2021 Sebastian Ramacher
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,15 +26,22 @@ Module to handle command line argument parsing, for all front-ends.
 """
 
 import argparse
+import curtsies
+import cwcwidth
+import greenlet
 import importlib.util
 import logging
 import os
+import pygments
+import requests
 import sys
 from pathlib import Path
 
 from . import __version__, __copyright__
 from .config import default_config_path, loadini, Struct
 from .translations import _
+
+logger = logging.getLogger(__name__)
 
 
 class ArgumentParserFailed(ValueError):
@@ -183,6 +190,25 @@ def parse(args, extras=None, ignore_stdin=False):
     else:
         bpython_logger.addHandler(logging.NullHandler())
         curtsies_logger.addHandler(logging.NullHandler())
+
+    logger.info(f"Starting bpython {__version__}")
+    logger.info(f"Python {sys.executable}: {sys.version_info}")
+    logger.info(f"curtsies: {curtsies.__version__}")
+    logger.info(f"cwcwidth: {cwcwidth.__version__}")
+    logger.info(f"greenlet: {greenlet.__version__}")
+    logger.info(f"pygments: {pygments.__version__}")
+    logger.info(f"requests: {requests.__version__}")
+    logger.info(
+        "environment:\n{}".format(
+            "\n".join(
+                f"{key}: {value}"
+                for key, value in sorted(os.environ.items())
+                if key.startswith("LC")
+                or key.startswith("LANG")
+                or key == "TERM"
+            )
+        )
+    )
 
     config = Struct()
     loadini(config, options.config)
