@@ -40,7 +40,7 @@ class LazyReCompile:
         self.flags = flags
 
     @cached_property
-    def compiled(self) -> re.Pattern:
+    def compiled(self):
         return re.compile(self.regex, self.flags)
 
     def finditer(self, *args, **kwargs) -> Iterator[re.Match]:
