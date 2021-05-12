@@ -100,7 +100,7 @@ class History:
 
     @property
     def entries_by_index(self) -> List[str]:
-        return list(chain((self.saved_line, ), reversed(self.entries)))
+        return list(chain((self.saved_line,), reversed(self.entries)))
 
     def find_match_backward(
         self, search_term: str, include_current: bool = False
