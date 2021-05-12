@@ -23,7 +23,7 @@
 
 import os
 import stat
-from itertools import islice
+from itertools import islice, chain
 from typing import Iterable, Optional, List, TextIO
 
 from .translations import _
@@ -100,7 +100,7 @@ class History:
 
     @property
     def entries_by_index(self) -> List[str]:
-        return list(reversed(self.entries + [self.saved_line]))
+        return list(chain((self.saved_line, ), reversed(self.entries)))
 
     def find_match_backward(
         self, search_term: str, include_current: bool = False
