@@ -156,7 +156,7 @@ class ConfiguredEdits(AbstractEdits):
     def add_config_attr(self, config_attr, func):
         raise NotImplementedError("Config already set on this mapping")
 
-    def add(self, key, func):
+    def add(self, key, func, overwrite=False):
         raise NotImplementedError("Config already set on this mapping")
 
 
