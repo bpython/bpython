@@ -1,6 +1,6 @@
 # The MIT License
 #
-# Copyright (c) 2015 Sebastian Ramacher
+# Copyright (c) 2015-2021 Sebastian Ramacher
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,8 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import functools
 import re
+from typing import Optional, Iterator
+
+try:
+    from functools import cached_property
+except ImportError:
+    from backports.cached_property import cached_property  # type: ignore
 
 
 class LazyReCompile:
@@ -30,32 +35,22 @@ class LazyReCompile:
     This class allows one to store regular expressions and compiles them on
     first use."""
 
-    def __init__(self, regex, flags=0):
+    def __init__(self, regex: str, flags: int = 0) -> None:
         self.regex = regex
         self.flags = flags
-        self.compiled = None
 
-    def compile_regex(method):
-        @functools.wraps(method)
-        def _impl(self, *args, **kwargs):
-            if self.compiled is None:
-                self.compiled = re.compile(self.regex, self.flags)
-            return method(self, *args, **kwargs)
+    @cached_property
+    def compiled(self) -> re.Pattern:
+        return re.compile(self.regex, self.flags)
 
-        return _impl
-
-    @compile_regex
-    def finditer(self, *args, **kwargs):
+    def finditer(self, *args, **kwargs) -> Iterator[re.Match]:
         return self.compiled.finditer(*args, **kwargs)
 
-    @compile_regex
-    def search(self, *args, **kwargs):
+    def search(self, *args, **kwargs) -> Optional[re.Match]:
         return self.compiled.search(*args, **kwargs)
 
-    @compile_regex
-    def match(self, *args, **kwargs):
+    def match(self, *args, **kwargs) -> Optional[re.Match]:
         return self.compiled.match(*args, **kwargs)
 
-    @compile_regex
-    def sub(self, *args, **kwargs):
+    def sub(self, *args, **kwargs) -> str:
         return self.compiled.sub(*args, **kwargs)
