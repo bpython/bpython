@@ -22,6 +22,12 @@ class AbstractEdits:
         "cut_buffer": "there",
     }
 
+    def __init__(self, simple_edits=None, cut_buffer_edits=None):
+        self.simple_edits = {} if simple_edits is None else simple_edits
+        self.cut_buffer_edits = (
+            {} if cut_buffer_edits is None else cut_buffer_edits
+        )
+        self.awaiting_config = {}
 
     def add(self, key, func, overwrite=False):
         if key in self:
@@ -104,11 +110,6 @@ class UnconfiguredEdits(AbstractEdits):
     Keys can't be added twice, config attributes can't be added twice.
     """
 
-    def __init__(self):
-        self.simple_edits = {}
-        self.cut_buffer_edits = {}
-        self.awaiting_config = {}
-
     def mapping_with_config(self, config, key_dispatch):
         """Creates a new mapping object by applying a config object"""
         return ConfiguredEdits(
@@ -147,8 +148,7 @@ class ConfiguredEdits(AbstractEdits):
         config,
         key_dispatch,
     ):
-        self.simple_edits = dict(simple_edits)
-        self.cut_buffer_edits = dict(cut_buffer_edits)
+        super().__init__(dict(simple_edits), dict(cut_buffer_edits))
         for attr, func in awaiting_config.items():
             for key in key_dispatch[getattr(config, attr)]:
                 super().add(key, func, overwrite=True)
