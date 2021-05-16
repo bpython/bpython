@@ -194,8 +194,10 @@ def loadini(struct, config_path):
     except UnicodeDecodeError as e:
         sys.stderr.write(
             "Error: Unable to parse config file at '{}' due to an "
-            "encoding issue. Please make sure to fix the encoding "
-            "of the file or remove it and then try again.\n".format(config_path)
+            "encoding issue ({}). Please make sure to fix the encoding "
+            "of the file or remove it and then try again.\n".format(
+                config_path, e
+            )
         )
         sys.exit(1)
 
