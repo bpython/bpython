@@ -171,5 +171,4 @@ class StatusBar(Interaction):
         self.request_context = greenlet.getcurrent()
         self.prompt = s
         self.in_prompt = True
-        result = self.main_context.switch(s)
-        return result
+        return self.main_context.switch(s)
