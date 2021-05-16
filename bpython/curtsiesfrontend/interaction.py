@@ -1,6 +1,6 @@
 import greenlet
 import time
-import curtsies.events as events
+from curtsies import events
 
 from ..translations import _
 from ..repl import Interaction
