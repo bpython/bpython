@@ -23,19 +23,23 @@ INVERSE_COLORS = {
 INVERSE_COLORS["default"] = INVERSE_COLORS[CURTSIES_COLORS[0]]
 
 
-def func_for_letter(l, default="k"):
+def func_for_letter(letter_color_code: str, default: str = "k"):
     """Returns FmtStr constructor for a bpython-style color code"""
-    if l == "d":
-        l = default
-    elif l == "D":
-        l = default.upper()
-    return partial(fmtstr, fg=CNAMES[l.lower()], bold=l.isupper())
+    if letter_color_code == "d":
+        letter_color_code = default
+    elif letter_color_code == "D":
+        letter_color_code = default.upper()
+    return partial(
+        fmtstr,
+        fg=CNAMES[letter_color_code.lower()],
+        bold=letter_color_code.isupper(),
+    )
 
 
-def color_for_letter(l, default="k"):
-    if l == "d":
-        l = default
-    return CNAMES[l.lower()]
+def color_for_letter(letter_color_code: str, default: str = "k"):
+    if letter_color_code == "d":
+        letter_color_code = default
+    return CNAMES[letter_color_code.lower()]
 
 
 def parse(s):
