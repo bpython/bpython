@@ -1,5 +1,6 @@
-import os
+import tempfile
 import unittest
+from pathlib import Path
 
 from bpython.config import getpreferredencoding
 from bpython.history import History
@@ -7,7 +8,7 @@ from bpython.history import History
 
 class TestHistory(unittest.TestCase):
     def setUp(self):
-        self.history = History("#%d" % x for x in range(1000))
+        self.history = History(f"#{x}" for x in range(1000))
 
     def test_is_at_start(self):
         self.history.first()
@@ -84,7 +85,8 @@ class TestHistory(unittest.TestCase):
 
 class TestHistoryFileAccess(unittest.TestCase):
     def setUp(self):
-        self.filename = "history_temp_file"
+        self.tempdir = tempfile.TemporaryDirectory()
+        self.filename = str(Path(self.tempdir.name) / "history_temp_file")
         self.encoding = getpreferredencoding()
 
         with open(
@@ -109,21 +111,17 @@ class TestHistoryFileAccess(unittest.TestCase):
 
     def test_save(self):
         history = History()
-        history.entries = []
-        for line in ["#1", "#2", "#3", "#4"]:
+        for line in ("#1", "#2", "#3", "#4"):
             history.append_to(history.entries, line)
 
         # save only last 2 lines
         history.save(self.filename, self.encoding, lines=2)
 
-        # empty the list of entries and load again from the file
-        history.entries = [""]
+        # load again from the file
+        history = History()
         history.load(self.filename, self.encoding)
 
         self.assertEqual(history.entries, ["#3", "#4"])
 
     def tearDown(self):
-        try:
-            os.remove(self.filename)
-        except OSError:
-            pass
+        self.tempdir = None
