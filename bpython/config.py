@@ -47,12 +47,12 @@ class Struct:
     to and use for various arbitrary things."""
 
 
-def getpreferredencoding():
+def getpreferredencoding() -> str:
     """Get the user's preferred encoding."""
     return locale.getpreferredencoding() or sys.getdefaultencoding()
 
 
-def can_encode(c):
+def can_encode(c: str) -> bool:
     try:
         c.encode(getpreferredencoding())
         return True
@@ -60,22 +60,22 @@ def can_encode(c):
         return False
 
 
-def supports_box_chars():
+def supports_box_chars() -> bool:
     """Check if the encoding supports Unicode box characters."""
     return all(map(can_encode, "│─└┘┌┐"))
 
 
-def get_config_home():
+def get_config_home() -> Path:
     """Returns the base directory for bpython's configuration files."""
     return Path(BaseDirectory.xdg_config_home) / "bpython"
 
 
-def default_config_path():
+def default_config_path() -> Path:
     """Returns bpython's default configuration file path."""
     return get_config_home() / "config"
 
 
-def default_editor():
+def default_editor() -> str:
     """Returns the default editor."""
     return os.environ.get("VISUAL", os.environ.get("EDITOR", "vi"))
 
