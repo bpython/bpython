@@ -87,7 +87,7 @@ def fill_config_with_default_values(config, default_values):
 
         for (opt, val) in default_values[section].items():
             if not config.has_option(section, opt):
-                config.set(section, opt, f"{val}")
+                config.set(section, opt, str(val))
 
 
 def loadini(struct, config_path):
