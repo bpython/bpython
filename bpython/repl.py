@@ -459,18 +459,12 @@ class Repl:
             )
 
     @property
-    def ps1(self):
-        try:
-            return sys.ps1
-        except AttributeError:
-            return ">>> "
+    def ps1(self) -> str:
+        return getattr(sys, "ps1", ">>> ")
 
     @property
-    def ps2(self):
-        try:
-            return sys.ps2
-        except AttributeError:
-            return "... "
+    def ps2(self) -> str:
+        return getattr(sys, "ps2", "... ")
 
     def startup(self):
         """
