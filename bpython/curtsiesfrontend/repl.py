@@ -10,6 +10,7 @@ import sys
 import tempfile
 import time
 import unicodedata
+from enum import Enum
 
 import blessings
 import greenlet
@@ -50,7 +51,6 @@ from ..pager import get_pager_command
 from ..repl import (
     Repl,
     SourceNotFound,
-    LineTypeTranslator as LineType,
 )
 from ..translations import _
 
@@ -68,6 +68,14 @@ EDIT_SESSION_HEADER = """### current bpython session - make changes and save to 
 # more than this many events will be assumed to be a true paste event,
 # i.e. control characters like '<Ctrl-a>' will be stripped
 MAX_EVENTS_POSSIBLY_NOT_PASTE = 20
+
+
+class LineType(Enum):
+    """Used when adding a tuple to all_logical_lines, to get input / output values
+    having to actually type/know the strings"""
+
+    INPUT = "input"
+    OUTPUT = "output"
 
 
 class FakeStdin:
@@ -365,7 +373,7 @@ class BaseRepl(Repl):
         # Entries are tuples, where
         #   - the first element the line (string, not fmtsr)
         #   - the second element is one of 2 global constants: "input" or "output"
-        #     (use LineType.INPUT or LineType.OUTPUT to avoid typing these strings)
+        #     (use LineTypeTranslator.INPUT or LineTypeTranslator.OUTPUT to avoid typing these strings)
         self.all_logical_lines = []
 
         # formatted version of lines in the buffer kept around so we can
@@ -2031,6 +2039,17 @@ Press {config.edit_config_key} to edit this config file.
         return "\n".join(
             "{} : {}".format(func.rjust(max_func), key) for func, key in pairs
         )
+
+    def get_session_formatted_for_file(self) -> str:
+        def process():
+            for line, lineType in self.all_logical_lines:
+                if lineType == LineType.INPUT:
+                    yield line
+                elif line.rstrip():
+                    yield "# OUT: %s" % line
+            yield "### %s" % self.current_line
+
+        return "\n".join(process())
 
 
 def is_nop(char):

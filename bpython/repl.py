@@ -33,7 +33,6 @@ import tempfile
 import textwrap
 import time
 import traceback
-from enum import Enum
 from itertools import takewhile
 from pathlib import Path
 from pygments.lexers import Python3Lexer
@@ -353,14 +352,6 @@ class Interaction:
 
 class SourceNotFound(Exception):
     """Exception raised when the requested source could not be found."""
-
-
-class LineTypeTranslator(Enum):
-    """Used when adding a tuple to all_logical_lines, to get input / output values
-    having to actually type/know the strings"""
-
-    INPUT = "input"
-    OUTPUT = "output"
 
 
 class Repl:
@@ -778,37 +769,23 @@ class Repl:
             indentation = 0
         return indentation
 
-    def get_session_formatted_for_file(self):
+    def get_session_formatted_for_file(self) -> str:
         """Format the stdout buffer to something suitable for writing to disk,
         i.e. without >>> and ... at input lines and with "# OUT: " prepended to
         output lines and "### " prepended to current line"""
 
-        if hasattr(self, "all_logical_lines"):
-            # Curtsies
+        session_output = self.getstdout()
 
-            def process():
-                for line, lineType in self.all_logical_lines:
-                    if lineType == LineTypeTranslator.INPUT:
-                        yield line
-                    elif line.rstrip():
-                        yield "# OUT: %s" % line
-                yield "### %s" % self.current_line
+        def process():
+            for line in session_output.split("\n"):
+                if line.startswith(self.ps1):
+                    yield line[len(self.ps1) :]
+                elif line.startswith(self.ps2):
+                    yield line[len(self.ps2) :]
+                elif line.rstrip():
+                    yield f"# OUT: {line}"
 
-            return "\n".join(process())
-
-        else:  # cli and Urwid
-            session_output = self.getstdout()
-
-            def process():
-                for line in session_output.split("\n"):
-                    if line.startswith(self.ps1):
-                        yield line[len(self.ps1) :]
-                    elif line.startswith(self.ps2):
-                        yield line[len(self.ps2) :]
-                    elif line.rstrip():
-                        yield f"# OUT: {line}"
-
-            return "\n".join(process())
+        return "\n".join(process())
 
     def write2file(self):
         """Prompt for a filename and write the current contents of the stdout
