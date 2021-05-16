@@ -1,7 +1,5 @@
-import blessings
 import contextlib
 import errno
-import greenlet
 import itertools
 import logging
 import os
@@ -13,12 +11,8 @@ import tempfile
 import time
 import unicodedata
 
-from pygments import format as pygformat
-from pygments.lexers import Python3Lexer
-from pygments.formatters import TerminalFormatter
-
-from cwcwidth import wcswidth
-
+import blessings
+import greenlet
 from curtsies import (
     FSArray,
     fmtstr,
@@ -30,17 +24,10 @@ from curtsies import (
 )
 from curtsies.configfile_keynames import keymap as key_dispatch
 from curtsies.input import is_main_thread
-
-from .. import __version__, autocomplete
-from ..repl import (
-    Repl as BpythonRepl,
-    SourceNotFound,
-    LineTypeTranslator as LineType,
-)
-from ..config import getpreferredencoding
-from ..formatter import BPythonFormatter
-from ..translations import _
-from ..pager import get_pager_command
+from cwcwidth import wcswidth
+from pygments import format as pygformat
+from pygments.formatters import TerminalFormatter
+from pygments.lexers import Python3Lexer
 
 from . import events as bpythonevents, sitefix, replpainter as paint
 from .coderunner import (
@@ -49,14 +36,23 @@ from .coderunner import (
 )
 from .filewatch import ModuleChangedEventHandler
 from .interaction import StatusBar
-from .manual_readline import edit_keys
-from .parse import parse as bpythonparse, func_for_letter, color_for_letter
-from .preprocess import preprocess
 from .interpreter import (
     Interp,
     code_finished_will_parse,
 )
-
+from .manual_readline import edit_keys
+from .parse import parse as bpythonparse, func_for_letter, color_for_letter
+from .preprocess import preprocess
+from .. import __version__
+from ..config import getpreferredencoding
+from ..formatter import BPythonFormatter
+from ..pager import get_pager_command
+from ..repl import (
+    Repl,
+    SourceNotFound,
+    LineTypeTranslator as LineType,
+)
+from ..translations import _
 
 logger = logging.getLogger(__name__)
 
@@ -271,7 +267,7 @@ class ImportFinder:
             return ImportLoader(self.watcher, loader)
 
 
-class BaseRepl(BpythonRepl):
+class BaseRepl(Repl):
     """Python Repl
 
     Reacts to events like

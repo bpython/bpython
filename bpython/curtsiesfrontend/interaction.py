@@ -3,12 +3,12 @@ import time
 import curtsies.events as events
 
 from ..translations import _
-from ..repl import Interaction as BpythonInteraction
+from ..repl import Interaction
 from ..curtsiesfrontend.events import RefreshRequestEvent
 from ..curtsiesfrontend.manual_readline import edit_keys
 
 
-class StatusBar(BpythonInteraction):
+class StatusBar(Interaction):
     """StatusBar and Interaction for Repl
 
     Passing of control back and forth between calls that use interact api
@@ -157,7 +157,7 @@ class StatusBar(BpythonInteraction):
         self.request_refresh()
         self.main_context.switch(msg)
 
-    # below Really ought to be called from greenlets other than main because
+    # below really ought to be called from greenlets other than main because
     # they block
     def confirm(self, q):
         """Expected to return True or False, given question prompt q"""
