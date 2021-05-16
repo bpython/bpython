@@ -2015,11 +2015,10 @@ Press {config.edit_config_key} to edit this config file.
             "yank from buffer",
             "cut to buffer",
         )
-        pairs = []
-        pairs.append(
-            ["complete history suggestion", "right arrow at end of line"]
-        )
-        pairs.append(["previous match with current line", "up arrow"])
+        pairs = [
+            ["complete history suggestion", "right arrow at end of line"],
+            ["previous match with current line", "up arrow"],
+        ]
         for functionality, key in (
             (attr[:-4].replace("_", " "), getattr(self.config, attr))
             for attr in self.config.__dict__
