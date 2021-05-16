@@ -12,7 +12,7 @@ from unittest import mock
 from bpython.curtsiesfrontend import repl as curtsiesrepl
 from bpython.curtsiesfrontend import interpreter
 from bpython.curtsiesfrontend import events as bpythonevents
-from bpython.repl import LineTypeTranslator as LineType
+from bpython.curtsiesfrontend.repl import LineType
 from bpython import autocomplete
 from bpython import config
 from bpython import args
