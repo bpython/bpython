@@ -1833,7 +1833,7 @@ class BaseRepl(BpythonRepl):
             return self.take_back_empty_line()
 
         def prompt_for_undo():
-            n = BpythonRepl.prompt_undo(self)
+            n = super(BaseRepl, self).prompt_undo()
             if n > 0:
                 self.request_undo(n=n)
 
