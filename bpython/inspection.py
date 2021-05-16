@@ -29,6 +29,7 @@ from collections import namedtuple
 
 from pygments.token import Token
 from pygments.lexers import Python3Lexer
+from typing import Any
 from types import MemberDescriptorType
 
 from .lazyre import LazyReCompile
@@ -53,7 +54,7 @@ class AttrCleaner:
     """A context manager that tries to make an object not exhibit side-effects
     on attribute lookup."""
 
-    def __init__(self, obj):
+    def __init__(self, obj: Any) -> None:
         self.obj = obj
 
     def __enter__(self):

@@ -37,7 +37,7 @@ default_completion = AutocompleteModes.SIMPLE
 
 
 class UnknownColorCode(Exception):
-    def __init__(self, key, color):
+    def __init__(self, key: str, color: str) -> None:
         self.key = key
         self.color = color
 
