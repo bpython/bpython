@@ -40,23 +40,23 @@
 # - View source doesn't work on windows unless you install the less program (From GnuUtils or Cygwin)
 
 
-import platform
-import os
-import sys
 import curses
-import math
-import re
-import time
+import errno
 import functools
-
+import math
+import os
+import platform
+import re
 import struct
+import sys
+import time
+import unicodedata
+from dataclasses import dataclass
 
 if platform.system() != "Windows":
     import signal  # Windows does not have job control
     import termios  # Windows uses curses
     import fcntl  # Windows uses curses
-import unicodedata
-import errno
 
 
 # These are used for syntax highlighting
@@ -67,7 +67,7 @@ from pygments.token import Token
 from .formatter import BPythonFormatter
 
 # This for config
-from .config import Struct, getpreferredencoding
+from .config import getpreferredencoding
 
 # This for keys
 from .keys import cli_key_dispatch as key_dispatch
@@ -88,6 +88,13 @@ colors = None
 
 DO_RESIZE = False
 # ---
+
+
+@dataclass
+class ShowListState:
+    cols: int = 0
+    rows: int = 0
+    wl: int = 0
 
 
 def calculate_screen_lines(tokens, width, cursor=0):
@@ -1254,11 +1261,7 @@ class CLIRepl(repl.Repl):
     def show_list(
         self, items, arg_pos, topline=None, formatter=None, current_item=None
     ):
-
-        shared = Struct()
-        shared.cols = 0
-        shared.rows = 0
-        shared.wl = 0
+        shared = ShowListState()
         y, x = self.scr.getyx()
         h, w = self.scr.getmaxyx()
         down = y < h // 2

@@ -42,11 +42,6 @@ class UnknownColorCode(Exception):
         self.color = color
 
 
-class Struct:
-    """Simple class for instantiating objects we can add arbitrary attributes
-    to and use for various arbitrary things."""
-
-
 def getpreferredencoding() -> str:
     """Get the user's preferred encoding."""
     return locale.getpreferredencoding() or sys.getdefaultencoding()
