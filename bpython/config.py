@@ -75,7 +75,9 @@ def default_editor() -> str:
     return os.environ.get("VISUAL", os.environ.get("EDITOR", "vi"))
 
 
-def fill_config_with_default_values(config, default_values):
+def fill_config_with_default_values(
+    config: ConfigParser, default_values: Mapping[str, Mapping[str, Any]]
+) -> None:
     for section in default_values.keys():
         if not config.has_section(section):
             config.add_section(section)
