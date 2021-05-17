@@ -28,7 +28,7 @@ import time
 import logging
 
 from bpython import translations
-from bpython.config import Struct, loadini, default_config_path
+from bpython.config import Config, default_config_path
 from bpython.curtsiesfrontend import events as bpythonevents
 from bpython.curtsiesfrontend.repl import BaseRepl
 from bpython.importcompletion import ModuleGatherer
@@ -117,8 +117,7 @@ class SimpleRepl(BaseRepl):
 
 def main(args=None, locals_=None, banner=None):
     translations.init()
-    config = Struct()
-    loadini(config, default_config_path())
+    config = Config(default_config_path())
     module_gatherer = ModuleGatherer()
     while module_gatherer.find_coroutine():
         pass

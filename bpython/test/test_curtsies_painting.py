@@ -25,8 +25,7 @@ from bpython.test import FixLanguageTestCase as TestCase, TEST_CONFIG
 
 
 def setup_config():
-    config_struct = config.Struct()
-    config.loadini(config_struct, TEST_CONFIG)
+    config_struct = config.Config(TEST_CONFIG)
     config_struct.cli_suggestion_width = 1
     return config_struct
 

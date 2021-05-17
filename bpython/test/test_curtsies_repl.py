@@ -27,8 +27,7 @@ from importlib import invalidate_caches
 
 
 def setup_config(conf):
-    config_struct = config.Struct()
-    config.loadini(config_struct, TEST_CONFIG)
+    config_struct = config.Config(TEST_CONFIG)
     for key, value in conf.items():
         if not hasattr(config_struct, key):
             raise ValueError(f"{key!r} is not a valid config attribute")

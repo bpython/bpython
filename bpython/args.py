@@ -38,7 +38,7 @@ import sys
 from pathlib import Path
 
 from . import __version__, __copyright__
-from .config import default_config_path, loadini, Struct
+from .config import default_config_path, Config
 from .translations import _
 
 logger = logging.getLogger(__name__)
@@ -210,10 +210,7 @@ def parse(args, extras=None, ignore_stdin=False):
         )
     )
 
-    config = Struct()
-    loadini(config, options.config)
-
-    return config, options, options.args
+    return Config(options.config), options, options.args
 
 
 def exec_code(interpreter, args):

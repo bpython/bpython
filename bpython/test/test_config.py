@@ -9,33 +9,25 @@ TEST_THEME_PATH = os.path.join(os.path.dirname(__file__), "test.theme")
 
 
 class TestConfig(unittest.TestCase):
-    def load_temp_config(self, content, struct=None):
+    def load_temp_config(self, content):
         """Write config to a temporary file and load it."""
-
-        if struct is None:
-            struct = config.Struct()
 
         with tempfile.NamedTemporaryFile() as f:
             f.write(content.encode("utf8"))
             f.flush()
 
-            config.loadini(struct, f.name)
-
-        return struct
+            return config.Config(f.name)
 
     def test_load_theme(self):
-        struct = config.Struct()
-        struct.color_scheme = dict()
-        config.load_theme(struct, TEST_THEME_PATH, struct.color_scheme, dict())
+        color_scheme = dict()
+        config.load_theme(TEST_THEME_PATH, color_scheme, dict())
         expected = {"keyword": "y"}
-        self.assertEqual(struct.color_scheme, expected)
+        self.assertEqual(color_scheme, expected)
 
         defaults = {"name": "c"}
         expected.update(defaults)
-        config.load_theme(
-            struct, TEST_THEME_PATH, struct.color_scheme, defaults
-        )
-        self.assertEqual(struct.color_scheme, expected)
+        config.load_theme(TEST_THEME_PATH, color_scheme, defaults)
+        self.assertEqual(color_scheme, expected)
 
     def test_keybindings_default_contains_no_duplicates(self):
         struct = self.load_temp_config("")

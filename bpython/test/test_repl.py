@@ -18,8 +18,7 @@ pypy = "PyPy" in sys.version
 
 
 def setup_config(conf):
-    config_struct = config.Struct()
-    config.loadini(config_struct, TEST_CONFIG)
+    config_struct = config.Config(TEST_CONFIG)
     if conf is not None and "autocomplete_mode" in conf:
         config_struct.autocomplete_mode = conf["autocomplete_mode"]
     return config_struct
