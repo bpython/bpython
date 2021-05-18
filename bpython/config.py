@@ -88,105 +88,120 @@ def fill_config_with_default_values(
 
 
 class Config:
-    def __init__(self, config_path: Path):
+    default_colors = {
+        "keyword": "y",
+        "name": "c",
+        "comment": "b",
+        "string": "m",
+        "error": "r",
+        "number": "G",
+        "operator": "Y",
+        "punctuation": "y",
+        "token": "C",
+        "background": "d",
+        "output": "w",
+        "main": "c",
+        "paren": "R",
+        "prompt": "c",
+        "prompt_more": "g",
+        "right_arrow_suggestion": "K",
+    }
+
+    defaults: Dict[str, Dict[str, Any]] = {
+        "general": {
+            "arg_spec": True,
+            "auto_display_list": True,
+            "autocomplete_mode": default_completion,
+            "color_scheme": "default",
+            "complete_magic_methods": True,
+            "dedent_after": 1,
+            "default_autoreload": False,
+            "editor": default_editor(),
+            "flush_output": True,
+            "import_completion_skiplist": ":".join(
+                (
+                    # version tracking
+                    ".git",
+                    ".svn",
+                    ".hg"
+                    # XDG
+                    ".config",
+                    ".local",
+                    ".share",
+                    # nodejs
+                    "node_modules",
+                    # PlayOnLinux
+                    "PlayOnLinux's virtual drives",
+                    # wine
+                    "dosdevices",
+                    # Python byte code cache
+                    "__pycache__",
+                )
+            ),
+            "highlight_show_source": True,
+            "hist_duplicates": True,
+            "hist_file": "~/.pythonhist",
+            "hist_length": 1000,
+            "paste_time": 0.02,
+            "pastebin_confirm": True,
+            "pastebin_expiry": "1week",
+            "pastebin_helper": "",
+            "pastebin_url": "https://bpaste.net",
+            "save_append_py": False,
+            "single_undo_time": 1.0,
+            "syntax": True,
+            "tab_length": 4,
+            "unicode_box": True,
+        },
+        "keyboard": {
+            "backspace": "C-h",
+            "beginning_of_line": "C-a",
+            "clear_line": "C-u",
+            "clear_screen": "C-l",
+            "clear_word": "C-w",
+            "copy_clipboard": "F10",
+            "cut_to_buffer": "C-k",
+            "delete": "C-d",
+            "down_one_line": "C-n",
+            "edit_config": "F3",
+            "edit_current_block": "C-x",
+            "end_of_line": "C-e",
+            "exit": "",
+            "external_editor": "F7",
+            "help": "F1",
+            "incremental_search": "M-s",
+            "last_output": "F9",
+            "left": "C-b",
+            "pastebin": "F8",
+            "redo": "C-g",
+            "reimport": "F6",
+            "reverse_incremental_search": "M-r",
+            "right": "C-f",
+            "save": "C-s",
+            "search": "C-o",
+            "show_source": "F2",
+            "suspend": "C-z",
+            "toggle_file_watch": "F5",
+            "transpose_chars": "C-t",
+            "undo": "C-r",
+            "up_one_line": "C-p",
+            "yank_from_buffer": "C-y",
+        },
+        "cli": {
+            "suggestion_width": 0.8,
+            "trim_prompts": False,
+        },
+        "curtsies": {
+            "list_above": False,
+            "right_arrow_completion": True,
+        },
+    }
+
+    def __init__(self, config_path: Path) -> None:
         """Loads .ini configuration file and stores its values."""
 
         config = ConfigParser()
-        defaults: Dict[str, Dict[str, Any]] = {
-            "general": {
-                "arg_spec": True,
-                "auto_display_list": True,
-                "autocomplete_mode": default_completion,
-                "color_scheme": "default",
-                "complete_magic_methods": True,
-                "dedent_after": 1,
-                "default_autoreload": False,
-                "editor": default_editor(),
-                "flush_output": True,
-                "import_completion_skiplist": ":".join(
-                    (
-                        # version tracking
-                        ".git",
-                        ".svn",
-                        ".hg"
-                        # XDG
-                        ".config",
-                        ".local",
-                        ".share",
-                        # nodejs
-                        "node_modules",
-                        # PlayOnLinux
-                        "PlayOnLinux's virtual drives",
-                        # wine
-                        "dosdevices",
-                        # Python byte code cache
-                        "__pycache__",
-                    )
-                ),
-                "highlight_show_source": True,
-                "hist_duplicates": True,
-                "hist_file": "~/.pythonhist",
-                "hist_length": 1000,
-                "paste_time": 0.02,
-                "pastebin_confirm": True,
-                "pastebin_expiry": "1week",
-                "pastebin_helper": "",
-                "pastebin_url": "https://bpaste.net",
-                "save_append_py": False,
-                "single_undo_time": 1.0,
-                "syntax": True,
-                "tab_length": 4,
-                "unicode_box": True,
-            },
-            "keyboard": {
-                "backspace": "C-h",
-                "beginning_of_line": "C-a",
-                "clear_line": "C-u",
-                "clear_screen": "C-l",
-                "clear_word": "C-w",
-                "copy_clipboard": "F10",
-                "cut_to_buffer": "C-k",
-                "delete": "C-d",
-                "down_one_line": "C-n",
-                "edit_config": "F3",
-                "edit_current_block": "C-x",
-                "end_of_line": "C-e",
-                "exit": "",
-                "external_editor": "F7",
-                "help": "F1",
-                "incremental_search": "M-s",
-                "last_output": "F9",
-                "left": "C-b",
-                "pastebin": "F8",
-                "redo": "C-g",
-                "reimport": "F6",
-                "reverse_incremental_search": "M-r",
-                "right": "C-f",
-                "save": "C-s",
-                "search": "C-o",
-                "show_source": "F2",
-                "suspend": "C-z",
-                "toggle_file_watch": "F5",
-                "transpose_chars": "C-t",
-                "undo": "C-r",
-                "up_one_line": "C-p",
-                "yank_from_buffer": "C-y",
-            },
-            "cli": {
-                "suggestion_width": 0.8,
-                "trim_prompts": False,
-            },
-            "curtsies": {
-                "list_above": False,
-                "right_arrow_completion": True,
-            },
-        }
-
-        default_keys_to_commands = {
-            value: key for (key, value) in defaults["keyboard"].items()
-        }
-
-        fill_config_with_default_values(config, defaults)
+        fill_config_with_default_values(config, self.defaults)
         try:
             config.read(config_path)
         except UnicodeDecodeError as e:
@@ -199,8 +214,12 @@ class Config:
             )
             sys.exit(1)
 
-        def get_key_no_doublebind(command):
-            default_commands_to_keys = defaults["keyboard"]
+        default_keys_to_commands = {
+            value: key for (key, value) in self.defaults["keyboard"].items()
+        }
+
+        def get_key_no_doublebind(command: str) -> str:
+            default_commands_to_keys = self.defaults["keyboard"]
             requested_key = config.get("keyboard", command)
 
             try:
@@ -209,7 +228,7 @@ class Config:
                 if default_commands_to_keys[default_command] == config.get(
                     "keyboard", default_command
                 ):
-                    setattr(self, "%s_key" % default_command, "")
+                    setattr(self, f"{default_command}_key", "")
             except KeyError:
                 pass
 
@@ -307,34 +326,14 @@ class Config:
         self.unicode_box = config.getboolean("general", "unicode_box")
 
         color_scheme_name = config.get("general", "color_scheme")
-
-        default_colors = {
-            "keyword": "y",
-            "name": "c",
-            "comment": "b",
-            "string": "m",
-            "error": "r",
-            "number": "G",
-            "operator": "Y",
-            "punctuation": "y",
-            "token": "C",
-            "background": "d",
-            "output": "w",
-            "main": "c",
-            "paren": "R",
-            "prompt": "c",
-            "prompt_more": "g",
-            "right_arrow_suggestion": "K",
-        }
-
         if color_scheme_name == "default":
-            self.color_scheme = default_colors
+            self.color_scheme = self.default_colors
         else:
             self.color_scheme = dict()
 
             path = get_config_home() / f"{color_scheme_name}.theme"
             try:
-                load_theme(path, self.color_scheme, default_colors)
+                load_theme(path, self.color_scheme, self.default_colors)
             except OSError:
                 sys.stderr.write(
                     f"Could not load theme '{color_scheme_name}' from {path}.\n"
