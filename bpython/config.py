@@ -346,24 +346,20 @@ class Config:
                 sys.exit(1)
 
         # set box drawing characters
-        if self.unicode_box and supports_box_chars():
-            self.left_border = "│"
-            self.right_border = "│"
-            self.top_border = "─"
-            self.bottom_border = "─"
-            self.left_bottom_corner = "└"
-            self.right_bottom_corner = "┘"
-            self.left_top_corner = "┌"
-            self.right_top_corner = "┐"
-        else:
-            self.left_border = "|"
-            self.right_border = "|"
-            self.top_border = "-"
-            self.bottom_border = "-"
-            self.left_bottom_corner = "+"
-            self.right_bottom_corner = "+"
-            self.left_top_corner = "+"
-            self.right_top_corner = "+"
+        (
+            self.left_border,
+            self.right_border,
+            self.top_border,
+            self.bottom_border,
+            self.left_bottom_corner,
+            self.right_bottom_corner,
+            self.left_top_corner,
+            self.right_top_corner,
+        ) = (
+            ("│", "│", "─", "─", "└", "┘", "┌", "┐")
+            if self.unicode_box and supports_box_chars()
+            else ("|", "|", "-", "-", "+", "+", "+", "+")
+        )
 
 
 def load_theme(
