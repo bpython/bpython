@@ -201,20 +201,21 @@ def end_of_line(cursor_offset, line):
 
 
 forward_word_re = LazyReCompile(r"\S\s")
+forward_word_alnum_re = LazyReCompile(r"\W\w")
 
 
 @edit_keys.on("<Esc+f>")
 @edit_keys.on("<Ctrl-RIGHT>")
 @edit_keys.on("<Esc+RIGHT>")
 def forward_word(cursor_offset, line):
-    match = forward_word_re.search(line[cursor_offset:] + " ")
+    match = forward_word_alnum_re.search(line[cursor_offset:] + " ")
     delta = match.end() - 1 if match else 0
     return (cursor_offset + delta, line)
 
 
 def last_word_pos(string):
     """returns the start index of the last word of given string"""
-    match = forward_word_re.search(string[::-1])
+    match = forward_word_alnum_re.search(string[::-1])
     index = match and len(string) - match.end() + 1
     return index or 0
 
