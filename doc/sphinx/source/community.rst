@@ -10,8 +10,8 @@ These are the places where you can find us.
 
 IRC
 ---
-You can find us in `#bpython <irc://irc.freenode.net/bpython>`_ on the `Freenode
-<http://freenode.net>`_ network. Don't worry when you get no response (this does
+You can find us in `#bpython <irc://irc.oftc.net/bpython>`_ on the `OFTC
+<https://oftc.net>`_ network. Don't worry when you get no response (this does
 not usually happen) but we are all from Europe and when you get to the channel
 during our nighttime you might have to wait a while for a response.
 

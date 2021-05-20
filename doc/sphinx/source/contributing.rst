@@ -10,7 +10,7 @@ these are particularly good ones to start out with.
 
 See our section about the :ref:`community` for a list of resources.
 
-`#bpython <irc://irc.freenode.net/bpython>`_ on Freenode is particularly useful,
+`#bpython <irc://irc.oftc.net/bpython>`_ on OFTC is particularly useful,
 but you might have to wait for a while to get a question answered depending on
 the time of day.
 
