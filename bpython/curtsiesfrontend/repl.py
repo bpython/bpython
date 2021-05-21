@@ -13,6 +13,7 @@ import unicodedata
 from enum import Enum
 
 import blessings
+import cwcwidth
 import greenlet
 from curtsies import (
     FSArray,
@@ -273,6 +274,14 @@ class ImportFinder:
         loader = self.finder.find_module(fullname, path)
         if loader is not None:
             return ImportLoader(self.watcher, loader)
+
+
+def _process_ps(ps, default_ps: str):
+    """Replace ps1/ps2 with the default if the user specified value contains control characters."""
+    if not isinstance(ps, str):
+        return ps
+
+    return ps if cwcwidth.wcswidth(ps) >= 0 else default_ps
 
 
 class BaseRepl(Repl):
@@ -2050,6 +2059,14 @@ Press {config.edit_config_key} to edit this config file.
             yield "### %s" % self.current_line
 
         return "\n".join(process())
+
+    @property
+    def ps1(self):
+        return _process_ps(super().ps1, ">>> ")
+
+    @property
+    def ps2(self):
+        return _process_ps(super().ps2, "... ")
 
 
 def is_nop(char):
