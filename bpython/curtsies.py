@@ -3,19 +3,18 @@ import logging
 import sys
 
 import curtsies
-import curtsies.window
-import curtsies.input
 import curtsies.events
+import curtsies.input
+import curtsies.window
 
-from .curtsiesfrontend.repl import BaseRepl
+from . import args as bpargs, translations, inspection
+from .config import Config
+from .curtsiesfrontend import events
 from .curtsiesfrontend.coderunner import SystemExitFromCodeRunner
 from .curtsiesfrontend.interpreter import Interp
-from . import args as bpargs
-from . import translations
-from .translations import _
-from .curtsiesfrontend import events as bpythonevents
-from . import inspection
+from .curtsiesfrontend.repl import BaseRepl
 from .repl import extract_exit_value
+from .translations import _
 
 logger = logging.getLogger(__name__)
 
@@ -34,20 +33,18 @@ class FullCurtsiesRepl(BaseRepl):
         )
 
         self._request_refresh = self.input_generator.event_trigger(
-            bpythonevents.RefreshRequestEvent
+            events.RefreshRequestEvent
         )
         self._schedule_refresh = self.input_generator.scheduled_event_trigger(
-            bpythonevents.ScheduledRefreshRequestEvent
+            events.ScheduledRefreshRequestEvent
         )
         self._request_reload = self.input_generator.threadsafe_event_trigger(
-            bpythonevents.ReloadEvent
+            events.ReloadEvent
         )
         self.interrupting_refresh = (
             self.input_generator.threadsafe_event_trigger(lambda: None)
         )
-        self.request_undo = self.input_generator.event_trigger(
-            bpythonevents.UndoEvent
-        )
+        self.request_undo = self.input_generator.event_trigger(events.UndoEvent)
 
         with self.input_generator:
             pass  # temp hack to get .original_stty
@@ -103,7 +100,7 @@ class FullCurtsiesRepl(BaseRepl):
             self.initialize_interp()
 
             # run startup file
-            self.process_event(bpythonevents.RunStartupFileEvent())
+            self.process_event(events.RunStartupFileEvent())
 
         # handle paste
         if paste:
