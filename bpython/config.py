@@ -324,12 +324,11 @@ class Config:
         )
         self.unicode_box = config.getboolean("general", "unicode_box")
 
+        self.color_scheme = dict()
         color_scheme_name = config.get("general", "color_scheme")
         if color_scheme_name == "default":
-            self.color_scheme = self.default_colors
+            self.color_scheme.update(self.default_colors)
         else:
-            self.color_scheme = dict()
-
             path = get_config_home() / f"{color_scheme_name}.theme"
             try:
                 load_theme(path, self.color_scheme, self.default_colors)
