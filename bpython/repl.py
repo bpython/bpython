@@ -859,8 +859,8 @@ class Repl:
             _("Pastebin buffer? (y/N) ")
         ):
             self.interact.notify(_("Pastebin aborted."))
-            return
-        return self.do_pastebin(s)
+        else:
+            return self.do_pastebin(s)
 
     def do_pastebin(self, s):
         """Actually perform the upload."""
@@ -1119,10 +1119,7 @@ class Repl:
     def edit_config(self):
         if not self.config.config_path.is_file():
             if self.interact.confirm(
-                _(
-                    "Config file does not exist - create "
-                    "new from default? (y/N)"
-                )
+                _("Config file does not exist - create new from default? (y/N)")
             ):
                 try:
                     default_config = pkgutil.get_data(
@@ -1148,8 +1145,7 @@ class Repl:
             if self.open_in_external_editor(self.config.config_path):
                 self.interact.notify(
                     _(
-                        "bpython config file edited. Restart "
-                        "bpython for changes to take effect."
+                        "bpython config file edited. Restart bpython for changes to take effect."
                     )
                 )
         except OSError as e:

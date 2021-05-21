@@ -224,7 +224,6 @@ class Config:
 
             try:
                 default_command = default_keys_to_commands[requested_key]
-
                 if default_commands_to_keys[default_command] == config.get(
                     "keyboard", default_command
                 ):
