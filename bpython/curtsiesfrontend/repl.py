@@ -1729,13 +1729,11 @@ class BaseRepl(Repl):
             self.update_completion()
 
     def __repr__(self):
-        s = ""
-        s += "<" + repr(type(self)) + "\n"
-        s += " cursor_offset:" + repr(self.cursor_offset) + "\n"
-        s += " num display lines:" + repr(len(self.display_lines)) + "\n"
-        s += " lines scrolled down:" + repr(self.scroll_offset) + "\n"
-        s += ">"
-        return s
+        return f"""<{type(self)}
+  cursor_offset: {self.cursor_offset}
+  num display lines: {len(self.display_lines)}
+  lines scrolled down: {self.scroll_offset}
+>"""
 
     def _get_current_line(self):
         return self._current_line
