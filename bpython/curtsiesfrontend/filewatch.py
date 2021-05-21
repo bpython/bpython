@@ -26,6 +26,8 @@ else:
             for path in paths:
                 self._add_module(path)
 
+            super().__init__()
+
         def reset(self):
             self.dirs = defaultdict(set)
             del self.modules_to_add_later[:]
