@@ -63,6 +63,7 @@ def safe_eval(expr, namespace):
 # * new docstring describing different functionality
 # * looks up names from namespace
 # * indexing syntax is allowed
+# * evaluates tuple() and list()
 def simple_eval(node_or_string, namespace=None):
     """
     Safely evaluate an expression node or a string containing a Python
@@ -110,6 +111,22 @@ def simple_eval(node_or_string, namespace=None):
             and node.args == node.keywords == []
         ):
             return set()
+
+        # this is a deviation from literal_eval: we evaluate tuple() and list()
+        elif (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "tuple"
+            and node.args == node.keywords == []
+        ):
+            return tuple()
+        elif (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "list"
+            and node.args == node.keywords == []
+        ):
+            return list()
 
         # this is a deviation from literal_eval: we allow non-literals
         elif isinstance(node, _name_type_nodes):
