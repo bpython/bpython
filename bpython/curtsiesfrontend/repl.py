@@ -2077,7 +2077,8 @@ def tabs_to_spaces(line):
 
 
 def _last_word(line):
-    return line.split().pop() if line.split() else ""
+    split_line = line.split()
+    return split_line.pop() if split_line else ""
 
 
 def compress_paste_event(paste_event):
