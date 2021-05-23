@@ -86,6 +86,13 @@ Arch linux uses pacman as the default package manager, and you can use it to ins
 
     $ pacman -S bpython
 
+Fedora
+~~~~~~~~~~
+Fedora users can install bpython directly from the command line using ``dnf``.
+
+.. code-block:: bash
+
+    $ dnf install bpython
 
 Windows
 ~~~~~~~
