@@ -32,19 +32,23 @@ class FullCurtsiesRepl(BaseRepl):
             extra_bytes_callback=self.input_generator.unget_bytes,
         )
 
-        self._request_refresh = self.input_generator.event_trigger(
+        self._request_refresh_callback = self.input_generator.event_trigger(
             events.RefreshRequestEvent
         )
-        self._schedule_refresh = self.input_generator.scheduled_event_trigger(
-            events.ScheduledRefreshRequestEvent
+        self._schedule_refresh_callback = (
+            self.input_generator.scheduled_event_trigger(
+                events.ScheduledRefreshRequestEvent
+            )
         )
-        self._request_reload = self.input_generator.threadsafe_event_trigger(
-            events.ReloadEvent
+        self._request_reload_callback = (
+            self.input_generator.threadsafe_event_trigger(events.ReloadEvent)
         )
-        self.interrupting_refresh = (
+        self._interrupting_refresh_callback = (
             self.input_generator.threadsafe_event_trigger(lambda: None)
         )
-        self.request_undo = self.input_generator.event_trigger(events.UndoEvent)
+        self._request_undo_callback = self.input_generator.event_trigger(
+            events.UndoEvent
+        )
 
         with self.input_generator:
             pass  # temp hack to get .original_stty
@@ -56,6 +60,21 @@ class FullCurtsiesRepl(BaseRepl):
             interp=interp,
             orig_tcattrs=self.input_generator.original_stty,
         )
+
+    def _request_refresh(self):
+        return self._request_refresh_callback()
+
+    def _schedule_refresh(self, when="now"):
+        return self._schedule_refresh_callback(when)
+
+    def _request_reload(self, files_modified=("?",)):
+        return self._request_reload_callback(files_modified)
+
+    def interrupting_refresh(self):
+        return self._interrupting_refresh_callback()
+
+    def request_undo(self, n=1):
+        return self._request_undo_callback(n)
 
     def get_term_hw(self):
         return self.window.get_term_hw()
