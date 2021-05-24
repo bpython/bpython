@@ -231,7 +231,7 @@ class ModuleGatherer:
                 self.modules.add(module)
                 yield
 
-    def find_coroutine(self):
+    def find_coroutine(self) -> Optional[bool]:
         if self.fully_loaded:
             return None
 
