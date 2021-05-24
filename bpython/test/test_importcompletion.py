@@ -162,9 +162,7 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
                 base_path / "Right", target_is_directory=True
             )
 
-            self.module_gatherer = ModuleGatherer(
-                [os.path.abspath(import_test_folder)]
-            )
+            self.module_gatherer = ModuleGatherer((base_path.absolute(),))
             while self.module_gatherer.find_coroutine():
                 pass
 
@@ -211,7 +209,7 @@ class TestBugReports(unittest.TestCase):
             (base_path / "xyzzy" / "plugh" / "bar.py").touch()
             (base_path / "xyzzy" / "plugh" / "foo.py").touch()
 
-            module_gatherer = ModuleGatherer([base_path.absolute()])
+            module_gatherer = ModuleGatherer((base_path.absolute(),))
             while module_gatherer.find_coroutine():
                 pass
 

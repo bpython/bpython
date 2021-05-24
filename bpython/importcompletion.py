@@ -26,7 +26,7 @@ import importlib.machinery
 import sys
 import warnings
 from pathlib import Path
-from typing import Optional, Set, Generator, Tuple, List
+from typing import Optional, Set, Generator, Tuple, Sequence, Iterable, Union
 
 from .line import (
     current_word,
@@ -49,15 +49,31 @@ LOADERS = (
 
 
 class ModuleGatherer:
-    def __init__(self, path: Optional[Path] = None, skiplist=None) -> None:
-        # The cached list of all known modules
+    def __init__(
+        self,
+        paths: Optional[Iterable[Union[str, Path]]] = None,
+        skiplist: Optional[Sequence[str]] = None,
+    ) -> None:
+        """Initialize module gatherer with all modules in `paths`, which should be a list of
+        directory names. If `paths` is not given, `sys.path` will be used."""
+
+        # Cached list of all known modules
         self.modules: Set[str] = set()
-        # List of (st_dev, st_ino) to compare against so that paths are not repeated
+        # Set of (st_dev, st_ino) to compare against so that paths are not repeated
         self.paths: Set[Tuple[int, int]] = set()
         # Patterns to skip
-        self.skiplist = skiplist if skiplist is not None else tuple()
+        self.skiplist: Sequence[str] = (
+            skiplist if skiplist is not None else tuple()
+        )
         self.fully_loaded = False
-        self.find_iterator = self.find_all_modules(path)
+
+        if paths is None:
+            self.modules.update(sys.builtin_module_names)
+            paths = sys.path
+
+        self.find_iterator = self.find_all_modules(
+            (Path(p).resolve() if p else Path.cwd() for p in sys.path)
+        )
 
     def module_matches(self, cw: str, prefix: str = "") -> Set[str]:
         """Modules names to replace cw with"""
@@ -191,8 +207,7 @@ class ModuleGatherer:
             except (ImportError, OSError, SyntaxError):
                 continue
             except UnicodeEncodeError:
-                # Happens with Python 3 when there is a filename in some
-                # invalid encoding
+                # Happens with Python 3 when there is a filename in some invalid encoding
                 continue
             else:
                 if is_package:
@@ -205,16 +220,13 @@ class ModuleGatherer:
                                 yield f"{name}.{subname}"
                 yield name
 
-    def find_all_modules(self, path=None):
+    def find_all_modules(
+        self, paths: Iterable[Path]
+    ) -> Generator[None, None, None]:
         """Return a list with all modules in `path`, which should be a list of
         directory names. If path is not given, sys.path will be used."""
 
-        if path is None:
-            self.modules.update(sys.builtin_module_names)
-            path = sys.path
-
-        for p in path:
-            p = Path(p).resolve() if p else Path.cwd()
+        for p in paths:
             for module in self.find_modules(p):
                 self.modules.add(module)
                 yield
