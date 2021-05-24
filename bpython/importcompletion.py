@@ -101,7 +101,7 @@ class ModuleGatherer:
 
     def module_attr_matches(self, name: str) -> Set[str]:
         """Only attributes which are modules to replace name with"""
-        return self.attr_matches(name, prefix="", only_modules=True)
+        return self.attr_matches(name, only_modules=True)
 
     def complete(self, cursor_offset: int, line: str) -> Optional[Set[str]]:
         """Construct a full list of possibly completions for imports."""
