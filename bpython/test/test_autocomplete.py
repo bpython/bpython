@@ -326,7 +326,7 @@ class TestMagicMethodCompletion(unittest.TestCase):
         )
 
 
-Comp = namedtuple("Completion", ["name", "complete"])
+Completion = namedtuple("Completion", ["name", "complete"])
 
 
 @unittest.skipUnless(has_jedi, "jedi required")
@@ -363,7 +363,7 @@ class TestMultilineJediCompletion(unittest.TestCase):
             " a",
             "class Foo:\n a",
             ["adsf"],
-            [Comp("Abc", "bc"), Comp("Cbc", "bc")],
+            [Completion("Abc", "bc"), Completion("Cbc", "bc")],
         )
         self.assertEqual(matches, None)
 
@@ -373,7 +373,7 @@ class TestMultilineJediCompletion(unittest.TestCase):
             " a",
             "class Foo:\n a",
             ["adsf"],
-            [Comp("Abc", "bc"), Comp("ade", "de")],
+            [Completion("Abc", "bc"), Completion("ade", "de")],
         )
         self.assertSetEqual(matches, {"ade"})
 
