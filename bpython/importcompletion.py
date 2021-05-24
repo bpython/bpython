@@ -72,7 +72,7 @@ class ModuleGatherer:
             paths = sys.path
 
         self.find_iterator = self.find_all_modules(
-            (Path(p).resolve() if p else Path.cwd() for p in sys.path)
+            (Path(p).resolve() if p else Path.cwd() for p in paths)
         )
 
     def module_matches(self, cw: str, prefix: str = "") -> Set[str]:
