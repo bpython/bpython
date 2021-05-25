@@ -11,18 +11,16 @@ from typing import Optional
 from .lazyre import LazyReCompile
 
 LinePart = namedtuple("LinePart", ["start", "stop", "word"])
-
 current_word_re = LazyReCompile(r"(?<![)\]\w_.])" r"([\w_][\w0-9._]*[(]?)")
 
 
 def current_word(cursor_offset: int, line: str) -> Optional[LinePart]:
     """the object.attribute.attribute just before or under the cursor"""
-    pos = cursor_offset
-    start = pos
-    end = pos
+    start = cursor_offset
+    end = cursor_offset
     word = None
     for m in current_word_re.finditer(line):
-        if m.start(1) < pos <= m.end(1):
+        if m.start(1) < cursor_offset <= m.end(1):
             start = m.start(1)
             end = m.end(1)
             word = m.group(1)
@@ -82,12 +80,11 @@ def current_object(cursor_offset: int, line: str) -> Optional[LinePart]:
     if match is None:
         return None
     start, end, word = match
-    s = ""
-    for m in current_object_re.finditer(word):
-        if m.end(1) + start < cursor_offset:
-            if s:
-                s += "."
-            s += m.group(1)
+    s = ".".join(
+        m.group(1)
+        for m in current_object_re.finditer(word)
+        if m.end(1) + start < cursor_offset
+    )
     if not s:
         return None
     return LinePart(start, start + len(s), s)
