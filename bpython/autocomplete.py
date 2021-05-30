@@ -244,7 +244,7 @@ class BaseCompletionType:
         """Returns a cursor offset and line with match swapped in"""
         lpart = self.locate(cursor_offset, line)
         offset = lpart.start + len(match)
-        changed_line = line[: lpart.start] + match + line[lpart.end :]
+        changed_line = line[: lpart.start] + match + line[lpart.stop :]
         return offset, changed_line
 
     @property
