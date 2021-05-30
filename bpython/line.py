@@ -5,12 +5,17 @@ Python code, and return None, or a tuple of the start index, end index, and the
 word."""
 
 from itertools import chain
-from collections import namedtuple
-from typing import Optional
+from typing import Optional, NamedTuple
 
 from .lazyre import LazyReCompile
 
-LinePart = namedtuple("LinePart", ["start", "stop", "word"])
+
+class LinePart(NamedTuple):
+    start: int
+    stop: int
+    word: str
+
+
 _current_word_re = LazyReCompile(r"(?<![)\]\w_.])" r"([\w_][\w0-9._]*[(]?)")
 
 
