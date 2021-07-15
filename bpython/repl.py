@@ -254,7 +254,13 @@ class MatchesIterator:
     def current(self):
         if self.index == -1:
             raise ValueError("No current match.")
-        return self.matches[self.index]
+        cur = self.matches[self.index]
+        return self.strip_parens(cur)
+
+    def strip_parens(self, word):
+        if word.endswith("()"):
+            word = word[:-2]
+        return word
 
     def next(self):
         return self.__next__()
