@@ -162,6 +162,8 @@ KEYWORDS = frozenset(keyword.kwlist)
 
 
 def after_last_dot(name):
+    """matches are stored as 'math.cos', 'math.sin', etc. This function returns
+    just 'cos' or 'sin' """
     return name.rstrip(".").rsplit(".")[-1]
 
 
@@ -213,7 +215,9 @@ class BaseCompletionType:
 
     def matches(self, cursor_offset, line, **kwargs):
         """Returns a list of possible matches given a line and cursor, or None
-        if this completion type isn't applicable.
+        if this completion type isn't applicable. Callable matches will end
+        with open close parens "()", but when they are replaced, parens are
+        removed.
 
         ie, import completion doesn't make sense if there cursor isn't after
         an import or from statement, so it ought to return None.
@@ -413,7 +417,12 @@ class AttrCompletion(BaseCompletionType):
         n = len(attr)
         for word in words:
             if self.method_match(word, n, attr) and word != "__builtins__":
-                matches.append(f"{expr}.{word}")
+                try:
+                    if callable(inspection.getattr_safe(obj, word)):
+                        word += "()"
+                except AttributeError:
+                    pass
+                matches.append("%s.%s" % (expr, word))
         return matches
 
     def list_attributes(self, obj):
@@ -690,6 +699,6 @@ def get_default_completer(mode=AutocompleteModes.SIMPLE, module_gatherer=None):
 
 def _callable_postfix(value, word):
     """rlcompleter's _callable_postfix done right."""
-    if callable(value):
-        word += "("
+    if inspection.is_callable(value):
+        word += "()"
     return word
