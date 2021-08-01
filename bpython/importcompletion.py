@@ -212,7 +212,10 @@ class ModuleGatherer:
             else:
                 if is_package:
                     path_real = Path(pathname).resolve()
-                    stat = path_real.stat()
+                    try:
+                        stat = path_real.stat()
+                    except OSError:
+                        continue
                     if (stat.st_dev, stat.st_ino) not in self.paths:
                         self.paths.add((stat.st_dev, stat.st_ino))
                         for subname in self.find_modules(path_real):
