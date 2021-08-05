@@ -29,7 +29,7 @@ few ideas in a practical, useful, and lightweight manner.
 bpython is a great replacement to any occasion where you would normally use the
 vanilla Python interpreter - testing out solutions to people's problems on IRC,
 quickly testing a method of doing something without creating a temporary file,
-etc..
+etc.
 
 You can find more about bpython - including `full documentation`_ - at our
 `homepage`_.
@@ -59,14 +59,14 @@ Python.
 Installation via OS Package Manager
 -----------------------------------
 
-The majority of operating system of desktop computers comes with a package
-manager system, if you are any user of them, you can install ``bpython``
-using the package manager.
+The majority of desktop computer operating systems come with package management
+systems. If you use one of these OSes, you can install ``bpython`` using the
+package manager.
 
 Ubuntu/Debian
 ~~~~~~~~~~~~~
-Ubuntu/Debian family Linux users and install bpython using the apt package manager, using the
-command with sudo privilege:
+Ubuntu/Debian family Linux users can install ``bpython`` using the ``apt``
+package manager, using the command with ``sudo`` privileges:
 
 .. code-block:: bash
 
@@ -80,7 +80,7 @@ In case you are using an older version, run
 
 Arch Linux
 ~~~~~~~~~~
-Arch linux uses pacman as the default package manager, and you can use it to install bpython:
+Arch Linux uses ``pacman`` as the default package manager; you can use it to install ``bpython``:
 
 .. code-block:: bash
 
@@ -88,7 +88,7 @@ Arch linux uses pacman as the default package manager, and you can use it to ins
 
 Fedora
 ~~~~~~~~~~
-Fedora users can install bpython directly from the command line using ``dnf``.
+Fedora users can install ``bpython`` directly from the command line using ``dnf``.
 
 .. code-block:: bash
 
@@ -99,8 +99,8 @@ Windows
 **Caveats:** As ``bpython`` makes use of the ncurses library of \*nix-family operating systems,
 bpython on Windows is not officially supported and tested.
 
-However, you can still use bpython on Windows using a somewhat work around. Briefly, you should install
-these two packages using pip:
+However, you may still use bpython on Windows using a workaround. In brief, you should install
+these two packages using ``pip``:
 
 .. code-block:: bash
 
@@ -130,9 +130,8 @@ Features & Examples
   type, and colours appropriately.
 
 * Expected parameter list.  As in a lot of modern IDEs, bpython will attempt to
-  display a list of parameters for any function you call. The inspect module is
-  tried first, which works with any Python function, and then pydoc if that
-  fails.
+  display a list of parameters for any function you call. The inspect module (which
+  works with any Python function) is tried first, and then pydoc if that fails.
 
 * Rewind.  This isn't called "Undo" because it would be misleading, but "Rewind"
   is probably as bad. The idea is that the code entered is kept in memory and
