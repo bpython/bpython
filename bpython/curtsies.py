@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class FullCurtsiesRepl(BaseRepl):
-    def __init__(self, config, locals_, banner, interp=None):
+    def __init__(self, config, locals_, banner, interp=None) -> None:
         self.input_generator = curtsies.input.Input(
             keynames="curtsies", sigint_event=True, paste_threshold=None
         )

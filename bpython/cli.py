@@ -50,6 +50,7 @@ import re
 import struct
 import sys
 import time
+from typing import Iterator, NoReturn
 import unicodedata
 from dataclasses import dataclass
 
@@ -97,7 +98,7 @@ class ShowListState:
     wl: int = 0
 
 
-def calculate_screen_lines(tokens, width, cursor=0):
+def calculate_screen_lines(tokens, width, cursor=0) -> int:
     """Given a stream of tokens and a screen width plus an optional
     initial cursor position, return the amount of needed lines on the
     screen."""
@@ -130,31 +131,31 @@ class FakeStream:
     provided."""
 
     def __init__(self, interface, get_dest):
-        self.encoding = getpreferredencoding()
+        self.encoding: str = getpreferredencoding()
         self.interface = interface
         self.get_dest = get_dest
 
     @forward_if_not_current
-    def write(self, s):
+    def write(self, s) -> None:
         self.interface.write(s)
 
     @forward_if_not_current
-    def writelines(self, l):
+    def writelines(self, l) -> None:
         for s in l:
             self.write(s)
 
-    def isatty(self):
+    def isatty(self) -> True:
         # some third party (amongst them mercurial) depend on this
         return True
 
-    def flush(self):
+    def flush(self) -> None:
         self.interface.flush()
 
 
 class FakeStdin:
     """Provide a fake stdin type for things like raw_input() etc."""
 
-    def __init__(self, interface):
+    def __init__(self, interface) -> None:
         """Take the curses Repl on init and assume it provides a get_key method
         which, fortunately, it does."""
 
@@ -162,19 +163,19 @@ class FakeStdin:
         self.interface = interface
         self.buffer = list()
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator:
         return iter(self.readlines())
 
     def flush(self):
         """Flush the internal buffer. This is a no-op. Flushing stdin
         doesn't make any sense anyway."""
 
-    def write(self, value):
+    def write(self, value) -> NoReturn:
         # XXX IPython expects sys.stdin.write to exist, there will no doubt be
         # others, so here's a hack to keep them happy
         raise OSError(errno.EBADF, "sys.stdin is read-only")
 
-    def isatty(self):
+    def isatty(self) -> True:
         return True
 
     def readline(self, size=-1):

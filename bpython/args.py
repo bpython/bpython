@@ -26,6 +26,7 @@ Module to handle command line argument parsing, for all front-ends.
 """
 
 import argparse
+from typing import Tuple
 import curtsies
 import cwcwidth
 import greenlet
@@ -53,7 +54,7 @@ class RaisingArgumentParser(argparse.ArgumentParser):
         raise ArgumentParserFailed()
 
 
-def version_banner(base="bpython"):
+def version_banner(base="bpython") -> str:
     return _("{} version {} on top of Python {} {}").format(
         base,
         __version__,
@@ -62,11 +63,11 @@ def version_banner(base="bpython"):
     )
 
 
-def copyright_banner():
+def copyright_banner() -> str:
     return _("{} See AUTHORS.rst for details.").format(__copyright__)
 
 
-def parse(args, extras=None, ignore_stdin=False):
+def parse(args, extras=None, ignore_stdin=False) -> Tuple:
     """Receive an argument list - if None, use sys.argv - parse all args and
     take appropriate action. Also receive optional extra argument: this should
     be a tuple of (title, description, callback)
