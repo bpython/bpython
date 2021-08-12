@@ -56,10 +56,7 @@ class RaisingArgumentParser(argparse.ArgumentParser):
 
 def version_banner(base="bpython") -> str:
     return _("{} version {} on top of Python {} {}").format(
-        base,
-        __version__,
-        sys.version.split()[0],
-        sys.executable,
+        base, __version__, sys.version.split()[0], sys.executable,
     )
 
 
@@ -140,9 +137,7 @@ def parse(args, extras=None, ignore_stdin=False) -> Tuple:
         help=_("Set log level for logging"),
     )
     parser.add_argument(
-        "--log-output",
-        "-L",
-        help=_("Log output file"),
+        "--log-output", "-L", help=_("Log output file"),
     )
 
     if extras is not None:

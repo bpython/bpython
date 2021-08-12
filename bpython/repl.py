@@ -445,8 +445,7 @@ class Repl:
             self.paster = PasteHelper(self.config.pastebin_helper)
         else:
             self.paster = PastePinnwand(
-                self.config.pastebin_url,
-                self.config.pastebin_expiry,
+                self.config.pastebin_url, self.config.pastebin_expiry,
             )
 
     @property

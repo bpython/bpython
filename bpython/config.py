@@ -187,14 +187,8 @@ class Config:
             "up_one_line": "C-p",
             "yank_from_buffer": "C-y",
         },
-        "cli": {
-            "suggestion_width": 0.8,
-            "trim_prompts": False,
-        },
-        "curtsies": {
-            "list_above": False,
-            "right_arrow_completion": True,
-        },
+        "cli": {"suggestion_width": 0.8, "trim_prompts": False,},
+        "curtsies": {"list_above": False, "right_arrow_completion": True,},
     }
 
     def __init__(self, config_path: Path) -> None:

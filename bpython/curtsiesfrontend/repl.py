@@ -307,12 +307,7 @@ class BaseRepl(Repl):
     """
 
     def __init__(
-        self,
-        config,
-        locals_=None,
-        banner=None,
-        interp=None,
-        orig_tcattrs=None,
+        self, config, locals_=None, banner=None, interp=None, orig_tcattrs=None,
     ):
         """
         locals_ is a mapping of locals to pass into the interpreter
