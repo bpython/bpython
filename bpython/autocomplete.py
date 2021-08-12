@@ -208,7 +208,9 @@ MODES_MAP = {
 class BaseCompletionType:
     """Describes different completion types"""
 
-    def __init__(self, shown_before_tab: bool=True, mode=AutocompleteModes.SIMPLE) -> None:
+    def __init__(
+        self, shown_before_tab: bool = True, mode=AutocompleteModes.SIMPLE
+    ) -> None:
         self._shown_before_tab = shown_before_tab
         self.method_match = MODES_MAP[mode]
 
