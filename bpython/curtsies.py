@@ -108,10 +108,12 @@ class FullCurtsiesRepl(BaseRepl):
             self.scroll_offset += scrolled
             raise
         else:
-            array, cursor_pos = self.paint()
-            scrolled = self.window.render_to_terminal(array, cursor_pos)
-            self.scroll_offset += scrolled
-
+            try:
+                array, cursor_pos = self.paint()
+                scrolled = self.window.render_to_terminal(array, cursor_pos)
+                self.scroll_offset += scrolled
+            except TypeError:
+                ...
     def mainloop(self, interactive=True, paste=None):
         if interactive:
             # Add custom help command
