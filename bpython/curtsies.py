@@ -74,7 +74,7 @@ class FullCurtsiesRepl(BaseRepl):
         return self._interrupting_refresh_callback()
 
     def request_undo(self, n=1):
-        return self._request_undo_callback(n)
+        return self._request_undo_callback(n=n)
 
     def get_term_hw(self):
         return self.window.get_term_hw()
