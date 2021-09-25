@@ -1004,9 +1004,9 @@ class BaseRepl(Repl):
             )
             return
         lines = text.split("\n")
-        if not lines[-1].strip():
+        if len(lines) and not lines[-1].strip():
             lines.pop()  # strip last line if empty
-        if lines[-1].startswith("### "):
+        if len(lines) and lines[-1].startswith("### "):
             current_line = lines[-1][4:]
         else:
             current_line = ""
