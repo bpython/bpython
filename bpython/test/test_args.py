@@ -80,6 +80,41 @@ class TestExecArgs(unittest.TestCase):
             )
             self.assertEqual(stderr.strip(), f.name)
 
+    def test_exec_dunder_name(self):
+        with tempfile.NamedTemporaryFile(mode="w") as f:
+            f.write(
+                dedent(
+                    """\
+                import sys
+                sys.stderr.write(__name__)
+                sys.stderr.flush()"""
+                )
+            )
+            f.flush()
+            _, stderr = run_with_tty(
+                [sys.executable] + ["-m", "bpython.curtsies", f.name]
+            )
+            self.assertEqual(stderr.strip(), '__main__')
+
+    def test_exec_dunder_name_in_imported_module(self):
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py") as module_file, tempfile.NamedTemporaryFile(mode="w") as main_file:
+            module_file.write(
+                dedent(
+                    """\
+                import sys
+                sys.stderr.write(__name__)
+                sys.stderr.flush()"""
+                )
+            )
+            module_file.flush()
+            module_name = os.path.basename(module_file.name)[:-3]
+            main_file.write(f"import {module_name}")
+            main_file.flush()
+            _, stderr = run_with_tty(
+                [sys.executable] + ["-m", "bpython.curtsies", main_file.name]
+            )
+            self.assertEqual(stderr.strip(), module_name)
+
     def test_exec_nonascii_file(self):
         with tempfile.NamedTemporaryFile(mode="w") as f:
             f.write(

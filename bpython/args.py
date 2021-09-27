@@ -223,9 +223,9 @@ def exec_code(interpreter, args):
         source = sourcefile.read()
     old_argv, sys.argv = sys.argv, args
     sys.path.insert(0, os.path.abspath(os.path.dirname(args[0])))
-    spec = importlib.util.spec_from_loader("__console__", loader=None)
+    spec = importlib.util.spec_from_loader("__main__", loader=None)
     mod = importlib.util.module_from_spec(spec)
-    sys.modules["__console__"] = mod
+    sys.modules["__main__"] = mod
     interpreter.locals.update(mod.__dict__)
     interpreter.locals["__file__"] = args[0]
     interpreter.runsource(source, args[0], "exec")
