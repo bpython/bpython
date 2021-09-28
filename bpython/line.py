@@ -34,7 +34,9 @@ def current_word(cursor_offset: int, line: str) -> Optional[LinePart]:
     return LinePart(start, end, word)
 
 
-_current_dict_key_re = LazyReCompile(r"""[\w_][\w0-9._]*\[(.*)""")
+_current_dict_key_re = LazyReCompile(
+    r"""[\w_][\w0-9._]*\[('[^']*|"[^"]*|[\w0-9._(), '"]*)"""
+)
 
 
 def current_dict_key(cursor_offset: int, line: str) -> Optional[LinePart]:
@@ -45,7 +47,9 @@ def current_dict_key(cursor_offset: int, line: str) -> Optional[LinePart]:
     return None
 
 
-_current_dict_re = LazyReCompile(r"""([\w_][\w0-9._]*)\[(.*)""")
+_current_dict_re = LazyReCompile(
+    r"""([\w_][\w0-9._]*)\[('[^']*|"[^"]*|[\w0-9._(), '"]*)"""
+)
 
 
 def current_dict(cursor_offset: int, line: str) -> Optional[LinePart]:
