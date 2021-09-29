@@ -6,6 +6,7 @@ word."""
 
 from itertools import chain
 from typing import Optional, NamedTuple
+import re
 
 from .lazyre import LazyReCompile
 
@@ -35,31 +36,71 @@ def current_word(cursor_offset: int, line: str) -> Optional[LinePart]:
 
 
 # pieces of regex to match repr() of several hashable built-in types
-_match_identifiers_and_functions = r"""[a-zA-Z_][a-zA-Z0-9_.(),\[\] ]*"""
-_match_single_quote_str_bytes = \
-    r"""b?'(?:\\(?:\\\\)*['"nabfrtvxuU]|[^'\\])*(?:\\\\)*\\?'?"""
-_match_double_quote_str_bytes = r"""b?"[^"]*"?"""
-_match_int_and_float = r"""\-?\d+(?:\.\d*)?|\-"""
-_match_str_bytes_int_float = \
-    f'(?:{_match_single_quote_str_bytes}|{_match_double_quote_str_bytes}|' \
-    f'{_match_int_and_float})'
-_match_tuple = r"""\((?:""" \
-    f'{_match_str_bytes_int_float}' \
-    r""", )*(?:""" \
-    f'{_match_str_bytes_int_float}' \
-    r"""\,|""" \
-    f'{_match_str_bytes_int_float}' \
-    r""")?\)?"""
+_match_all_dict_keys = r"""[^\]]*"""
 
-_current_dict_key_re_base = r"""[\w_][\w0-9._]*\["""
+# https://docs.python.org/3/reference/lexical_analysis.html#string-and-bytes-literals
+_match_single_quote_str_bytes = \
+r"""  # bytes repr() begins with `b` character; bytes and str begin with `'`
+    b?'             
+    # after an even number of `\`, next `\` and subsequent char are interpreted
+    # as an escape sequence; this handles `\'` in the string repr()
+    (?:\\(?:\\\\)*['"nabfrtvxuU]|
+    # or match any non-`\` and non-single-quote character (most of the string)
+    [^'\\])*
+    # any even number of `\`; ensures `\\'` is interpreted as the end of string
+    (?:\\\\)*
+    # matches hanging `\` if one is present
+    \\?
+    # end matching at closing single-quote if one is present
+    '?
+"""
+
+# bytes and str repr() only uses double quotes if the string contains 1 or more
+# `'` character and exactly 0 `"` characters
+_match_double_quote_str_bytes = \
+r"""  # bytes repr() begins with `b` character
+    b?"
+    # string continues until a `"` character is reached
+    [^"]*
+    # end matching at closing double-quote if one is present
+    "?"""
+
+_match_int_and_float = \
+r"""\-?         # match a negative sign if present
+    \d+         # match any number of digits
+    (?:\.\d*)?  # if there is a decimal point, match it and subsequent digits
+    |\-         # if only a negative sign has been entered, match it
+"""
+
+# used to match possible elements in a tuple
+_match_tuple_element = (
+    f'(?:{_match_single_quote_str_bytes}|'  # match single quote str/bytes repr
+    f'{_match_double_quote_str_bytes}|'     # or double quote str/bytes repr
+    f'{_match_int_and_float})'              # or int or float repr
+)
+
+_match_tuple = \
+rf"""  # match open parenthesis
+    \(
+    # matches any number of tuple elements followed by `,` then ` `
+    (?:{_match_tuple_element},[ ])*
+    # followed by another element being typed or one element tuple i.e. `(1,)`
+    (?:{_match_tuple_element},?)?
+    # match close parentesis if present
+    \)?
+"""
+
+# match valid identifier name followed by `[` character
+_match_dict_before_key = r"""[\w_][\w0-9._]*\["""
+
 _current_dict_key_re = LazyReCompile(
-    f'{_current_dict_key_re_base}('
-    f'{_match_identifiers_and_functions}|'
+    f'{_match_dict_before_key}('
     f'{_match_single_quote_str_bytes}|'
     f'{_match_double_quote_str_bytes}|'
     f'{_match_int_and_float}|'
     f'{_match_tuple}|'
-    ')'
+    f'{_match_all_dict_keys}|)',
+    re.VERBOSE
 )
 
 
@@ -71,15 +112,17 @@ def current_dict_key(cursor_offset: int, line: str) -> Optional[LinePart]:
     return None
 
 
-_current_dict_re_base = r"""([\w_][\w0-9._]*)\["""
+# capture valid identifier name if followed by `[` character
+_capture_dict_name = r"""([\w_][\w0-9._]*)\["""
+
 _current_dict_re = LazyReCompile(
-    f'{_current_dict_re_base}('
-    f'{_match_identifiers_and_functions}|'
+    f'{_capture_dict_name}('
     f'{_match_single_quote_str_bytes}|'
     f'{_match_double_quote_str_bytes}|'
     f'{_match_int_and_float}|'
     f'{_match_tuple}|'
-    ')'
+    f'{_match_all_dict_keys}|)',
+    re.VERBOSE
 )
 
 
