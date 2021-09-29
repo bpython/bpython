@@ -178,10 +178,19 @@ class TestCurrentDictKey(LineTestCase):
         self.assertAccess("asdf[<(>|]")
         self.assertAccess("asdf[<(1>|]")
         self.assertAccess("asdf[<(1,>|]")
+        self.assertAccess("asdf[<(1,)>|]")
         self.assertAccess("asdf[<(1, >|]")
         self.assertAccess("asdf[<(1, 2)>|]")
         # TODO self.assertAccess('d[d[<12|>')
         self.assertAccess("d[<'a>|")
+        self.assertAccess("object.dict['a\'bcd'], object.dict[<'abc>|")
+        self.assertAccess(r"object.dict[<'a\'\\\"\n\\'>|")
+        self.assertAccess("object.dict[<\"abc'>|")
+        self.assertAccess("object.dict[<(1, 'apple', 2.134>|]")
+        self.assertAccess("object.dict[<(1, 'apple', 2.134)>|]")
+        self.assertAccess("object.dict[<-1000>|")
+        self.assertAccess("object.dict[<-0.23948>|")
+        self.assertAccess("object.dict[<'\U0001ffff>|")
 
 
 class TestCurrentDict(LineTestCase):
