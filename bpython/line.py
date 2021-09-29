@@ -65,41 +65,14 @@ r"""  # bytes repr() begins with `b` character
     # end matching at closing double-quote if one is present
     "?"""
 
-_match_int_and_float = \
-r"""\-?         # match a negative sign if present
-    \d+         # match any number of digits
-    (?:\.\d*)?  # if there is a decimal point, match it and subsequent digits
-    |\-         # if only a negative sign has been entered, match it
-"""
-
-# used to match possible elements in a tuple
-_match_tuple_element = (
-    f'(?:{_match_single_quote_str_bytes}|'  # match single quote str/bytes repr
-    f'{_match_double_quote_str_bytes}|'     # or double quote str/bytes repr
-    f'{_match_int_and_float})'              # or int or float repr
-)
-
-_match_tuple = \
-rf"""  # match open parenthesis
-    \(
-    # matches any number of tuple elements followed by `,` then ` `
-    (?:{_match_tuple_element},[ ])*
-    # followed by another element being typed or one element tuple i.e. `(1,)`
-    (?:{_match_tuple_element},?)?
-    # match close parentesis if present
-    \)?
-"""
-
 # match valid identifier name followed by `[` character
 _match_dict_before_key = r"""[\w_][\w0-9._]*\["""
 
 _current_dict_key_re = LazyReCompile(
-    f'{_match_dict_before_key}('
+    f'{_match_dict_before_key}((?:'
     f'{_match_single_quote_str_bytes}|'
     f'{_match_double_quote_str_bytes}|'
-    f'{_match_int_and_float}|'
-    f'{_match_tuple}|'
-    f'{_match_all_dict_keys}|)',
+    f'{_match_all_dict_keys}|)*)',
     re.VERBOSE
 )
 
@@ -116,12 +89,12 @@ def current_dict_key(cursor_offset: int, line: str) -> Optional[LinePart]:
 _capture_dict_name = r"""([\w_][\w0-9._]*)\["""
 
 _current_dict_re = LazyReCompile(
-    f'{_capture_dict_name}('
+    f'{_capture_dict_name}((?:'
     f'{_match_single_quote_str_bytes}|'
     f'{_match_double_quote_str_bytes}|'
-    f'{_match_int_and_float}|'
-    f'{_match_tuple}|'
-    f'{_match_all_dict_keys}|)',
+    # f'{_match_int_and_float}|'
+    # f'{_match_tuple}|'
+    f'{_match_all_dict_keys}|)*)',
     re.VERBOSE
 )
 
