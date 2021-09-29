@@ -92,8 +92,6 @@ _current_dict_re = LazyReCompile(
     f'{_capture_dict_name}((?:'
     f'{_match_single_quote_str_bytes}|'
     f'{_match_double_quote_str_bytes}|'
-    # f'{_match_int_and_float}|'
-    # f'{_match_tuple}|'
     f'{_match_all_dict_keys}|)*)',
     re.VERBOSE
 )
