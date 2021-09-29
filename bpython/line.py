@@ -39,8 +39,8 @@ def current_word(cursor_offset: int, line: str) -> Optional[LinePart]:
 _match_all_dict_keys = r"""[^\]]*"""
 
 # https://docs.python.org/3/reference/lexical_analysis.html#string-and-bytes-literals
-_match_single_quote_str_bytes = \
-r"""  # bytes repr() begins with `b` character; bytes and str begin with `'`
+_match_single_quote_str_bytes = r"""
+    # bytes repr() begins with `b` character; bytes and str begin with `'`
     b?'             
     # after an even number of `\`, next `\` and subsequent char are interpreted
     # as an escape sequence; this handles `\'` in the string repr()
@@ -57,8 +57,8 @@ r"""  # bytes repr() begins with `b` character; bytes and str begin with `'`
 
 # bytes and str repr() only uses double quotes if the string contains 1 or more
 # `'` character and exactly 0 `"` characters
-_match_double_quote_str_bytes = \
-r"""  # bytes repr() begins with `b` character
+_match_double_quote_str_bytes = r"""
+    # bytes repr() begins with `b` character
     b?"
     # string continues until a `"` character is reached
     [^"]*
@@ -69,11 +69,11 @@ r"""  # bytes repr() begins with `b` character
 _match_dict_before_key = r"""[\w_][\w0-9._]*\["""
 
 _current_dict_key_re = LazyReCompile(
-    f'{_match_dict_before_key}((?:'
-    f'{_match_single_quote_str_bytes}|'
-    f'{_match_double_quote_str_bytes}|'
-    f'{_match_all_dict_keys}|)*)',
-    re.VERBOSE
+    f"{_match_dict_before_key}((?:"
+    f"{_match_single_quote_str_bytes}|"
+    f"{_match_double_quote_str_bytes}|"
+    f"{_match_all_dict_keys}|)*)",
+    re.VERBOSE,
 )
 
 
@@ -89,11 +89,11 @@ def current_dict_key(cursor_offset: int, line: str) -> Optional[LinePart]:
 _capture_dict_name = r"""([\w_][\w0-9._]*)\["""
 
 _current_dict_re = LazyReCompile(
-    f'{_capture_dict_name}((?:'
-    f'{_match_single_quote_str_bytes}|'
-    f'{_match_double_quote_str_bytes}|'
-    f'{_match_all_dict_keys}|)*)',
-    re.VERBOSE
+    f"{_capture_dict_name}((?:"
+    f"{_match_single_quote_str_bytes}|"
+    f"{_match_double_quote_str_bytes}|"
+    f"{_match_all_dict_keys}|)*)",
+    re.VERBOSE,
 )
 
 
