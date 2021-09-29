@@ -34,8 +34,32 @@ def current_word(cursor_offset: int, line: str) -> Optional[LinePart]:
     return LinePart(start, end, word)
 
 
+# pieces of regex to match repr() of several hashable built-in types
+_match_identifiers_and_functions = r"""[a-zA-Z_][a-zA-Z0-9_.(),\[\] ]*"""
+_match_single_quote_str_bytes = \
+    r"""b?'(?:\\(?:\\\\)*['"nabfrtvxuU]|[^'\\])*(?:\\\\)*\\?'?"""
+_match_double_quote_str_bytes = r"""b?"[^"]*"?"""
+_match_int_and_float = r"""\-?\d+(?:\.\d*)?|\-"""
+_match_str_bytes_int_float = \
+    f'(?:{_match_single_quote_str_bytes}|{_match_double_quote_str_bytes}|' \
+    f'{_match_int_and_float})'
+_match_tuple = r"""\((?:""" \
+    f'{_match_str_bytes_int_float}' \
+    r""", )*(?:""" \
+    f'{_match_str_bytes_int_float}' \
+    r"""\,|""" \
+    f'{_match_str_bytes_int_float}' \
+    r""")?\)?"""
+
+_current_dict_key_re_base = r"""[\w_][\w0-9._]*\["""
 _current_dict_key_re = LazyReCompile(
-    r"""[\w_][\w0-9._]*\[('[^']*|"[^"]*|[\w0-9._(), '"]*)"""
+    f'{_current_dict_key_re_base}('
+    f'{_match_identifiers_and_functions}|'
+    f'{_match_single_quote_str_bytes}|'
+    f'{_match_double_quote_str_bytes}|'
+    f'{_match_int_and_float}|'
+    f'{_match_tuple}|'
+    ')'
 )
 
 
@@ -47,8 +71,15 @@ def current_dict_key(cursor_offset: int, line: str) -> Optional[LinePart]:
     return None
 
 
+_current_dict_re_base = r"""([\w_][\w0-9._]*)\["""
 _current_dict_re = LazyReCompile(
-    r"""([\w_][\w0-9._]*)\[('[^']*|"[^"]*|[\w0-9._(), '"]*)"""
+    f'{_current_dict_re_base}('
+    f'{_match_identifiers_and_functions}|'
+    f'{_match_single_quote_str_bytes}|'
+    f'{_match_double_quote_str_bytes}|'
+    f'{_match_int_and_float}|'
+    f'{_match_tuple}|'
+    ')'
 )
 
 
@@ -56,6 +87,7 @@ def current_dict(cursor_offset: int, line: str) -> Optional[LinePart]:
     """If in dictionary completion, return the dict that should be used"""
     for m in _current_dict_re.finditer(line):
         if m.start(2) <= cursor_offset <= m.end(2):
+            print(LinePart(m.start(1), m.end(1), m.group(1))) # TODO
             return LinePart(m.start(1), m.end(1), m.group(1))
     return None
 
