@@ -216,11 +216,17 @@ def parse(args, extras=None, ignore_stdin=False) -> Tuple:
 
 def exec_code(interpreter, args):
     """
-    Helper to execute code in a given interpreter. args should be a [faked]
-    sys.argv
+    Helper to execute code in a given interpreter, e.g. to implement the behavior of python3 [-i] file.py
+
+    args should be a [faked] sys.argv.
     """
-    with open(args[0]) as sourcefile:
-        source = sourcefile.read()
+    try:
+        with open(args[0]) as sourcefile:
+            source = sourcefile.read()
+    except OSError as e:
+        # print an error and exit (if -i is specified the calling code will continue)
+        print(f"bpython: can't open file '{args[0]}: {e}", file=sys.stderr)
+        raise SystemExit(e.errno)
     old_argv, sys.argv = sys.argv, args
     sys.path.insert(0, os.path.abspath(os.path.dirname(args[0])))
     spec = importlib.util.spec_from_loader("__console__", loader=None)
