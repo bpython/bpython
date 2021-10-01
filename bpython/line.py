@@ -4,9 +4,10 @@ All functions take cursor offset from the beginning of the line and the line of
 Python code, and return None, or a tuple of the start index, end index, and the
 word."""
 
+import re
+
 from itertools import chain
 from typing import Optional, NamedTuple
-import re
 
 from .lazyre import LazyReCompile
 
@@ -42,17 +43,12 @@ _match_all_dict_keys = r"""[^\]]*"""
 _match_single_quote_str_bytes = r"""
     # bytes repr() begins with `b` character; bytes and str begin with `'`
     b?'             
-    # after an even number of `\`, next `\` and subsequent char are interpreted
-    # as an escape sequence; this handles `\'` in the string repr()
-    (?:\\(?:\\\\)*['"nabfrtvxuU]|
+    # match escape sequence; this handles `\'` in the string repr()
+    (?:\\['"nabfrtvxuU\\]|
     # or match any non-`\` and non-single-quote character (most of the string)
     [^'\\])*
-    # any even number of `\`; ensures `\\'` is interpreted as the end of string
-    (?:\\\\)*
-    # matches hanging `\` if one is present
-    \\?
-    # end matching at closing single-quote if one is present
-    '?
+    # matches hanging `\` or ending `'` if one is present
+    [\\']?
 """
 
 # bytes and str repr() only uses double quotes if the string contains 1 or more
