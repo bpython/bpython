@@ -192,9 +192,9 @@ class TestCurrentDictKey(LineTestCase):
         self.assertAccess("object.dict[<-1000>|")
         self.assertAccess("object.dict[<-0.23948>|")
         self.assertAccess("object.dict[<'\U0001ffff>|")
-        self.assertAccess(r"object.dict[<'a\'\\\"\n\\'>|]")
-        self.assertAccess("object.dict[<\"abc'\">|]")
-        self.assertAccess("object.dict[<-1029.19384>|]")
+        self.assertAccess(r"object.dict[<'a\'\\\"\n\\|[[]'>")
+        self.assertAccess("object.dict[<\"a]bc[|]\">]")
+        self.assertAccess("object.dict[<'abcd[]>|")
 
 
 class TestCurrentDict(LineTestCase):
