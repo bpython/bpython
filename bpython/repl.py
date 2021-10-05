@@ -505,6 +505,8 @@ class Repl:
         obj = eval(attributes.pop(0), self.interp.locals)
         while attributes:
             with inspection.AttrCleaner(obj):
+                if "ManagerDescriptor" in str(type(obj)):
+                    obj = obj.manager
                 obj = getattr(obj, attributes.pop(0))
         return obj
 
@@ -576,7 +578,6 @@ class Repl:
         return True, otherwise set self.funcprops to None and return False"""
 
         self.current_func = None
-
         if not self.config.arg_spec:
             return False
 
@@ -602,17 +603,17 @@ class Repl:
                 if hasattr(f, "__init__") and f.__init__ is not object.__init__:
                     class_f = f.__init__
                 if (
-                    (not class_f or not inspection.getfuncprops(func, class_f))
+                    (not class_f or not inspection.getfuncprops(func, class_f, f))
                     and hasattr(f, "__new__")
                     and f.__new__ is not object.__new__
                     and
                     # py3
                     f.__new__.__class__ is not object.__new__.__class__
                 ):
-
                     class_f = f.__new__
 
                 if class_f:
+                    self.funcprops = inspection.getfuncprops(func, class_f, f)
                     f = class_f
         except Exception:
             # another case of needing to catch every kind of error
@@ -622,7 +623,11 @@ class Repl:
             return False
 
         self.current_func = f
-        self.funcprops = inspection.getfuncprops(func, f)
+        if "BaseManager._get_queryset_methods" in str(f):
+            cls = eval(func.split(".")[0],self.interp.locals)
+            self.funcprops = inspection.getfuncprops(func, f,cls)
+        if not self.funcprops:
+            self.funcprops = inspection.getfuncprops(func, f)
         if self.funcprops:
             self.arg_pos = arg_number
             return True

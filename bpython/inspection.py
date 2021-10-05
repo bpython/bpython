@@ -34,6 +34,8 @@ from types import MemberDescriptorType
 
 from .lazyre import LazyReCompile
 
+DJANGO_CONSTANTS=["check","DoesNotExist","MultipleObjectsReturned"," check","clean","clean_fields","date_error_message","delete","from_db","full_clean","get_deferred_fields","get_next_by_birth_date","get_previous_by_birth_date","objects","prepare_database_save","refresh_from_db","save","save_base","serializable_value","unique_error_message","validate_unique"]
+
 ArgSpec = namedtuple(
     "ArgSpec",
     [
@@ -55,8 +57,10 @@ class AttrCleaner:
     on attribute lookup."""
 
     def __init__(self, obj: Any) -> None:
-        self.obj = obj
-
+        if "ManagerDescriptor" in str(type(obj)):
+            self.obj = obj.manager
+        else:
+            self.obj = obj
     def __enter__(self):
         """Try to make an object not exhibit side-effects on attribute
         lookup."""
@@ -223,7 +227,7 @@ def getpydocspec(f, func):
     )
 
 
-def getfuncprops(func, f):
+def getfuncprops(func, f,cls=None):
     # Check if it's a real bound method or if it's implicitly calling __init__
     # (i.e. FooClass(...) and not FooClass.__init__(...) -- the former would
     # not take 'self', the latter would:
@@ -244,7 +248,7 @@ def getfuncprops(func, f):
         # '__init__' throws xmlrpclib.Fault (see #202)
         return None
     try:
-        argspec = get_argspec_from_signature(f)
+        argspec = get_argspec_from_signature(f,cls)
         fixlongargs(f, argspec)
         if len(argspec) == 4:
             argspec = argspec + [list(), dict(), None]
@@ -267,7 +271,7 @@ def is_eval_safe_name(string):
     )
 
 
-def get_argspec_from_signature(f):
+def get_argspec_from_signature(f,cls=None):
     """Get callable signature from inspect.signature in argspec format.
 
     inspect.signature is a Python 3 only function that returns the signature of
@@ -301,7 +305,8 @@ def get_argspec_from_signature(f):
             kwonly_defaults[parameter.name] = parameter.default
         elif parameter.kind == inspect.Parameter.VAR_KEYWORD:
             varkwargs = parameter.name
-
+    if cls:
+        kwonly.extend([x[0] for x in inspect.getmembers(cls) if not x[0].startswith("_") and x[0] not in DJANGO_CONSTANTS])
     # inspect.getfullargspec returns None for 'defaults', 'kwonly_defaults' and
     # 'annotations' if there are no values for them.
     if not defaults:
