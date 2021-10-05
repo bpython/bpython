@@ -34,7 +34,9 @@ from types import MemberDescriptorType
 
 from .lazyre import LazyReCompile
 
-DJANGO_CONSTANTS=["check","DoesNotExist","MultipleObjectsReturned"," check","clean","clean_fields","date_error_message","delete","from_db","full_clean","get_deferred_fields","get_next_by_birth_date","get_previous_by_birth_date","objects","prepare_database_save","refresh_from_db","save","save_base","serializable_value","unique_error_message","validate_unique"]
+DJANGO_CONSTANTS=["check","DoesNotExist","MultipleObjectsReturned"," check","clean","clean_fields","date_error_message",
+                  "delete","from_db","full_clean","get_deferred_fields","objects","prepare_database_save","refresh_from_db",
+                  "save","save_base","serializable_value","unique_error_message","validate_unique"]
 
 ArgSpec = namedtuple(
     "ArgSpec",
@@ -306,7 +308,9 @@ def get_argspec_from_signature(f,cls=None):
         elif parameter.kind == inspect.Parameter.VAR_KEYWORD:
             varkwargs = parameter.name
     if cls:
-        kwonly.extend([x[0] for x in inspect.getmembers(cls) if not x[0].startswith("_") and x[0] not in DJANGO_CONSTANTS])
+        members = inspect.getmembers(cls)
+        kwonly.extend([x[0] for x in members if not (x[0].startswith("_") or "get_pre" in x[0]
+                                                     or "get_next" in x[0]) and x[0] not in DJANGO_CONSTANTS])
     # inspect.getfullargspec returns None for 'defaults', 'kwonly_defaults' and
     # 'annotations' if there are no values for them.
     if not defaults:
