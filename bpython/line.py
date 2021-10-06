@@ -4,6 +4,8 @@ All functions take cursor offset from the beginning of the line and the line of
 Python code, and return None, or a tuple of the start index, end index, and the
 word."""
 
+import re
+
 from itertools import chain
 from typing import Optional, NamedTuple
 
@@ -34,7 +36,41 @@ def current_word(cursor_offset: int, line: str) -> Optional[LinePart]:
     return LinePart(start, end, word)
 
 
-_current_dict_key_re = LazyReCompile(r"""[\w_][\w0-9._]*\[([\w0-9._(), '"]*)""")
+# pieces of regex to match repr() of several hashable built-in types
+_match_all_dict_keys = r"""[^\]]*"""
+
+# https://docs.python.org/3/reference/lexical_analysis.html#string-and-bytes-literals
+_match_single_quote_str_bytes = r"""
+    # bytes repr() begins with `b` character; bytes and str begin with `'`
+    b?'             
+    # match escape sequence; this handles `\'` in the string repr()
+    (?:\\['"nabfrtvxuU\\]|
+    # or match any non-`\` and non-single-quote character (most of the string)
+    [^'\\])*
+    # matches hanging `\` or ending `'` if one is present
+    [\\']?
+"""
+
+# bytes and str repr() only uses double quotes if the string contains 1 or more
+# `'` character and exactly 0 `"` characters
+_match_double_quote_str_bytes = r"""
+    # bytes repr() begins with `b` character
+    b?"
+    # string continues until a `"` character is reached
+    [^"]*
+    # end matching at closing double-quote if one is present
+    "?"""
+
+# match valid identifier name followed by `[` character
+_match_dict_before_key = r"""[\w_][\w0-9._]*\["""
+
+_current_dict_key_re = LazyReCompile(
+    f"{_match_dict_before_key}((?:"
+    f"{_match_single_quote_str_bytes}|"
+    f"{_match_double_quote_str_bytes}|"
+    f"{_match_all_dict_keys}|)*)",
+    re.VERBOSE,
+)
 
 
 def current_dict_key(cursor_offset: int, line: str) -> Optional[LinePart]:
@@ -45,7 +81,16 @@ def current_dict_key(cursor_offset: int, line: str) -> Optional[LinePart]:
     return None
 
 
-_current_dict_re = LazyReCompile(r"""([\w_][\w0-9._]*)\[([\w0-9._(), '"]*)""")
+# capture valid identifier name if followed by `[` character
+_capture_dict_name = r"""([\w_][\w0-9._]*)\["""
+
+_current_dict_re = LazyReCompile(
+    f"{_capture_dict_name}((?:"
+    f"{_match_single_quote_str_bytes}|"
+    f"{_match_double_quote_str_bytes}|"
+    f"{_match_all_dict_keys}|)*)",
+    re.VERBOSE,
+)
 
 
 def current_dict(cursor_offset: int, line: str) -> Optional[LinePart]:
