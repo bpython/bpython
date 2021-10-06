@@ -42,7 +42,7 @@ from .interpreter import (
     Interp,
     code_finished_will_parse,
 )
-from .manual_readline import edit_keys
+from .manual_readline import edit_keys, cursor_on_closing_char_pair
 from .parse import parse as bpythonparse, func_for_letter, color_for_letter
 from .preprocess import preprocess
 from .. import __version__
@@ -925,6 +925,8 @@ class BaseRepl(Repl):
             self._cursor_offset, self._current_line = cursor_and_line
             # using _current_line so we don't trigger a completion reset
             self.list_win_visible = True
+        if cursor_on_closing_char_pair(self._cursor_offset, self._current_line):
+            self._cursor_offset += 2
 
     def on_control_d(self):
         if self.current_line == "":
