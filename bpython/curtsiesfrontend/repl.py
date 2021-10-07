@@ -367,7 +367,7 @@ class BaseRepl(Repl):
         self._current_line = ""
 
         # current line of output - stdout and stdin go here
-        self.current_stdouterr_line = ""
+        self.current_stdouterr_line = ""  # Union[str, FmtStr]
 
         # this is every line that's been displayed (input and output)
         # as with formatting applied. Logical lines that exceeded the terminal width
@@ -1582,8 +1582,18 @@ class BaseRepl(Repl):
         current_line_height = current_line_end_row - current_line_start_row
 
         if self.stdin.has_focus:
+            logger.debug(
+                "stdouterr when self.stdin has focus: %r %r",
+                type(self.current_stdouterr_line),
+                self.current_stdouterr_line,
+            )
+            stdouterr_width = (
+                self.current_stdouterr_line.width
+                if isinstance(self.current_stdouterr_line, FmtStr)
+                else wcswidth(self.current_stdouterr_line)
+            )
             cursor_row, cursor_column = divmod(
-                wcswidth(self.current_stdouterr_line)
+                stdouterr_width
                 + wcswidth(
                     self.stdin.current_line, max(0, self.stdin.cursor_offset)
                 ),
