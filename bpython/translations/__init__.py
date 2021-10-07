@@ -2,13 +2,14 @@ import gettext
 import locale
 import os.path
 import sys
+from typing import cast
 
 from .. import package_dir
 
-translator = None
+translator: gettext.GNUTranslations = cast(gettext.GNUTranslations, None)
 
 
-def _(message):
+def _(message) -> str:
     return translator.gettext(message)
 
 

@@ -33,7 +33,18 @@ import rlcompleter
 import builtins
 
 from enum import Enum
-from typing import Any, Dict, Iterator, List, Match, NoReturn, Set, Union, Tuple
+from typing import (
+    Any,
+    Dict,
+    Iterator,
+    List,
+    Match,
+    Set,
+    Union,
+    Tuple,
+    Type,
+    Sequence,
+)
 from . import inspection
 from . import line as lineparts
 from .line import LinePart
@@ -180,15 +191,15 @@ def few_enough_underscores(current, match) -> bool:
     return not match.startswith("_")
 
 
-def method_match_none(word, size, text) -> bool:
+def method_match_none(word: str, size: int, text: str) -> bool:
     return False
 
 
-def method_match_simple(word, size, text) -> bool:
+def method_match_simple(word: str, size: int, text: str) -> bool:
     return word[:size] == text
 
 
-def method_match_substring(word, size, text) -> bool:
+def method_match_substring(word: str, size: int, text: str) -> bool:
     return text in word
 
 
@@ -265,16 +276,20 @@ class BaseCompletionType:
 class CumulativeCompleter(BaseCompletionType):
     """Returns combined matches from several completers"""
 
-    def __init__(self, completers, mode=AutocompleteModes.SIMPLE) -> None:
+    def __init__(
+        self,
+        completers: Sequence[BaseCompletionType],
+        mode: AutocompleteModes = AutocompleteModes.SIMPLE,
+    ) -> None:
         if not completers:
             raise ValueError(
                 "CumulativeCompleter requires at least one completer"
             )
-        self._completers = completers
+        self._completers: Sequence[BaseCompletionType] = completers
 
         super().__init__(True, mode)
 
-    def locate(self, current_offset: int, line: str) -> Union[None, NoReturn]:
+    def locate(self, current_offset, line):
         for completer in self._completers:
             return_value = completer.locate(current_offset, line)
             if return_value is not None:
@@ -573,7 +588,7 @@ try:
     import jedi
 except ImportError:
 
-    class MultilineJediCompletion(BaseCompletionType):
+    class MultilineJediCompletion(BaseCompletionType):  # type: ignore [no-redef]
         def matches(self, cursor_offset, line, **kwargs) -> None:
             return None
 
@@ -630,7 +645,7 @@ else:
             end = cursor_offset
             return LinePart(start, end, line[start:end])
 
-    class MultilineJediCompletion(JediCompletion):
+    class MultilineJediCompletion(JediCompletion):  # type: ignore [no-redef]
         def matches(self, cursor_offset, line, **kwargs) -> Union[Set, None]:
             if "current_block" not in kwargs or "history" not in kwargs:
                 return None

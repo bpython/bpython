@@ -197,7 +197,7 @@ def parse(args, extras=None, ignore_stdin=False) -> Tuple:
     logger.info(f"curtsies: {curtsies.__version__}")
     logger.info(f"cwcwidth: {cwcwidth.__version__}")
     logger.info(f"greenlet: {greenlet.__version__}")
-    logger.info(f"pygments: {pygments.__version__}")
+    logger.info(f"pygments: {pygments.__version__}")  # type: ignore
     logger.info(f"requests: {requests.__version__}")
     logger.info(
         "environment:\n{}".format(

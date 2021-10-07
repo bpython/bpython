@@ -64,7 +64,7 @@ def _bpython_clear_linecache():
 
 # Monkey-patch the linecache module so that we're able
 # to hold our command history there and have it persist
-linecache.cache = BPythonLinecache(linecache.cache)
+linecache.cache = BPythonLinecache(linecache.cache)  # type: ignore
 linecache.clearcache = _bpython_clear_linecache
 
 
