@@ -57,14 +57,14 @@ class CodeRunner:
     """Runs user code in an interpreter.
 
     Running code requests a refresh by calling
-    request_from_main_context(force_refresh=True), which
+    request_from_main_thread(force_refresh=True), which
     suspends execution of the code by blocking on a queue
     that the main thread was blocked on.
 
     After load_code() is called with the source code to be run,
     the run_code() method should be called to start running the code.
     The running code may request screen refreshes and user input
-    by calling request_from_main_context.
+    by calling request_from_main_thread.
     When this are called, the running source code cedes
     control, and the current run_code() method call returns.
 
@@ -98,7 +98,7 @@ class CodeRunner:
         # waiting for response from main thread
         self.code_is_waiting = False
         # sigint happened while in main thread
-        self.sigint_happened_in_main_context = False  # TODO rename context to thread
+        self.sigint_happened_in_main_thread = False  # TODO rename context to thread
         self.orig_sigint_handler = None
 
     @property
@@ -142,8 +142,8 @@ class CodeRunner:
             self.code_is_waiting = False
             if is_main_thread():
                 signal.signal(signal.SIGINT, self.sigint_handler)
-            if self.sigint_happened_in_main_context:
-                self.sigint_happened_in_main_context = False
+            if self.sigint_happened_in_main_thread:
+                self.sigint_happened_in_main_thread = False
                 self.responses_for_code_thread.put(SigintHappened)
             else:
                 self.responses_for_code_thread.put(for_code)
@@ -180,7 +180,7 @@ class CodeRunner:
                 "sigint while fulfilling code request sigint handler "
                 "running!"
             )
-            self.sigint_happened_in_main_context = True
+            self.sigint_happened_in_main_thread = True
 
     def _blocking_run_code(self):
         try:
@@ -192,7 +192,7 @@ class CodeRunner:
                                            if unfinished
                                            else Done())
 
-    def request_from_main_context(self, force_refresh=False):
+    def request_from_main_thread(self, force_refresh=False):
         """Return the argument passed in to .run_code(for_code)
 
         Nothing means calls to run_code must be... ???
@@ -223,7 +223,7 @@ class FakeOutput:
 
     def write(self, s, *args, **kwargs):
         self.on_write(s, *args, **kwargs)
-        return self.coderunner.request_from_main_context(force_refresh=True)
+        return self.coderunner.request_from_main_thread(force_refresh=True)
 
     # Some applications which use curses require that sys.stdout
     # have a method called fileno. One example is pwntools. This

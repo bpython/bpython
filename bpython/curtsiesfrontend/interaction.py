@@ -83,13 +83,14 @@ class StatusBar(Interaction):
         assert self.in_prompt or self.in_confirm or self.waiting_for_refresh
         if isinstance(e, RefreshRequestEvent):
             self.waiting_for_refresh = False
-            self.request_context.switch()
+            self.request_or_notify_queue.put(None)
+            self.response_queue.get()
         elif isinstance(e, events.PasteEvent):
             for ee in e.events:
                 # strip control seq
                 self.add_normal_character(ee if len(ee) == 1 else ee[-1])
         elif e == "<ESC>" or isinstance(e, events.SigIntEvent):
-            self.request_context.switch(False)
+            self.request_queue.put(False)
             self.escape()
         elif e in edit_keys:
             self.cursor_offset_in_line, self._current_line = edit_keys[e](
