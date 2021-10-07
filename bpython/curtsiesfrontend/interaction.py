@@ -154,7 +154,9 @@ class StatusBar(Interaction):
         try:
             r = self.request_or_notify_queue.get(True, 1)
         except queue.Empty:
-            raise Exception('Main thread blocked because task thread not calling back')
+            raise Exception(
+                "Main thread blocked because task thread not calling back"
+            )
         return r
 
     # interaction interface - should be called from other threads

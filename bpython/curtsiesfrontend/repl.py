@@ -797,7 +797,7 @@ class BaseRepl(Repl):
         """Runs task in another thread"""
         t = threading.Thread(target=task)
         t.daemon = True
-        logging.debug('starting task thread')
+        logging.debug("starting task thread")
         t.start()
         self.interact.wait_for_request_or_notify()
 

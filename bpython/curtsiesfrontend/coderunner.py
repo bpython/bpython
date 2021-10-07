@@ -1,7 +1,7 @@
 """For running Python code that could interrupt itself at any time in order to,
-for example, ask for a read on stdin, or a write on stdout
+for example, ask for a read on stdin, or a write on stdout.
 
-The CodeRunner spawns a thread to run code in, and that code can block
+The CodeRunner spawns a thread to run code in. That code can block
 on a queue to ask the main (UI) thread to refresh the display or get
 information.
 """
@@ -54,26 +54,33 @@ class SystemExitRequest(RequestFromCodeRunner):
 
 
 class CodeRunner:
-    """Runs user code in an interpreter.
+    """Runs user code in a pausable thread.
 
-    Running code requests a refresh by calling
-    request_from_main_thread(force_refresh=True), which
-    suspends execution of the code by blocking on a queue
-    that the main thread was blocked on.
+    >>> cr = CodeRunner()
+    >>> def get_input():
+    ...     print('waiting for a number plz')
+    ...     return cr.request_from_main_thread()
+    ...
+    >>> i = InteractiveInterpreter(locals={'get_input': get_input})
+    >>> cr.interp = i
+    >>> cr.load_code('x = get_input(); print(x * 2)')
+    >>> finished = cr.run_code()
+    waiting for a number plz
+    >>> # do something else, user code thread is paused
+    >>> finished = cr.run_code(for_code=21)
+    42
 
-    After load_code() is called with the source code to be run,
-    the run_code() method should be called to start running the code.
-    The running code may request screen refreshes and user input
-    by calling request_from_main_thread.
-    When this are called, the running source code cedes
-    control, and the current run_code() method call returns.
-
-    The return value of run_code() determines whether the method ought
-    to be called again to complete execution of the source code.
+    As user code executes it can make requests for values or simply
+    request that the screen be refreshed with `request_from_main_thread()`.
+    This pauses the user code execution thread and wakes up the main thread,
+    where run_code() returns whether user code has finished executing.
+    This is cooperative multitasking: even though there are two threads,
+    the main thread and the user code thread, the two threads work cede
+    control to one another like like green threads with no parallelism.
 
     Once the screen refresh has occurred or the requested user input
     has been gathered, run_code() should be called again, passing in any
-    requested user input. This continues until run_code returns Done.
+    requested user input. This continues until run_code returns True.
 
     The code thread is responsible for telling the main thread
     what it wants returned in the next run_code call - CodeRunner
@@ -98,7 +105,7 @@ class CodeRunner:
         # waiting for response from main thread
         self.code_is_waiting = False
         # sigint happened while in main thread
-        self.sigint_happened_in_main_thread = False  # TODO rename context to thread
+        self.sigint_happened_in_main_thread = False
         self.orig_sigint_handler = None
 
     @property
@@ -130,8 +137,8 @@ class CodeRunner:
         if self.code_thread is None:
             assert self.source is not None
             self.code_thread = threading.Thread(
-                target=self._blocking_run_code,
-                name='codethread')
+                target=self._blocking_run_code, name="codethread"
+            )
             self.code_thread.daemon = True
             if is_main_thread():
                 self.orig_sigint_handler = signal.getsignal(signal.SIGINT)
@@ -151,9 +158,7 @@ class CodeRunner:
         request = self.requests_from_code_thread.get()
         logger.debug("request received from code was %r", request)
         if not isinstance(request, RequestFromCodeRunner):
-            raise ValueError(
-                "Not a valid value from code thread: %r" % request
-            )
+            raise ValueError("Not a valid value from code thread: %r" % request)
         if isinstance(request, (Wait, Refresh)):
             self.code_is_waiting = True
             if isinstance(request, Refresh):
@@ -188,9 +193,9 @@ class CodeRunner:
         except SystemExit as e:
             self.requests_from_code_thread.push(SystemExitRequest(*e.args))
             return
-        self.requests_from_code_thread.put(Unfinished()
-                                           if unfinished
-                                           else Done())
+        self.requests_from_code_thread.put(
+            Unfinished() if unfinished else Done()
+        )
 
     def request_from_main_thread(self, force_refresh=False):
         """Return the argument passed in to .run_code(for_code)
