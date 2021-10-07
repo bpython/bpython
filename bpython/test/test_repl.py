@@ -157,7 +157,8 @@ class TestArgspec(unittest.TestCase):
     def test_func_name(self):
         for (line, expected_name) in [
             ("spam(", "spam"),
-            ("spam(map([]", "map"),
+            # map pydoc has no signature in pypy
+            ("spam(any([]", "any") if pypy else ("spam(map([]", "map"),
             ("spam((), ", "spam"),
         ]:
             self.set_input_line(line)
@@ -167,7 +168,8 @@ class TestArgspec(unittest.TestCase):
     def test_func_name_method_issue_479(self):
         for (line, expected_name) in [
             ("o.spam(", "spam"),
-            ("o.spam(map([]", "map"),
+            # map pydoc has no signature in pypy
+            ("o.spam(any([]", "any") if pypy else ("o.spam(map([]", "map"),
             ("o.spam((), ", "spam"),
         ]:
             self.set_input_line(line)
@@ -200,6 +202,7 @@ class TestArgspec(unittest.TestCase):
         # Argument position
         self.assertEqual(self.repl.arg_pos, 1)
 
+    @unittest.skipIf(pypy, "range pydoc has no signature in pypy")
     def test_issue127(self):
         self.set_input_line("x=range(")
         self.assertTrue(self.repl.get_args())

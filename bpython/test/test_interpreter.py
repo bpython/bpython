@@ -53,7 +53,7 @@ class TestInterpreter(unittest.TestCase):
                 + green('"<input>"')
                 + ", line "
                 + bold(magenta("1"))
-                + "\n    1.1.1.1\n      ^\n"
+                + "\n    1.1.1.1\n       ^\n"
                 + bold(red("SyntaxError"))
                 + ": "
                 + cyan("invalid syntax")

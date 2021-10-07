@@ -1,10 +1,13 @@
 import os
+import sys
 import unittest
 
 from bpython import inspection
 from bpython.test.fodder import encoding_ascii
 from bpython.test.fodder import encoding_latin1
 from bpython.test.fodder import encoding_utf8
+
+pypy = "PyPy" in sys.version
 
 try:
     import numpy
@@ -118,6 +121,7 @@ class TestInspection(unittest.TestCase):
         )
         self.assertEqual(encoding, "utf-8")
 
+    @unittest.skipIf(pypy, "pypy builtin signatures aren't complete")
     def test_getfuncprops_print(self):
         props = inspection.getfuncprops("print", print)
 
