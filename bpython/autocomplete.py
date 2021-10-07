@@ -33,7 +33,7 @@ import rlcompleter
 import builtins
 
 from enum import Enum
-from typing import Any, Dict, Iterator, List, Match, NoReturn, Set, Union, Literal, Tuple
+from typing import Any, Dict, Iterator, List, Match, NoReturn, Set, Union, Tuple
 from . import inspection
 from . import line as lineparts
 from .line import LinePart
@@ -180,7 +180,7 @@ def few_enough_underscores(current, match) -> bool:
     return not match.startswith("_")
 
 
-def method_match_none(word, size, text) -> Literal[False]:
+def method_match_none(word, size, text) -> bool:
     return False
 
 
@@ -215,7 +215,9 @@ class BaseCompletionType:
         self.method_match = MODES_MAP[mode]
 
     @abc.abstractmethod
-    def matches(self, cursor_offset: int, line: str, **kwargs) -> Union[Set[str], None]:
+    def matches(
+        self, cursor_offset: int, line: str, **kwargs
+    ) -> Union[Set[str], None]:
         """Returns a list of possible matches given a line and cursor, or None
         if this completion type isn't applicable.
 
@@ -282,7 +284,9 @@ class CumulativeCompleter(BaseCompletionType):
     def format(self, word):
         return self._completers[0].format(word)
 
-    def matches(self, cursor_offset: int, line: str, **kwargs) -> Union[None, Set]:
+    def matches(
+        self, cursor_offset: int, line: str, **kwargs
+    ) -> Union[None, Set]:
         return_value = None
         all_matches = set()
         for completer in self._completers:
@@ -440,7 +444,7 @@ class DictKeyCompletion(BaseCompletionType):
         if r is None:
             return None
         curDictParts = lineparts.current_dict(cursor_offset, line)
-        assert curDictParts, 'current_dict when .locate() truthy'
+        assert curDictParts, "current_dict when .locate() truthy"
         _, _, dexpr = curDictParts
         try:
             obj = safe_eval(dexpr, locals_)
@@ -553,7 +557,7 @@ class ExpressionAttributeCompletion(AttrCompletion):
             locals_ = __main__.__dict__
 
         attr = self.locate(cursor_offset, line)
-        assert attr, 'locate was already truthy for the same call'
+        assert attr, "locate was already truthy for the same call"
 
         try:
             obj = evaluate_current_expression(cursor_offset, line, locals_)
@@ -577,6 +581,8 @@ except ImportError:
 else:
 
     class JediCompletion(BaseCompletionType):
+        _orig_start: Union[int, None]
+
         def matches(self, cursor_offset, line, **kwargs) -> Union[None, Set]:
             if "history" not in kwargs:
                 return None
@@ -603,6 +609,7 @@ else:
             else:
                 self._orig_start = None
                 return None
+            assert isinstance(self._orig_start, int)
 
             first_letter = line[self._orig_start : self._orig_start + 1]
 
@@ -617,7 +624,8 @@ else:
                 # case-sensitive matches only
                 return {m for m in matches if m.startswith(first_letter)}
 
-        def locate(self, cursor_offset, line) -> LinePart:
+        def locate(self, cursor_offset: int, line: str) -> LinePart:
+            assert isinstance(self._orig_start, int)
             start = self._orig_start
             end = cursor_offset
             return LinePart(start, end, line[start:end])
