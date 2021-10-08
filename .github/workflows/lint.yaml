@@ -42,4 +42,4 @@ jobs:
         pip install types-backports types-requests types-setuptools types-toml types-pygments
     - name: Check with mypy
       # for now only run on a few files to avoid slipping backward
-      run: mypy bpython/autocomplete.py
+      run: mypy bpython/autocomplete.py bpython/args.py bpython/config.py bpython/curtsies.py

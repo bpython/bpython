@@ -336,7 +336,7 @@ def get_encoding(obj):
     return "utf8"
 
 
-def get_encoding_file(fname):
+def get_encoding_file(fname: str) -> str:
     """Try to obtain encoding information from a Python source file."""
     with open(fname, encoding="ascii", errors="ignore") as f:
         for unused in range(2):

@@ -39,7 +39,7 @@ from pathlib import Path
 from pygments.lexers import Python3Lexer
 from pygments.token import Token
 from types import ModuleType
-from typing import cast
+from typing import cast, Tuple, Any
 
 have_pyperclip = True
 try:
@@ -1220,7 +1220,7 @@ def token_is_any_of(token_types):
     return token_is_any_of
 
 
-def extract_exit_value(args):
+def extract_exit_value(args: Tuple[Any, ...]) -> Any:
     """Given the arguments passed to `SystemExit`, return the value that
     should be passed to `sys.exit`.
     """

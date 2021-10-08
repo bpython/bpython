@@ -1,5 +1,6 @@
 import greenlet
 import time
+from typing import Optional
 from curtsies import events
 
 from ..translations import _
@@ -78,7 +79,7 @@ class StatusBar(Interaction):
         ):
             self._message = ""
 
-    def process_event(self, e):
+    def process_event(self, e) -> None:
         """Returns True if shutting down"""
         assert self.in_prompt or self.in_confirm or self.waiting_for_refresh
         if isinstance(e, RefreshRequestEvent):

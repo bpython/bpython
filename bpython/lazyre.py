@@ -46,7 +46,7 @@ class LazyReCompile:
     def finditer(self, *args, **kwargs):
         return self.compiled.finditer(*args, **kwargs)
 
-    def search(self, *args, **kwargs):
+    def search(self, *args, **kwargs) -> Optional[Match[str]]:
         return self.compiled.search(*args, **kwargs)
 
     def match(self, *args, **kwargs) -> Optional[Match[str]]:
