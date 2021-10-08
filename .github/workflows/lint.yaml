@@ -39,7 +39,7 @@ jobs:
         pip install mypy
         pip install -r requirements.txt
         pip install urwid twisted watchdog "jedi >=0.16" babel "sphinx >=1.5"
-        pip install types-backports types-requests types-setuptools types-toml
+        pip install types-backports types-requests types-setuptools types-toml types-pygments
     - name: Check with mypy
       # for now only run on a few files to avoid slipping backward
-      run: mypy --ignore-missing-imports bpython/autocomplete.py
+      run: mypy bpython/autocomplete.py
