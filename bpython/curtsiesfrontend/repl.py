@@ -116,8 +116,6 @@ class FakeStdin:
             self.current_line = ""
             self.cursor_offset = 0
             self.repl.run_code_and_maybe_finish()
-        elif e in ("<Esc+.>",):
-            self.get_last_word()
         elif e in ("<ESC>",):
             pass
         elif e in ("<Ctrl-d>",):
