@@ -23,6 +23,7 @@
 
 # To gradually migrate to mypy we aren't setting these globally yet
 # mypy: disallow_untyped_defs=True
+# mypy: disallow_untyped_calls=True
 
 import __main__
 import abc
