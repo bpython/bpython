@@ -2,6 +2,9 @@ import os
 import sys
 import unittest
 
+from typing import Optional
+from types import ModuleType
+
 from bpython import inspection
 from bpython.test.fodder import encoding_ascii
 from bpython.test.fodder import encoding_latin1
@@ -12,7 +15,7 @@ pypy = "PyPy" in sys.version
 try:
     import numpy
 except ImportError:
-    numpy = None
+    numpy = None  # type: ignore
 
 
 foo_ascii_only = '''def foo():
@@ -191,7 +194,7 @@ class OverriddenMRO:
     a = 1
 
 
-member_descriptor = type(Slots.s1)
+member_descriptor = type(Slots.s1)  # type: ignore
 
 
 class TestSafeGetAttribute(unittest.TestCase):

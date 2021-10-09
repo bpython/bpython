@@ -17,10 +17,10 @@ try:
     from twisted.trial.unittest import TestCase as TrialTestCase
 except ImportError:
 
-    class TrialTestCase:
+    class TrialTestCase:  # type: ignore [no-redef]
         pass
 
-    reactor = None
+    reactor = None  # type: ignore
 
 try:
     import urwid

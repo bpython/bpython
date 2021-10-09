@@ -44,7 +44,7 @@ class SupportsEventGeneration(Protocol):
     ) -> Union[str, curtsies.events.Event, None]:
         ...
 
-    def __iter__(self) -> SupportsEventGeneration:
+    def __iter__(self) -> "SupportsEventGeneration":
         ...
 
     def __next__(self) -> Union[str, curtsies.events.Event, None]:
@@ -252,7 +252,7 @@ def main(
 
 
 def _combined_events(
-    event_provider: SupportsEventGeneration, paste_threshold: int
+    event_provider: "SupportsEventGeneration", paste_threshold: int
 ) -> Generator[
     Union[str, curtsies.events.Event, None], Union[float, None], None
 ]:

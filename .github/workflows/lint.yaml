@@ -38,8 +38,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install mypy
         pip install -r requirements.txt
-        pip install urwid twisted watchdog "jedi >=0.16" babel "sphinx >=1.5"
+        pip install urwid twisted watchdog "jedi >=0.16" babel "sphinx >=1.5" numpy
         pip install types-backports types-requests types-setuptools types-toml types-pygments
     - name: Check with mypy
       # for now only run on a few files to avoid slipping backward
-      run: mypy bpython/autocomplete.py bpython/args.py bpython/config.py bpython/curtsies.py
+      run: mypy
