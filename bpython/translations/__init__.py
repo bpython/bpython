@@ -2,13 +2,14 @@ import gettext
 import locale
 import os.path
 import sys
+from typing import cast, List
 
 from .. import package_dir
 
-translator = None
+translator: gettext.NullTranslations = cast(gettext.NullTranslations, None)
 
 
-def _(message):
+def _(message) -> str:
     return translator.gettext(message)
 
 
@@ -16,7 +17,7 @@ def ngettext(singular, plural, n):
     return translator.ngettext(singular, plural, n)
 
 
-def init(locale_dir=None, languages=None):
+def init(locale_dir: str = None, languages: List[str] = None) -> None:
     try:
         locale.setlocale(locale.LC_ALL, "")
     except locale.Error:

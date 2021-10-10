@@ -336,7 +336,7 @@ def get_encoding(obj):
     return "utf8"
 
 
-def get_encoding_file(fname):
+def get_encoding_file(fname: str) -> str:
     """Try to obtain encoding information from a Python source file."""
     with open(fname, encoding="ascii", errors="ignore") as f:
         for unused in range(2):
@@ -347,7 +347,7 @@ def get_encoding_file(fname):
     return "utf8"
 
 
-def getattr_safe(obj, name):
+def getattr_safe(obj: Any, name: str):
     """side effect free getattr (calls getattr_static)."""
     result = inspect.getattr_static(obj, name)
     # Slots are a MemberDescriptorType
@@ -356,7 +356,7 @@ def getattr_safe(obj, name):
     return result
 
 
-def hasattr_safe(obj, name):
+def hasattr_safe(obj: Any, name: str) -> bool:
     try:
         getattr_safe(obj, name)
         return True

@@ -86,8 +86,7 @@ class TestCurtsiesRepl(TestCase):
         self.assertEqual(curtsiesrepl._last_word("a"), "a")
         self.assertEqual(curtsiesrepl._last_word("a b"), "b")
 
-    # this is the behavior of bash - not currently implemented
-    @unittest.skip
+    @unittest.skip("this is the behavior of bash - not currently implemented")
     def test_get_last_word_with_prev_line(self):
         self.repl.rl_history.entries = ["1", "2 3", "4 5 6"]
         self.repl._set_current_line("abcde")
@@ -300,7 +299,7 @@ class TestPredictedIndent(TestCase):
         self.assertEqual(self.repl.predicted_indent("def asdf():"), 4)
         self.assertEqual(self.repl.predicted_indent("def asdf(): return 7"), 0)
 
-    @unittest.skip
+    @unittest.skip("This would be interesting")
     def test_complex(self):
         self.assertEqual(self.repl.predicted_indent("[a, "), 1)
         self.assertEqual(self.repl.predicted_indent("reduce(asdfasdf, "), 7)

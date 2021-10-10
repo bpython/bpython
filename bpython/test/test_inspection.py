@@ -12,7 +12,7 @@ pypy = "PyPy" in sys.version
 try:
     import numpy
 except ImportError:
-    numpy = None
+    numpy = None  # type: ignore
 
 
 foo_ascii_only = '''def foo():
@@ -191,7 +191,7 @@ class OverriddenMRO:
     a = 1
 
 
-member_descriptor = type(Slots.s1)
+member_descriptor = type(Slots.s1)  # type: ignore
 
 
 class TestSafeGetAttribute(unittest.TestCase):

@@ -33,11 +33,13 @@ import tempfile
 import textwrap
 import time
 import traceback
+from abc import abstractmethod
 from itertools import takewhile
 from pathlib import Path
 from pygments.lexers import Python3Lexer
 from pygments.token import Token
 from types import ModuleType
+from typing import cast, Tuple, Any
 
 have_pyperclip = True
 try:
@@ -451,11 +453,11 @@ class Repl:
 
     @property
     def ps1(self) -> str:
-        return getattr(sys, "ps1", ">>> ")
+        return cast(str, getattr(sys, "ps1", ">>> "))
 
     @property
     def ps2(self) -> str:
-        return getattr(sys, "ps2", "... ")
+        return cast(str, getattr(sys, "ps2", "... "))
 
     def startup(self):
         """
@@ -768,6 +770,10 @@ class Repl:
         else:
             indentation = 0
         return indentation
+
+    @abstractmethod
+    def getstdout(self) -> str:
+        raise NotImplementedError()
 
     def get_session_formatted_for_file(self) -> str:
         """Format the stdout buffer to something suitable for writing to disk,
@@ -1214,7 +1220,7 @@ def token_is_any_of(token_types):
     return token_is_any_of
 
 
-def extract_exit_value(args):
+def extract_exit_value(args: Tuple[Any, ...]) -> Any:
     """Given the arguments passed to `SystemExit`, return the value that
     should be passed to `sys.exit`.
     """

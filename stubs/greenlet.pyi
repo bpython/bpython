@@ -1,0 +1,9 @@
+from typing import Any, Callable
+
+__version__: str
+
+def getcurrent() -> None: ...
+
+class greenlet:
+    def __init__(self, func: Callable[[], Any]): ...
+    def switch(self, value: Any = None) -> Any: ...
