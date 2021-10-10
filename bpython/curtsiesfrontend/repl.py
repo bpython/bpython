@@ -16,7 +16,6 @@ from enum import Enum
 from typing import Dict, Any, List, Optional, Tuple, Union, cast
 
 import blessings
-import cwcwidth
 import greenlet
 from curtsies import (
     FSArray,
@@ -283,7 +282,7 @@ def _process_ps(ps, default_ps: str):
     if not isinstance(ps, str):
         return ps
 
-    return ps if cwcwidth.wcswidth(ps, None) >= 0 else default_ps
+    return ps if wcswidth(ps) >= 0 else default_ps
 
 
 class BaseRepl(Repl):
@@ -1626,8 +1625,8 @@ class BaseRepl(Repl):
             )
         else:  # Common case for determining cursor position
             cursor_row, cursor_column = divmod(
-                wcswidth(self.current_cursor_line_without_suggestion.s, None)
-                - wcswidth(self.current_line, None)
+                wcswidth(self.current_cursor_line_without_suggestion.s)
+                - wcswidth(self.current_line)
                 + wcswidth(self.current_line, max(0, self.cursor_offset))
                 + self.number_of_padding_chars_on_current_cursor_line(),
                 width,
