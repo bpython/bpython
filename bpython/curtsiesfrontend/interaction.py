@@ -1,6 +1,5 @@
 import greenlet
 import time
-from typing import Optional
 from curtsies import events
 
 from ..translations import _

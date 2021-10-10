@@ -14,7 +14,6 @@ import unicodedata
 from enum import Enum
 
 from typing import Dict, Any, List, Optional, Tuple, Union, cast
-from typing_extensions import Literal
 
 import blessings
 import cwcwidth
@@ -59,8 +58,6 @@ from ..repl import (
     SourceNotFound,
 )
 from ..translations import _
-
-InputOrOutput = Union[Literal["input"], Literal["output"]]
 
 logger = logging.getLogger(__name__)
 
@@ -286,7 +283,7 @@ def _process_ps(ps, default_ps: str):
     if not isinstance(ps, str):
         return ps
 
-    return ps if cwcwidth.wcswidth(ps) >= 0 else default_ps
+    return ps if cwcwidth.wcswidth(ps, None) >= 0 else default_ps
 
 
 class BaseRepl(Repl):
@@ -387,8 +384,8 @@ class BaseRepl(Repl):
         # Entries are tuples, where
         #   - the first element the line (string, not fmtsr)
         #   - the second element is one of 2 global constants: "input" or "output"
-        #     (use LineTypeTranslator.INPUT or LineTypeTranslator.OUTPUT to avoid typing these strings)
-        self.all_logical_lines: List[Tuple[str, InputOrOutput]] = []
+        #     (use LineType.INPUT or LineType.OUTPUT to avoid typing these strings)
+        self.all_logical_lines: List[Tuple[str, LineType]] = []
 
         # formatted version of lines in the buffer kept around so we can
         # unhighlight parens using self.reprint_line as called by bpython.Repl
@@ -1629,8 +1626,8 @@ class BaseRepl(Repl):
             )
         else:  # Common case for determining cursor position
             cursor_row, cursor_column = divmod(
-                wcswidth(self.current_cursor_line_without_suggestion.s)
-                - wcswidth(self.current_line)
+                wcswidth(self.current_cursor_line_without_suggestion.s, None)
+                - wcswidth(self.current_line, None)
                 + wcswidth(self.current_line, max(0, self.cursor_offset))
                 + self.number_of_padding_chars_on_current_cursor_line(),
                 width,

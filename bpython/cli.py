@@ -51,7 +51,6 @@ import struct
 import sys
 import time
 from typing import Iterator, NoReturn, List
-from typing_extensions import Literal
 import unicodedata
 from dataclasses import dataclass
 
@@ -145,7 +144,7 @@ class FakeStream:
         for s in l:
             self.write(s)
 
-    def isatty(self) -> Literal[True]:
+    def isatty(self) -> bool:
         # some third party (amongst them mercurial) depend on this
         return True
 
@@ -176,7 +175,7 @@ class FakeStdin:
         # others, so here's a hack to keep them happy
         raise OSError(errno.EBADF, "sys.stdin is read-only")
 
-    def isatty(self) -> Literal[True]:
+    def isatty(self) -> bool:
         return True
 
     def readline(self, size=-1):

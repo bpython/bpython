@@ -2,9 +2,6 @@ import os
 import sys
 import unittest
 
-from typing import Optional
-from types import ModuleType
-
 from bpython import inspection
 from bpython.test.fodder import encoding_ascii
 from bpython.test.fodder import encoding_latin1

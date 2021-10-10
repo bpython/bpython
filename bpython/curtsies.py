@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 class SupportsEventGeneration(Protocol):
     def send(
-        self, timeout: Union[float, None]
+        self, timeout: Optional[float]
     ) -> Union[str, curtsies.events.Event, None]:
         ...
 
@@ -253,9 +253,7 @@ def main(
 
 def _combined_events(
     event_provider: "SupportsEventGeneration", paste_threshold: int
-) -> Generator[
-    Union[str, curtsies.events.Event, None], Union[float, None], None
-]:
+) -> Generator[Union[str, curtsies.events.Event, None], Optional[float], None]:
     """Combines consecutive keypress events into paste events."""
     timeout = yield "nonsense_event"  # so send can be used immediately
     queue: collections.deque = collections.deque()
