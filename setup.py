@@ -179,7 +179,7 @@ for language in os.listdir(translations_dir):
 
 setup(
     name='bpython-django',
-    version="0.22.1",
+    version="0.22.2",
     author='Mohamed ElKalioby',
     author_email="mkalioby@mkalioby.com",
     description='Customized bpython for Django Projects',
@@ -196,7 +196,7 @@ setup(
     },
     cmdclass=cmdclass,
     test_suite="bpython.test",
-classifiers=[
+    classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Web Environment",
         "Framework :: Django",
