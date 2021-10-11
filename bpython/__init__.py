@@ -23,7 +23,7 @@
 import os.path
 
 try:
-    from ._version import __version__ as version
+    from ._version import __version__ as version  # type: ignore
 except ImportError:
     version = "unknown"
 

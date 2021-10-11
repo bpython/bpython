@@ -21,12 +21,12 @@
 # THE SOFTWARE.
 
 import re
-from typing import Optional, Iterator
+from typing import Optional, Iterator, Pattern, Match, Optional
 
 try:
     from functools import cached_property
 except ImportError:
-    from backports.cached_property import cached_property  # type: ignore
+    from backports.cached_property import cached_property  # type: ignore [no-redef]
 
 
 class LazyReCompile:
@@ -40,16 +40,16 @@ class LazyReCompile:
         self.flags = flags
 
     @cached_property
-    def compiled(self):
+    def compiled(self) -> Pattern[str]:
         return re.compile(self.regex, self.flags)
 
     def finditer(self, *args, **kwargs):
         return self.compiled.finditer(*args, **kwargs)
 
-    def search(self, *args, **kwargs):
+    def search(self, *args, **kwargs) -> Optional[Match[str]]:
         return self.compiled.search(*args, **kwargs)
 
-    def match(self, *args, **kwargs):
+    def match(self, *args, **kwargs) -> Optional[Match[str]]:
         return self.compiled.match(*args, **kwargs)
 
     def sub(self, *args, **kwargs) -> str:

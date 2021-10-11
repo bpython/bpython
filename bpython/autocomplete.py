@@ -21,6 +21,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# To gradually migrate to mypy we aren't setting these globally yet
+# mypy: disallow_untyped_defs=True
+# mypy: disallow_untyped_calls=True
 
 import __main__
 import abc
@@ -33,12 +36,26 @@ import rlcompleter
 import builtins
 
 from enum import Enum
-from typing import Any, Dict, Iterator, List, Match, NoReturn, Set, Union
+from typing import (
+    Any,
+    cast,
+    Dict,
+    Iterator,
+    List,
+    Match,
+    Optional,
+    Set,
+    Union,
+    Tuple,
+    Type,
+    Sequence,
+)
 from . import inspection
 from . import line as lineparts
 from .line import LinePart
 from .lazyre import LazyReCompile
 from .simpleeval import safe_eval, evaluate_current_expression, EvaluationError
+from .importcompletion import ModuleGatherer
 
 
 # Autocomplete modes
@@ -49,7 +66,7 @@ class AutocompleteModes(Enum):
     FUZZY = "fuzzy"
 
     @classmethod
-    def from_string(cls, value) -> Union[Any, None]:
+    def from_string(cls, value: str) -> Optional[Any]:
         if value.upper() in cls.__members__:
             return cls.__members__[value.upper()]
         return None
@@ -166,7 +183,7 @@ def after_last_dot(name: str) -> str:
     return name.rstrip(".").rsplit(".")[-1]
 
 
-def few_enough_underscores(current, match) -> bool:
+def few_enough_underscores(current: str, match: str) -> bool:
     """Returns whether match should be shown based on current
 
     if current is _, True if match starts with 0 or 1 underscore
@@ -180,19 +197,19 @@ def few_enough_underscores(current, match) -> bool:
     return not match.startswith("_")
 
 
-def method_match_none(word, size, text) -> False:
+def method_match_none(word: str, size: int, text: str) -> bool:
     return False
 
 
-def method_match_simple(word, size, text) -> bool:
+def method_match_simple(word: str, size: int, text: str) -> bool:
     return word[:size] == text
 
 
-def method_match_substring(word, size, text) -> bool:
+def method_match_substring(word: str, size: int, text: str) -> bool:
     return text in word
 
 
-def method_match_fuzzy(word, size, text) -> Union[Match, None]:
+def method_match_fuzzy(word: str, size: int, text: str) -> Optional[Match]:
     s = r".*%s.*" % ".*".join(list(text))
     return re.search(s, word)
 
@@ -209,12 +226,17 @@ class BaseCompletionType:
     """Describes different completion types"""
 
     def __init__(
-        self, shown_before_tab: bool = True, mode=AutocompleteModes.SIMPLE
+        self,
+        shown_before_tab: bool = True,
+        mode: AutocompleteModes = AutocompleteModes.SIMPLE,
     ) -> None:
         self._shown_before_tab = shown_before_tab
         self.method_match = MODES_MAP[mode]
 
-    def matches(self, cursor_offset, line, **kwargs) -> NoReturn:
+    @abc.abstractmethod
+    def matches(
+        self, cursor_offset: int, line: str, **kwargs: Any
+    ) -> Optional[Set[str]]:
         """Returns a list of possible matches given a line and cursor, or None
         if this completion type isn't applicable.
 
@@ -232,7 +254,8 @@ class BaseCompletionType:
         """
         raise NotImplementedError
 
-    def locate(self, cursor_offset, line) -> NoReturn:
+    @abc.abstractmethod
+    def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
         """Returns a Linepart namedtuple instance or None given cursor and line
 
         A Linepart namedtuple contains a start, stop, and word. None is
@@ -240,12 +263,15 @@ class BaseCompletionType:
         the cursor."""
         raise NotImplementedError
 
-    def format(self, word):
+    def format(self, word: str) -> str:
         return word
 
-    def substitute(self, cursor_offset, line, match) -> NoReturn:
+    def substitute(
+        self, cursor_offset: int, line: str, match: str
+    ) -> Tuple[int, str]:
         """Returns a cursor offset and line with match swapped in"""
         lpart = self.locate(cursor_offset, line)
+        assert lpart
         offset = lpart.start + len(match)
         changed_line = line[: lpart.start] + match + line[lpart.stop :]
         return offset, changed_line
@@ -260,25 +286,32 @@ class BaseCompletionType:
 class CumulativeCompleter(BaseCompletionType):
     """Returns combined matches from several completers"""
 
-    def __init__(self, completers, mode=AutocompleteModes.SIMPLE) -> None:
+    def __init__(
+        self,
+        completers: Sequence[BaseCompletionType],
+        mode: AutocompleteModes = AutocompleteModes.SIMPLE,
+    ) -> None:
         if not completers:
             raise ValueError(
                 "CumulativeCompleter requires at least one completer"
             )
-        self._completers = completers
+        self._completers: Sequence[BaseCompletionType] = completers
 
         super().__init__(True, mode)
 
-    def locate(self, current_offset, line) -> Union[None, NoReturn]:
+    def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
         for completer in self._completers:
-            return_value = completer.locate(current_offset, line)
+            return_value = completer.locate(cursor_offset, line)
             if return_value is not None:
                 return return_value
+        return None
 
-    def format(self, word):
+    def format(self, word: str) -> str:
         return self._completers[0].format(word)
 
-    def matches(self, cursor_offset, line, **kwargs) -> Union[None, Set]:
+    def matches(
+        self, cursor_offset: int, line: str, **kwargs: Any
+    ) -> Optional[Set]:
         return_value = None
         all_matches = set()
         for completer in self._completers:
@@ -293,28 +326,36 @@ class CumulativeCompleter(BaseCompletionType):
 
 
 class ImportCompletion(BaseCompletionType):
-    def __init__(self, module_gatherer, mode=AutocompleteModes.SIMPLE):
+    def __init__(
+        self,
+        module_gatherer: ModuleGatherer,
+        mode: AutocompleteModes = AutocompleteModes.SIMPLE,
+    ):
         super().__init__(False, mode)
         self.module_gatherer = module_gatherer
 
-    def matches(self, cursor_offset, line, **kwargs):
+    def matches(
+        self, cursor_offset: int, line: str, **kwargs: Any
+    ) -> Optional[Set]:
         return self.module_gatherer.complete(cursor_offset, line)
 
-    def locate(self, current_offset, line):
-        return lineparts.current_word(current_offset, line)
+    def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
+        return lineparts.current_word(cursor_offset, line)
 
-    def format(self, word):
+    def format(self, word: str) -> str:
         return after_last_dot(word)
 
 
 class FilenameCompletion(BaseCompletionType):
-    def __init__(self, mode=AutocompleteModes.SIMPLE):
+    def __init__(self, mode: AutocompleteModes = AutocompleteModes.SIMPLE):
         super().__init__(False, mode)
 
-    def safe_glob(self, pathname) -> Iterator:
+    def safe_glob(self, pathname: str) -> Iterator[str]:
         return glob.iglob(glob.escape(pathname) + "*")
 
-    def matches(self, cursor_offset, line, **kwargs) -> Union[None, set]:
+    def matches(
+        self, cursor_offset: int, line: str, **kwargs: Any
+    ) -> Optional[Set]:
         cs = lineparts.current_string(cursor_offset, line)
         if cs is None:
             return None
@@ -329,10 +370,10 @@ class FilenameCompletion(BaseCompletionType):
             matches.add(filename)
         return matches
 
-    def locate(self, current_offset, line):
-        return lineparts.current_string(current_offset, line)
+    def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
+        return lineparts.current_string(cursor_offset, line)
 
-    def format(self, filename):
+    def format(self, filename: str) -> str:
         filename.rstrip(os.sep).rsplit(os.sep)[-1]
         if os.sep in filename[:-1]:
             return filename[filename.rindex(os.sep, 0, -1) + 1 :]
@@ -344,10 +385,12 @@ class AttrCompletion(BaseCompletionType):
 
     attr_matches_re = LazyReCompile(r"(\w+(\.\w+)*)\.(\w*)")
 
-    def matches(self, cursor_offset, line, **kwargs) -> Union[None, Dict]:
+    def matches(
+        self, cursor_offset: int, line: str, **kwargs: Any
+    ) -> Optional[Set]:
         if "locals_" not in kwargs:
             return None
-        locals_ = kwargs["locals_"]
+        locals_ = cast(Dict[str, Any], kwargs["locals_"])
 
         r = self.locate(cursor_offset, line)
         if r is None:
@@ -374,13 +417,13 @@ class AttrCompletion(BaseCompletionType):
             if few_enough_underscores(r.word.split(".")[-1], m.split(".")[-1])
         }
 
-    def locate(self, current_offset, line):
-        return lineparts.current_dotted_attribute(current_offset, line)
+    def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
+        return lineparts.current_dotted_attribute(cursor_offset, line)
 
-    def format(self, word):
+    def format(self, word: str) -> str:
         return after_last_dot(word)
 
-    def attr_matches(self, text, namespace) -> List:
+    def attr_matches(self, text: str, namespace: Dict[str, Any]) -> List:
         """Taken from rlcompleter.py and bent to my will."""
 
         m = self.attr_matches_re.match(text)
@@ -399,7 +442,7 @@ class AttrCompletion(BaseCompletionType):
         matches = self.attr_lookup(obj, expr, attr)
         return matches
 
-    def attr_lookup(self, obj, expr, attr) -> List:
+    def attr_lookup(self, obj: Any, expr: str, attr: str) -> List:
         """Second half of attr_matches."""
         words = self.list_attributes(obj)
         if inspection.hasattr_safe(obj, "__class__"):
@@ -419,7 +462,7 @@ class AttrCompletion(BaseCompletionType):
                 matches.append(f"{expr}.{word}")
         return matches
 
-    def list_attributes(self, obj) -> List[str]:
+    def list_attributes(self, obj: Any) -> List[str]:
         # TODO: re-implement dir using getattr_static to avoid using
         # AttrCleaner here?
         with inspection.AttrCleaner(obj):
@@ -427,7 +470,9 @@ class AttrCompletion(BaseCompletionType):
 
 
 class DictKeyCompletion(BaseCompletionType):
-    def matches(self, cursor_offset, line, **kwargs) -> Union[None, Dict]:
+    def matches(
+        self, cursor_offset: int, line: str, **kwargs: Any
+    ) -> Optional[Set]:
         if "locals_" not in kwargs:
             return None
         locals_ = kwargs["locals_"]
@@ -435,7 +480,9 @@ class DictKeyCompletion(BaseCompletionType):
         r = self.locate(cursor_offset, line)
         if r is None:
             return None
-        _, _, dexpr = lineparts.current_dict(cursor_offset, line)
+        curDictParts = lineparts.current_dict(cursor_offset, line)
+        assert curDictParts, "current_dict when .locate() truthy"
+        _, _, dexpr = curDictParts
         try:
             obj = safe_eval(dexpr, locals_)
         except EvaluationError:
@@ -448,15 +495,17 @@ class DictKeyCompletion(BaseCompletionType):
         else:
             return None
 
-    def locate(self, current_offset, line) -> Union[LinePart, None]:
-        return lineparts.current_dict_key(current_offset, line)
+    def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
+        return lineparts.current_dict_key(cursor_offset, line)
 
-    def format(self, match):
+    def format(self, match: str) -> str:
         return match[:-1]
 
 
 class MagicMethodCompletion(BaseCompletionType):
-    def matches(self, cursor_offset, line, **kwargs) -> Union[None, Dict]:
+    def matches(
+        self, cursor_offset: int, line: str, **kwargs: Any
+    ) -> Optional[Set]:
         if "current_block" not in kwargs:
             return None
         current_block = kwargs["current_block"]
@@ -468,12 +517,14 @@ class MagicMethodCompletion(BaseCompletionType):
             return None
         return {name for name in MAGIC_METHODS if name.startswith(r.word)}
 
-    def locate(self, current_offset, line) -> Union[LinePart, None]:
-        return lineparts.current_method_definition_name(current_offset, line)
+    def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
+        return lineparts.current_method_definition_name(cursor_offset, line)
 
 
 class GlobalCompletion(BaseCompletionType):
-    def matches(self, cursor_offset, line, **kwargs) -> Union[Set, None]:
+    def matches(
+        self, cursor_offset: int, line: str, **kwargs: Any
+    ) -> Optional[Set]:
         """Compute matches when text is a simple name.
         Return a list of all keywords, built-in functions and names currently
         defined in self.namespace that match.
@@ -503,12 +554,14 @@ class GlobalCompletion(BaseCompletionType):
                     matches.add(_callable_postfix(val, word))
         return matches if matches else None
 
-    def locate(self, current_offset, line) -> Union[LinePart, None]:
-        return lineparts.current_single_word(current_offset, line)
+    def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
+        return lineparts.current_single_word(cursor_offset, line)
 
 
 class ParameterNameCompletion(BaseCompletionType):
-    def matches(self, cursor_offset, line, **kwargs) -> Union[None, Dict]:
+    def matches(
+        self, cursor_offset: int, line: str, **kwargs: Any
+    ) -> Optional[Set]:
         if "argspec" not in kwargs:
             return None
         argspec = kwargs["argspec"]
@@ -529,16 +582,18 @@ class ParameterNameCompletion(BaseCompletionType):
             )
         return matches if matches else None
 
-    def locate(self, current_offset, line) -> Union[LinePart, None]:
-        return lineparts.current_word(current_offset, line)
+    def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
+        return lineparts.current_word(cursor_offset, line)
 
 
 class ExpressionAttributeCompletion(AttrCompletion):
     # could replace attr completion as a more general case with some work
-    def locate(self, current_offset, line) -> Union[LinePart, None]:
-        return lineparts.current_expression_attribute(current_offset, line)
+    def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
+        return lineparts.current_expression_attribute(cursor_offset, line)
 
-    def matches(self, cursor_offset, line, **kwargs) -> Union[Set, Dict, None]:
+    def matches(
+        self, cursor_offset: int, line: str, **kwargs: Any
+    ) -> Optional[Set]:
         if "locals_" not in kwargs:
             return None
         locals_ = kwargs["locals_"]
@@ -547,6 +602,7 @@ class ExpressionAttributeCompletion(AttrCompletion):
             locals_ = __main__.__dict__
 
         attr = self.locate(cursor_offset, line)
+        assert attr, "locate was already truthy for the same call"
 
         try:
             obj = evaluate_current_expression(cursor_offset, line, locals_)
@@ -562,15 +618,24 @@ try:
     import jedi
 except ImportError:
 
-    class MultilineJediCompletion(BaseCompletionType):
-        def matches(self, cursor_offset, line, **kwargs) -> None:
+    class MultilineJediCompletion(BaseCompletionType):  # type: ignore [no-redef]
+        def matches(
+            self, cursor_offset: int, line: str, **kwargs: Any
+        ) -> Optional[Set]:
+            return None
+
+        def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
             return None
 
 
 else:
 
     class JediCompletion(BaseCompletionType):
-        def matches(self, cursor_offset, line, **kwargs) -> Union[None, Dict]:
+        _orig_start: Optional[int]
+
+        def matches(
+            self, cursor_offset: int, line: str, **kwargs: Any
+        ) -> Optional[Set]:
             if "history" not in kwargs:
                 return None
             history = kwargs["history"]
@@ -596,6 +661,7 @@ else:
             else:
                 self._orig_start = None
                 return None
+            assert isinstance(self._orig_start, int)
 
             first_letter = line[self._orig_start : self._orig_start + 1]
 
@@ -610,13 +676,16 @@ else:
                 # case-sensitive matches only
                 return {m for m in matches if m.startswith(first_letter)}
 
-        def locate(self, cursor_offset, line) -> LinePart:
+        def locate(self, cursor_offset: int, line: str) -> LinePart:
+            assert isinstance(self._orig_start, int)
             start = self._orig_start
             end = cursor_offset
             return LinePart(start, end, line[start:end])
 
-    class MultilineJediCompletion(JediCompletion):
-        def matches(self, cursor_offset, line, **kwargs) -> Union[Dict, None]:
+    class MultilineJediCompletion(JediCompletion):  # type: ignore [no-redef]
+        def matches(
+            self, cursor_offset: int, line: str, **kwargs: Any
+        ) -> Optional[Set]:
             if "current_block" not in kwargs or "history" not in kwargs:
                 return None
             current_block = kwargs["current_block"]
@@ -633,7 +702,12 @@ else:
                 return None
 
 
-def get_completer(completers, cursor_offset, line, **kwargs):
+def get_completer(
+    completers: Sequence[BaseCompletionType],
+    cursor_offset: int,
+    line: str,
+    **kwargs: Any,
+) -> Tuple[List[str], Optional[BaseCompletionType]]:
     """Returns a list of matches and an applicable completer
 
     If no matches available, returns a tuple of an empty list and None
@@ -668,7 +742,9 @@ def get_completer(completers, cursor_offset, line, **kwargs):
     return [], None
 
 
-def get_default_completer(mode=AutocompleteModes.SIMPLE, module_gatherer=None):
+def get_default_completer(
+    mode: AutocompleteModes, module_gatherer: ModuleGatherer
+) -> Tuple[BaseCompletionType, ...]:
     return (
         (
             DictKeyCompletion(mode=mode),
@@ -691,7 +767,7 @@ def get_default_completer(mode=AutocompleteModes.SIMPLE, module_gatherer=None):
     )
 
 
-def _callable_postfix(value, word):
+def _callable_postfix(value: Any, word: str) -> str:
     """rlcompleter's _callable_postfix done right."""
     if callable(value):
         word += "("

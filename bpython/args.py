@@ -21,12 +21,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# To gradually migrate to mypy we aren't setting these globally yet
+# mypy: disallow_untyped_defs=True
+# mypy: disallow_untyped_calls=True
+
 """
 Module to handle command line argument parsing, for all front-ends.
 """
 
 import argparse
-from typing import Tuple
+from typing import Tuple, List, Optional, NoReturn, Callable
+import code
 import curtsies
 import cwcwidth
 import greenlet
@@ -50,11 +55,11 @@ class ArgumentParserFailed(ValueError):
 
 
 class RaisingArgumentParser(argparse.ArgumentParser):
-    def error(self, msg):
+    def error(self, msg: str) -> NoReturn:
         raise ArgumentParserFailed()
 
 
-def version_banner(base="bpython") -> str:
+def version_banner(base: str = "bpython") -> str:
     return _("{} version {} on top of Python {} {}").format(
         base,
         __version__,
@@ -67,7 +72,14 @@ def copyright_banner() -> str:
     return _("{} See AUTHORS.rst for details.").format(__copyright__)
 
 
-def parse(args, extras=None, ignore_stdin=False) -> Tuple:
+Options = Tuple[str, str, Callable[[argparse._ArgumentGroup], None]]
+
+
+def parse(
+    args: Optional[List[str]],
+    extras: Options = None,
+    ignore_stdin: bool = False,
+) -> Tuple:
     """Receive an argument list - if None, use sys.argv - parse all args and
     take appropriate action. Also receive optional extra argument: this should
     be a tuple of (title, description, callback)
@@ -197,7 +209,7 @@ def parse(args, extras=None, ignore_stdin=False) -> Tuple:
     logger.info(f"curtsies: {curtsies.__version__}")
     logger.info(f"cwcwidth: {cwcwidth.__version__}")
     logger.info(f"greenlet: {greenlet.__version__}")
-    logger.info(f"pygments: {pygments.__version__}")
+    logger.info(f"pygments: {pygments.__version__}")  # type: ignore
     logger.info(f"requests: {requests.__version__}")
     logger.info(
         "environment:\n{}".format(
@@ -214,7 +226,9 @@ def parse(args, extras=None, ignore_stdin=False) -> Tuple:
     return Config(options.config), options, options.args
 
 
-def exec_code(interpreter, args):
+def exec_code(
+    interpreter: code.InteractiveInterpreter, args: List[str]
+) -> None:
     """
     Helper to execute code in a given interpreter, e.g. to implement the behavior of python3 [-i] file.py
 
@@ -230,9 +244,10 @@ def exec_code(interpreter, args):
     old_argv, sys.argv = sys.argv, args
     sys.path.insert(0, os.path.abspath(os.path.dirname(args[0])))
     spec = importlib.util.spec_from_loader("__console__", loader=None)
+    assert spec
     mod = importlib.util.module_from_spec(spec)
     sys.modules["__console__"] = mod
-    interpreter.locals.update(mod.__dict__)
-    interpreter.locals["__file__"] = args[0]
+    interpreter.locals.update(mod.__dict__)  # type: ignore  # TODO use a more specific type that has a .locals attribute
+    interpreter.locals["__file__"] = args[0]  # type: ignore  # TODO use a more specific type that has a .locals attribute
     interpreter.runsource(source, args[0], "exec")
     sys.argv = old_argv

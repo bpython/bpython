@@ -139,6 +139,14 @@ class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
                 "└──────────────────────────────┘",
                 "Welcome to bpython! Press <F1> f",
             ]
+            if sys.version_info[:2] < (3, 10)
+            else [
+                ">>> an",
+                "┌──────────────────────────────┐",
+                "│ and    anext( any(           │",
+                "└──────────────────────────────┘",
+                "Welcome to bpython! Press <F1> f",
+            ]
         )
         self.assert_paint_ignoring_formatting(screen, (0, 4))
 

@@ -21,6 +21,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# To gradually migrate to mypy we aren't setting these globally yet
+# mypy: disallow_untyped_defs=True
+# mypy: disallow_untyped_calls=True
+
 import os
 import sys
 import locale

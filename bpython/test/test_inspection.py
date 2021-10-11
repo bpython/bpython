@@ -1,4 +1,5 @@
 import os
+import sys
 import unittest
 
 from bpython import inspection
@@ -6,10 +7,12 @@ from bpython.test.fodder import encoding_ascii
 from bpython.test.fodder import encoding_latin1
 from bpython.test.fodder import encoding_utf8
 
+pypy = "PyPy" in sys.version
+
 try:
     import numpy
 except ImportError:
-    numpy = None
+    numpy = None  # type: ignore
 
 
 foo_ascii_only = '''def foo():
@@ -118,6 +121,7 @@ class TestInspection(unittest.TestCase):
         )
         self.assertEqual(encoding, "utf-8")
 
+    @unittest.skipIf(pypy, "pypy builtin signatures aren't complete")
     def test_getfuncprops_print(self):
         props = inspection.getfuncprops("print", print)
 
@@ -187,7 +191,7 @@ class OverriddenMRO:
     a = 1
 
 
-member_descriptor = type(Slots.s1)
+member_descriptor = type(Slots.s1)  # type: ignore
 
 
 class TestSafeGetAttribute(unittest.TestCase):

@@ -14,7 +14,7 @@ except ImportError:
 
 else:
 
-    class ModuleChangedEventHandler(FileSystemEventHandler):
+    class ModuleChangedEventHandler(FileSystemEventHandler):  # type: ignore [no-redef]
         def __init__(self, paths, on_change):
             self.dirs = defaultdict(set)
             self.on_change = on_change
