@@ -178,10 +178,17 @@ for language in os.listdir(translations_dir):
         mo_files.append(mo_subpath)
 
 setup(
-    version=version,
-    author=__author__,
-    author_email="robertanthonyfarrell@gmail.com",
+    name='bpython-django',
+    version="0.22.1",
+    author='Mohamed ElKalioby',
+    author_email="mkalioby@mkalioby.com",
+    description='Customized bpython for Django Projects',
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     data_files=data_files,
+    url = 'https://github.com/mkalioby/bpython-django/',
+    download_url='https://github.com/mkalioby/bpython-django/',
+    python_requires=">=3.6",
     package_data={
         "bpython": ["sample-config"],
         "bpython.translations": mo_files,
@@ -189,6 +196,26 @@ setup(
     },
     cmdclass=cmdclass,
     test_suite="bpython.test",
+classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "Environment :: Web Environment",
+        "Framework :: Django",
+        "Framework :: Django :: 2.0",
+        "Framework :: Django :: 2.1",
+        "Framework :: Django :: 2.2",
+        "Framework :: Django :: 3.0",
+        "Framework :: Django :: 3.1",
+        "Intended Audience :: Developers",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Topic :: Software Development :: Libraries :: Python Modules"
+    ]
 )
 
 # vim: fileencoding=utf-8 sw=4 ts=4 sts=4 ai et sta
