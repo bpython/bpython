@@ -28,6 +28,7 @@ In order to provide fancy completion, some code can be executed safely.
 import ast
 import sys
 import builtins
+from typing import Dict, Any
 
 from . import line as line_properties
 from .inspection import getattr_safe
@@ -44,7 +45,7 @@ class EvaluationError(Exception):
     """Raised if an exception occurred in safe_eval."""
 
 
-def safe_eval(expr, namespace):
+def safe_eval(expr: str, namespace: Dict[str, Any]) -> Any:
     """Not all that safe, just catches some errors"""
     try:
         return eval(expr, namespace)
@@ -214,7 +215,9 @@ def find_attribute_with_name(node, name):
             return r
 
 
-def evaluate_current_expression(cursor_offset, line, namespace=None):
+def evaluate_current_expression(
+    cursor_offset: int, line: str, namespace: Dict[str, Any] = None
+):
     """
     Return evaluated expression to the right of the dot of current attribute.
 

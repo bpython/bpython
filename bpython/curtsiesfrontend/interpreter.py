@@ -1,4 +1,5 @@
 import sys
+from typing import Any, Dict
 
 from pygments.token import Generic, Token, Keyword, Name, Comment, String
 from pygments.token import Error, Literal, Number, Operator, Punctuation
@@ -59,7 +60,7 @@ class BPythonFormatter(Formatter):
 
 
 class Interp(ReplInterpreter):
-    def __init__(self, locals=None, encoding=None):
+    def __init__(self, locals: Dict[str, Any] = None, encoding=None):
         """Constructor.
 
         We include an argument for the outfile to pass to the formatter for it
@@ -75,7 +76,7 @@ class Interp(ReplInterpreter):
             Accepts FmtStrs so interpreters can output them"""
             sys.stderr.write(str(err_line))
 
-        self.write = write
+        self.write = write  # type: ignore
         self.outfile = self
 
     def writetb(self, lines):
