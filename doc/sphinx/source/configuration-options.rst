@@ -305,7 +305,7 @@ Brings up sincerely cheerful description of bpython features and current key bin
 .. versionadded:: 0.14
 
 incremental_search
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 Default: M-s
 
 Perform incremental search on all stored lines in the history.
