@@ -1,7 +1,7 @@
 # German translations for bpython.
-# Copyright (C) 2012-2013 bpython developers
+# Copyright (C) 2012-2021 bpython developers
 # This file is distributed under the same license as the bpython project.
-# Sebastian Ramacher <sebastian+dev@ramacher.at>, 2012-2013.
+# Sebastian Ramacher <sebastian@ramacher.at>, 2012-2021.
 #
 msgid ""
 msgstr ""
@@ -64,7 +64,7 @@ msgstr "Datei für Ausgabe von Log-Nachrichten"
 
 #: bpython/args.py:146
 msgid "File to execute and additional arguments passed on to the executed script."
-msgstr ""
+msgstr "Auszuführende Datei und zusätzliche Argumente, die an das Script übergeben werden sollen."
 
 #: bpython/cli.py:312 bpython/urwid.py:537
 msgid "y"
@@ -206,20 +206,20 @@ msgstr "Inhalt wurde in Zwischenablage kopiert."
 
 #: bpython/repl.py:884
 msgid "Pastebin buffer? (y/N) "
-msgstr ""
+msgstr "Buffer bei Pastebin hochladen? (j/N)"
 
 #: bpython/repl.py:886
 msgid "Pastebin aborted."
-msgstr ""
+msgstr "Hochladen zu Pastebin abgebrochen."
 
 #: bpython/repl.py:894
 #, python-format
 msgid "Duplicate pastebin. Previous URL: %s. Removal URL: %s"
-msgstr ""
+msgstr "Duplizierte Daten zu Pastebin hochgeladen. Vorherige URL: %s. URL zum Löschen: %s"
 
 #: bpython/repl.py:900
 msgid "Posting data to pastebin..."
-msgstr "Lade Daten hoch..."
+msgstr "Lade Daten hoch zu Pastebin..."
 
 #: bpython/repl.py:904
 #, python-format
