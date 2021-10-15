@@ -42,12 +42,9 @@ from typing import (
     Dict,
     Iterator,
     List,
-    Match,
     Optional,
     Set,
-    Union,
     Tuple,
-    Type,
     Sequence,
 )
 from . import inspection
@@ -209,9 +206,9 @@ def _method_match_substring(word: str, size: int, text: str) -> bool:
     return text in word
 
 
-def _method_match_fuzzy(word: str, size: int, text: str) -> Optional[Match]:
+def _method_match_fuzzy(word: str, size: int, text: str) -> bool:
     s = r".*%s.*" % ".*".join(list(text))
-    return re.search(s, word)
+    return re.search(s, word) is not None
 
 
 _MODES_MAP = {
