@@ -480,9 +480,11 @@ class DictKeyCompletion(BaseCompletionType):
         r = self.locate(cursor_offset, line)
         if r is None:
             return None
-        curDictParts = lineparts.current_dict(cursor_offset, line)
-        assert curDictParts, "current_dict when .locate() truthy"
-        _, _, dexpr = curDictParts
+        current_dict_parts = lineparts.current_dict(cursor_offset, line)
+        if current_dict_parts is None:
+            return None
+
+        _, _, dexpr = current_dict_parts
         try:
             obj = safe_eval(dexpr, locals_)
         except EvaluationError:
