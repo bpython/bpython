@@ -197,28 +197,28 @@ def few_enough_underscores(current: str, match: str) -> bool:
     return not match.startswith("_")
 
 
-def method_match_none(word: str, size: int, text: str) -> bool:
+def _method_match_none(word: str, size: int, text: str) -> bool:
     return False
 
 
-def method_match_simple(word: str, size: int, text: str) -> bool:
+def _method_match_simple(word: str, size: int, text: str) -> bool:
     return word[:size] == text
 
 
-def method_match_substring(word: str, size: int, text: str) -> bool:
+def _method_match_substring(word: str, size: int, text: str) -> bool:
     return text in word
 
 
-def method_match_fuzzy(word: str, size: int, text: str) -> Optional[Match]:
+def _method_match_fuzzy(word: str, size: int, text: str) -> Optional[Match]:
     s = r".*%s.*" % ".*".join(list(text))
     return re.search(s, word)
 
 
-MODES_MAP = {
-    AutocompleteModes.NONE: method_match_none,
-    AutocompleteModes.SIMPLE: method_match_simple,
-    AutocompleteModes.SUBSTRING: method_match_substring,
-    AutocompleteModes.FUZZY: method_match_fuzzy,
+_MODES_MAP = {
+    AutocompleteModes.NONE: _method_match_none,
+    AutocompleteModes.SIMPLE: _method_match_simple,
+    AutocompleteModes.SUBSTRING: _method_match_substring,
+    AutocompleteModes.FUZZY: _method_match_fuzzy,
 }
 
 
@@ -231,7 +231,7 @@ class BaseCompletionType:
         mode: AutocompleteModes = AutocompleteModes.SIMPLE,
     ) -> None:
         self._shown_before_tab = shown_before_tab
-        self.method_match = MODES_MAP[mode]
+        self.method_match = _MODES_MAP[mode]
 
     @abc.abstractmethod
     def matches(
