@@ -18,13 +18,13 @@ New features:
 
 Fixes:
 
+* #700, #884: Fix writing of b"" on fake stdout
 * #879: Iterate over all completers until a successful one is found
 * #882: Handle errors in theme configuration without crashing
-* #884: Fix writing of b"" on fake stdout
 * #888: Read PYTHONSTARTUP with utf8 as encoding
 * #896: Use default sys.ps1 and sys.ps2 if user specified ones are not usable
 * #902: Do not crash when encountering unreadable files while processing modules for import completion
-* #909: Fix sys.stdin.readlin
+* #909: Fix sys.stdin.readline
 * #917: Fix tab completion for dict keys
 * #919: Replicate python behavior when running with -i and a non-existing file
 
