@@ -207,7 +207,7 @@ def _method_match_substring(word: str, size: int, text: str) -> bool:
 
 
 def _method_match_fuzzy(word: str, size: int, text: str) -> bool:
-    s = r".*%s.*" % ".*".join(list(text))
+    s = r".*{}.*".format(".*".join(c for c in text))
     return re.search(s, word) is not None
 
 
