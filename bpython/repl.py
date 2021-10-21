@@ -601,8 +601,6 @@ class Repl:
             if inspect.isclass(f):
                 class_f = None
 
-                if hasattr(f, "__init__") and f.__init__ is not object.__init__:
-                    class_f = f.__init__
                 if (
                     (not class_f or not inspection.getfuncprops(func, class_f))
                     and hasattr(f, "__new__")

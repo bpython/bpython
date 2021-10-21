@@ -482,6 +482,34 @@ class TestRepl(unittest.TestCase):
             self.repl.matches_iter.matches, ["abc=", "abd=", "abs("]
         )
 
+    def test_parameter_advanced_on_class(self):
+        self.repl = FakeRepl(
+            {"autocomplete_mode": autocomplete.AutocompleteModes.SIMPLE}
+        )
+        self.set_input_line("TestCls(app")
+
+        code = """
+        import inspect
+
+        class TestCls:
+            # A class with boring __init__ typing
+            def __init__(self, *args, **kwargs):
+                pass
+            # But that uses super exotic typings recognized by inspect.signature
+            __signature__ = inspect.Signature([
+                inspect.Parameter("apple", inspect.Parameter.POSITIONAL_ONLY),
+                inspect.Parameter("apple2", inspect.Parameter.KEYWORD_ONLY),
+                inspect.Parameter("pinetree", inspect.Parameter.KEYWORD_ONLY),
+            ])
+        """
+        for line in code.split("\n"):
+            print(line[8:])
+            self.repl.push(line[8:])
+
+        self.assertTrue(self.repl.complete())
+        self.assertTrue(hasattr(self.repl.matches_iter, "matches"))
+        self.assertEqual(self.repl.matches_iter.matches, ["apple2=", "apple="])
+
 
 class TestCliRepl(unittest.TestCase):
     def setUp(self):
