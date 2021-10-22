@@ -27,6 +27,8 @@ Fixes:
 * #909: Fix sys.stdin.readline
 * #917: Fix tab completion for dict keys
 * #919: Replicate python behavior when running with -i and a non-existing file
+* #932: Fix handling of __signature__ for completion.
+  Thanks to gpotter2
 
 Changes to dependencies:
 
