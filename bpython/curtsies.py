@@ -60,7 +60,10 @@ class FullCurtsiesRepl(BaseRepl):
         interp: code.InteractiveInterpreter = None,
     ) -> None:
         self.input_generator = curtsies.input.Input(
-            keynames="curtsies", sigint_event=True, paste_threshold=None
+            keynames="curtsies",
+            sigint_event=True,
+            paste_threshold=None,
+            disable_terminal_start_stop=True,
         )
         self.window = curtsies.window.CursorAwareWindow(
             sys.stdout,
