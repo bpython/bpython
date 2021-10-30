@@ -144,11 +144,6 @@ def parse(args, extras=None, ignore_stdin=False) -> Tuple:
         "-L",
         help=_("Log output file"),
     )
-    parser.add_argument(
-        "--brackets-completion",
-        "-B",
-        help=_("Enable brackets auto-completion"),
-    )
 
     if extras is not None:
         extras_group = parser.add_argument_group(extras[0], extras[1])
