@@ -791,6 +791,8 @@ class BaseRepl(Repl):
             self.add_normal_character(" ")
         elif e in ["(", "{", '"', "'", "["]:
             self.insert_char_pair(e)
+        elif e in [")", "}", '"', "'", "["]:
+            self.insert_char_pair_end(e)
         else:
             self.add_normal_character(e)
 
@@ -799,6 +801,11 @@ class BaseRepl(Repl):
         self.add_normal_character(e)
         self.add_normal_character(closing_char)
         self.cursor_offset = len(self.current_line) - 1
+
+    def insert_char_pair_end(self, e):
+        if self.current_line[self.cursor_offset] != e:
+            self.add_normal_character(e)
+        self.cursor_offset = len(self.current_line) + 2
 
     def get_closing_char(self, e):
         closing_char_map = {"(": ")", "{": "}", "[": "]", '"': '"', "'": "'"}
