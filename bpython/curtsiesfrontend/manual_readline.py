@@ -236,9 +236,8 @@ def cursor_on_closing_char_pair(cursor_offset, line):
     if cursor_offset < len(line):
         cur_char = line[cursor_offset]
         prev_char = line[cursor_offset - 1]
-        if prev_char in closing_char_map.keys():
-            if cur_char == closing_char_map[prev_char]:
-                return True
+        if cur_char in closing_char_map.values():
+            return True
     return False
 
 
