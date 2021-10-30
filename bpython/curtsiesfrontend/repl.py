@@ -930,11 +930,15 @@ class BaseRepl(Repl):
             for unused in range(to_add):
                 self.add_normal_character(" ")
             return
-        on_closing_char, _ = cursor_on_closing_char_pair(
-            self._cursor_offset, self._current_line
-        )
-        if on_closing_char:
-            self._cursor_offset += 1
+        # if cursor on closing character from pair,
+        # moves cursor behind it on tab
+        # ? should we leave it here as default?
+        if self.config.brackets_completion:
+            on_closing_char, _ = cursor_on_closing_char_pair(
+                self._cursor_offset, self._current_line
+            )
+            if on_closing_char:
+                self._cursor_offset += 1
         # run complete() if we don't already have matches
         if len(self.matches_iter.matches) == 0:
             self.list_win_visible = self.complete(tab=True)
