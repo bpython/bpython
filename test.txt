@@ -1,0 +1,250 @@
+2021-10-30 12:46:27,154: bpython.args: INFO: Starting bpython 0.22.dev114
+2021-10-30 12:46:27,154: bpython.args: INFO: Python /home/administrator/github/personal/bpython-dev/bin/python3: sys.version_info(major=3, minor=8, micro=10, releaselevel='final', serial=0)
+2021-10-30 12:46:27,155: bpython.args: INFO: curtsies: 0.3.7
+2021-10-30 12:46:27,155: bpython.args: INFO: cwcwidth: 0.1.4
+2021-10-30 12:46:27,155: bpython.args: INFO: greenlet: 1.1.2
+2021-10-30 12:46:27,155: bpython.args: INFO: pygments: 2.10.0
+2021-10-30 12:46:27,155: bpython.args: INFO: requests: 2.26.0
+2021-10-30 12:46:27,155: bpython.args: INFO: environment:
+LANG: en_US.UTF-8
+LC_ADDRESS: sk_SK.UTF-8
+LC_IDENTIFICATION: sk_SK.UTF-8
+LC_MEASUREMENT: sk_SK.UTF-8
+LC_MONETARY: sk_SK.UTF-8
+LC_NAME: sk_SK.UTF-8
+LC_NUMERIC: sk_SK.UTF-8
+LC_PAPER: sk_SK.UTF-8
+LC_TELEPHONE: sk_SK.UTF-8
+LC_TIME: sk_SK.UTF-8
+TERM: xterm-256color
+2021-10-30 12:46:27,156: curtsies.window: DEBUG: -------initializing Window object <curtsies.window.CursorAwareWindow object at 0x7f35864c0d00>------
+2021-10-30 12:46:27,157: bpython.curtsiesfrontend.repl: DEBUG: starting init
+2021-10-30 12:46:27,157: bpython.curtsiesfrontend.repl: DEBUG: starting parent init
+2021-10-30 12:46:27,168: curtsies.window: DEBUG: initial top_usable_row: 71
+2021-10-30 12:46:27,168: curtsies.window: DEBUG: running BaseWindow.__enter__
+2021-10-30 12:46:27,170: bpython.curtsiesfrontend.repl: DEBUG: processing event <bpython.curtsiesfrontend.events.RunStartupFileEvent object at 0x7f358645acd0>
+2021-10-30 12:46:27,218: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:27,218: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:27,218: bpython.curtsiesfrontend.repl: DEBUG: no history issues. start 0
+2021-10-30 12:46:27,218: curtsies.formatstringarray: DEBUG: slice: (slice(None, 0, None), slice(None, 140, None))
+2021-10-30 12:46:27,218: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:27,218: curtsies.formatstringarray: DEBUG: colslice: slice(None, 140, None)
+2021-10-30 12:46:27,219: bpython.curtsiesfrontend.repl: DEBUG: ---current line row slice 0, 1
+2021-10-30 12:46:27,219: bpython.curtsiesfrontend.repl: DEBUG: ---current line col slice 0, 140
+2021-10-30 12:46:27,219: curtsies.formatstringarray: DEBUG: slice: (slice(0, 1, None), slice(0, 140, None))
+2021-10-30 12:46:27,219: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:27,219: curtsies.formatstringarray: DEBUG: colslice: slice(0, 140, None)
+2021-10-30 12:46:27,219: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:27,219: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:27,219: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:27,220: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:27,220: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:27,220: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:27,220: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:27,220: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:27,220: bpython.curtsiesfrontend.repl: DEBUG: about to exit: False
+2021-10-30 12:46:27,220: curtsies.formatstringarray: DEBUG: slice: (1, slice(None, None, None))
+2021-10-30 12:46:27,220: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:27,220: curtsies.formatstringarray: DEBUG: colslice: slice(None, None, None)
+2021-10-30 12:46:27,221: bpython.curtsiesfrontend.repl: DEBUG: returning arr of size (2, 140)
+2021-10-30 12:46:27,221: bpython.curtsiesfrontend.repl: DEBUG: cursor pos: (0, 4)
+2021-10-30 12:46:27,221: curtsies.window: DEBUG: sending scroll down message w/ cursor on bottom line
+2021-10-30 12:46:27,221: curtsies.window: DEBUG: new top_usable_row: 70
+2021-10-30 12:46:27,221: curtsies.window: DEBUG: lines in last lines by row: dict_keys([])
+2021-10-30 12:46:27,221: curtsies.window: DEBUG: lines in current lines by row: dict_keys([70, 71])
+2021-10-30 12:46:28,486: bpython.curtsiesfrontend.repl: DEBUG: processing event '('
+2021-10-30 12:46:28,492: bpython.curtsiesfrontend.repl: DEBUG: Display line '()' -> on_magenta(bold(red('(')))+bold(yellow(')'))
+2021-10-30 12:46:28,493: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+on_magenta(bold(red('(')))+bold(yellow(')'))
+2021-10-30 12:46:28,493: bpython.curtsiesfrontend.repl: DEBUG: no history issues. start 0
+2021-10-30 12:46:28,493: curtsies.formatstringarray: DEBUG: slice: (slice(None, 0, None), slice(None, 140, None))
+2021-10-30 12:46:28,493: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:28,493: curtsies.formatstringarray: DEBUG: colslice: slice(None, 140, None)
+2021-10-30 12:46:28,493: bpython.curtsiesfrontend.repl: DEBUG: ---current line row slice 0, 1
+2021-10-30 12:46:28,493: bpython.curtsiesfrontend.repl: DEBUG: ---current line col slice 0, 140
+2021-10-30 12:46:28,493: curtsies.formatstringarray: DEBUG: slice: (slice(0, 1, None), slice(0, 140, None))
+2021-10-30 12:46:28,493: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:28,493: curtsies.formatstringarray: DEBUG: colslice: slice(0, 140, None)
+2021-10-30 12:46:28,494: bpython.curtsiesfrontend.repl: DEBUG: Display line '()' -> on_magenta(bold(red('(')))+bold(yellow(')'))
+2021-10-30 12:46:28,494: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+on_magenta(bold(red('(')))+bold(yellow(')'))
+2021-10-30 12:46:28,494: bpython.curtsiesfrontend.repl: DEBUG: Display line '()' -> on_magenta(bold(red('(')))+bold(yellow(')'))
+2021-10-30 12:46:28,494: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+on_magenta(bold(red('(')))+bold(yellow(')'))
+2021-10-30 12:46:28,495: bpython.curtsiesfrontend.repl: DEBUG: Display line '()' -> on_magenta(bold(red('(')))+bold(yellow(')'))
+2021-10-30 12:46:28,495: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+on_magenta(bold(red('(')))+bold(yellow(')'))
+2021-10-30 12:46:28,495: bpython.curtsiesfrontend.repl: DEBUG: Display line '()' -> on_magenta(bold(red('(')))+bold(yellow(')'))
+2021-10-30 12:46:28,495: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+on_magenta(bold(red('(')))+bold(yellow(')'))
+2021-10-30 12:46:28,495: bpython.curtsiesfrontend.repl: DEBUG: about to exit: False
+2021-10-30 12:46:28,495: curtsies.formatstringarray: DEBUG: slice: (1, slice(None, None, None))
+2021-10-30 12:46:28,495: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:28,495: curtsies.formatstringarray: DEBUG: colslice: slice(None, None, None)
+2021-10-30 12:46:28,496: bpython.curtsiesfrontend.repl: DEBUG: returning arr of size (2, 140)
+2021-10-30 12:46:28,496: bpython.curtsiesfrontend.repl: DEBUG: cursor pos: (0, 5)
+2021-10-30 12:46:28,496: curtsies.window: DEBUG: lines in last lines by row: dict_keys([70, 71])
+2021-10-30 12:46:28,496: curtsies.window: DEBUG: lines in current lines by row: dict_keys([70, 71])
+2021-10-30 12:46:29,836: bpython.curtsiesfrontend.repl: DEBUG: processing event '('
+2021-10-30 12:46:29,839: bpython.curtsiesfrontend.repl: DEBUG: Display line '(())' -> on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:29,841: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:29,843: bpython.curtsiesfrontend.repl: DEBUG: no history issues. start 0
+2021-10-30 12:46:29,843: curtsies.formatstringarray: DEBUG: slice: (slice(None, 0, None), slice(None, 140, None))
+2021-10-30 12:46:29,843: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:29,843: curtsies.formatstringarray: DEBUG: colslice: slice(None, 140, None)
+2021-10-30 12:46:29,844: bpython.curtsiesfrontend.repl: DEBUG: ---current line row slice 0, 1
+2021-10-30 12:46:29,844: bpython.curtsiesfrontend.repl: DEBUG: ---current line col slice 0, 140
+2021-10-30 12:46:29,844: curtsies.formatstringarray: DEBUG: slice: (slice(0, 1, None), slice(0, 140, None))
+2021-10-30 12:46:29,844: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:29,845: curtsies.formatstringarray: DEBUG: colslice: slice(0, 140, None)
+2021-10-30 12:46:29,846: bpython.curtsiesfrontend.repl: DEBUG: Display line '(())' -> on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:29,846: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:29,848: bpython.curtsiesfrontend.repl: DEBUG: Display line '(())' -> on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:29,849: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:29,850: bpython.curtsiesfrontend.repl: DEBUG: Display line '(())' -> on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:29,850: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:29,851: bpython.curtsiesfrontend.repl: DEBUG: Display line '(())' -> on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:29,852: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:29,852: bpython.curtsiesfrontend.repl: DEBUG: about to exit: False
+2021-10-30 12:46:29,853: curtsies.formatstringarray: DEBUG: slice: (1, slice(None, None, None))
+2021-10-30 12:46:29,853: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:29,853: curtsies.formatstringarray: DEBUG: colslice: slice(None, None, None)
+2021-10-30 12:46:29,854: bpython.curtsiesfrontend.repl: DEBUG: returning arr of size (2, 140)
+2021-10-30 12:46:29,854: bpython.curtsiesfrontend.repl: DEBUG: cursor pos: (0, 7)
+2021-10-30 12:46:29,855: curtsies.window: DEBUG: lines in last lines by row: dict_keys([70, 71])
+2021-10-30 12:46:29,855: curtsies.window: DEBUG: lines in current lines by row: dict_keys([70, 71])
+2021-10-30 12:46:30,159: curtsies.input: DEBUG: popping an event! (1635590790.1589813, <RefreshRequestEvent for -0.0009102821350097656 seconds from now>) []
+2021-10-30 12:46:30,160: bpython.curtsiesfrontend.repl: DEBUG: processing event <RefreshRequestEvent for -0.0016219615936279297 seconds from now>
+2021-10-30 12:46:30,162: bpython.curtsiesfrontend.repl: DEBUG: Display line '(())' -> on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:30,162: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:30,163: bpython.curtsiesfrontend.repl: DEBUG: no history issues. start 0
+2021-10-30 12:46:30,164: curtsies.formatstringarray: DEBUG: slice: (slice(None, 0, None), slice(None, 140, None))
+2021-10-30 12:46:30,164: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:30,164: curtsies.formatstringarray: DEBUG: colslice: slice(None, 140, None)
+2021-10-30 12:46:30,164: bpython.curtsiesfrontend.repl: DEBUG: ---current line row slice 0, 1
+2021-10-30 12:46:30,165: bpython.curtsiesfrontend.repl: DEBUG: ---current line col slice 0, 140
+2021-10-30 12:46:30,165: curtsies.formatstringarray: DEBUG: slice: (slice(0, 1, None), slice(0, 140, None))
+2021-10-30 12:46:30,165: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:30,165: curtsies.formatstringarray: DEBUG: colslice: slice(0, 140, None)
+2021-10-30 12:46:30,167: bpython.curtsiesfrontend.repl: DEBUG: Display line '(())' -> on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:30,167: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:30,169: bpython.curtsiesfrontend.repl: DEBUG: Display line '(())' -> on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:30,170: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:30,171: bpython.curtsiesfrontend.repl: DEBUG: Display line '(())' -> on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:30,171: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:30,172: bpython.curtsiesfrontend.repl: DEBUG: Display line '(())' -> on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:30,173: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+on_magenta(bold(red('(')))+yellow('(')+yellow(')')+bold(yellow(')'))
+2021-10-30 12:46:30,173: bpython.curtsiesfrontend.repl: DEBUG: about to exit: False
+2021-10-30 12:46:30,174: bpython.curtsiesfrontend.repl: DEBUG: returning arr of size (1, 140)
+2021-10-30 12:46:30,174: bpython.curtsiesfrontend.repl: DEBUG: cursor pos: (0, 7)
+2021-10-30 12:46:30,174: curtsies.window: DEBUG: lines in last lines by row: dict_keys([70, 71])
+2021-10-30 12:46:30,175: curtsies.window: DEBUG: lines in current lines by row: dict_keys([70, 71])
+2021-10-30 12:46:31,990: bpython.curtsiesfrontend.repl: DEBUG: processing event '<Ctrl-d>'
+2021-10-30 12:46:31,992: bpython.curtsiesfrontend.repl: DEBUG: Display line '(()' -> yellow('(')+on_magenta(bold(red('(')))+on_magenta(bold(red(')')))
+2021-10-30 12:46:31,993: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+yellow('(')+on_magenta(bold(red('(')))+on_magenta(bold(red(')')))
+2021-10-30 12:46:31,994: bpython.curtsiesfrontend.repl: DEBUG: no history issues. start 0
+2021-10-30 12:46:31,994: curtsies.formatstringarray: DEBUG: slice: (slice(None, 0, None), slice(None, 140, None))
+2021-10-30 12:46:31,994: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:31,994: curtsies.formatstringarray: DEBUG: colslice: slice(None, 140, None)
+2021-10-30 12:46:31,994: bpython.curtsiesfrontend.repl: DEBUG: ---current line row slice 0, 1
+2021-10-30 12:46:31,994: bpython.curtsiesfrontend.repl: DEBUG: ---current line col slice 0, 140
+2021-10-30 12:46:31,994: curtsies.formatstringarray: DEBUG: slice: (slice(0, 1, None), slice(0, 140, None))
+2021-10-30 12:46:31,994: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:31,994: curtsies.formatstringarray: DEBUG: colslice: slice(0, 140, None)
+2021-10-30 12:46:31,995: bpython.curtsiesfrontend.repl: DEBUG: Display line '(()' -> yellow('(')+on_magenta(bold(red('(')))+on_magenta(bold(red(')')))
+2021-10-30 12:46:31,995: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+yellow('(')+on_magenta(bold(red('(')))+on_magenta(bold(red(')')))
+2021-10-30 12:46:31,996: bpython.curtsiesfrontend.repl: DEBUG: Display line '(()' -> yellow('(')+on_magenta(bold(red('(')))+on_magenta(bold(red(')')))
+2021-10-30 12:46:31,996: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+yellow('(')+on_magenta(bold(red('(')))+on_magenta(bold(red(')')))
+2021-10-30 12:46:31,996: bpython.curtsiesfrontend.repl: DEBUG: Display line '(()' -> yellow('(')+on_magenta(bold(red('(')))+on_magenta(bold(red(')')))
+2021-10-30 12:46:31,996: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+yellow('(')+on_magenta(bold(red('(')))+on_magenta(bold(red(')')))
+2021-10-30 12:46:31,997: bpython.curtsiesfrontend.repl: DEBUG: Display line '(()' -> yellow('(')+on_magenta(bold(red('(')))+on_magenta(bold(red(')')))
+2021-10-30 12:46:31,997: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+yellow('(')+on_magenta(bold(red('(')))+on_magenta(bold(red(')')))
+2021-10-30 12:46:31,997: bpython.curtsiesfrontend.repl: DEBUG: about to exit: False
+2021-10-30 12:46:31,997: bpython.curtsiesfrontend.repl: DEBUG: returning arr of size (1, 140)
+2021-10-30 12:46:31,997: bpython.curtsiesfrontend.repl: DEBUG: cursor pos: (0, 7)
+2021-10-30 12:46:32,613: curtsies.window: DEBUG: lines in last lines by row: dict_keys([70, 71])
+2021-10-30 12:46:32,613: curtsies.window: DEBUG: lines in current lines by row: dict_keys([70, 71])
+2021-10-30 12:46:32,614: bpython.curtsiesfrontend.repl: DEBUG: processing event <SigInt Event>
+2021-10-30 12:46:32,614: bpython.curtsiesfrontend.repl: DEBUG: received sigint event
+2021-10-30 12:46:32,615: bpython.curtsiesfrontend.repl: DEBUG: Display line '(()' -> yellow('(')+yellow('(')+yellow(')')
+2021-10-30 12:46:32,616: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')+yellow('(')+yellow('(')+yellow(')')
+2021-10-30 12:46:32,618: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:32,618: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:32,619: bpython.curtsiesfrontend.repl: DEBUG: no history issues. start 2
+2021-10-30 12:46:32,619: curtsies.formatstringarray: DEBUG: slice: (slice(None, 2, None), slice(None, 140, None))
+2021-10-30 12:46:32,620: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:32,620: curtsies.formatstringarray: DEBUG: colslice: slice(None, 140, None)
+2021-10-30 12:46:32,620: bpython.curtsiesfrontend.repl: DEBUG: ---current line row slice 2, 3
+2021-10-30 12:46:32,620: bpython.curtsiesfrontend.repl: DEBUG: ---current line col slice 0, 140
+2021-10-30 12:46:32,620: curtsies.formatstringarray: DEBUG: slice: (slice(2, 3, None), slice(0, 140, None))
+2021-10-30 12:46:32,621: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:32,621: curtsies.formatstringarray: DEBUG: colslice: slice(0, 140, None)
+2021-10-30 12:46:32,621: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:32,621: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:32,621: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:32,621: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:32,622: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:32,622: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:32,622: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:32,622: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:32,622: bpython.curtsiesfrontend.repl: DEBUG: about to exit: False
+2021-10-30 12:46:32,622: bpython.curtsiesfrontend.repl: DEBUG: returning arr of size (3, 140)
+2021-10-30 12:46:32,622: bpython.curtsiesfrontend.repl: DEBUG: cursor pos: (2, 4)
+2021-10-30 12:46:32,622: curtsies.window: DEBUG: sending scroll down message w/ cursor on bottom line
+2021-10-30 12:46:32,622: curtsies.window: DEBUG: new top_usable_row: 69
+2021-10-30 12:46:32,623: curtsies.window: DEBUG: lines in last lines by row: dict_keys([70, 71])
+2021-10-30 12:46:32,623: curtsies.window: DEBUG: lines in current lines by row: dict_keys([69, 70, 71])
+2021-10-30 12:46:33,256: bpython.curtsiesfrontend.repl: DEBUG: processing event <SigInt Event>
+2021-10-30 12:46:33,256: bpython.curtsiesfrontend.repl: DEBUG: received sigint event
+2021-10-30 12:46:33,256: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:33,256: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:33,257: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:33,257: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:33,257: bpython.curtsiesfrontend.repl: DEBUG: no history issues. start 4
+2021-10-30 12:46:33,257: curtsies.formatstringarray: DEBUG: slice: (slice(None, 4, None), slice(None, 140, None))
+2021-10-30 12:46:33,257: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:33,258: curtsies.formatstringarray: DEBUG: colslice: slice(None, 140, None)
+2021-10-30 12:46:33,258: bpython.curtsiesfrontend.repl: DEBUG: ---current line row slice 4, 5
+2021-10-30 12:46:33,258: bpython.curtsiesfrontend.repl: DEBUG: ---current line col slice 0, 140
+2021-10-30 12:46:33,258: curtsies.formatstringarray: DEBUG: slice: (slice(4, 5, None), slice(0, 140, None))
+2021-10-30 12:46:33,258: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:33,258: curtsies.formatstringarray: DEBUG: colslice: slice(0, 140, None)
+2021-10-30 12:46:33,258: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:33,258: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:33,259: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:33,259: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:33,259: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:33,259: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:33,259: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:33,259: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:33,259: bpython.curtsiesfrontend.repl: DEBUG: about to exit: False
+2021-10-30 12:46:33,259: bpython.curtsiesfrontend.repl: DEBUG: returning arr of size (5, 140)
+2021-10-30 12:46:33,259: bpython.curtsiesfrontend.repl: DEBUG: cursor pos: (4, 4)
+2021-10-30 12:46:33,260: curtsies.window: DEBUG: sending scroll down message w/ cursor on bottom line
+2021-10-30 12:46:33,260: curtsies.window: DEBUG: new top_usable_row: 68
+2021-10-30 12:46:33,260: curtsies.window: DEBUG: sending scroll down message w/ cursor on bottom line
+2021-10-30 12:46:33,260: curtsies.window: DEBUG: new top_usable_row: 67
+2021-10-30 12:46:33,260: curtsies.window: DEBUG: lines in last lines by row: dict_keys([69, 70, 71])
+2021-10-30 12:46:33,260: curtsies.window: DEBUG: lines in current lines by row: dict_keys([67, 68, 69, 70, 71])
+2021-10-30 12:46:33,622: bpython.curtsiesfrontend.repl: DEBUG: processing event '<Ctrl-d>'
+2021-10-30 12:46:33,622: bpython.curtsiesfrontend.repl: DEBUG: unhighlighting paren for exit
+2021-10-30 12:46:33,624: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:33,624: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:33,625: bpython.curtsiesfrontend.repl: DEBUG: no history issues. start 4
+2021-10-30 12:46:33,626: curtsies.formatstringarray: DEBUG: slice: (slice(None, 4, None), slice(None, 140, None))
+2021-10-30 12:46:33,626: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:33,627: curtsies.formatstringarray: DEBUG: colslice: slice(None, 140, None)
+2021-10-30 12:46:33,627: bpython.curtsiesfrontend.repl: DEBUG: ---current line row slice 4, 5
+2021-10-30 12:46:33,627: bpython.curtsiesfrontend.repl: DEBUG: ---current line col slice 0, 140
+2021-10-30 12:46:33,627: curtsies.formatstringarray: DEBUG: slice: (slice(4, 5, None), slice(0, 140, None))
+2021-10-30 12:46:33,627: curtsies.formatstringarray: DEBUG: num columns: 140
+2021-10-30 12:46:33,627: curtsies.formatstringarray: DEBUG: colslice: slice(0, 140, None)
+2021-10-30 12:46:33,627: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:33,628: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:33,628: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:33,628: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:33,628: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:33,628: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:33,628: bpython.curtsiesfrontend.repl: DEBUG: Display line '' -> 
+2021-10-30 12:46:33,628: bpython.curtsiesfrontend.repl: DEBUG: current cursor line: ''+cyan('>>> ')
+2021-10-30 12:46:33,629: bpython.curtsiesfrontend.repl: DEBUG: about to exit: True
+2021-10-30 12:46:33,629: bpython.curtsiesfrontend.repl: DEBUG: returning arr of size (5, 140)
+2021-10-30 12:46:33,629: bpython.curtsiesfrontend.repl: DEBUG: cursor pos: (4, 4)
+2021-10-30 12:46:33,629: curtsies.window: DEBUG: lines in last lines by row: dict_keys([67, 68, 69, 70, 71])
+2021-10-30 12:46:33,629: curtsies.window: DEBUG: lines in current lines by row: dict_keys([67, 68, 69, 70, 71])
+2021-10-30 12:46:33,629: curtsies.window: DEBUG: running BaseWindow.__exit__

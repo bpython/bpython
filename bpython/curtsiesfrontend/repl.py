@@ -798,15 +798,33 @@ class BaseRepl(Repl):
 
     def insert_char_pair(self, e):
         closing_char = self.get_closing_char(e)
-        self.add_normal_character(e)
-        self.add_normal_character(closing_char)
-        self.cursor_offset = len(self.current_line) - 1
+        self._set_current_line(
+            (
+                self.current_line[: self.cursor_offset]
+                + e
+                + self.current_line[self.cursor_offset :]
+            ),
+            update_completion=False,
+            reset_rl_history=False,
+            clear_special_mode=False,
+        )
+        self.cursor_offset += 1
+
+        self._set_current_line(
+            (
+                self.current_line[: self.cursor_offset]
+                + closing_char
+                + self.current_line[self.cursor_offset :]
+            ),
+            update_completion=False,
+            reset_rl_history=False,
+            clear_special_mode=False,
+        )
 
     def insert_char_pair_end(self, e):
-        logger.debug(f"{len(self.current_line)} o:{self.cursor_offset}\n")
         if self.cursor_offset < len(self.current_line):
             if self.current_line[self.cursor_offset] == e:
-                self.cursor_offset = len(self.current_line) + 1
+                self.cursor_offset += 1
                 return
         self.add_normal_character(e)
 
@@ -936,7 +954,7 @@ class BaseRepl(Repl):
             # using _current_line so we don't trigger a completion reset
             self.list_win_visible = True
         if cursor_on_closing_char_pair(self._cursor_offset, self._current_line):
-            self._cursor_offset += 2
+            self._cursor_offset += 1
 
     def on_control_d(self):
         if self.current_line == "":
