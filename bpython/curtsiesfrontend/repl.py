@@ -12,8 +12,8 @@ import tempfile
 import time
 import unicodedata
 from enum import Enum
-
-from typing import Dict, Any, List, Optional, Tuple, Union, cast
+from types import TracebackType
+from typing import Dict, Any, List, Optional, Tuple, Union, cast, Literal, Type
 
 import blessings
 import greenlet
@@ -573,7 +573,12 @@ class BaseRepl(Repl):
         sitefix.monkeypatch_quit()
         return self
 
-    def __exit__(self, *args):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> Literal[False]:
         sys.stdin = self.orig_stdin
         sys.stdout = self.orig_stdout
         sys.stderr = self.orig_stderr
@@ -584,6 +589,7 @@ class BaseRepl(Repl):
             signal.signal(signal.SIGTSTP, self.orig_sigtstp_handler)
 
         sys.meta_path = self.orig_meta_path
+        return False
 
     def sigwinch_handler(self, signum, frame):
         old_rows, old_columns = self.height, self.width

@@ -26,11 +26,11 @@ import keyword
 import pydoc
 import re
 from collections import namedtuple
+from typing import Any, Optional, Literal, Type
+from types import MemberDescriptorType, TracebackType
 
 from pygments.token import Token
 from pygments.lexers import Python3Lexer
-from typing import Any
-from types import MemberDescriptorType
 
 from .lazyre import LazyReCompile
 
@@ -88,7 +88,12 @@ class AttrCleaner:
         self.attribs = (__getattribute__, __getattr__)
         # /Dark magic
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> Literal[False]:
         """Restore an object's magic methods."""
         type_ = type(self.obj)
         __getattribute__, __getattr__ = self.attribs
@@ -98,6 +103,7 @@ class AttrCleaner:
         if __getattr__ is not None:
             setattr(type_, "__getattr__", __getattr__)
         # /Dark magic
+        return False
 
 
 class _Repr:

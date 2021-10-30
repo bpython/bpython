@@ -36,10 +36,11 @@ import traceback
 from abc import abstractmethod
 from itertools import takewhile
 from pathlib import Path
+from types import ModuleType, TracebackType
+from typing import cast, Tuple, Any, Optional, Literal, Type
+
 from pygments.lexers import Python3Lexer
 from pygments.token import Token
-from types import ModuleType
-from typing import cast, Tuple, Any
 
 have_pyperclip = True
 try:
@@ -68,7 +69,12 @@ class RuntimeTimer:
     def __enter__(self):
         self.start = self.time()
 
-    def __exit__(self, ty, val, tb):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> Literal[False]:
         self.last_command = self.time() - self.start
         self.running_time += self.last_command
         return False
