@@ -799,7 +799,7 @@ class BaseRepl(Repl):
             self.add_normal_character(e)
 
     def insert_char_pair_start(self, e):
-        """Accepts character which is a part of CHARACTER_PAIRS
+        """Accepts character which is a part of PAIR_CHAR_MAP
         like brackets and quotes, and appends it to the line with
         an appropriate pair end
 
@@ -813,7 +813,7 @@ class BaseRepl(Repl):
             self.cursor_offset -= 1
 
     def insert_char_pair_end(self, e):
-        """Accepts character which is a part of CHARACTER_PAIRS
+        """Accepts character which is a part of PAIR_CHAR_MAP
         like brackets and quotes, and checks whether it should be
         inserted to the line or overwritten
 
@@ -943,10 +943,12 @@ class BaseRepl(Repl):
         if self.matches_iter.is_cseq():
             cursor_and_line = self.matches_iter.substitute_cseq()
             self._cursor_offset, self._current_line = cursor_and_line
-            if self.is_completion_callable(self._current_line):
-                self._current_line = self.append_closing_bracket(
-                    self._current_line
-                )
+            if self.config.brackets_completion:
+                # appends closing char pair if completion is a callable
+                if self.is_completion_callable(self._current_line):
+                    self._current_line = self.append_closing_bracket(
+                        self._current_line
+                    )
             # using _current_line so we don't trigger a completion reset
             if not self.matches_iter.matches:
                 self.list_win_visible = self.complete()
@@ -956,22 +958,27 @@ class BaseRepl(Repl):
             )
             cursor_and_line = self.matches_iter.cur_line()
             self._cursor_offset, self._current_line = cursor_and_line
-            if self.is_completion_callable(self._current_line):
-                self._current_line = self.append_closing_bracket(
-                    self._current_line
-                )
+            if self.config.brackets_completion:
+                # appends closing char pair if completion is a callable
+                if self.is_completion_callable(self._current_line):
+                    self._current_line = self.append_closing_character(
+                        self._current_line
+                    )
             # using _current_line so we don't trigger a completion reset
             self.list_win_visible = True
 
     def is_completion_callable(self, completion):
-        closing_char_map = {"(": ")", "{": "}", "[": "]", "'": "'", '"': '"'}
+        """Checks whether given completion is callable (e.x. function)"""
         completion_end = completion[-1]
-        return completion_end in closing_char_map
+        return completion_end in self.__class__.PAIR_CHAR_MAP
 
-    def append_closing_bracket(self, completion):
-        closing_char_map = {"(": ")", "{": "}", "[": "]", "'": "'", '"': '"'}
-        if completion[-1] in closing_char_map:
-            completion = f"{completion}{closing_char_map[completion[-1]]}"
+    def append_closing_character(self, completion):
+        """Appends closing character/bracket to the completion"""
+        completion_end = completion[-1]
+        if completion_end in self.__class__.PAIR_CHAR_MAP:
+            completion = (
+                f"{completion}{self.__class__.PAIR_CHAR_MAP[completion_end]}"
+            )
         return completion
 
     def on_control_d(self):
