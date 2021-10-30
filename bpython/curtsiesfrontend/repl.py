@@ -789,9 +789,9 @@ class BaseRepl(Repl):
             self.incr_search_mode = None
         elif e in ("<SPACE>",):
             self.add_normal_character(" ")
-        elif e in ["(", "{", '"', "'", "["]:
+        elif e in ["(", "{", "["]:
             self.insert_char_pair(e)
-        elif e in [")", "}", '"', "'", "["]:
+        elif e in [")", "}", "]"]:
             self.insert_char_pair_end(e)
         else:
             self.add_normal_character(e)
@@ -803,12 +803,15 @@ class BaseRepl(Repl):
         self.cursor_offset = len(self.current_line) - 1
 
     def insert_char_pair_end(self, e):
-        if self.current_line[self.cursor_offset] != e:
-            self.add_normal_character(e)
-        self.cursor_offset = len(self.current_line) + 2
+        logger.debug(f"{len(self.current_line)} o:{self.cursor_offset}\n")
+        if self.cursor_offset < len(self.current_line):
+            if self.current_line[self.cursor_offset] == e:
+                self.cursor_offset = len(self.current_line) + 1
+                return
+        self.add_normal_character(e)
 
     def get_closing_char(self, e):
-        closing_char_map = {"(": ")", "{": "}", "[": "]", '"': '"', "'": "'"}
+        closing_char_map = {"(": ")", "{": "}", "[": "]"}
         return closing_char_map[e]
 
     def get_last_word(self):
