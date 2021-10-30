@@ -789,9 +789,9 @@ class BaseRepl(Repl):
             self.incr_search_mode = None
         elif e in ("<SPACE>",):
             self.add_normal_character(" ")
-        elif e in ["(", "{", "["]:
+        elif e in ["(", "{", "[", "'", '"']:
             self.insert_char_pair(e)
-        elif e in [")", "}", "]"]:
+        elif e in [")", "}", "]", "'", '"']:
             self.insert_char_pair_end(e)
         else:
             self.add_normal_character(e)
@@ -829,7 +829,7 @@ class BaseRepl(Repl):
         self.add_normal_character(e)
 
     def get_closing_char(self, e):
-        closing_char_map = {"(": ")", "{": "}", "[": "]"}
+        closing_char_map = {"(": ")", "{": "}", "[": "]", "'": "'", '"': '"'}
         return closing_char_map[e]
 
     def get_last_word(self):
@@ -932,7 +932,11 @@ class BaseRepl(Repl):
             for unused in range(to_add):
                 self.add_normal_character(" ")
             return
-
+        on_closing_char, _ = cursor_on_closing_char_pair(
+            self._cursor_offset, self._current_line
+        )
+        if on_closing_char:
+            self._cursor_offset += 1
         # run complete() if we don't already have matches
         if len(self.matches_iter.matches) == 0:
             self.list_win_visible = self.complete(tab=True)
@@ -941,23 +945,36 @@ class BaseRepl(Repl):
         if self.matches_iter.is_cseq():
             cursor_and_line = self.matches_iter.substitute_cseq()
             self._cursor_offset, self._current_line = cursor_and_line
+            if self.is_completion_callable(self._current_line):
+                self._current_line = self.append_closing_bracket(
+                    self._current_line
+                )
             # using _current_line so we don't trigger a completion reset
             if not self.matches_iter.matches:
                 self.list_win_visible = self.complete()
-
         elif self.matches_iter.matches:
             self.current_match = (
                 back and self.matches_iter.previous() or next(self.matches_iter)
             )
             cursor_and_line = self.matches_iter.cur_line()
             self._cursor_offset, self._current_line = cursor_and_line
+            if self.is_completion_callable(self._current_line):
+                self._current_line = self.append_closing_bracket(
+                    self._current_line
+                )
             # using _current_line so we don't trigger a completion reset
             self.list_win_visible = True
-        on_closing_char, _ = cursor_on_closing_char_pair(
-            self._cursor_offset, self._current_line
-        )
-        if on_closing_char:
-            self._cursor_offset += 1
+
+    def is_completion_callable(self, completion):
+        closing_char_map = {"(": ")", "{": "}", "[": "]", "'": "'", '"': '"'}
+        completion_end = completion[-1]
+        return completion_end in closing_char_map
+
+    def append_closing_bracket(self, completion):
+        closing_char_map = {"(": ")", "{": "}", "[": "]", "'": "'", '"': '"'}
+        if completion[-1] in closing_char_map:
+            completion = f"{completion}{closing_char_map[completion[-1]]}"
+        return completion
 
     def on_control_d(self):
         if self.current_line == "":

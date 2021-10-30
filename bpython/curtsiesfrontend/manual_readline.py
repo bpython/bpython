@@ -232,7 +232,7 @@ def delete(cursor_offset, line):
 
 
 def cursor_on_closing_char_pair(cursor_offset, line):
-    closing_char_map = {"(": ")", "{": "}", "[": "]"}
+    closing_char_map = {"(": ")", "{": "}", "[": "]", "'": "'", '"': '"'}
     on_closing_char, pair_close = False, False
     if line is None:
         return on_closing_char, pair_close
