@@ -953,7 +953,10 @@ class BaseRepl(Repl):
             self._cursor_offset, self._current_line = cursor_and_line
             # using _current_line so we don't trigger a completion reset
             self.list_win_visible = True
-        if cursor_on_closing_char_pair(self._cursor_offset, self._current_line):
+        on_closing_char, _ = cursor_on_closing_char_pair(
+            self._cursor_offset, self._current_line
+        )
+        if on_closing_char:
             self._cursor_offset += 1
 
     def on_control_d(self):

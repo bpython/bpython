@@ -233,14 +233,18 @@ def delete(cursor_offset, line):
 
 def cursor_on_closing_char_pair(cursor_offset, line):
     closing_char_map = {"(": ")", "{": "}", "[": "]"}
+    on_closing_char, pair_close = False, False
     if line is None:
-        return False
+        return on_closing_char, pair_close
     if cursor_offset < len(line):
         cur_char = line[cursor_offset]
         prev_char = line[cursor_offset - 1]
         if cur_char in closing_char_map.values():
-            return True
-    return False
+            on_closing_char = True
+            if prev_char in closing_char_map:
+                if closing_char_map[prev_char] == cur_char:
+                    pair_close = True
+    return on_closing_char, pair_close
 
 
 @edit_keys.on("<BACKSPACE>")
@@ -256,7 +260,10 @@ def backspace(cursor_offset, line):
             cursor_offset - to_delete,
             line[: cursor_offset - to_delete] + line[cursor_offset:],
         )
-    if cursor_on_closing_char_pair(cursor_offset, line):
+    on_closing_char, pair_close = cursor_on_closing_char_pair(
+        cursor_offset, line
+    )
+    if on_closing_char and pair_close:
         return (
             cursor_offset - 1,
             line[: cursor_offset - 1] + line[cursor_offset + 1 :],
