@@ -306,6 +306,8 @@ class BaseRepl(Repl):
     Subclasses are responsible for implementing several methods.
     """
 
+    PAIR_CHAR_MAP = {"(": ")", "{": "}", "[": "]", "'": "'", '"': '"'}
+
     def __init__(
         self,
         config,
@@ -789,48 +791,44 @@ class BaseRepl(Repl):
             self.incr_search_mode = None
         elif e in ("<SPACE>",):
             self.add_normal_character(" ")
-        elif e in ["(", "{", "[", "'", '"']:
-            self.insert_char_pair(e)
-        elif e in [")", "}", "]", "'", '"']:
+        elif e in self.__class__.PAIR_CHAR_MAP.keys():
+            self.insert_char_pair_start(e)
+        elif e in self.__class__.PAIR_CHAR_MAP.values():
             self.insert_char_pair_end(e)
         else:
             self.add_normal_character(e)
 
-    def insert_char_pair(self, e):
-        closing_char = self.get_closing_char(e)
-        self._set_current_line(
-            (
-                self.current_line[: self.cursor_offset]
-                + e
-                + self.current_line[self.cursor_offset :]
-            ),
-            update_completion=False,
-            reset_rl_history=False,
-            clear_special_mode=False,
-        )
-        self.cursor_offset += 1
+    def insert_char_pair_start(self, e):
+        """Accepts character which is a part of CHARACTER_PAIRS
+        like brackets and quotes, and appends it to the line with
+        an appropriate pair end
 
-        self._set_current_line(
-            (
-                self.current_line[: self.cursor_offset]
-                + closing_char
-                + self.current_line[self.cursor_offset :]
-            ),
-            update_completion=False,
-            reset_rl_history=False,
-            clear_special_mode=False,
-        )
+        e.x. if you type "(" (lparen) , this will insert "()"
+        into the line
+        """
+        self.add_normal_character(e)
+        if self.config.brackets_completion:
+            closing_char = self.__class__.PAIR_CHAR_MAP[e]
+            self.add_normal_character(closing_char)
+            self.cursor_offset -= 1
 
     def insert_char_pair_end(self, e):
-        if self.cursor_offset < len(self.current_line):
-            if self.current_line[self.cursor_offset] == e:
-                self.cursor_offset += 1
-                return
-        self.add_normal_character(e)
+        """Accepts character which is a part of CHARACTER_PAIRS
+        like brackets and quotes, and checks whether it should be
+        inserted to the line or overwritten
 
-    def get_closing_char(self, e):
-        closing_char_map = {"(": ")", "{": "}", "[": "]", "'": "'", '"': '"'}
-        return closing_char_map[e]
+        e.x. if you type ")" (rparen) , and your cursor is directly
+        above another ")" (rparen) in the cmd, this will just skip
+        it and move the cursor.
+        If there is no same character underneath the cursor, the
+        character will be printed/appended to the line
+        """
+        if self.config.brackets_completion:
+            if self.cursor_offset < len(self.current_line):
+                if self.current_line[self.cursor_offset] == e:
+                    self.cursor_offset += 1
+                    return
+        self.add_normal_character(e)
 
     def get_last_word(self):
 

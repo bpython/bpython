@@ -232,6 +232,9 @@ def delete(cursor_offset, line):
 
 
 def cursor_on_closing_char_pair(cursor_offset, line):
+    """Checks if cursor sits on closing character of a pair
+    and whether its pair character is directly behind it
+    """
     closing_char_map = {"(": ")", "{": "}", "[": "]", "'": "'", '"': '"'}
     on_closing_char, pair_close = False, False
     if line is None:
@@ -260,6 +263,9 @@ def backspace(cursor_offset, line):
             cursor_offset - to_delete,
             line[: cursor_offset - to_delete] + line[cursor_offset:],
         )
+    # removes opening bracket along with closing bracket
+    # if there is nothing between them
+    # TODO: could not get config value here, works even without -B option
     on_closing_char, pair_close = cursor_on_closing_char_pair(
         cursor_offset, line
     )
