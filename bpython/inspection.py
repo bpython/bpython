@@ -26,8 +26,9 @@ import keyword
 import pydoc
 import re
 from collections import namedtuple
-from typing import Any, Optional, Literal, Type
+from typing import Any, Optional, Type
 from types import MemberDescriptorType, TracebackType
+from typing_extensions import Literal
 
 from pygments.token import Token
 from pygments.lexers import Python3Lexer

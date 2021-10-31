@@ -20,7 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from typing import Optional, Type, IO, Literal
+from typing import Optional, Type, IO
+from typing_extensions import Literal
 from types import TracebackType
 
 has_fcntl = True

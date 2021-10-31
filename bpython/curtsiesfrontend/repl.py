@@ -13,7 +13,8 @@ import time
 import unicodedata
 from enum import Enum
 from types import TracebackType
-from typing import Dict, Any, List, Optional, Tuple, Union, cast, Literal, Type
+from typing import Dict, Any, List, Optional, Tuple, Union, cast, Type
+from typing_extensions import Literal
 
 import blessings
 import greenlet
