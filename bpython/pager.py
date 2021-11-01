@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# mypy: disallow_untyped_defs=True
+# mypy: disallow_untyped_calls=True
 
 import curses
 import errno
@@ -30,12 +32,12 @@ import sys
 import shlex
 
 
-def get_pager_command(default="less -rf"):
+def get_pager_command(default: str = "less -rf") -> list[str]:
     command = shlex.split(os.environ.get("PAGER", default))
     return command
 
 
-def page_internal(data):
+def page_internal(data: str) -> None:
     """A more than dumb pager function."""
     if hasattr(pydoc, "ttypager"):
         pydoc.ttypager(data)
@@ -43,7 +45,7 @@ def page_internal(data):
         sys.stdout.write(data)
 
 
-def page(data, use_internal=False):
+def page(data: str, use_internal: bool = False) -> None:
     command = get_pager_command()
     if not command or use_internal:
         page_internal(data)
@@ -51,8 +53,8 @@ def page(data, use_internal=False):
         curses.endwin()
         try:
             popen = subprocess.Popen(command, stdin=subprocess.PIPE)
-            data = data.encode(sys.__stdout__.encoding, "replace")
-            popen.stdin.write(data)
+            data_bytes = data.encode(sys.__stdout__.encoding, "replace")
+            popen.stdin.write(data_bytes)
             popen.stdin.close()
         except OSError as e:
             if e.errno == errno.ENOENT:
