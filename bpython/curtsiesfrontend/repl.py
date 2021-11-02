@@ -54,6 +54,7 @@ from ..repl import (
     SourceNotFound,
 )
 from ..translations import _
+from . import CHARACTER_PAIR_MAP
 
 logger = logging.getLogger(__name__)
 
@@ -305,8 +306,6 @@ class BaseRepl(Repl):
 
     Subclasses are responsible for implementing several methods.
     """
-
-    PAIR_CHAR_MAP = {"(": ")", "{": "}", "[": "]", "'": "'", '"': '"'}
 
     def __init__(
         self,
@@ -791,15 +790,15 @@ class BaseRepl(Repl):
             self.incr_search_mode = None
         elif e in ("<SPACE>",):
             self.add_normal_character(" ")
-        elif e in self.PAIR_CHAR_MAP.keys():
+        elif e in CHARACTER_PAIR_MAP.keys():
             self.insert_char_pair_start(e)
-        elif e in self.PAIR_CHAR_MAP.values():
+        elif e in CHARACTER_PAIR_MAP.values():
             self.insert_char_pair_end(e)
         else:
             self.add_normal_character(e)
 
     def insert_char_pair_start(self, e):
-        """Accepts character which is a part of PAIR_CHAR_MAP
+        """Accepts character which is a part of CHARACTER_PAIR_MAP
         like brackets and quotes, and appends it to the line with
         an appropriate pair end
 
@@ -808,12 +807,12 @@ class BaseRepl(Repl):
         """
         self.add_normal_character(e)
         if self.config.brackets_completion:
-            closing_char = self.PAIR_CHAR_MAP[e]
+            closing_char = CHARACTER_PAIR_MAP[e]
             self.add_normal_character(closing_char)
             self.cursor_offset -= 1
 
     def insert_char_pair_end(self, e):
-        """Accepts character which is a part of PAIR_CHAR_MAP
+        """Accepts character which is a part of CHARACTER_PAIR_MAP
         like brackets and quotes, and checks whether it should be
         inserted to the line or overwritten
 
@@ -974,13 +973,13 @@ class BaseRepl(Repl):
     def is_completion_callable(self, completion):
         """Checks whether given completion is callable (e.x. function)"""
         completion_end = completion[-1]
-        return completion_end in self.PAIR_CHAR_MAP
+        return completion_end in CHARACTER_PAIR_MAP
 
     def append_closing_character(self, completion):
         """Appends closing character/bracket to the completion"""
         completion_end = completion[-1]
-        if completion_end in self.PAIR_CHAR_MAP:
-            completion = f"{completion}{self.PAIR_CHAR_MAP[completion_end]}"
+        if completion_end in CHARACTER_PAIR_MAP:
+            completion = f"{completion}{CHARACTER_PAIR_MAP[completion_end]}"
         return completion
 
     def on_control_d(self):
