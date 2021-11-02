@@ -817,7 +817,8 @@ class BaseRepl(Repl):
     def insert_char_pair_start(self, e):
         """Accepts character which is a part of CHARACTER_PAIR_MAP
         like brackets and quotes, and appends it to the line with
-        an appropriate pair end
+        an appropriate pair end. Closing param can only be inserted
+        when the next character is either a closing bracket or a space
 
         e.x. if you type "(" (lparen) , this will insert "()"
         into the line
@@ -836,8 +837,8 @@ class BaseRepl(Repl):
             next_char_allowed = next_char in allowed_chars
             if start_of_line or end_of_line or next_char_allowed:
                 closing_char = CHARACTER_PAIR_MAP[e]
-                self.add_normal_character(closing_char)
-                self.cursor_offset -= 1
+                self.add_normal_character(closing_char, add_to_search=False)
+                self._cursor_offset -= 1
 
     def insert_char_pair_end(self, e):
         """Accepts character which is a part of CHARACTER_PAIR_MAP
@@ -851,8 +852,8 @@ class BaseRepl(Repl):
         character will be printed/appended to the line
         """
         if self.config.brackets_completion:
-            if self.cursor_offset < len(self.current_line):
-                if self.current_line[self.cursor_offset] == e:
+            if self.cursor_offset < len(self._current_line):
+                if self._current_line[self.cursor_offset] == e:
                     self.cursor_offset += 1
                     return
         self.add_normal_character(e)
@@ -974,12 +975,6 @@ class BaseRepl(Repl):
         if self.matches_iter.is_cseq():
             cursor_and_line = self.matches_iter.substitute_cseq()
             self._cursor_offset, self._current_line = cursor_and_line
-            if self.config.brackets_completion:
-                # appends closing char pair if completion is a callable
-                if self.is_completion_callable(self._current_line):
-                    self._current_line = self.append_closing_character(
-                        self._current_line
-                    )
             # using _current_line so we don't trigger a completion reset
             if not self.matches_iter.matches:
                 self.list_win_visible = self.complete()
@@ -989,14 +984,14 @@ class BaseRepl(Repl):
             )
             cursor_and_line = self.matches_iter.cur_line()
             self._cursor_offset, self._current_line = cursor_and_line
-            if self.config.brackets_completion:
-                # appends closing char pair if completion is a callable
-                if self.is_completion_callable(self._current_line):
-                    self._current_line = self.append_closing_character(
-                        self._current_line
-                    )
             # using _current_line so we don't trigger a completion reset
             self.list_win_visible = True
+        if self.config.brackets_completion:
+            # appends closing char pair if completion is a callable
+            if self.is_completion_callable(self._current_line):
+                self._current_line = self.append_closing_character(
+                    self._current_line
+                )
 
     def is_completion_callable(self, completion):
         """Checks whether given completion is callable (e.x. function)"""
@@ -1156,10 +1151,10 @@ class BaseRepl(Repl):
             )
 
     # Handler Helpers
-    def add_normal_character(self, char):
+    def add_normal_character(self, char, add_to_search=True):
         if len(char) > 1 or is_nop(char):
             return
-        if self.incr_search_mode:
+        if self.incr_search_mode and add_to_search:
             self.add_to_incremental_search(char)
         else:
             self._set_current_line(
@@ -1172,12 +1167,18 @@ class BaseRepl(Repl):
                 reset_rl_history=False,
                 clear_special_mode=False,
             )
-            self.cursor_offset += 1
+            if add_to_search:
+                self.cursor_offset += 1
+            else:
+                self._cursor_offset += 1
         if self.config.cli_trim_prompts and self.current_line.startswith(
             self.ps1
         ):
             self.current_line = self.current_line[4:]
-            self.cursor_offset = max(0, self.cursor_offset - 4)
+            if add_to_search:
+                self.cursor_offset = max(0, self.cursor_offset - 4)
+            else:
+                self._cursor_offset += max(0, self.cursor_offset - 4)
 
     def add_to_incremental_search(self, char=None, backspace=False):
         """Modify the current search term while in incremental search.
