@@ -11,6 +11,8 @@ from typing import Optional, NamedTuple
 
 from .lazyre import LazyReCompile
 
+from bpython.curtsiesfrontend import CHARACTER_PAIR_MAP
+
 
 class LinePart(NamedTuple):
     start: int
@@ -287,3 +289,25 @@ def current_expression_attribute(
         if m.start(1) <= cursor_offset <= m.end(1):
             return LinePart(m.start(1), m.end(1), m.group(1))
     return None
+
+
+def cursor_on_closing_char_pair(cursor_offset, line):
+    """Checks if cursor sits on closing character of a pair
+    and whether its pair character is directly behind it
+    """
+    on_closing_char, pair_close = False, False
+    if line is None:
+        return on_closing_char, pair_close
+    if cursor_offset < len(line):
+        cur_char = line[cursor_offset]
+        if cur_char in CHARACTER_PAIR_MAP.values():
+            on_closing_char = True
+        if cursor_offset > 0:
+            prev_char = line[cursor_offset - 1]
+            if (
+                on_closing_char
+                and prev_char in CHARACTER_PAIR_MAP
+                and CHARACTER_PAIR_MAP[prev_char] == cur_char
+            ):
+                pair_close = True
+    return on_closing_char, pair_close
