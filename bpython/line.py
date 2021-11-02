@@ -11,8 +11,6 @@ from typing import Optional, NamedTuple
 
 from .lazyre import LazyReCompile
 
-from bpython.curtsiesfrontend import CHARACTER_PAIR_MAP
-
 
 class LinePart(NamedTuple):
     start: int
@@ -21,6 +19,7 @@ class LinePart(NamedTuple):
 
 
 _current_word_re = LazyReCompile(r"(?<![)\]\w_.])" r"([\w_][\w0-9._]*[(]?)")
+CHARACTER_PAIR_MAP = {"(": ")", "{": "}", "[": "]", "'": "'", '"': '"'}
 
 
 def current_word(cursor_offset: int, line: str) -> Optional[LinePart]:

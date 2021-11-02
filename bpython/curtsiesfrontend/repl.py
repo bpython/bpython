@@ -54,7 +54,7 @@ from ..repl import (
     SourceNotFound,
 )
 from ..translations import _
-from . import CHARACTER_PAIR_MAP
+from ..line import CHARACTER_PAIR_MAP
 
 logger = logging.getLogger(__name__)
 
