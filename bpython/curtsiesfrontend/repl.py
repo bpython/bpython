@@ -791,11 +791,26 @@ class BaseRepl(Repl):
         elif e in ("<SPACE>",):
             self.add_normal_character(" ")
         elif e in CHARACTER_PAIR_MAP.keys():
-            self.insert_char_pair_start(e)
+            if e in ["'", '"']:
+                if self.is_closing_quote(e):
+                    self.insert_char_pair_end(e)
+                else:
+                    self.insert_char_pair_start(e)
         elif e in CHARACTER_PAIR_MAP.values():
             self.insert_char_pair_end(e)
         else:
             self.add_normal_character(e)
+
+    def is_closing_quote(self, e):
+        char_count = self._current_line.count(e)
+        if (
+            char_count % 2 == 0
+            and cursor_on_closing_char_pair(
+                self._cursor_offset, self._current_line, e
+            )[0]
+        ):
+            return True
+        return False
 
     def insert_char_pair_start(self, e):
         """Accepts character which is a part of CHARACTER_PAIR_MAP
