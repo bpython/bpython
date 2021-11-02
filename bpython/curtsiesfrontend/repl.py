@@ -796,6 +796,8 @@ class BaseRepl(Repl):
                     self.insert_char_pair_end(e)
                 else:
                     self.insert_char_pair_start(e)
+            else:
+                self.insert_char_pair_start(e)
         elif e in CHARACTER_PAIR_MAP.values():
             self.insert_char_pair_end(e)
         else:
