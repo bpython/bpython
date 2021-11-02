@@ -59,7 +59,6 @@ The following options are supported by all frontends:
 -V, --version          Print :program:`bpython`'s version and exit.
 -l <level>, --log-level=<level>   Set logging level
 -L <file>, --log-output=<file>    Set log output file
--B, --brackets-completion         Enable brackets auto-completion
 
 In addition to the above options, :program:`bpython` also supports the following
 options:
