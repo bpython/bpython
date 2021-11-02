@@ -824,9 +824,20 @@ class BaseRepl(Repl):
         """
         self.add_normal_character(e)
         if self.config.brackets_completion:
-            closing_char = CHARACTER_PAIR_MAP[e]
-            self.add_normal_character(closing_char)
-            self.cursor_offset -= 1
+            allowed_chars = ["}", ")", "]", " "]
+            start_of_line = len(self._current_line) == 1
+            end_of_line = len(self._current_line) == self._cursor_offset
+            can_lookup_next = len(self._current_line) > self._cursor_offset
+            next_char = (
+                None
+                if not can_lookup_next
+                else self._current_line[self._cursor_offset]
+            )
+            next_char_allowed = next_char in allowed_chars
+            if start_of_line or end_of_line or next_char_allowed:
+                closing_char = CHARACTER_PAIR_MAP[e]
+                self.add_normal_character(closing_char)
+                self.cursor_offset -= 1
 
     def insert_char_pair_end(self, e):
         """Accepts character which is a part of CHARACTER_PAIR_MAP
