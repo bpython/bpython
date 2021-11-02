@@ -791,9 +791,9 @@ class BaseRepl(Repl):
             self.incr_search_mode = None
         elif e in ("<SPACE>",):
             self.add_normal_character(" ")
-        elif e in self.__class__.PAIR_CHAR_MAP.keys():
+        elif e in self.PAIR_CHAR_MAP.keys():
             self.insert_char_pair_start(e)
-        elif e in self.__class__.PAIR_CHAR_MAP.values():
+        elif e in self.PAIR_CHAR_MAP.values():
             self.insert_char_pair_end(e)
         else:
             self.add_normal_character(e)
@@ -808,7 +808,7 @@ class BaseRepl(Repl):
         """
         self.add_normal_character(e)
         if self.config.brackets_completion:
-            closing_char = self.__class__.PAIR_CHAR_MAP[e]
+            closing_char = self.PAIR_CHAR_MAP[e]
             self.add_normal_character(closing_char)
             self.cursor_offset -= 1
 
@@ -950,7 +950,7 @@ class BaseRepl(Repl):
             if self.config.brackets_completion:
                 # appends closing char pair if completion is a callable
                 if self.is_completion_callable(self._current_line):
-                    self._current_line = self.append_closing_bracket(
+                    self._current_line = self.append_closing_character(
                         self._current_line
                     )
             # using _current_line so we don't trigger a completion reset
@@ -974,15 +974,13 @@ class BaseRepl(Repl):
     def is_completion_callable(self, completion):
         """Checks whether given completion is callable (e.x. function)"""
         completion_end = completion[-1]
-        return completion_end in self.__class__.PAIR_CHAR_MAP
+        return completion_end in self.PAIR_CHAR_MAP
 
     def append_closing_character(self, completion):
         """Appends closing character/bracket to the completion"""
         completion_end = completion[-1]
-        if completion_end in self.__class__.PAIR_CHAR_MAP:
-            completion = (
-                f"{completion}{self.__class__.PAIR_CHAR_MAP[completion_end]}"
-            )
+        if completion_end in self.PAIR_CHAR_MAP:
+            completion = f"{completion}{self.PAIR_CHAR_MAP[completion_end]}"
         return completion
 
     def on_control_d(self):
