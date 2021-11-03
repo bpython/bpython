@@ -1154,7 +1154,7 @@ class BaseRepl(Repl):
     def add_normal_character(self, char, narrow_search=True):
         if len(char) > 1 or is_nop(char):
             return
-        if self.incr_search_mode and narrow_search:
+        if self.incr_search_mode:
             self.add_to_incremental_search(char)
         else:
             self._set_current_line(
