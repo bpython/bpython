@@ -1167,7 +1167,7 @@ class BaseRepl(Repl):
                 reset_rl_history=False,
                 clear_special_mode=False,
             )
-            if add_to_search:
+            if narrow_search:
                 self.cursor_offset += 1
             else:
                 self._cursor_offset += 1
@@ -1175,7 +1175,7 @@ class BaseRepl(Repl):
             self.ps1
         ):
             self.current_line = self.current_line[4:]
-            if add_to_search:
+            if narrow_search:
                 self.cursor_offset = max(0, self.cursor_offset - 4)
             else:
                 self._cursor_offset += max(0, self.cursor_offset - 4)

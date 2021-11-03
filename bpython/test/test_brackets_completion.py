@@ -30,49 +30,36 @@ class TestBracketCompletionEnabled(TestCase):
     def setUp(self):
         self.repl = create_repl(brackets_enabled=True)
 
+    def process_multiple_events(self, event_list):
+        for event in event_list:
+            self.repl.process_event(event)
+
     def test_start_line(self):
         self.repl.process_event("(")
         self.assertEqual(self.repl._current_line, "()")
         self.assertEqual(self.repl._cursor_offset, 1)
 
     def test_nested_brackets(self):
-        self.repl.process_event("(")
-        self.repl.process_event("[")
-        self.repl.process_event("{")
+        self.process_multiple_events(["(", "[", "{"])
         self.assertEqual(self.repl._current_line, """([{}])""")
         self.assertEqual(self.repl._cursor_offset, 3)
 
     def test_quotes(self):
-        self.repl.process_event("(")
-        self.repl.process_event("'")
-        self.repl.process_event("x")
-        self.repl.process_event("<TAB>")
-        self.repl.process_event(",")
-        self.repl.process_event("[")
-        self.repl.process_event('"')
-        self.repl.process_event("y")
-        self.repl.process_event("<TAB>")
-        self.repl.process_event("<TAB>")
-        self.repl.process_event("<TAB>")
+        self.process_multiple_events(["(", "'", "x", "<TAB>", ","])
+        self.process_multiple_events(["[", '"', "y", "<TAB>", "<TAB>", "<TAB>"])
         self.assertEqual(self.repl._current_line, """('x',["y"])""")
         self.assertEqual(self.repl._cursor_offset, 11)
 
     def test_bracket_overwrite_closing_char(self):
-        self.repl.process_event("(")
-        self.repl.process_event("[")
-        self.repl.process_event("{")
+        self.process_multiple_events(["(", "[", "{"])
         self.assertEqual(self.repl._current_line, """([{}])""")
         self.assertEqual(self.repl._cursor_offset, 3)
-        self.repl.process_event("}")
-        self.repl.process_event("]")
-        self.repl.process_event(")")
+        self.process_multiple_events(["}", "]", ")"])
         self.assertEqual(self.repl._current_line, """([{}])""")
         self.assertEqual(self.repl._cursor_offset, 6)
 
     def test_brackets_move_cursor_on_tab(self):
-        self.repl.process_event("(")
-        self.repl.process_event("[")
-        self.repl.process_event("{")
+        self.process_multiple_events(["(", "[", "{"])
         self.assertEqual(self.repl._current_line, """([{}])""")
         self.assertEqual(self.repl._cursor_offset, 3)
         self.repl.process_event("<TAB>")
@@ -104,9 +91,9 @@ class TestBracketCompletionEnabled(TestCase):
     def test_brackets_deletion_on_backspace_nested(self):
         self.repl.current_line = '([{""}])'
         self.repl.cursor_offset = 4
-        self.repl.process_event("<BACKSPACE>")
-        self.repl.process_event("<BACKSPACE>")
-        self.repl.process_event("<BACKSPACE>")
+        self.process_multiple_events(
+            ["<BACKSPACE>", "<BACKSPACE>", "<BACKSPACE>"]
+        )
         self.assertEqual(self.repl._current_line, "()")
         self.assertEqual(self.repl.cursor_offset, 1)
 
@@ -115,34 +102,30 @@ class TestBracketCompletionDisabled(TestCase):
     def setUp(self):
         self.repl = create_repl(brackets_enabled=False)
 
+    def process_multiple_events(self, event_list):
+        for event in event_list:
+            self.repl.process_event(event)
+
     def test_start_line(self):
         self.repl.process_event("(")
         self.assertEqual(self.repl._current_line, "(")
         self.assertEqual(self.repl._cursor_offset, 1)
 
     def test_nested_brackets(self):
-        self.repl.process_event("(")
-        self.repl.process_event("[")
-        self.repl.process_event("{")
+        self.process_multiple_events(["(", "[", "{"])
         self.assertEqual(self.repl._current_line, "([{")
         self.assertEqual(self.repl._cursor_offset, 3)
 
     def test_bracket_overwrite_closing_char(self):
-        self.repl.process_event("(")
-        self.repl.process_event("[")
-        self.repl.process_event("{")
+        self.process_multiple_events(["(", "[", "{"])
         self.assertEqual(self.repl._current_line, """([{""")
         self.assertEqual(self.repl._cursor_offset, 3)
-        self.repl.process_event("}")
-        self.repl.process_event("]")
-        self.repl.process_event(")")
+        self.process_multiple_events(["}", "]", ")"])
         self.assertEqual(self.repl._current_line, """([{}])""")
         self.assertEqual(self.repl._cursor_offset, 6)
 
     def test_brackets_move_cursor_on_tab(self):
-        self.repl.process_event("(")
-        self.repl.process_event("[")
-        self.repl.process_event("{")
+        self.process_multiple_events(["(", "[", "{"])
         self.assertEqual(self.repl._current_line, """([{""")
         self.assertEqual(self.repl._cursor_offset, 3)
         self.repl.process_event("<TAB>")
@@ -159,8 +142,8 @@ class TestBracketCompletionDisabled(TestCase):
     def test_brackets_deletion_on_backspace_nested(self):
         self.repl.current_line = '([{""}])'
         self.repl.cursor_offset = 4
-        self.repl.process_event("<BACKSPACE>")
-        self.repl.process_event("<BACKSPACE>")
-        self.repl.process_event("<BACKSPACE>")
+        self.process_multiple_events(
+            ["<BACKSPACE>", "<BACKSPACE>", "<BACKSPACE>"]
+        )
         self.assertEqual(self.repl._current_line, "()")
         self.assertEqual(self.repl.cursor_offset, 1)
