@@ -817,8 +817,8 @@ class BaseRepl(Repl):
     def insert_char_pair_start(self, e):
         """Accepts character which is a part of CHARACTER_PAIR_MAP
         like brackets and quotes, and appends it to the line with
-        an appropriate pair end. Closing param can only be inserted
-        when the next character is either a closing bracket or a space
+        an appropriate character pair ending. Closing character can only be inserted
+        when the next character is either a closing character or a space
 
         e.x. if you type "(" (lparen) , this will insert "()"
         into the line
