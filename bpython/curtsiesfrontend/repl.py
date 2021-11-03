@@ -837,7 +837,7 @@ class BaseRepl(Repl):
             next_char_allowed = next_char in allowed_chars
             if start_of_line or end_of_line or next_char_allowed:
                 closing_char = CHARACTER_PAIR_MAP[e]
-                self.add_normal_character(closing_char, add_to_search=False)
+                self.add_normal_character(closing_char, narrow_search=False)
                 self._cursor_offset -= 1
 
     def insert_char_pair_end(self, e):
@@ -1151,10 +1151,10 @@ class BaseRepl(Repl):
             )
 
     # Handler Helpers
-    def add_normal_character(self, char, add_to_search=True):
+    def add_normal_character(self, char, narrow_search=True):
         if len(char) > 1 or is_nop(char):
             return
-        if self.incr_search_mode and add_to_search:
+        if self.incr_search_mode and narrow_search:
             self.add_to_incremental_search(char)
         else:
             self._set_current_line(
