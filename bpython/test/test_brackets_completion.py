@@ -42,6 +42,21 @@ class TestBracketCompletionEnabled(TestCase):
         self.assertEqual(self.repl._current_line, """([{}])""")
         self.assertEqual(self.repl._cursor_offset, 3)
 
+    def test_quotes(self):
+        self.repl.process_event("(")
+        self.repl.process_event("'")
+        self.repl.process_event("x")
+        self.repl.process_event("<TAB>")
+        self.repl.process_event(",")
+        self.repl.process_event("[")
+        self.repl.process_event('"')
+        self.repl.process_event("y")
+        self.repl.process_event("<TAB>")
+        self.repl.process_event("<TAB>")
+        self.repl.process_event("<TAB>")
+        self.assertEqual(self.repl._current_line, """('x',["y"])""")
+        self.assertEqual(self.repl._cursor_offset, 11)
+
     def test_bracket_overwrite_closing_char(self):
         self.repl.process_event("(")
         self.repl.process_event("[")
