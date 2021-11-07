@@ -343,12 +343,13 @@ class ImportCompletion(BaseCompletionType):
         return after_last_dot(word)
 
 
+def _safe_glob(pathname: str) -> Iterator[str]:
+    return glob.iglob(glob.escape(pathname) + "*")
+
+
 class FilenameCompletion(BaseCompletionType):
     def __init__(self, mode: AutocompleteModes = AutocompleteModes.SIMPLE):
         super().__init__(False, mode)
-
-    def safe_glob(self, pathname: str) -> Iterator[str]:
-        return glob.iglob(glob.escape(pathname) + "*")
 
     def matches(
         self, cursor_offset: int, line: str, **kwargs: Any
@@ -359,7 +360,7 @@ class FilenameCompletion(BaseCompletionType):
         matches = set()
         username = cs.word.split(os.path.sep, 1)[0]
         user_dir = os.path.expanduser(username)
-        for filename in self.safe_glob(os.path.expanduser(cs.word)):
+        for filename in _safe_glob(os.path.expanduser(cs.word)):
             if os.path.isdir(filename):
                 filename += os.path.sep
             if cs.word.startswith("~"):
