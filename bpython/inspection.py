@@ -369,8 +369,3 @@ def hasattr_safe(obj: Any, name: str) -> bool:
         return True
     except AttributeError:
         return False
-
-
-def get_source_unicode(obj) -> str:
-    """Returns a decoded source of object"""
-    return inspect.getsource(obj)

@@ -649,7 +649,7 @@ class Repl:
                     raise SourceNotFound(_("Nothing to get source of"))
                 if inspection.is_eval_safe_name(line):
                     obj = self.get_object(line)
-            return inspection.get_source_unicode(obj)
+            return inspect.getsource(obj)
         except (AttributeError, NameError) as e:
             msg = _("Cannot get source: %s") % (e,)
         except OSError as e:
