@@ -372,7 +372,6 @@ class FilenameCompletion(BaseCompletionType):
         return lineparts.current_string(cursor_offset, line)
 
     def format(self, filename: str) -> str:
-        filename.rstrip(os.sep).rsplit(os.sep)[-1]
         if os.sep in filename[:-1]:
             return filename[filename.rindex(os.sep, 0, -1) + 1 :]
         else:
