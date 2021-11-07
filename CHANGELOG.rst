@@ -1,6 +1,17 @@
 Changelog
 =========
 
+0.23
+----
+
+General information:
+
+New features:
+
+Fixes:
+
+Support for Python 3.6 has been dropped.
+
 0.22
 ----
 
