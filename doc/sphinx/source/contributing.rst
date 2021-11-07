@@ -17,7 +17,7 @@ the time of day.
 Getting your development environment set up
 -------------------------------------------
 
-bpython supports Python 3.6 and newer. The code is compatible with all
+bpython supports Python 3.7 and newer. The code is compatible with all
 supported versions.
 
 Using a virtual environment is probably a good idea. Create a virtual
