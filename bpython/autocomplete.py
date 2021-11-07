@@ -571,15 +571,15 @@ class ParameterNameCompletion(BaseCompletionType):
         r = self.locate(cursor_offset, line)
         if r is None:
             return None
-        if argspec:
-            matches = {
-                f"{name}="
-                for name in argspec[1][0]
-                if isinstance(name, str) and name.startswith(r.word)
-            }
-            matches.update(
-                name + "=" for name in argspec[1][4] if name.startswith(r.word)
-            )
+
+        matches = {
+            f"{name}="
+            for name in argspec[1][0]
+            if isinstance(name, str) and name.startswith(r.word)
+        }
+        matches.update(
+            name + "=" for name in argspec[1][4] if name.startswith(r.word)
+        )
         return matches if matches else None
 
     def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
