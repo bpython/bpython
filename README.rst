@@ -34,11 +34,6 @@ etc.
 You can find more about bpython - including `full documentation`_ - at our
 `homepage`_.
 
-.. contents::
-  :local:
-    :depth: 1
-    :backlinks: none
-
 ==========================
 Installation & Basic Usage
 ==========================
