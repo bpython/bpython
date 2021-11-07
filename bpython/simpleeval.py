@@ -203,7 +203,7 @@ def safe_getitem(obj, index):
             return obj[index]
         except (KeyError, IndexError):
             raise EvaluationError(f"can't lookup key {index!r} on {obj!r}")
-    raise ValueError("unsafe to lookup on object of type {}".format(type(obj)))
+    raise ValueError(f"unsafe to lookup on object of type {type(obj)}")
 
 
 def find_attribute_with_name(node, name):

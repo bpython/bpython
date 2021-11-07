@@ -55,7 +55,7 @@ class BPythonFormatter(Formatter):
         for token, text in tokensource:
             while token not in self.f_strings:
                 token = token.parent
-            o += "{}\x03{}\x04".format(self.f_strings[token], text)
+            o += f"{self.f_strings[token]}\x03{text}\x04"
         outfile.write(parse(o.rstrip()))
 
 
