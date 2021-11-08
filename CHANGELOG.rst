@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.22.1
+------
+
+Fixes:
+
+* #938: Fix missing dependency on typing_extensions.
+  Thanks to Dustin Rodrigues
+
 0.22
 ----
 
