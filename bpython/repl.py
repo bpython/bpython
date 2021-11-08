@@ -265,9 +265,6 @@ class MatchesIterator:
             raise ValueError("No current match.")
         return self.matches[self.index]
 
-    def next(self):
-        return self.__next__()
-
     def __next__(self):
         self.index = (self.index + 1) % len(self.matches)
         return self.matches[self.index]
