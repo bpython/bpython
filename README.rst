@@ -117,7 +117,7 @@ systems. If you use one of these OSes, you can install ``bpython`` using the
 package manager.
 
 Ubuntu/Debian
-~~~~~~~~~~~~~
+-------------
 Ubuntu/Debian family Linux users can install ``bpython`` using the ``apt``
 package manager, using the command with ``sudo`` privileges:
 
@@ -132,7 +132,7 @@ In case you are using an older version, run
     $ apt-get install bpython
 
 Arch Linux
-~~~~~~~~~~
+----------
 Arch Linux uses ``pacman`` as the default package manager; you can use it to install ``bpython``:
 
 .. code-block:: bash
@@ -140,7 +140,7 @@ Arch Linux uses ``pacman`` as the default package manager; you can use it to ins
     $ pacman -S bpython
 
 Fedora
-~~~~~~~~~~
+------
 Fedora users can install ``bpython`` directly from the command line using ``dnf``.
 
 .. code-block:: bash
@@ -148,7 +148,7 @@ Fedora users can install ``bpython`` directly from the command line using ``dnf`
     $ dnf install bpython
 
 macOS
-~~~~~
+-----
 macOS does not include a package manager by default. If you have installed any
 third-party package manager like MacPorts, you can install it via
 
