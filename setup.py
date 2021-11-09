@@ -78,7 +78,7 @@ version = "unknown"
 try:
     # get version from git describe
     proc = subprocess.Popen(
-        ["git", "describe", "--tags"],
+        ["git", "describe", "--tags", "--first-parent"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
