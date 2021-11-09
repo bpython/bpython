@@ -62,41 +62,14 @@ msgstr ""
 msgid "File to execute and additional arguments passed on to the executed script."
 msgstr ""
 
-#: bpython/cli.py:320 bpython/curtsiesfrontend/interaction.py:107
+#: bpython/curtsiesfrontend/interaction.py:107
 #: bpython/urwid.py:539
 msgid "y"
 msgstr "s"
 
-#: bpython/cli.py:320 bpython/urwid.py:539
+#: bpython/urwid.py:539
 msgid "yes"
 msgstr "si"
-
-#: bpython/cli.py:1696
-msgid "Rewind"
-msgstr ""
-
-#: bpython/cli.py:1697
-msgid "Save"
-msgstr ""
-
-#: bpython/cli.py:1698
-msgid "Pastebin"
-msgstr ""
-
-#: bpython/cli.py:1699
-msgid "Pager"
-msgstr ""
-
-#: bpython/cli.py:1700
-msgid "Show Source"
-msgstr ""
-
-#: bpython/cli.py:1947
-msgid ""
-"WARNING: You are using `bpython-cli`, the curses backend for `bpython`. "
-"This backend has been deprecated in version 0.19 and might disappear in a"
-" future version."
-msgstr ""
 
 #: bpython/curtsies.py:201
 msgid "start by pasting lines of a file into session"

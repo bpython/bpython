@@ -6,6 +6,9 @@ Changelog
 
 General information:
 
+* The bpython-cli rendering backend has been removed following deprecation in
+  version 0.19.
+
 
 New features:
 
@@ -44,7 +47,6 @@ Support for Python 3.11 has been added.
 General information:
 
 * More and more type annotations have been added to the bpython code base.
-* Some work has been performed to stop relying on blessings.
 
 New features:
 

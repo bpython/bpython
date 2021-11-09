@@ -67,44 +67,14 @@ msgstr ""
 "Auszuführende Datei und zusätzliche Argumente, die an das Script "
 "übergeben werden sollen."
 
-#: bpython/cli.py:320 bpython/curtsiesfrontend/interaction.py:107
+#: bpython/curtsiesfrontend/interaction.py:107
 #: bpython/urwid.py:539
 msgid "y"
 msgstr "j"
 
-#: bpython/cli.py:320 bpython/urwid.py:539
+#: bpython/urwid.py:539
 msgid "yes"
 msgstr "ja"
-
-#: bpython/cli.py:1696
-msgid "Rewind"
-msgstr "Rückgängig"
-
-#: bpython/cli.py:1697
-msgid "Save"
-msgstr "Speichern"
-
-#: bpython/cli.py:1698
-msgid "Pastebin"
-msgstr "Pastebin"
-
-#: bpython/cli.py:1699
-msgid "Pager"
-msgstr ""
-
-#: bpython/cli.py:1700
-msgid "Show Source"
-msgstr "Quellcode anzeigen"
-
-#: bpython/cli.py:1947
-msgid ""
-"WARNING: You are using `bpython-cli`, the curses backend for `bpython`. "
-"This backend has been deprecated in version 0.19 and might disappear in a"
-" future version."
-msgstr ""
-"ACHTUNG: `bpython-cli` wird verwendet, die curses Implementierung von "
-"`bpython`. Diese Implementierung wird ab Version 0.19 nicht mehr aktiv "
-"unterstützt und wird in einer zukünftigen Version entfernt werden."
 
 #: bpython/curtsies.py:201
 msgid "start by pasting lines of a file into session"
