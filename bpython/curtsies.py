@@ -24,16 +24,16 @@ from .translations import _
 
 from typing import (
     Any,
-    Dict,
-    List,
     Callable,
-    Union,
+    Dict,
+    Generator,
+    List,
+    Optional,
     Sequence,
     Tuple,
-    Optional,
-    Generator,
+    Union,
 )
-from typing_extensions import Literal, Protocol
+from typing_extensions import Protocol
 
 logger = logging.getLogger(__name__)
 

@@ -1,3 +1,4 @@
+import inspect
 import os
 import sys
 import unittest
@@ -89,19 +90,13 @@ class TestInspection(unittest.TestCase):
         self.assertEqual(inspection.get_encoding(encoding_utf8.foo), "utf-8")
 
     def test_get_source_ascii(self):
-        self.assertEqual(
-            inspection.get_source_unicode(encoding_ascii.foo), foo_ascii_only
-        )
+        self.assertEqual(inspect.getsource(encoding_ascii.foo), foo_ascii_only)
 
     def test_get_source_utf8(self):
-        self.assertEqual(
-            inspection.get_source_unicode(encoding_utf8.foo), foo_non_ascii
-        )
+        self.assertEqual(inspect.getsource(encoding_utf8.foo), foo_non_ascii)
 
     def test_get_source_latin1(self):
-        self.assertEqual(
-            inspection.get_source_unicode(encoding_latin1.foo), foo_non_ascii
-        )
+        self.assertEqual(inspect.getsource(encoding_latin1.foo), foo_non_ascii)
 
     def test_get_source_file(self):
         path = os.path.join(
