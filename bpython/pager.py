@@ -30,9 +30,10 @@ import pydoc
 import subprocess
 import sys
 import shlex
+from typing import List
 
 
-def get_pager_command(default: str = "less -rf") -> list[str]:
+def get_pager_command(default: str = "less -rf") -> List[str]:
     command = shlex.split(os.environ.get("PAGER", default))
     return command
 
@@ -53,6 +54,7 @@ def page(data: str, use_internal: bool = False) -> None:
         curses.endwin()
         try:
             popen = subprocess.Popen(command, stdin=subprocess.PIPE)
+            assert popen.stdin is not None
             data_bytes = data.encode(sys.__stdout__.encoding, "replace")
             popen.stdin.write(data_bytes)
             popen.stdin.close()
