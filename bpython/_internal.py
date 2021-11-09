@@ -4,7 +4,7 @@ import sys
 from .pager import page
 
 # Ugly monkeypatching
-pydoc.pager = page
+pydoc.pager = page  # type: ignore
 
 
 class _Helper:
