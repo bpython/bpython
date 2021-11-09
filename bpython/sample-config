@@ -61,6 +61,8 @@
 
 # Enable autoreload feature by default (default: False).
 # default_autoreload = False
+# Enable autocompletion of brackets and quotes (default: False)
+# brackets_completion = False
 
 [keyboard]
 

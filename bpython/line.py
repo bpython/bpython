@@ -19,6 +19,7 @@ class LinePart(NamedTuple):
 
 
 _current_word_re = LazyReCompile(r"(?<![)\]\w_.])" r"([\w_][\w0-9._]*[(]?)")
+CHARACTER_PAIR_MAP = {"(": ")", "{": "}", "[": "]", "'": "'", '"': '"'}
 
 
 def current_word(cursor_offset: int, line: str) -> Optional[LinePart]:
@@ -287,3 +288,25 @@ def current_expression_attribute(
         if m.start(1) <= cursor_offset <= m.end(1):
             return LinePart(m.start(1), m.end(1), m.group(1))
     return None
+
+
+def cursor_on_closing_char_pair(cursor_offset, line, ch=None):
+    """Checks if cursor sits on closing character of a pair
+    and whether its pair character is directly behind it
+    """
+    on_closing_char, pair_close = False, False
+    if line is None:
+        return on_closing_char, pair_close
+    if cursor_offset < len(line):
+        cur_char = line[cursor_offset]
+        if cur_char in CHARACTER_PAIR_MAP.values():
+            on_closing_char = True if not ch else cur_char == ch
+        if cursor_offset > 0:
+            prev_char = line[cursor_offset - 1]
+            if (
+                on_closing_char
+                and prev_char in CHARACTER_PAIR_MAP
+                and CHARACTER_PAIR_MAP[prev_char] == cur_char
+            ):
+                pair_close = True if not ch else prev_char == ch
+    return on_closing_char, pair_close

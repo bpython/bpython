@@ -46,7 +46,7 @@ from .interpreter import (
     Interp,
     code_finished_will_parse,
 )
-from .manual_readline import edit_keys
+from .manual_readline import edit_keys, cursor_on_closing_char_pair
 from .parse import parse as bpythonparse, func_for_letter, color_for_letter
 from .preprocess import preprocess
 from .. import __version__
@@ -58,6 +58,7 @@ from ..repl import (
     SourceNotFound,
 )
 from ..translations import _
+from ..line import CHARACTER_PAIR_MAP
 
 logger = logging.getLogger(__name__)
 
@@ -800,8 +801,73 @@ class BaseRepl(Repl):
             self.incr_search_mode = None
         elif e in ("<SPACE>",):
             self.add_normal_character(" ")
+        elif e in CHARACTER_PAIR_MAP.keys():
+            if e in ["'", '"']:
+                if self.is_closing_quote(e):
+                    self.insert_char_pair_end(e)
+                else:
+                    self.insert_char_pair_start(e)
+            else:
+                self.insert_char_pair_start(e)
+        elif e in CHARACTER_PAIR_MAP.values():
+            self.insert_char_pair_end(e)
         else:
             self.add_normal_character(e)
+
+    def is_closing_quote(self, e):
+        char_count = self._current_line.count(e)
+        if (
+            char_count % 2 == 0
+            and cursor_on_closing_char_pair(
+                self._cursor_offset, self._current_line, e
+            )[0]
+        ):
+            return True
+        return False
+
+    def insert_char_pair_start(self, e):
+        """Accepts character which is a part of CHARACTER_PAIR_MAP
+        like brackets and quotes, and appends it to the line with
+        an appropriate character pair ending. Closing character can only be inserted
+        when the next character is either a closing character or a space
+
+        e.x. if you type "(" (lparen) , this will insert "()"
+        into the line
+        """
+        self.add_normal_character(e)
+        if self.config.brackets_completion:
+            allowed_chars = ["}", ")", "]", " "]
+            start_of_line = len(self._current_line) == 1
+            end_of_line = len(self._current_line) == self._cursor_offset
+            can_lookup_next = len(self._current_line) > self._cursor_offset
+            next_char = (
+                None
+                if not can_lookup_next
+                else self._current_line[self._cursor_offset]
+            )
+            next_char_allowed = next_char in allowed_chars
+            if start_of_line or end_of_line or next_char_allowed:
+                closing_char = CHARACTER_PAIR_MAP[e]
+                self.add_normal_character(closing_char, narrow_search=False)
+                self._cursor_offset -= 1
+
+    def insert_char_pair_end(self, e):
+        """Accepts character which is a part of CHARACTER_PAIR_MAP
+        like brackets and quotes, and checks whether it should be
+        inserted to the line or overwritten
+
+        e.x. if you type ")" (rparen) , and your cursor is directly
+        above another ")" (rparen) in the cmd, this will just skip
+        it and move the cursor.
+        If there is no same character underneath the cursor, the
+        character will be printed/appended to the line
+        """
+        if self.config.brackets_completion:
+            if self.cursor_offset < len(self._current_line):
+                if self._current_line[self.cursor_offset] == e:
+                    self.cursor_offset += 1
+                    return
+        self.add_normal_character(e)
 
     def get_last_word(self):
 
@@ -903,7 +969,15 @@ class BaseRepl(Repl):
             for unused in range(to_add):
                 self.add_normal_character(" ")
             return
-
+        # if cursor on closing character from pair,
+        # moves cursor behind it on tab
+        # ? should we leave it here as default?
+        if self.config.brackets_completion:
+            on_closing_char, _ = cursor_on_closing_char_pair(
+                self._cursor_offset, self._current_line
+            )
+            if on_closing_char:
+                self._cursor_offset += 1
         # run complete() if we don't already have matches
         if len(self.matches_iter.matches) == 0:
             self.list_win_visible = self.complete(tab=True)
@@ -915,7 +989,6 @@ class BaseRepl(Repl):
             # using _current_line so we don't trigger a completion reset
             if not self.matches_iter.matches:
                 self.list_win_visible = self.complete()
-
         elif self.matches_iter.matches:
             self.current_match = (
                 back and self.matches_iter.previous() or next(self.matches_iter)
@@ -924,6 +997,24 @@ class BaseRepl(Repl):
             self._cursor_offset, self._current_line = cursor_and_line
             # using _current_line so we don't trigger a completion reset
             self.list_win_visible = True
+        if self.config.brackets_completion:
+            # appends closing char pair if completion is a callable
+            if self.is_completion_callable(self._current_line):
+                self._current_line = self.append_closing_character(
+                    self._current_line
+                )
+
+    def is_completion_callable(self, completion):
+        """Checks whether given completion is callable (e.x. function)"""
+        completion_end = completion[-1]
+        return completion_end in CHARACTER_PAIR_MAP
+
+    def append_closing_character(self, completion):
+        """Appends closing character/bracket to the completion"""
+        completion_end = completion[-1]
+        if completion_end in CHARACTER_PAIR_MAP:
+            completion = f"{completion}{CHARACTER_PAIR_MAP[completion_end]}"
+        return completion
 
     def on_control_d(self):
         if self.current_line == "":
@@ -1071,7 +1162,7 @@ class BaseRepl(Repl):
             )
 
     # Handler Helpers
-    def add_normal_character(self, char):
+    def add_normal_character(self, char, narrow_search=True):
         if len(char) > 1 or is_nop(char):
             return
         if self.incr_search_mode:
@@ -1087,12 +1178,18 @@ class BaseRepl(Repl):
                 reset_rl_history=False,
                 clear_special_mode=False,
             )
-            self.cursor_offset += 1
+            if narrow_search:
+                self.cursor_offset += 1
+            else:
+                self._cursor_offset += 1
         if self.config.cli_trim_prompts and self.current_line.startswith(
             self.ps1
         ):
             self.current_line = self.current_line[4:]
-            self.cursor_offset = max(0, self.cursor_offset - 4)
+            if narrow_search:
+                self.cursor_offset = max(0, self.cursor_offset - 4)
+            else:
+                self._cursor_offset += max(0, self.cursor_offset - 4)
 
     def add_to_incremental_search(self, char=None, backspace=False):
         """Modify the current search term while in incremental search.

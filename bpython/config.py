@@ -156,6 +156,7 @@ class Config:
             "syntax": True,
             "tab_length": 4,
             "unicode_box": True,
+            "brackets_completion": False,
         },
         "keyboard": {
             "backspace": "C-h",
@@ -361,6 +362,9 @@ class Config:
             ("│", "│", "─", "─", "└", "┘", "┌", "┐")
             if self.unicode_box and supports_box_chars()
             else ("|", "|", "-", "-", "+", "+", "+", "+")
+        )
+        self.brackets_completion = config.getboolean(
+            "general", "brackets_completion"
         )
 
 

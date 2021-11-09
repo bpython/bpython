@@ -5,8 +5,9 @@ and the cursor location
 based on http://www.bigsmoke.us/readline/shortcuts"""
 
 from ..lazyre import LazyReCompile
-
 import inspect
+
+from ..line import cursor_on_closing_char_pair
 
 INDENT = 4
 
@@ -244,6 +245,18 @@ def backspace(cursor_offset, line):
             cursor_offset - to_delete,
             line[: cursor_offset - to_delete] + line[cursor_offset:],
         )
+    # removes opening bracket along with closing bracket
+    # if there is nothing between them
+    # TODO: could not get config value here, works even without -B option
+    on_closing_char, pair_close = cursor_on_closing_char_pair(
+        cursor_offset, line
+    )
+    if on_closing_char and pair_close:
+        return (
+            cursor_offset - 1,
+            line[: cursor_offset - 1] + line[cursor_offset + 1 :],
+        )
+
     return (cursor_offset - 1, line[: cursor_offset - 1] + line[cursor_offset:])
 
 
