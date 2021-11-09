@@ -7,6 +7,8 @@ Changelog
 General information:
 
 New features:
+* Auto-closing brackets option added. To enable, add `brackets_completion = True` in the bpython config (press F3 to create)
+  Thanks to samuelgregorovic
 
 Fixes:
 
