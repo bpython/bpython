@@ -10,10 +10,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix.python-version == 'pypy3.7' }}
+    continue-on-error: ${{ matrix.python-version == 'pypy-3.7' }}
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, "3.10", pypy3.7]
+        python-version: [3.7, 3.8, 3.9, "3.10", "pypy-3.7"]
     steps:
     - uses: actions/checkout@v2
       with:
