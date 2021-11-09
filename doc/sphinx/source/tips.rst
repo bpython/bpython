@@ -16,7 +16,7 @@ equivalent file.
 
 .. code-block:: bash
 
-  alias bpython3.5='PYTHONPATH=~/python/bpython python3.5 -m bpython.curtsies'
+  alias bpython3.5='PYTHONPATH=~/python/bpython python3.5 -m bpython'
 
 Where the `~/python/bpython`-path is the path to where your bpython source code
 resides.
