@@ -2067,7 +2067,7 @@ Press {config.edit_config_key} to edit this config file.
 
         max_func = max(len(func) for func, key in pairs)
         return "\n".join(
-            "{} : {}".format(func.rjust(max_func), key) for func, key in pairs
+            f"{func.rjust(max_func)} : {key}" for func, key in pairs
         )
 
     def get_session_formatted_for_file(self) -> str:

@@ -6,7 +6,7 @@ requires = [
 
 [tool.black]
 line-length = 80
-target_version = ["py36"]
+target_version = ["py37"]
 include = '\.pyi?$'
 exclude = '''
 /(

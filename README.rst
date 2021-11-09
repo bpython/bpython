@@ -8,9 +8,9 @@
     :target: https://github.com/ambv/black
 
 
-***********************************************************************
-bpython: A fancy curses interface to the Python interactive interpreter
-***********************************************************************
+****************************************************************
+bpython: A fancy interface to the Python interactive interpreter
+****************************************************************
 
 `bpython`_ is a lightweight Python interpreter that adds several features common
 to IDEs. These features include **syntax highlighting**, **expected parameter
@@ -34,11 +34,6 @@ etc.
 You can find more about bpython - including `full documentation`_ - at our
 `homepage`_.
 
-.. contents::
-  :local:
-    :depth: 1
-    :backlinks: none
-
 ==========================
 Installation & Basic Usage
 ==========================
@@ -55,71 +50,6 @@ If you have `pip`_ installed, you can simply run:
 Start bpython by typing ``bpython`` in your terminal. You can exit bpython by
 using the ``exit()`` command or by pressing control-D like regular interactive
 Python.
-
-Installation via OS Package Manager
------------------------------------
-
-The majority of desktop computer operating systems come with package management
-systems. If you use one of these OSes, you can install ``bpython`` using the
-package manager.
-
-Ubuntu/Debian
-~~~~~~~~~~~~~
-Ubuntu/Debian family Linux users can install ``bpython`` using the ``apt``
-package manager, using the command with ``sudo`` privileges:
-
-.. code-block:: bash
-
-    $ apt install bpython
-
-In case you are using an older version, run
-
-.. code-block:: bash
-
-    $ apt-get install bpython
-
-Arch Linux
-~~~~~~~~~~
-Arch Linux uses ``pacman`` as the default package manager; you can use it to install ``bpython``:
-
-.. code-block:: bash
-
-    $ pacman -S bpython
-
-Fedora
-~~~~~~~~~~
-Fedora users can install ``bpython`` directly from the command line using ``dnf``.
-
-.. code-block:: bash
-
-    $ dnf install bpython
-
-Windows
-~~~~~~~
-**Caveats:** As ``bpython`` makes use of the ncurses library of \*nix-family operating systems,
-bpython on Windows is not officially supported and tested.
-
-However, you may still use bpython on Windows using a workaround. In brief, you should install
-these two packages using ``pip``:
-
-.. code-block:: bash
-
-    $ pip install bpython windows-curses
-
-Then you should invoke a program called ``bpython-curses.exe`` instead of ``bpython.exe`` to use bpython:
-
-.. code-block:: bash
-
-    $ bpython-curses
-
-Mac OS
-~~~~~~
-Like Windows, Mac OS does not include a package manager by default. If you have installed any
-third-party package manager like MacPorts, you can install it via
-
-.. code-block:: bash
-
-    $ sudo port install py-bpython
 
 ===================
 Features & Examples
@@ -177,6 +107,56 @@ bpython-urwid
 
 * urwid
 
+
+===================================
+Installation via OS Package Manager
+===================================
+
+The majority of desktop computer operating systems come with package management
+systems. If you use one of these OSes, you can install ``bpython`` using the
+package manager.
+
+Ubuntu/Debian
+-------------
+Ubuntu/Debian family Linux users can install ``bpython`` using the ``apt``
+package manager, using the command with ``sudo`` privileges:
+
+.. code-block:: bash
+
+    $ apt install bpython
+
+In case you are using an older version, run
+
+.. code-block:: bash
+
+    $ apt-get install bpython
+
+Arch Linux
+----------
+Arch Linux uses ``pacman`` as the default package manager; you can use it to install ``bpython``:
+
+.. code-block:: bash
+
+    $ pacman -S bpython
+
+Fedora
+------
+Fedora users can install ``bpython`` directly from the command line using ``dnf``.
+
+.. code-block:: bash
+
+    $ dnf install bpython
+
+macOS
+-----
+macOS does not include a package manager by default. If you have installed any
+third-party package manager like MacPorts, you can install it via
+
+.. code-block:: bash
+
+    $ sudo port install py-bpython
+
+
 ==========
 Known Bugs
 ==========
@@ -194,52 +174,6 @@ at the community page on the `project homepage`_, or in the `community`_.
 
 Hope to see you there!
 
-===================
-CLI Windows Support
-===================
-
-Dependencies
-------------
-`Curses`_ Use the appropriate version compiled by Christoph Gohlke.
-
-`pyreadline`_ Use the version in the cheeseshop.
-
-Recommended
------------
-Obtain the less program from GnuUtils. This makes the pager work as intended.
-It can be obtained from cygwin or GnuWin32 or msys
-
-Current version is tested with
-------------------------------
-* Curses 2.2
-* pyreadline 1.7
-
-Curses Notes
-------------
-The curses used has a bug where the colours are displayed incorrectly:
-
-* red  is swapped with blue
-* cyan is swapped with yellow
-
-To correct this I have provided a windows.theme file.
-
-This curses implementation has 16 colors (dark and light versions of the
-colours)
-
-
-============
-Alternatives
-============
-
-`ptpython`_
-
-`IPython`_
-
-Feel free to get in touch if you know of any other alternatives that people
-may be interested to try.
-
-.. _ptpython: https://github.com/jonathanslenders/ptpython
-.. _ipython: https://ipython.org/
 .. _homepage: http://www.bpython-interpreter.org
 .. _full documentation: http://docs.bpython-interpreter.org/
 .. _issues tracker: http://github.com/bpython/bpython/issues/

@@ -265,9 +265,6 @@ class MatchesIterator:
             raise ValueError("No current match.")
         return self.matches[self.index]
 
-    def next(self):
-        return self.__next__()
-
     def __next__(self):
         self.index = (self.index + 1) % len(self.matches)
         return self.matches[self.index]
@@ -649,7 +646,7 @@ class Repl:
                     raise SourceNotFound(_("Nothing to get source of"))
                 if inspection.is_eval_safe_name(line):
                     obj = self.get_object(line)
-            return inspection.get_source_unicode(obj)
+            return inspect.getsource(obj)
         except (AttributeError, NameError) as e:
             msg = _("Cannot get source: %s") % (e,)
         except OSError as e:

@@ -1,6 +1,25 @@
 Changelog
 =========
 
+0.23
+----
+
+General information:
+
+New features:
+
+Fixes:
+
+* Support for Python 3.6 has been dropped.
+
+0.22.1
+------
+
+Fixes:
+
+* #938: Fix missing dependency on typing_extensions.
+  Thanks to Dustin Rodrigues
+
 0.22
 ----
 
