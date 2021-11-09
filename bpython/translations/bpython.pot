@@ -61,6 +61,7 @@ msgstr ""
 msgid "File to execute and additional arguments passed on to the executed script."
 msgstr ""
 
+#: bpython/curtsiesfrontend/interaction.py:107
 #: bpython/urwid.py:539
 msgid "y"
 msgstr ""
