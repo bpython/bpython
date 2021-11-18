@@ -155,7 +155,9 @@ class ModuleGatherer:
         else:
             return None
 
-    def find_modules(self, path: Path) -> Generator[str, None, None]:
+    def find_modules(
+        self, path: Path
+    ) -> Generator[Union[str, None], None, None]:
         """Find all modules (and packages) for a given directory."""
         if not path.is_dir():
             # Perhaps a zip file
@@ -219,9 +221,12 @@ class ModuleGatherer:
                     if (stat.st_dev, stat.st_ino) not in self.paths:
                         self.paths.add((stat.st_dev, stat.st_ino))
                         for subname in self.find_modules(path_real):
-                            if subname != "__init__":
+                            if subname is None:
+                                yield None  # take a break to avoid unresponsiveness
+                            elif subname != "__init__":
                                 yield f"{name}.{subname}"
                 yield name
+        yield None  # take a break to avoid unresponsiveness
 
     def find_all_modules(
         self, paths: Iterable[Path]
@@ -231,7 +236,8 @@ class ModuleGatherer:
 
         for p in paths:
             for module in self.find_modules(p):
-                self.modules.add(module)
+                if module is not None:
+                    self.modules.add(module)
                 yield
 
     def find_coroutine(self) -> Optional[bool]:
