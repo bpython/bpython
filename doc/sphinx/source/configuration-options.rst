@@ -22,6 +22,13 @@ characters (default: simple). None disables autocompletion.
 
 .. versionadded:: 0.12
 
+brackets_completion
+^^^^^^^^^^^^^^^^^^^
+Whether opening character of the pairs ``()``, ``[]``, ``""``, and ``''`` should be auto-closed
+(default: False).
+
+.. versionadded:: 0.23
+
 .. _configuration_color_scheme:
 
 color_scheme
@@ -173,7 +180,7 @@ Soft tab size (default 4, see PEP-8).
 
 unicode_box
 ^^^^^^^^^^^
-Whether to use Unicode characters to draw boxes.
+Whether to use Unicode characters to draw boxes (default: True).
 
 .. versionadded:: 0.14
 
