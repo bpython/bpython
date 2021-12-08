@@ -234,9 +234,9 @@ class MatchesIterator:
         # which word is currently replacing the current word
         self.index = -1
         # cursor position in the original line
-        self.orig_cursor_offset = None
+        self.orig_cursor_offset = -1
         # original line (before match replacements)
-        self.orig_line = None
+        self.orig_line = ""
         # class describing the current type of completion
         self.completer = None
 
@@ -327,8 +327,8 @@ class MatchesIterator:
 
     def clear(self):
         self.matches = []
-        self.cursor_offset = -1
-        self.current_line = ""
+        self.orig_cursor_offset = -1
+        self.orig_line = ""
         self.current_word = ""
         self.start = None
         self.end = None
