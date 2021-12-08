@@ -65,10 +65,9 @@ class RuntimeTimer:
 
     def __init__(self) -> None:
         self.reset_timer()
-        self.time = time.monotonic if hasattr(time, "monotonic") else time.time
 
     def __enter__(self) -> None:
-        self.start = self.time()
+        self.start = time.monotonic()
 
     def __exit__(
         self,
@@ -76,7 +75,7 @@ class RuntimeTimer:
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> Literal[False]:
-        self.last_command = self.time() - self.start
+        self.last_command = time.monotonic() - self.start
         self.running_time += self.last_command
         return False
 
