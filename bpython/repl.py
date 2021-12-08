@@ -37,7 +37,7 @@ from abc import abstractmethod
 from itertools import takewhile
 from pathlib import Path
 from types import ModuleType, TracebackType
-from typing import cast, Tuple, Any, Optional, Type
+from typing import cast, List, Tuple, Any, Optional, Type
 from ._typing_compat import Literal
 
 from pygments.lexers import Python3Lexer
@@ -226,11 +226,11 @@ class MatchesIterator:
     A MatchesIterator can be `clear`ed to reset match iteration, and
     `update`ed to set what matches will be iterated over."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # word being replaced in the original line of text
         self.current_word = ""
         # possible replacements for current_word
-        self.matches = None
+        self.matches: List[str] = []
         # which word is currently replacing the current word
         self.index = -1
         # cursor position in the original line
@@ -238,63 +238,67 @@ class MatchesIterator:
         # original line (before match replacements)
         self.orig_line = ""
         # class describing the current type of completion
-        self.completer = None
+        self.completer: Optional[autocomplete.BaseCompletionType] = None
 
-    def __nonzero__(self):
+    def __nonzero__(self) -> bool:
         """MatchesIterator is False when word hasn't been replaced yet"""
         return self.index != -1
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return self.index != -1
 
     @property
-    def candidate_selected(self):
+    def candidate_selected(self) -> bool:
         """True when word selected/replaced, False when word hasn't been
         replaced yet"""
         return bool(self)
 
-    def __iter__(self):
+    def __iter__(self) -> "MatchesIterator":
         return self
 
-    def current(self):
+    def current(self) -> str:
         if self.index == -1:
             raise ValueError("No current match.")
         return self.matches[self.index]
 
-    def __next__(self):
+    def __next__(self) -> str:
         self.index = (self.index + 1) % len(self.matches)
         return self.matches[self.index]
 
-    def previous(self):
+    def previous(self) -> str:
         if self.index <= 0:
             self.index = len(self.matches)
         self.index -= 1
 
         return self.matches[self.index]
 
-    def cur_line(self):
+    def cur_line(self) -> Tuple[int, str]:
         """Returns a cursor offset and line with the current substitution
         made"""
         return self.substitute(self.current())
 
-    def substitute(self, match):
+    def substitute(self, match) -> Tuple[int, str]:
         """Returns a cursor offset and line with match substituted in"""
-        start, end, word = self.completer.locate(
+        assert self.completer is not None
+
+        start, end, _ = self.completer.locate(
             self.orig_cursor_offset, self.orig_line
-        )
+        )  # type: ignore
         return (
             start + len(match),
             self.orig_line[:start] + match + self.orig_line[end:],
         )
 
-    def is_cseq(self):
+    def is_cseq(self) -> bool:
         return bool(
             os.path.commonprefix(self.matches)[len(self.current_word) :]
         )
 
-    def substitute_cseq(self):
+    def substitute_cseq(self) -> Tuple[int, str]:
         """Returns a new line by substituting a common sequence in, and update
         matches"""
+        assert self.completer is not None
+
         cseq = os.path.commonprefix(self.matches)
         new_cursor_offset, new_line = self.substitute(cseq)
         if len(self.matches) == 1:
@@ -307,7 +311,13 @@ class MatchesIterator:
                 self.clear()
         return new_cursor_offset, new_line
 
-    def update(self, cursor_offset, current_line, matches, completer):
+    def update(
+        self,
+        cursor_offset: int,
+        current_line: str,
+        matches: List[str],
+        completer: autocomplete.BaseCompletionType,
+    ) -> None:
         """Called to reset the match index and update the word being replaced
 
         Should only be called if there's a target to update - otherwise, call
@@ -323,9 +333,9 @@ class MatchesIterator:
         self.index = -1
         self.start, self.end, self.current_word = self.completer.locate(
             self.orig_cursor_offset, self.orig_line
-        )
+        )  # type: ignore
 
-    def clear(self):
+    def clear(self) -> None:
         self.matches = []
         self.orig_cursor_offset = -1
         self.orig_line = ""
