@@ -58,7 +58,7 @@ class AttrCleaner:
     def __init__(self, obj: Any) -> None:
         self.obj = obj
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         """Try to make an object not exhibit side-effects on attribute
         lookup."""
         type_ = type(self.obj)
