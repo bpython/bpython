@@ -33,7 +33,7 @@ from typing import (
     Tuple,
     Union,
 )
-from typing_extensions import Protocol
+from ._typing_compat import Protocol
 
 logger = logging.getLogger(__name__)
 

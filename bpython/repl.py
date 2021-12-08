@@ -38,7 +38,7 @@ from itertools import takewhile
 from pathlib import Path
 from types import ModuleType, TracebackType
 from typing import cast, Tuple, Any, Optional, Type
-from typing_extensions import Literal
+from ._typing_compat import Literal
 
 from pygments.lexers import Python3Lexer
 from pygments.token import Token

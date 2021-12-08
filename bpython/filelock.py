@@ -21,7 +21,7 @@
 # THE SOFTWARE.
 
 from typing import Optional, Type, IO
-from typing_extensions import Literal
+from ._typing_compat import Literal
 from types import TracebackType
 
 has_fcntl = True
