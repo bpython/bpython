@@ -1178,20 +1178,6 @@ def next_indentation(line, tab_length):
     return indentation
 
 
-def next_token_inside_string(code_string, inside_string):
-    """Given a code string s and an initial state inside_string, return
-    whether the next token will be inside a string or not."""
-    for token, value in Python3Lexer().get_tokens(code_string):
-        if token is Token.String:
-            value = value.lstrip("bBrRuU")
-            if value in ('"""', "'''", '"', "'"):
-                if not inside_string:
-                    inside_string = value
-                elif value == inside_string:
-                    inside_string = False
-    return inside_string
-
-
 def split_lines(tokens):
     for (token, value) in tokens:
         if not value:
