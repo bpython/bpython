@@ -63,11 +63,11 @@ from .importcompletion import ModuleGatherer
 class RuntimeTimer:
     """Calculate running time"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.reset_timer()
         self.time = time.monotonic if hasattr(time, "monotonic") else time.time
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         self.start = self.time()
 
     def __exit__(
@@ -80,11 +80,11 @@ class RuntimeTimer:
         self.running_time += self.last_command
         return False
 
-    def reset_timer(self):
+    def reset_timer(self) -> None:
         self.running_time = 0.0
         self.last_command = 0.0
 
-    def estimate(self):
+    def estimate(self) -> float:
         return self.running_time - self.last_command
 
 
