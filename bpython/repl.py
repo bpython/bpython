@@ -126,9 +126,6 @@ class Interpreter(code.InteractiveInterpreter):
         super().__init__(locals)
         self.timer = RuntimeTimer()
 
-    def reset_running_time(self):
-        self.running_time = 0
-
     def runsource(self, source, filename=None, symbol="single", encode="auto"):
         """Execute Python code.
 
