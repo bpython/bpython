@@ -128,7 +128,6 @@ if urwid.VERSION < (1, 0, 0) and hasattr(urwid, "TwistedEventLoop"):
 
             return wrapper
 
-
 else:
     TwistedEventLoop = getattr(urwid, "TwistedEventLoop", None)
 

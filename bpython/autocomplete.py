@@ -626,7 +626,6 @@ except ImportError:
         def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
             return None
 
-
 else:
 
     class JediCompletion(BaseCompletionType):
