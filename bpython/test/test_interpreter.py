@@ -35,7 +35,19 @@ class TestInterpreter(unittest.TestCase):
 
         i.runsource("1.1.1.1")
 
-        if (3, 10, 0) <= sys.version_info[:3] < (3, 10, 1):
+        if (3, 10, 1) <= sys.version_info[:3]:
+            expected = (
+                "  File "
+                + green('"<bpython-input-148>"')
+                + ", line "
+                + bold(magenta("1"))
+                + "\n    1.1.1.1\n       ^^\n"
+                + bold(red("SyntaxError"))
+                + ": "
+                + cyan("invalid syntax")
+                + "\n"
+            )
+        elif (3, 10) <= sys.version_info[:2]:
             expected = (
                 "  File "
                 + green('"<bpython-input-148>"')
