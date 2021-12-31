@@ -35,7 +35,7 @@ class TestInterpreter(unittest.TestCase):
 
         i.runsource("1.1.1.1")
 
-        if sys.version_info[:2] >= (3, 10):
+        if (3, 10, 0) <= sys.version_info[:3] < (3, 10, 1):
             expected = (
                 "  File "
                 + green('"<bpython-input-148>"')
@@ -47,7 +47,7 @@ class TestInterpreter(unittest.TestCase):
                 + cyan("invalid syntax. Perhaps you forgot a comma?")
                 + "\n"
             )
-        elif (3, 8) <= sys.version_info[:2] <= (3, 9):
+        elif (3, 8) <= sys.version_info[:2]:
             expected = (
                 "  File "
                 + green('"<input>"')
