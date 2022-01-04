@@ -24,7 +24,11 @@
 # Pygments really kicks ass, it made it really easy to
 # get the exact behaviour I wanted, thanks Pygments.:)
 
+# mypy: disallow_untyped_defs=True
+# mypy: disallow_untyped_calls=True
 
+
+from typing import MutableMapping, Any, Iterable, TextIO
 from pygments.formatter import Formatter
 from pygments.token import (
     Keyword,
@@ -96,7 +100,11 @@ class BPythonFormatter(Formatter):
     See the Pygments source for more info; it's pretty
     straightforward."""
 
-    def __init__(self, color_scheme, **options):
+    def __init__(
+        self,
+        color_scheme: MutableMapping[str, str],
+        **options: str
+    ) -> None:
         self.f_strings = {}
         for k, v in theme_map.items():
             self.f_strings[k] = f"\x01{color_scheme[v]}"
@@ -106,8 +114,12 @@ class BPythonFormatter(Formatter):
                 self.f_strings[k] += "I"
         super().__init__(**options)
 
-    def format(self, tokensource, outfile):
-        o = ""
+    def format(
+        self,
+        tokensource: Iterable[MutableMapping[Any, str]],
+        outfile: TextIO
+    ) -> None:
+        o: str = ""
         for token, text in tokensource:
             if text == "\n":
                 continue
