@@ -28,7 +28,7 @@
 # mypy: disallow_untyped_calls=True
 
 
-from typing import MutableMapping, Iterable, TextIO, Optional
+from typing import MutableMapping, Iterable, TextIO
 from pygments.formatter import Formatter
 from pygments.token import (
     _TokenType,
@@ -120,14 +120,15 @@ class BPythonFormatter(Formatter):
     ) -> None:
         o: str = ""
         for token, text in tokensource:
-            t: Optional[_TokenType] = token
             if text == "\n":
                 continue
 
-            while t not in self.f_strings:
-                if t is not None:
-                    t = t.parent
-            o += f"{self.f_strings[t]}\x03{text}\x04"
+            while token not in self.f_strings:
+                if token.parent is None:
+                    break
+                else:
+                    token = token.parent
+            o += f"{self.f_strings[token]}\x03{text}\x04"
         outfile.write(o.rstrip())
 
 
