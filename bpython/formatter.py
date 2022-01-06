@@ -28,9 +28,10 @@
 # mypy: disallow_untyped_calls=True
 
 
-from typing import MutableMapping, Any, Iterable, TextIO
+from typing import MutableMapping, Iterable, TextIO, Optional
 from pygments.formatter import Formatter
 from pygments.token import (
+    _TokenType,
     Keyword,
     Name,
     Comment,
@@ -113,16 +114,20 @@ class BPythonFormatter(Formatter):
         super().__init__(**options)
 
     def format(
-        self, tokensource: Iterable[MutableMapping[Any, str]], outfile: TextIO
+        self,
+        tokensource: Iterable[MutableMapping[_TokenType, str]],
+        outfile: TextIO,
     ) -> None:
         o: str = ""
         for token, text in tokensource:
+            t: Optional[_TokenType] = token
             if text == "\n":
                 continue
 
-            while token not in self.f_strings:
-                token = token.parent
-            o += f"{self.f_strings[token]}\x03{text}\x04"
+            while t not in self.f_strings:
+                if t is not None:
+                    t = t.parent
+            o += f"{self.f_strings[t]}\x03{text}\x04"
         outfile.write(o.rstrip())
 
 
