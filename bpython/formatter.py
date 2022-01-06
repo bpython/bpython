@@ -101,9 +101,7 @@ class BPythonFormatter(Formatter):
     straightforward."""
 
     def __init__(
-        self,
-        color_scheme: MutableMapping[str, str],
-        **options: str
+        self, color_scheme: MutableMapping[str, str], **options: str
     ) -> None:
         self.f_strings = {}
         for k, v in theme_map.items():
@@ -115,9 +113,7 @@ class BPythonFormatter(Formatter):
         super().__init__(**options)
 
     def format(
-        self,
-        tokensource: Iterable[MutableMapping[Any, str]],
-        outfile: TextIO
+        self, tokensource: Iterable[MutableMapping[Any, str]], outfile: TextIO
     ) -> None:
         o: str = ""
         for token, text in tokensource:
