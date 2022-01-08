@@ -814,16 +814,14 @@ class BaseRepl(Repl):
         else:
             self.add_normal_character(e)
 
-    def is_closing_quote(self, e):
+    def is_closing_quote(self, e: str) -> bool:
         char_count = self._current_line.count(e)
-        if (
+        return  (
             char_count % 2 == 0
             and cursor_on_closing_char_pair(
                 self._cursor_offset, self._current_line, e
             )[0]
-        ):
-            return True
-        return False
+        )
 
     def insert_char_pair_start(self, e):
         """Accepts character which is a part of CHARACTER_PAIR_MAP
