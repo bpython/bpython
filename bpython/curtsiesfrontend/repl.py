@@ -611,7 +611,7 @@ class BaseRepl(Repl):
 
     def sigtstp_handler(self, signum, frame):
         self.scroll_offset = len(self.lines_for_display)
-        self.__exit__()
+        self.__exit__(None, None, None)
         self.on_suspend()
         os.kill(os.getpid(), signal.SIGTSTP)
         self.after_suspend()
