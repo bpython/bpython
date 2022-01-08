@@ -816,7 +816,7 @@ class BaseRepl(Repl):
 
     def is_closing_quote(self, e: str) -> bool:
         char_count = self._current_line.count(e)
-        return  (
+        return (
             char_count % 2 == 0
             and cursor_on_closing_char_pair(
                 self._cursor_offset, self._current_line, e
@@ -843,7 +843,9 @@ class BaseRepl(Repl):
                 else self._current_line[self._cursor_offset]
             )
             if start_of_line or end_of_line or next_char in "})] ":
-                self.add_normal_character(CHARACTER_PAIR_MAP[e], narrow_search=False)
+                self.add_normal_character(
+                    CHARACTER_PAIR_MAP[e], narrow_search=False
+                )
                 self._cursor_offset -= 1
 
     def insert_char_pair_end(self, e):
