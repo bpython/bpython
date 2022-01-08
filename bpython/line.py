@@ -7,7 +7,7 @@ word."""
 import re
 
 from itertools import chain
-from typing import Optional, NamedTuple
+from typing import Optional, NamedTuple, Tuple
 
 from .lazyre import LazyReCompile
 
@@ -290,7 +290,9 @@ def current_expression_attribute(
     return None
 
 
-def cursor_on_closing_char_pair(cursor_offset, line, ch=None):
+def cursor_on_closing_char_pair(
+    cursor_offset: int, line: str, ch: Optional[str] = None
+) -> Tuple[bool, bool]:
     """Checks if cursor sits on closing character of a pair
     and whether its pair character is directly behind it
     """
