@@ -63,7 +63,7 @@ class AutocompleteModes(Enum):
     FUZZY = "fuzzy"
 
     @classmethod
-    def from_string(cls, value: str) -> Optional[Any]:
+    def from_string(cls, value: str) -> Optional["AutocompleteModes"]:
         if value.upper() in cls.__members__:
             return cls.__members__[value.upper()]
         return None
