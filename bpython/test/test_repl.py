@@ -10,8 +10,12 @@ from pathlib import Path
 from unittest import mock
 
 from bpython import config, repl, cli, autocomplete
-from bpython.test import MagicIterMock, FixLanguageTestCase as TestCase
-from bpython.test import TEST_CONFIG
+from bpython.line import LinePart
+from bpython.test import (
+    MagicIterMock,
+    FixLanguageTestCase as TestCase,
+    TEST_CONFIG,
+)
 
 
 pypy = "PyPy" in sys.version
@@ -99,7 +103,7 @@ class TestMatchesIterator(unittest.TestCase):
 
         newmatches = ["string", "str", "set"]
         completer = mock.Mock()
-        completer.locate.return_value = (0, 1, "s")
+        completer.locate.return_value = LinePart(0, 1, "s")
         self.matches_iterator.update(1, "s", newmatches, completer)
 
         newslice = islice(newmatches, 0, 3)
@@ -108,7 +112,7 @@ class TestMatchesIterator(unittest.TestCase):
 
     def test_cur_line(self):
         completer = mock.Mock()
-        completer.locate.return_value = (
+        completer.locate.return_value = LinePart(
             0,
             self.matches_iterator.orig_cursor_offset,
             self.matches_iterator.orig_line,

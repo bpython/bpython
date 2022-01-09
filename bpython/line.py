@@ -130,15 +130,14 @@ def current_object(cursor_offset: int, line: str) -> Optional[LinePart]:
     match = current_word(cursor_offset, line)
     if match is None:
         return None
-    start, end, word = match
     s = ".".join(
         m.group(1)
-        for m in _current_object_re.finditer(word)
-        if m.end(1) + start < cursor_offset
+        for m in _current_object_re.finditer(match.word)
+        if m.end(1) + match.start < cursor_offset
     )
     if not s:
         return None
-    return LinePart(start, start + len(s), s)
+    return LinePart(match.start, match.start + len(s), s)
 
 
 _current_object_attribute_re = LazyReCompile(r"([\w_][\w0-9_]*)[.]?")
@@ -152,12 +151,13 @@ def current_object_attribute(
     match = current_word(cursor_offset, line)
     if match is None:
         return None
-    start, end, word = match
-    matches = _current_object_attribute_re.finditer(word)
+    matches = _current_object_attribute_re.finditer(match.word)
     next(matches)
     for m in matches:
-        if m.start(1) + start <= cursor_offset <= m.end(1) + start:
-            return LinePart(m.start(1) + start, m.end(1) + start, m.group(1))
+        if m.start(1) + match.start <= cursor_offset <= m.end(1) + match.start:
+            return LinePart(
+                m.start(1) + match.start, m.end(1) + match.start, m.group(1)
+            )
     return None
 
 
@@ -266,11 +266,8 @@ def current_dotted_attribute(
 ) -> Optional[LinePart]:
     """The dotted attribute-object pair before the cursor"""
     match = current_word(cursor_offset, line)
-    if match is None:
-        return None
-    start, end, word = match
-    if "." in word[1:]:
-        return LinePart(start, end, word)
+    if match is not None and "." in match.word[1:]:
+        return match
     return None
 
 

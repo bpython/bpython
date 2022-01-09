@@ -135,22 +135,22 @@ class ModuleGatherer:
             if import_import is not None:
                 # `from a import <b|>` completion
                 matches = self.module_matches(
-                    import_import[2], from_import_from[2]
+                    import_import.word, from_import_from.word
                 )
                 matches.update(
-                    self.attr_matches(import_import[2], from_import_from[2])
+                    self.attr_matches(import_import.word, from_import_from.word)
                 )
             else:
                 # `from <a|>` completion
-                matches = self.module_attr_matches(from_import_from[2])
-                matches.update(self.module_matches(from_import_from[2]))
+                matches = self.module_attr_matches(from_import_from.word)
+                matches.update(self.module_matches(from_import_from.word))
             return matches
 
         cur_import = current_import(cursor_offset, line)
         if cur_import is not None:
             # `import <a|>` completion
-            matches = self.module_matches(cur_import[2])
-            matches.update(self.module_attr_matches(cur_import[2]))
+            matches = self.module_matches(cur_import.word)
+            matches.update(self.module_attr_matches(cur_import.word))
             return matches
         else:
             return None

@@ -12,6 +12,7 @@ except ImportError:
     has_jedi = False
 
 from bpython import autocomplete
+from bpython.line import LinePart
 
 glob_function = "glob.iglob"
 
@@ -114,7 +115,9 @@ class TestFilenameCompletion(unittest.TestCase):
         self.assertEqual(self.completer.locate(4, "abcd"), None)
 
     def test_locate_succeeds_when_in_string(self):
-        self.assertEqual(self.completer.locate(4, "a'bc'd"), (2, 4, "bc"))
+        self.assertEqual(
+            self.completer.locate(4, "a'bc'd"), LinePart(2, 4, "bc")
+        )
 
     def test_issue_491(self):
         self.assertNotEqual(self.completer.matches(9, '"a[a.l-1]'), None)

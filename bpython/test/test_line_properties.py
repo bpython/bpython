@@ -1,7 +1,9 @@
 import re
+from typing import Optional, Tuple
 import unittest
 
 from bpython.line import (
+    LinePart,
     current_word,
     current_dict_key,
     current_dict,
@@ -25,7 +27,7 @@ def cursor(s):
     return cursor_offset, line
 
 
-def decode(s):
+def decode(s: str) -> Tuple[Tuple[int, str], Optional[LinePart]]:
     """'a<bd|c>d' -> ((3, 'abcd'), (1, 3, 'bdc'))"""
 
     if not s.count("|") == 1:
@@ -41,16 +43,16 @@ def decode(s):
     assert len(d) in [1, 3], "need all the parts just once! %r" % d
 
     if "<" in d:
-        return (d["|"], s), (d["<"], d[">"], s[d["<"] : d[">"]])
+        return (d["|"], s), LinePart(d["<"], d[">"], s[d["<"] : d[">"]])
     else:
         return (d["|"], s), None
 
 
-def line_with_cursor(cursor_offset, line):
+def line_with_cursor(cursor_offset: int, line: str) -> str:
     return line[:cursor_offset] + "|" + line[cursor_offset:]
 
 
-def encode(cursor_offset, line, result):
+def encode(cursor_offset: int, line: str, result: Optional[LinePart]) -> str:
     """encode(3, 'abdcd', (1, 3, 'bdc')) -> a<bd|c>d'
 
     Written for prettier assert error messages
@@ -58,7 +60,9 @@ def encode(cursor_offset, line, result):
     encoded_line = line_with_cursor(cursor_offset, line)
     if result is None:
         return encoded_line
-    start, end, value = result
+    start = result.start
+    end = result.stop
+    value = result.word
     assert line[start:end] == value
     if start < cursor_offset:
         encoded_line = encoded_line[:start] + "<" + encoded_line[start:]
@@ -107,19 +111,25 @@ class TestHelpers(LineTestCase):
         self.assertEqual(cursor("asd|fgh"), (3, "asdfgh"))
 
     def test_decode(self):
-        self.assertEqual(decode("a<bd|c>d"), ((3, "abdcd"), (1, 4, "bdc")))
-        self.assertEqual(decode("a|<bdc>d"), ((1, "abdcd"), (1, 4, "bdc")))
-        self.assertEqual(decode("a<bdc>d|"), ((5, "abdcd"), (1, 4, "bdc")))
+        self.assertEqual(
+            decode("a<bd|c>d"), ((3, "abdcd"), LinePart(1, 4, "bdc"))
+        )
+        self.assertEqual(
+            decode("a|<bdc>d"), ((1, "abdcd"), LinePart(1, 4, "bdc"))
+        )
+        self.assertEqual(
+            decode("a<bdc>d|"), ((5, "abdcd"), LinePart(1, 4, "bdc"))
+        )
 
     def test_encode(self):
-        self.assertEqual(encode(3, "abdcd", (1, 4, "bdc")), "a<bd|c>d")
-        self.assertEqual(encode(1, "abdcd", (1, 4, "bdc")), "a|<bdc>d")
-        self.assertEqual(encode(4, "abdcd", (1, 4, "bdc")), "a<bdc|>d")
-        self.assertEqual(encode(5, "abdcd", (1, 4, "bdc")), "a<bdc>d|")
+        self.assertEqual(encode(3, "abdcd", LinePart(1, 4, "bdc")), "a<bd|c>d")
+        self.assertEqual(encode(1, "abdcd", LinePart(1, 4, "bdc")), "a|<bdc>d")
+        self.assertEqual(encode(4, "abdcd", LinePart(1, 4, "bdc")), "a<bdc|>d")
+        self.assertEqual(encode(5, "abdcd", LinePart(1, 4, "bdc")), "a<bdc>d|")
 
     def test_assert_access(self):
         def dumb_func(cursor_offset, line):
-            return (0, 2, "ab")
+            return LinePart(0, 2, "ab")
 
         self.func = dumb_func
         self.assertAccess("<a|b>d")

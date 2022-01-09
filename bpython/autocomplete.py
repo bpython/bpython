@@ -481,7 +481,7 @@ class DictKeyCompletion(BaseCompletionType):
         if current_dict_parts is None:
             return None
 
-        _, _, dexpr = current_dict_parts
+        dexpr = current_dict_parts.word
         try:
             obj = safe_eval(dexpr, locals_)
         except EvaluationError:

@@ -239,6 +239,8 @@ class MatchesIterator:
         self.orig_line = ""
         # class describing the current type of completion
         self.completer: Optional[autocomplete.BaseCompletionType] = None
+        self.start: Optional[int] = None
+        self.end: Optional[int] = None
 
     def __nonzero__(self) -> bool:
         """MatchesIterator is False when word hasn't been replaced yet"""
@@ -277,16 +279,15 @@ class MatchesIterator:
         made"""
         return self.substitute(self.current())
 
-    def substitute(self, match) -> Tuple[int, str]:
+    def substitute(self, match: str) -> Tuple[int, str]:
         """Returns a cursor offset and line with match substituted in"""
         assert self.completer is not None
 
-        start, end, _ = self.completer.locate(
-            self.orig_cursor_offset, self.orig_line
-        )  # type: ignore
+        lp = self.completer.locate(self.orig_cursor_offset, self.orig_line)
+        assert lp is not None
         return (
-            start + len(match),
-            self.orig_line[:start] + match + self.orig_line[end:],
+            lp.start + len(match),
+            self.orig_line[: lp.start] + match + self.orig_line[lp.stop :],
         )
 
     def is_cseq(self) -> bool:
@@ -331,9 +332,11 @@ class MatchesIterator:
         self.matches = matches
         self.completer = completer
         self.index = -1
-        self.start, self.end, self.current_word = self.completer.locate(
-            self.orig_cursor_offset, self.orig_line
-        )  # type: ignore
+        lp = self.completer.locate(self.orig_cursor_offset, self.orig_line)
+        assert lp is not None
+        self.start = lp.start
+        self.end = lp.stop
+        self.current_word = lp.word
 
     def clear(self) -> None:
         self.matches = []
