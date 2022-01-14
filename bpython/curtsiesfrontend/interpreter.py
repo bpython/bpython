@@ -1,11 +1,13 @@
 import sys
-from typing import Any, Dict, Optional
+from codeop import CommandCompiler
+from typing import Any, Dict, Iterable, Optional, Tuple, Union
 
 from pygments.token import Generic, Token, Keyword, Name, Comment, String
 from pygments.token import Error, Literal, Number, Operator, Punctuation
-from pygments.token import Whitespace
+from pygments.token import Whitespace, _TokenType
 from pygments.formatter import Formatter
 from pygments.lexers import get_lexer_by_name
+from curtsies.formatstring import FmtStr
 
 from ..curtsiesfrontend.parse import parse
 from ..repl import Interpreter as ReplInterpreter
@@ -43,7 +45,11 @@ class BPythonFormatter(Formatter):
     See the Pygments source for more info; it's pretty
     straightforward."""
 
-    def __init__(self, color_scheme, **options):
+    def __init__(
+        self,
+        color_scheme: Dict[_TokenType, str],
+        **options: Union[str, bool, None],
+    ) -> None:
         self.f_strings = {k: f"\x01{v}" for k, v in color_scheme.items()}
         super().__init__(**options)
 
@@ -71,7 +77,7 @@ class Interp(ReplInterpreter):
 
         # typically changed after being instantiated
         # but used when interpreter used corresponding REPL
-        def write(err_line):
+        def write(err_line: Union[str, FmtStr]) -> None:
             """Default stderr handler for tracebacks
 
             Accepts FmtStrs so interpreters can output them"""
@@ -80,13 +86,14 @@ class Interp(ReplInterpreter):
         self.write = write  # type: ignore
         self.outfile = self
 
-    def writetb(self, lines):
+    def writetb(self, lines: Iterable[str]) -> None:
         tbtext = "".join(lines)
         lexer = get_lexer_by_name("pytb")
         self.format(tbtext, lexer)
         # TODO for tracebacks get_lexer_by_name("pytb", stripall=True)
 
-    def format(self, tbtext, lexer):
+    def format(self, tbtext: str, lexer: Any) -> None:
+        # FIXME: lexer should is a Lexer
         traceback_informative_formatter = BPythonFormatter(default_colors)
         traceback_code_formatter = BPythonFormatter({Token: ("d")})
         tokens = list(lexer.get_tokens(tbtext))
@@ -112,7 +119,9 @@ class Interp(ReplInterpreter):
         assert cur_line == [], cur_line
 
 
-def code_finished_will_parse(s, compiler):
+def code_finished_will_parse(
+    s: str, compiler: CommandCompiler
+) -> Tuple[bool, bool]:
     """Returns a tuple of whether the buffer could be complete and whether it
     will parse
 
