@@ -106,9 +106,7 @@ def main():
             print("\t" + " ".join(sys.argv[1:]))
         except SystemExit:
             # In most cases SystemExit does not warrant a post-mortem session.
-            print(
-                "The program exited via sys.exit(). Exit status: ",
-            )
+            print("The program exited via sys.exit(). Exit status: ",)
             print(sys.exc_info()[1])
         except:
             traceback.print_exc()

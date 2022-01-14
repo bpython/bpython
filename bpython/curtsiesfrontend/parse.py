@@ -42,7 +42,7 @@ def color_for_letter(letter_color_code: str, default: str = "k"):
     return CNAMES[letter_color_code.lower()]
 
 
-def parse(s):
+def parse(s) -> FmtStr:
     """Returns a FmtStr object from a bpython-formatted colored string"""
     rest = s
     stuff = []

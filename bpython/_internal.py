@@ -21,7 +21,7 @@ class _Helper:
             "or help(object) for help about object."
         )
 
-    def __call__(self, *args, **kwargs) -> None:
+    def __call__(self, *args: str, **kwargs: int) -> None:
         self.helper(*args, **kwargs)
 
 

@@ -78,11 +78,11 @@ class FullCurtsiesRepl(BaseRepl):
         ] = self.input_generator.scheduled_event_trigger(
             events.ScheduledRefreshRequestEvent
         )
-        self._request_reload_callback = (
-            self.input_generator.threadsafe_event_trigger(events.ReloadEvent)
+        self._request_reload_callback = self.input_generator.threadsafe_event_trigger(
+            events.ReloadEvent
         )
-        self._interrupting_refresh_callback = (
-            self.input_generator.threadsafe_event_trigger(lambda: None)
+        self._interrupting_refresh_callback = self.input_generator.threadsafe_event_trigger(
+            lambda: None
         )
         self._request_undo_callback = self.input_generator.event_trigger(
             events.UndoEvent

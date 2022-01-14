@@ -100,10 +100,7 @@ class CrashersTest:
                 str(TEST_CONFIG),
                 "-q",  # prevents version greeting
             ),
-            env={
-                "TERM": "vt100",
-                "LANG": os.environ.get("LANG", "C.UTF-8"),
-            },
+            env={"TERM": "vt100", "LANG": os.environ.get("LANG", "C.UTF-8"),},
             usePTY=(master, slave, os.ttyname(slave)),
         )
         return result

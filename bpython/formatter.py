@@ -25,6 +25,7 @@
 # get the exact behaviour I wanted, thanks Pygments.:)
 
 
+from typing import Dict, TextIO, Tuple
 from pygments.formatter import Formatter
 from pygments.token import (
     Keyword,
@@ -96,7 +97,7 @@ class BPythonFormatter(Formatter):
     See the Pygments source for more info; it's pretty
     straightforward."""
 
-    def __init__(self, color_scheme, **options):
+    def __init__(self, color_scheme: Dict, **options: int) -> None:
         self.f_strings = {}
         for k, v in theme_map.items():
             self.f_strings[k] = f"\x01{color_scheme[v]}"
@@ -106,7 +107,7 @@ class BPythonFormatter(Formatter):
                 self.f_strings[k] += "I"
         super().__init__(**options)
 
-    def format(self, tokensource, outfile):
+    def format(self, tokensource: Tuple, outfile: TextIO) -> None:
         o = ""
         for token, text in tokensource:
             if text == "\n":

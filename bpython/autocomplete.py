@@ -626,6 +626,7 @@ except ImportError:
         def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
             return None
 
+
 else:
 
     class JediCompletion(BaseCompletionType):
@@ -691,8 +692,7 @@ else:
 
             if "\n" in current_block:
                 assert cursor_offset <= len(line), "{!r} {!r}".format(
-                    cursor_offset,
-                    line,
+                    cursor_offset, line,
                 )
                 results = super().matches(cursor_offset, line, history=history)
                 return results

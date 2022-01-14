@@ -1,11 +1,11 @@
 import sys
-from typing import Any, Dict
-
-from pygments.token import Generic, Token, Keyword, Name, Comment, String
+from typing import Any, AnyStr, Dict, List, NoReturn, TextIO, IO, Tuple, Union
+from curtsies.formatstring import fmtstr, FmtStr
+from pygments.token import Generic, Token, Keyword, Name, Comment, String  # type: ignore
 from pygments.token import Error, Literal, Number, Operator, Punctuation
 from pygments.token import Whitespace
-from pygments.formatter import Formatter
-from pygments.lexers import get_lexer_by_name
+from pygments.formatter import Formatter  # type: ignore
+from pygments.lexers import get_lexer_by_name  # type: ignore
 
 from ..curtsiesfrontend.parse import parse
 from ..repl import Interpreter as ReplInterpreter
@@ -43,13 +43,13 @@ class BPythonFormatter(Formatter):
     See the Pygments source for more info; it's pretty
     straightforward."""
 
-    def __init__(self, color_scheme, **options):
+    def __init__(self, color_scheme: Dict, **options: int) -> None:
         self.f_strings = {}
         for k, v in color_scheme.items():
             self.f_strings[k] = f"\x01{v}"
         super().__init__(**options)
 
-    def format(self, tokensource, outfile):
+    def format(self, tokensource: Any, outfile: Any) -> None:
         o = ""
 
         for token, text in tokensource:
@@ -60,7 +60,9 @@ class BPythonFormatter(Formatter):
 
 
 class Interp(ReplInterpreter):
-    def __init__(self, locals: Dict[str, Any] = None, encoding=None):
+    def __init__(
+        self, locals: Dict[str, Any] = None, encoding: str = None
+    ) -> None:
         """Constructor.
 
         We include an argument for the outfile to pass to the formatter for it
@@ -70,7 +72,7 @@ class Interp(ReplInterpreter):
 
         # typically changed after being instantiated
         # but used when interpreter used corresponding REPL
-        def write(err_line):
+        def write(err_line: Any) -> None:
             """Default stderr handler for tracebacks
 
             Accepts FmtStrs so interpreters can output them"""
@@ -79,13 +81,13 @@ class Interp(ReplInterpreter):
         self.write = write  # type: ignore
         self.outfile = self
 
-    def writetb(self, lines):
+    def writetb(self, lines: List[str]) -> None:
         tbtext = "".join(lines)
         lexer = get_lexer_by_name("pytb")
         self.format(tbtext, lexer)
         # TODO for tracebacks get_lexer_by_name("pytb", stripall=True)
 
-    def format(self, tbtext, lexer):
+    def format(self, tbtext: str, lexer: Any) -> None:
         traceback_informative_formatter = BPythonFormatter(default_colors)
         traceback_code_formatter = BPythonFormatter({Token: ("d")})
         tokens = list(lexer.get_tokens(tbtext))
@@ -111,7 +113,7 @@ class Interp(ReplInterpreter):
         assert cur_line == [], cur_line
 
 
-def code_finished_will_parse(s, compiler):
+def code_finished_will_parse(s: Any, compiler: Any) -> Tuple[bool, bool]:
     """Returns a tuple of whether the buffer could be complete and whether it
     will parse
 

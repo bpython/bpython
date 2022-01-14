@@ -128,6 +128,7 @@ if urwid.VERSION < (1, 0, 0) and hasattr(urwid, "TwistedEventLoop"):
 
             return wrapper
 
+
 else:
     TwistedEventLoop = getattr(urwid, "TwistedEventLoop", None)
 
@@ -1144,12 +1145,7 @@ def main(args=None, locals_=None, banner=None):
 
     # TODO: maybe support displays other than raw_display?
     config, options, exec_args = bpargs.parse(
-        args,
-        (
-            "Urwid options",
-            None,
-            options_callback,
-        ),
+        args, ("Urwid options", None, options_callback,),
     )
 
     if options.help_reactors:

@@ -11,6 +11,7 @@ except ImportError:
     def ModuleChangedEventHandler(*args):
         return None
 
+
 else:
 
     class ModuleChangedEventHandler(FileSystemEventHandler):  # type: ignore [no-redef]
