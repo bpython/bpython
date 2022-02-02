@@ -398,13 +398,10 @@ class AttrCompletion(BaseCompletionType):
 
         assert "." in r.word
 
-        for i in range(1, len(r.word) + 1):
-            if r.word[-i] == "[":
-                i -= 1
-                break
-        methodtext = r.word[-i:]
+        i = r.word.rfind("[") + 1
+        methodtext = r.word[i:]
         matches = {
-            "".join([r.word[:-i], m])
+            "".join([r.word[:i], m])
             for m in self.attr_matches(methodtext, locals_)
         }
 
