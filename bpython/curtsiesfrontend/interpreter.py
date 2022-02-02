@@ -1,5 +1,5 @@
 import sys
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from pygments.token import Generic, Token, Keyword, Name, Comment, String
 from pygments.token import Error, Literal, Number, Operator, Punctuation
@@ -60,7 +60,11 @@ class BPythonFormatter(Formatter):
 
 
 class Interp(ReplInterpreter):
-    def __init__(self, locals: Dict[str, Any] = None, encoding=None):
+    def __init__(
+        self,
+        locals: Optional[Dict[str, Any]] = None,
+        encoding: Optional[str] = None,
+    ) -> None:
         """Constructor.
 
         We include an argument for the outfile to pass to the formatter for it

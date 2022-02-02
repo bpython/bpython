@@ -312,10 +312,10 @@ class BaseRepl(Repl):
     def __init__(
         self,
         config: Config,
-        locals_: Dict[str, Any] = None,
-        banner: str = None,
-        interp: code.InteractiveInterpreter = None,
-        orig_tcattrs: List[Any] = None,
+        locals_: Optional[Dict[str, Any]] = None,
+        banner: Optional[str] = None,
+        interp: Optional[code.InteractiveInterpreter] = None,
+        orig_tcattrs: Optional[List[Any]] = None,
     ):
         """
         locals_ is a mapping of locals to pass into the interpreter
