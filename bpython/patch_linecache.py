@@ -53,10 +53,10 @@ class BPythonLinecache(dict):
             return super().__delitem__(key)
 
 
-def _bpython_clear_linecache():
-    try:
+def _bpython_clear_linecache() -> None:
+    if isinstance(linecache.cache, BPythonLinecache):
         bpython_history = linecache.cache.bpython_history
-    except AttributeError:
+    else:
         bpython_history = []
     linecache.cache = BPythonLinecache()
     linecache.cache.bpython_history = bpython_history
@@ -68,12 +68,12 @@ linecache.cache = BPythonLinecache(linecache.cache)  # type: ignore
 linecache.clearcache = _bpython_clear_linecache
 
 
-def filename_for_console_input(code_string):
+def filename_for_console_input(code_string: str) -> str:
     """Remembers a string of source code, and returns
     a fake filename to use to retrieve it later."""
-    try:
+    if isinstance(linecache.cache, BPythonLinecache):
         return linecache.cache.remember_bpython_input(code_string)
-    except AttributeError:
+    else:
         # If someone else has patched linecache.cache, better for code to
         # simply be unavailable to inspect.getsource() than to raise
         # an exception.
