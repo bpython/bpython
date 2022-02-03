@@ -8,12 +8,12 @@ class BPythonLinecache(dict):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.bpython_history = []
+        self.bpython_history: List[Tuple[int, None, List[str], str]] = []
 
     def is_bpython_filename(self, fname: Any) -> bool:
-        try:
+        if isinstance(fname, str):
             return fname.startswith("<bpython-input-")
-        except AttributeError:
+        else:
             # In case the key isn't a string
             return False
 
