@@ -1,22 +1,23 @@
 import linecache
+from typing import Any, List, Tuple
 
 
 class BPythonLinecache(dict):
     """Replaces the cache dict in the standard-library linecache module,
     to also remember (in an unerasable way) bpython console input."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.bpython_history = []
 
-    def is_bpython_filename(self, fname):
+    def is_bpython_filename(self, fname: Any) -> bool:
         try:
             return fname.startswith("<bpython-input-")
         except AttributeError:
             # In case the key isn't a string
             return False
 
-    def get_bpython_history(self, key):
+    def get_bpython_history(self, key: str) -> Tuple[int, None, List[str], str]:
         """Given a filename provided by remember_bpython_input,
         returns the associated source string."""
         try:
@@ -25,21 +26,21 @@ class BPythonLinecache(dict):
         except (IndexError, ValueError):
             raise KeyError
 
-    def remember_bpython_input(self, source):
+    def remember_bpython_input(self, source: str) -> str:
         """Remembers a string of source code, and returns
         a fake filename to use to retrieve it later."""
-        filename = "<bpython-input-%s>" % len(self.bpython_history)
+        filename = f"<bpython-input-{len(self.bpython_history)}>"
         self.bpython_history.append(
             (len(source), None, source.splitlines(True), filename)
         )
         return filename
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Any) -> Any:
         if self.is_bpython_filename(key):
             return self.get_bpython_history(key)
         return super().__getitem__(key)
 
-    def __contains__(self, key):
+    def __contains__(self, key: Any) -> bool:
         if self.is_bpython_filename(key):
             try:
                 self.get_bpython_history(key)
@@ -48,9 +49,9 @@ class BPythonLinecache(dict):
                 return False
         return super().__contains__(key)
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: Any) -> None:
         if not self.is_bpython_filename(key):
-            return super().__delitem__(key)
+            super().__delitem__(key)
 
 
 def _bpython_clear_linecache() -> None:
