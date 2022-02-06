@@ -21,6 +21,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+# mypy: disallow_untyped_defs=True
+# mypy: disallow_untyped_calls=True
 
 # Modified by Brandon Navra
 # Notes for Windows
