@@ -52,7 +52,7 @@ import re
 import struct
 import sys
 import time
-from typing import Iterator, NoReturn, List
+from typing import Iterator, NoReturn, List, MutableMapping, Any
 import unicodedata
 from dataclasses import dataclass
 
@@ -66,7 +66,7 @@ if platform.system() != "Windows":
 from pygments import format
 from pygments.formatters import TerminalFormatter
 from pygments.lexers import Python3Lexer
-from pygments.token import Token
+from pygments.token import Token, _TokenType
 from .formatter import BPythonFormatter
 
 # This for config
@@ -100,7 +100,9 @@ class ShowListState:
     wl: int = 0
 
 
-def calculate_screen_lines(tokens, width, cursor=0) -> int:
+def calculate_screen_lines(
+    tokens: MutableMapping[_TokenType, str], width: int, cursor: int = 0
+) -> int:
     """Given a stream of tokens and a screen width plus an optional
     initial cursor position, return the amount of needed lines on the
     screen."""
