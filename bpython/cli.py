@@ -52,7 +52,7 @@ import re
 import struct
 import sys
 import time
-from typing import Iterator, NoReturn, List, MutableMapping, Any
+from typing import Iterator, NoReturn, List, MutableMapping, Any, Callable
 import unicodedata
 from dataclasses import dataclass
 
@@ -118,9 +118,9 @@ def calculate_screen_lines(
     return lines
 
 
-def forward_if_not_current(func):
+def forward_if_not_current(func: Callable) -> Callable:
     @functools.wraps(func)
-    def newfunc(self, *args, **kwargs):
+    def newfunc(self, *args: Any, **kwargs: Any) -> Any:
         dest = self.get_dest()
         if self is dest:
             return func(self, *args, **kwargs)
