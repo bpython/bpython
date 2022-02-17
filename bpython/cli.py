@@ -52,7 +52,7 @@ import re
 import struct
 import sys
 import time
-from typing import Iterator, NoReturn, List, MutableMapping, Any, Callable
+from typing import Iterator, NoReturn, List, MutableMapping, Any, Callable, TypeVar, cast
 import unicodedata
 from dataclasses import dataclass
 
@@ -84,6 +84,7 @@ from . import args as bpargs
 from .pager import page
 from .args import parse as argsparse
 
+F = TypeVar('F', bound=Callable[..., Any])
 
 # --- module globals ---
 stdscr = None
@@ -118,16 +119,16 @@ def calculate_screen_lines(
     return lines
 
 
-def forward_if_not_current(func: Callable) -> Callable:
+def forward_if_not_current(func: F) -> F:
     @functools.wraps(func)
-    def newfunc(self, *args: Any, **kwargs: Any) -> Any:
+    def newfunc(self, *args, **kwargs):  # type: ignore
         dest = self.get_dest()
         if self is dest:
             return func(self, *args, **kwargs)
         else:
             return getattr(self.get_dest(), newfunc.__name__)(*args, **kwargs)
 
-    return newfunc
+    return cast(F, newfunc)
 
 
 class FakeStream:
