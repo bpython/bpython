@@ -315,10 +315,10 @@ def make_colors(config: Config) -> MutableMapping[str, int]:
 
 
 class CLIInteraction(repl.Interaction):
-    def __init__(self, config, statusbar=None):
+    def __init__(self, config: Config, statusbar: 'Statusbar' = None):
         super().__init__(config, statusbar)
 
-    def confirm(self, q):
+    def confirm(self, q: str) -> bool:
         """Ask for yes or no and return boolean"""
         try:
             reply = self.statusbar.prompt(q)
@@ -327,15 +327,15 @@ class CLIInteraction(repl.Interaction):
 
         return reply.lower() in (_("y"), _("yes"))
 
-    def notify(self, s, n=10, wait_for_keypress=False):
+    def notify(self, s: str, n: int = 10, wait_for_keypress: bool = False) -> None:
         return self.statusbar.message(s, n)
 
-    def file_prompt(self, s):
+    def file_prompt(self, s: int) -> str:
         return self.statusbar.prompt(s)
 
 
 class CLIRepl(repl.Repl):
-    def __init__(self, scr, interp, statusbar, config, idle=None):
+    def __init__(self, scr: curses.window, interp: repl.Interpreter, statusbar: 'Statusbar', config: Config, idle: None = None):
         super().__init__(interp, config)
         self.interp.writetb = self.writetb
         self.scr = scr
@@ -357,10 +357,10 @@ class CLIRepl(repl.Repl):
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 0.8
 
-    def _get_cursor_offset(self):
+    def _get_cursor_offset(self) -> int:
         return len(self.s) - self.cpos
 
-    def _set_cursor_offset(self, offset):
+    def _set_cursor_offset(self, offset: int) -> None:
         self.cpos = len(self.s) - offset
 
     cursor_offset = property(
@@ -370,7 +370,7 @@ class CLIRepl(repl.Repl):
         "The cursor offset from the beginning of the line",
     )
 
-    def addstr(self, s):
+    def addstr(self, s: str) -> None:
         """Add a string to the current input line and figure out
         where it should go, depending on the cursor position."""
         self.rl_history.reset()
@@ -382,7 +382,7 @@ class CLIRepl(repl.Repl):
 
         self.complete()
 
-    def atbol(self):
+    def atbol(self) -> bool:
         """Return True or False accordingly if the cursor is at the beginning
         of the line (whitespace is ignored). This exists so that p_key() knows
         how to handle the tab key being pressed - if there is nothing but white
@@ -391,17 +391,18 @@ class CLIRepl(repl.Repl):
 
         return not self.s.lstrip()
 
-    def bs(self, delete_tabs=True):
+    # This function shouldn't return None because of pos -= self.bs() later on
+    def bs(self, delete_tabs: bool = True) -> int:  # type: ignore[return-value]
         """Process a backspace"""
 
         self.rl_history.reset()
         y, x = self.scr.getyx()
 
         if not self.s:
-            return
+            return None     # type: ignore[return-value]
 
         if x == self.ix and y == self.iy:
-            return
+            return None     # type: ignore[return-value]
 
         n = 1
 
@@ -422,7 +423,7 @@ class CLIRepl(repl.Repl):
 
         return n
 
-    def bs_word(self):
+    def bs_word(self) -> str:
         self.rl_history.reset()
         pos = len(self.s) - self.cpos - 1
         deleted = []
@@ -437,7 +438,7 @@ class CLIRepl(repl.Repl):
 
         return "".join(reversed(deleted))
 
-    def check(self):
+    def check(self) -> None:
         """Check if paste mode should still be active and, if not, deactivate
         it and force syntax highlighting."""
 
@@ -448,14 +449,14 @@ class CLIRepl(repl.Repl):
             self.paste_mode = False
             self.print_line(self.s)
 
-    def clear_current_line(self):
+    def clear_current_line(self) -> None:
         """Called when a SyntaxError occurred in the interpreter. It is
         used to prevent autoindentation from occurring after a
         traceback."""
         repl.Repl.clear_current_line(self)
         self.s = ""
 
-    def clear_wrapped_lines(self):
+    def clear_wrapped_lines(self) -> None:
         """Clear the wrapped lines of the current input."""
         # curses does not handle this on its own. Sad.
         height, width = self.scr.getmaxyx()
@@ -464,7 +465,7 @@ class CLIRepl(repl.Repl):
             self.scr.move(y, 0)
             self.scr.clrtoeol()
 
-    def complete(self, tab=False):
+    def complete(self, tab: bool = False) -> None:
         """Get Autocomplete list and window.
 
         Called whenever these should be updated, and called
@@ -494,7 +495,7 @@ class CLIRepl(repl.Repl):
             self.scr.redrawwin()
             self.scr.refresh()
 
-    def clrtobol(self):
+    def clrtobol(self) -> None:
         """Clear from cursor to beginning of line; usual C-u behaviour"""
         self.clear_wrapped_lines()
 
@@ -507,10 +508,10 @@ class CLIRepl(repl.Repl):
         self.scr.redrawwin()
         self.scr.refresh()
 
-    def _get_current_line(self):
+    def _get_current_line(self) -> str:
         return self.s
 
-    def _set_current_line(self, line):
+    def _set_current_line(self, line: str) -> None:
         self.s = line
 
     current_line = property(
@@ -520,7 +521,7 @@ class CLIRepl(repl.Repl):
         "The characters of the current line",
     )
 
-    def cut_to_buffer(self):
+    def cut_to_buffer(self) -> None:
         """Clear from cursor to end of line, placing into cut buffer"""
         self.cut_buffer = self.s[-self.cpos :]
         self.s = self.s[: -self.cpos]
@@ -529,7 +530,7 @@ class CLIRepl(repl.Repl):
         self.scr.redrawwin()
         self.scr.refresh()
 
-    def delete(self):
+    def delete(self) -> None:
         """Process a del"""
         if not self.s:
             return
@@ -537,7 +538,7 @@ class CLIRepl(repl.Repl):
         if self.mvc(-1):
             self.bs(False)
 
-    def echo(self, s, redraw=True):
+    def echo(self, s: str, redraw: bool = True) -> None:
         """Parse and echo a formatted string with appropriate attributes. It
         uses the formatting method as defined in formatter.py to parse the
         strings. It won't update the screen if it's reevaluating the code (as it
@@ -571,7 +572,7 @@ class CLIRepl(repl.Repl):
         if redraw and not self.evaluating:
             self.scr.refresh()
 
-    def end(self, refresh=True):
+    def end(self, refresh: bool = True) -> bool:
         self.cpos = 0
         h, w = gethw()
         y, x = divmod(len(self.s) + self.ix, w)
@@ -582,7 +583,7 @@ class CLIRepl(repl.Repl):
 
         return True
 
-    def hbegin(self):
+    def hbegin(self) -> None:
         """Replace the active line with first line in history and
         increment the index to keep track"""
         self.cpos = 0
@@ -591,7 +592,7 @@ class CLIRepl(repl.Repl):
         self.s = self.rl_history.first()
         self.print_line(self.s, clr=True)
 
-    def hend(self):
+    def hend(self) -> None:
         """Same as hbegin() but, well, forward"""
         self.cpos = 0
         self.clear_wrapped_lines()
@@ -599,7 +600,7 @@ class CLIRepl(repl.Repl):
         self.s = self.rl_history.last()
         self.print_line(self.s, clr=True)
 
-    def back(self):
+    def back(self) -> None:
         """Replace the active line with previous line in history and
         increment the index to keep track"""
 
@@ -609,7 +610,7 @@ class CLIRepl(repl.Repl):
         self.s = self.rl_history.back()
         self.print_line(self.s, clr=True)
 
-    def fwd(self):
+    def fwd(self) -> None:
         """Same as back() but, well, forward"""
 
         self.cpos = 0
@@ -618,7 +619,7 @@ class CLIRepl(repl.Repl):
         self.s = self.rl_history.forward()
         self.print_line(self.s, clr=True)
 
-    def search(self):
+    def search(self) -> None:
         """Search with the partial matches from the history object."""
 
         self.cpo = 0
@@ -627,7 +628,7 @@ class CLIRepl(repl.Repl):
         self.s = self.rl_history.back(start=False, search=True)
         self.print_line(self.s, clr=True)
 
-    def get_key(self):
+    def get_key(self) -> str:
         key = ""
         while True:
             try:
@@ -667,7 +668,7 @@ class CLIRepl(repl.Repl):
                 if self.idle:
                     self.idle(self)
 
-    def get_line(self):
+    def get_line(self) -> Optional[str]:
         """Get a line of text and return it
         This function initialises an empty string and gets the
         curses cursor position on the screen and stores it
