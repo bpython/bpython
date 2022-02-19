@@ -52,7 +52,7 @@ import re
 import struct
 import sys
 import time
-from typing import Iterator, NoReturn, List, MutableMapping, Any, Callable, TypeVar, cast
+from typing import Iterator, NoReturn, List, MutableMapping, Any, Callable, TypeVar, cast, IO, Iterable, Optional
 import unicodedata
 from dataclasses import dataclass
 
@@ -70,7 +70,7 @@ from pygments.token import Token, _TokenType
 from .formatter import BPythonFormatter
 
 # This for config
-from .config import getpreferredencoding
+from .config import getpreferredencoding, Config
 
 # This for keys
 from .keys import cli_key_dispatch as key_dispatch
@@ -88,7 +88,7 @@ F = TypeVar('F', bound=Callable[..., Any])
 
 # --- module globals ---
 stdscr = None
-colors = None
+colors: Optional[MutableMapping[str, int]] = None
 
 DO_RESIZE = False
 # ---
@@ -135,17 +135,17 @@ class FakeStream:
     """Provide a fake file object which calls functions on the interface
     provided."""
 
-    def __init__(self, interface, get_dest):
+    def __init__(self, interface: 'CLIRepl', get_dest: IO[str]) -> None:
         self.encoding: str = getpreferredencoding()
         self.interface = interface
         self.get_dest = get_dest
 
     @forward_if_not_current
-    def write(self, s) -> None:
+    def write(self, s: str) -> None:
         self.interface.write(s)
 
     @forward_if_not_current
-    def writelines(self, l) -> None:
+    def writelines(self, l: Iterable[str]) -> None:
         for s in l:
             self.write(s)
 
@@ -160,7 +160,7 @@ class FakeStream:
 class FakeStdin:
     """Provide a fake stdin type for things like raw_input() etc."""
 
-    def __init__(self, interface) -> None:
+    def __init__(self, interface: 'CLIRepl') -> None:
         """Take the curses Repl on init and assume it provides a get_key method
         which, fortunately, it does."""
 
@@ -171,11 +171,11 @@ class FakeStdin:
     def __iter__(self) -> Iterator:
         return iter(self.readlines())
 
-    def flush(self):
+    def flush(self) -> None:
         """Flush the internal buffer. This is a no-op. Flushing stdin
         doesn't make any sense anyway."""
 
-    def write(self, value) -> NoReturn:
+    def write(self, value: str) -> NoReturn:
         # XXX IPython expects sys.stdin.write to exist, there will no doubt be
         # others, so here's a hack to keep them happy
         raise OSError(errno.EBADF, "sys.stdin is read-only")
@@ -183,7 +183,7 @@ class FakeStdin:
     def isatty(self) -> bool:
         return True
 
-    def readline(self, size=-1):
+    def readline(self, size: int = -1) -> str:
         """I can't think of any reason why anything other than readline would
         be useful in the context of an interactive interpreter so this is the
         only one I've done anything with. The others are just there in case
@@ -228,7 +228,7 @@ class FakeStdin:
 
         return buffer
 
-    def read(self, size=None):
+    def read(self, size: Optional[int] = None) -> str:
         if size == 0:
             return ""
 
@@ -243,7 +243,7 @@ class FakeStdin:
 
         return "".join(data)
 
-    def readlines(self, size=-1):
+    def readlines(self, size: int = -1) -> List[str]:
         return list(iter(self.readline, ""))
 
 
@@ -260,17 +260,20 @@ class FakeStdin:
 # the addstr stuff to a higher level.
 #
 
-
-def get_color(config, name):
+# Have to ignore the return type on this one because the colors variable
+# is Optional[MutableMapping[str, int]] but for the purposes of this
+# function it can't be None
+def get_color(config: Config, name: str) -> int:    # type: ignore[return]
     global colors
-    return colors[config.color_scheme[name].lower()]
+    if colors:
+        return colors[config.color_scheme[name].lower()]
 
 
-def get_colpair(config, name):
+def get_colpair(config: Config, name: str) -> int:
     return curses.color_pair(get_color(config, name) + 1)
 
 
-def make_colors(config):
+def make_colors(config: Config) -> MutableMapping[str, int]:
     """Init all the colours in curses and bang them into a dictionary"""
 
     # blacK, Red, Green, Yellow, Blue, Magenta, Cyan, White, Default:
