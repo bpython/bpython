@@ -52,7 +52,7 @@ import re
 import struct
 import sys
 import time
-from typing import Iterator, NoReturn, List, MutableMapping, Any, Callable, TypeVar, cast, IO, Iterable, Optional
+from typing import Iterator, NoReturn, List, MutableMapping, Any, Callable, TypeVar, cast, IO, Iterable, Optional, Union, Tuple
 import unicodedata
 from dataclasses import dataclass
 
@@ -330,7 +330,7 @@ class CLIInteraction(repl.Interaction):
     def notify(self, s: str, n: int = 10, wait_for_keypress: bool = False) -> None:
         return self.statusbar.message(s, n)
 
-    def file_prompt(self, s: int) -> str:
+    def file_prompt(self, s: str) -> str:
         return self.statusbar.prompt(s)
 
 
@@ -668,7 +668,7 @@ class CLIRepl(repl.Repl):
                 if self.idle:
                     self.idle(self)
 
-    def get_line(self) -> Optional[str]:
+    def get_line(self) -> str:
         """Get a line of text and return it
         This function initialises an empty string and gets the
         curses cursor position on the screen and stores it
@@ -694,14 +694,14 @@ class CLIRepl(repl.Repl):
                     self.s = self.s[4:]
                 return self.s
 
-    def home(self, refresh=True):
+    def home(self, refresh: bool = True) -> bool:
         self.scr.move(self.iy, self.ix)
         self.cpos = len(self.s)
         if refresh:
             self.scr.refresh()
         return True
 
-    def lf(self):
+    def lf(self) -> None:
         """Process a linefeed character; it only needs to check the
         cursor position and move appropriately so it doesn't clear
         the current line after the cursor."""
@@ -713,7 +713,12 @@ class CLIRepl(repl.Repl):
         self.print_line(self.s, newline=True)
         self.echo("\n")
 
-    def mkargspec(self, topline, in_arg, down):
+    def mkargspec(
+        self, 
+        topline: Any,   # Named tuples don't seem to play nice with mypy
+        in_arg: Union[str, int], 
+        down: bool
+    ) -> int:
         """This figures out what to do with the argspec and puts it nicely into
         the list window. It returns the number of lines used to display the
         argspec.  It's also kind of messy due to it having to call so many
@@ -817,7 +822,7 @@ class CLIRepl(repl.Repl):
 
         return r
 
-    def mvc(self, i, refresh=True):
+    def mvc(self, i: int, refresh: bool = True) -> bool:
         """This method moves the cursor relatively from the current
         position, where:
             0 == (right) end of current line
@@ -850,7 +855,7 @@ class CLIRepl(repl.Repl):
 
         return True
 
-    def p_key(self, key):
+    def p_key(self, key: str) -> Union[None, str, bool]:
         """Process a keypress"""
 
         if key is None:
@@ -1044,7 +1049,7 @@ class CLIRepl(repl.Repl):
 
         return True
 
-    def print_line(self, s, clr=False, newline=False):
+    def print_line(self, s: Optional[str], clr: bool = False, newline: bool = False) -> None:
         """Chuck a line of text through the highlighter, move the cursor
         to the beginning of the line and output it to the screen."""
 
@@ -1080,7 +1085,10 @@ class CLIRepl(repl.Repl):
                 self.mvc(1)
             self.cpos = t
 
-    def prompt(self, more):
+    def prompt(
+        self, 
+        more: Any   # I'm not sure of the type on this one
+    ) -> None:
         """Show the appropriate Python prompt"""
         if not more:
             self.echo(
@@ -1101,7 +1109,7 @@ class CLIRepl(repl.Repl):
                 f"\x01{prompt_more_color}\x03{self.ps2}\x04"
             )
 
-    def push(self, s, insert_into_history=True):
+    def push(self, s: str, insert_into_history: bool = True) -> bool:
         # curses.raw(True) prevents C-c from causing a SIGINT
         curses.raw(False)
         try:
@@ -1114,7 +1122,7 @@ class CLIRepl(repl.Repl):
         finally:
             curses.raw(True)
 
-    def redraw(self):
+    def redraw(self) -> None:
         """Redraw the screen using screen_hist"""
         self.scr.erase()
         for k, s in enumerate(self.screen_hist):
@@ -1130,7 +1138,7 @@ class CLIRepl(repl.Repl):
         self.scr.refresh()
         self.statusbar.refresh()
 
-    def repl(self):
+    def repl(self) -> Tuple:
         """Initialise the repl and jump into the loop. This method also has to
         keep a stack of lines entered for the horrible "undo" feature. It also
         tracks everything that would normally go to stdout in the normal Python
@@ -1171,7 +1179,7 @@ class CLIRepl(repl.Repl):
                 self.s = ""
         return self.exit_value
 
-    def reprint_line(self, lineno, tokens):
+    def reprint_line(self, lineno: int, tokens: MutableMapping[_TokenType, str]) -> None:
         """Helper function for paren highlighting: Reprint line at offset
         `lineno` in current input buffer."""
         if not self.buffer or lineno == len(self.buffer):
@@ -1194,7 +1202,7 @@ class CLIRepl(repl.Repl):
         for string in line.split("\x04"):
             self.echo(string)
 
-    def resize(self):
+    def resize(self) -> None:
         """This method exists simply to keep it straight forward when
         initialising a window and resizing it."""
         self.size()
@@ -1204,13 +1212,13 @@ class CLIRepl(repl.Repl):
         self.statusbar.resize(refresh=False)
         self.redraw()
 
-    def getstdout(self):
+    def getstdout(self) -> str:
         """This method returns the 'spoofed' stdout buffer, for writing to a
         file or sending to a pastebin or whatever."""
 
         return self.stdout_hist + "\n"
 
-    def reevaluate(self):
+    def reevaluate(self) -> None:
         """Clear the buffer, redraw the screen and re-evaluate the history"""
 
         self.evaluating = True
@@ -1249,7 +1257,7 @@ class CLIRepl(repl.Repl):
         # map(self.push, self.history)
         # ^-- That's how simple this method was at first :(
 
-    def write(self, s):
+    def write(self, s: str) -> None:
         """For overriding stdout defaults"""
         if "\x04" in s:
             for block in s.split("\x04"):
@@ -1418,7 +1426,7 @@ class CLIRepl(repl.Repl):
             curses.endwin()
             os.kill(os.getpid(), signal.SIGSTOP)
 
-    def tab(self, back=False):
+    def tab(self, back: bool = False) -> bool:
         """Process the tab key being hit.
 
         If there's only whitespace
@@ -1498,7 +1506,7 @@ class CLIRepl(repl.Repl):
         self.addstr(self.cut_buffer)
         self.print_line(self.s, clr=True)
 
-    def send_current_line_to_editor(self):
+    def send_current_line_to_editor(self) -> str:
         lines = self.send_to_external_editor(self.s).split("\n")
         self.s = ""
         self.print_line(self.s)
