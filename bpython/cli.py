@@ -335,7 +335,14 @@ class CLIInteraction(repl.Interaction):
 
 
 class CLIRepl(repl.Repl):
-    def __init__(self, scr: curses.window, interp: repl.Interpreter, statusbar: 'Statusbar', config: Config, idle: None = None):
+    def __init__(
+        self, 
+        scr: curses.window, 
+        interp: repl.Interpreter, 
+        statusbar: 'Statusbar', 
+        config: Config, 
+        idle: Optional[Callable] = None
+    ):
         super().__init__(interp, config)
         self.interp.writetb = self.writetb
         self.scr = scr
@@ -343,7 +350,7 @@ class CLIRepl(repl.Repl):
         self.list_win = newwin(get_colpair(config, "background"), 1, 1, 1, 1)
         self.cpos = 0
         self.do_exit = False
-        self.exit_value = ()
+        self.exit_value: Tuple[Any, ...] = ()
         self.f_string = ""
         self.idle = idle
         self.in_hist = False
@@ -1138,7 +1145,7 @@ class CLIRepl(repl.Repl):
         self.scr.refresh()
         self.statusbar.refresh()
 
-    def repl(self) -> Tuple:
+    def repl(self) -> Tuple[Any, ...]:
         """Initialise the repl and jump into the loop. This method also has to
         keep a stack of lines entered for the horrible "undo" feature. It also
         tracks everything that would normally go to stdout in the normal Python
@@ -1277,8 +1284,13 @@ class CLIRepl(repl.Repl):
         self.screen_hist.append(s.rstrip())
 
     def show_list(
-        self, items, arg_pos, topline=None, formatter=None, current_item=None
-    ):
+        self, 
+        items: List[str], 
+        arg_pos: Union[str, int], 
+        topline: Any = None,    # Named tuples don't play nice with mypy
+        formatter: Optional[Callable] = None, 
+        current_item: Optional[bool] = None
+    ) -> None:
         shared = ShowListState()
         y, x = self.scr.getyx()
         h, w = self.scr.getmaxyx()
@@ -1290,7 +1302,7 @@ class CLIRepl(repl.Repl):
         max_w = int(w * self.config.cli_suggestion_width)
         self.list_win.erase()
 
-        if items:
+        if items and formatter:
             items = [formatter(x) for x in items]
             if current_item:
                 current_item = formatter(current_item)
@@ -1300,7 +1312,7 @@ class CLIRepl(repl.Repl):
         else:
             height_offset = 0
 
-        def lsize():
+        def lsize() -> bool:
             wl = max(len(i) for i in v_items) + 1
             if not wl:
                 wl = 1
@@ -1410,17 +1422,18 @@ class CLIRepl(repl.Repl):
         self.scr.move(*self.scr.getyx())
         self.list_win.refresh()
 
-    def size(self):
+    def size(self) -> None:
         """Set instance attributes for x and y top left corner coordinates
         and width and height for the window."""
         global stdscr
-        h, w = stdscr.getmaxyx()
-        self.y = 0
-        self.w = w
-        self.h = h - 1
-        self.x = 0
+        if stdscr:
+            h, w = stdscr.getmaxyx()
+        self.y: int = 0
+        self.w: int = w
+        self.h: int = h - 1
+        self.x: int = 0
 
-    def suspend(self):
+    def suspend(self) -> None:
         """Suspend the current process for shell job control."""
         if platform.system() != "Windows":
             curses.endwin()
@@ -1489,19 +1502,19 @@ class CLIRepl(repl.Repl):
             self.print_line(self.s, True)
         return True
 
-    def undo(self, n=1):
+    def undo(self, n: int = 1) -> None:
         repl.Repl.undo(self, n)
 
         # This will unhighlight highlighted parens
         self.print_line(self.s)
 
-    def writetb(self, lines):
+    def writetb(self, lines: List[str]) -> None:
         for line in lines:
             self.write(
                 "\x01{}\x03{}".format(self.config.color_scheme["error"], line)
             )
 
-    def yank_from_buffer(self):
+    def yank_from_buffer(self) -> None:
         """Paste the text from the cut buffer at the current cursor location"""
         self.addstr(self.cut_buffer)
         self.print_line(self.s, clr=True)
@@ -1569,7 +1582,15 @@ class Statusbar:
 
     """
 
-    def __init__(self, scr, pwin, background, config, s=None, c=None):
+    def __init__(
+        self,
+        scr: curses.window, 
+        pwin: curses.window, 
+        background: int, 
+        config: Config, 
+        s: Optional[str] = None, 
+        c: Optional[int] = None
+    ):
         """Initialise the statusbar and display the initial text (if any)"""
         self.size()
         self.win = newwin(background, self.h, self.w, self.y, self.x)
@@ -1581,9 +1602,10 @@ class Statusbar:
         self.c = c
         self.timer = 0
         self.pwin = pwin
-        self.settext(s, c)
+        if s:
+            self.settext(s, c)
 
-    def size(self):
+    def size(self) -> None:
         """Set instance attributes for x and y top left corner coordinates
         and width and height for the window."""
         h, w = gethw()
@@ -1592,7 +1614,7 @@ class Statusbar:
         self.h = 1
         self.x = 0
 
-    def resize(self, refresh=True):
+    def resize(self, refresh: bool = True) -> None:
         """This method exists simply to keep it straight forward when
         initialising a window and resizing it."""
         self.size()
@@ -1601,12 +1623,12 @@ class Statusbar:
         if refresh:
             self.refresh()
 
-    def refresh(self):
+    def refresh(self) -> None:
         """This is here to make sure the status bar text is redraw properly
         after a resize."""
         self.settext(self._s)
 
-    def check(self):
+    def check(self) -> None:
         """This is the method that should be called every half second or so
         to see if the status bar needs updating."""
         if not self.timer:
@@ -1617,13 +1639,13 @@ class Statusbar:
 
         self.settext(self._s)
 
-    def message(self, s, n=3):
+    def message(self, s: str, n: int = 3) -> None:
         """Display a message for a short n seconds on the statusbar and return
         it to its original state."""
-        self.timer = time.time() + n
+        self.timer = int(time.time() + n)
         self.settext(s)
 
-    def prompt(self, s=""):
+    def prompt(self, s: str = "") -> str:
         """Prompt the user for some input (with the optional prompt 's') and
         return the input text, then restore the statusbar to its original
         value."""
@@ -1631,7 +1653,7 @@ class Statusbar:
         self.settext(s or "? ", p=True)
         iy, ix = self.win.getyx()
 
-        def bs(s):
+        def bs(s: str) -> str:
             y, x = self.win.getyx()
             if x == ix:
                 return s
@@ -1656,14 +1678,14 @@ class Statusbar:
                 raise ValueError
             # literal
             elif 0 < c < 127:
-                c = chr(c)
-                self.win.addstr(c, get_colpair(self.config, "prompt"))
-                o += c
+                d = chr(c)
+                self.win.addstr(d, get_colpair(self.config, "prompt"))
+                o += d
 
         self.settext(self._s)
         return o
 
-    def settext(self, s, c=None, p=False):
+    def settext(self, s: str, c: Optional[int] = None, p: bool = False) -> None:
         """Set the text on the status bar to a new permanent value; this is the
         value that will be set after a prompt or message. c is the optional
         curses colour pair to use (if not specified the last specified colour
@@ -1690,12 +1712,12 @@ class Statusbar:
         else:
             self.win.refresh()
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear the status bar."""
         self.win.clear()
 
 
-def init_wins(scr, config):
+def init_wins(scr: curses.window, config: Config) -> Tuple[curses.window, Statusbar]:
     """Initialise the two windows (the main repl interface and the little
     status bar at the bottom with some stuff in it)"""
     # TODO: Document better what stuff is on the status bar.
@@ -1705,7 +1727,9 @@ def init_wins(scr, config):
 
     main_win = newwin(background, h - 1, w, 0, 0)
     main_win.scrollok(True)
-    main_win.keypad(1)
+
+    # I think this is supposed to be True instead of 1?
+    main_win.keypad(1)  # type:ignore[arg-type]
     # Thanks to Angus Gibson for pointing out this missing line which was causing
     # problems that needed dirty hackery to fix. :)
 
@@ -1728,18 +1752,18 @@ def init_wins(scr, config):
     return main_win, statusbar
 
 
-def sigwinch(unused_scr):
+def sigwinch(unused_scr: curses.window) -> None:
     global DO_RESIZE
     DO_RESIZE = True
 
 
-def sigcont(unused_scr):
+def sigcont(unused_scr: curses.window) -> None:
     sigwinch(unused_scr)
     # Forces the redraw
     curses.ungetch("\x00")
 
 
-def gethw():
+def gethw() -> Tuple[int, int]:
     """I found this code on a usenet post, and snipped out the bit I needed,
     so thanks to whoever wrote that, sorry I forgot your name, I'm sure you're
     a great guy.
@@ -1757,10 +1781,10 @@ def gethw():
 
     if platform.system() != "Windows":
         h, w = struct.unpack(
-            "hhhh", fcntl.ioctl(sys.__stdout__, termios.TIOCGWINSZ, "\000" * 8)
+            "hhhh", fcntl.ioctl(sys.__stdout__, termios.TIOCGWINSZ, "\000" * 8)  # type:ignore[call-overload]
         )[0:2]
     else:
-        from ctypes import windll, create_string_buffer
+        from ctypes import windll, create_string_buffer  # type:ignore[attr-defined]
 
         # stdin handle is -10
         # stdout handle is -11
@@ -1786,7 +1810,7 @@ def gethw():
             ) = struct.unpack("hhhhHhhhhhh", csbi.raw)
             sizex = right - left + 1
             sizey = bottom - top + 1
-        else:
+        elif stdscr:
             # can't determine actual size - return default values
             sizex, sizey = stdscr.getmaxyx()
 
@@ -1794,7 +1818,7 @@ def gethw():
     return h, w
 
 
-def idle(caller):
+def idle(caller: CLIRepl) -> None:
     """This is called once every iteration through the getkey()
     loop (currently in the Repl class, see the get_line() method).
     The statusbar check needs to go here to take care of timed
@@ -1817,7 +1841,7 @@ def idle(caller):
         do_resize(caller)
 
 
-def do_resize(caller):
+def do_resize(caller: CLIRepl) -> None:
     """This needs to hack around readline and curses not playing
     nicely together. See also gethw() above."""
     global DO_RESIZE
@@ -1844,14 +1868,14 @@ class FakeDict:
     used as a hacky solution to using a colours dict containing colour codes if
     colour initialisation fails."""
 
-    def __init__(self, val):
+    def __init__(self, val: int):
         self._val = val
 
-    def __getitem__(self, k):
+    def __getitem__(self, k: Any) -> int:
         return self._val
 
 
-def newwin(background, *args):
+def newwin(background: int, *args: int) -> curses.window:
     """Wrapper for curses.newwin to automatically set background colour on any
     newly created window."""
     win = curses.newwin(*args)
@@ -1859,7 +1883,7 @@ def newwin(background, *args):
     return win
 
 
-def curses_wrapper(func, *args, **kwargs):
+def curses_wrapper(func: Callable, *args: Any, **kwargs: Any) -> Any:
     """Like curses.wrapper(), but reuses stdscr when called again."""
     global stdscr
     if stdscr is None:
@@ -1867,7 +1891,8 @@ def curses_wrapper(func, *args, **kwargs):
     try:
         curses.noecho()
         curses.cbreak()
-        stdscr.keypad(1)
+        # Should this be keypad(True)?
+        stdscr.keypad(1)  # type:ignore[arg-type]
 
         try:
             curses.start_color()
@@ -1876,7 +1901,8 @@ def curses_wrapper(func, *args, **kwargs):
 
         return func(stdscr, *args, **kwargs)
     finally:
-        stdscr.keypad(0)
+        # Should this be keypad(False)?
+        stdscr.keypad(0)  # type:ignore[arg-type]
         curses.echo()
         curses.nocbreak()
         curses.endwin()
