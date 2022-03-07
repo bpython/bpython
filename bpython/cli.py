@@ -52,7 +52,21 @@ import re
 import struct
 import sys
 import time
-from typing import Iterator, NoReturn, List, MutableMapping, Any, Callable, TypeVar, cast, IO, Iterable, Optional, Union, Tuple
+from typing import (
+    Iterator,
+    NoReturn,
+    List,
+    MutableMapping,
+    Any,
+    Callable,
+    TypeVar,
+    cast,
+    IO,
+    Iterable,
+    Optional,
+    Union,
+    Tuple,
+)
 import unicodedata
 from dataclasses import dataclass
 
@@ -84,7 +98,7 @@ from . import args as bpargs
 from .pager import page
 from .args import parse as argsparse
 
-F = TypeVar('F', bound=Callable[..., Any])
+F = TypeVar("F", bound=Callable[..., Any])
 
 # --- module globals ---
 stdscr = None
@@ -135,7 +149,7 @@ class FakeStream:
     """Provide a fake file object which calls functions on the interface
     provided."""
 
-    def __init__(self, interface: 'CLIRepl', get_dest: IO[str]) -> None:
+    def __init__(self, interface: "CLIRepl", get_dest: IO[str]) -> None:
         self.encoding: str = getpreferredencoding()
         self.interface = interface
         self.get_dest = get_dest
@@ -160,7 +174,7 @@ class FakeStream:
 class FakeStdin:
     """Provide a fake stdin type for things like raw_input() etc."""
 
-    def __init__(self, interface: 'CLIRepl') -> None:
+    def __init__(self, interface: "CLIRepl") -> None:
         """Take the curses Repl on init and assume it provides a get_key method
         which, fortunately, it does."""
 
@@ -263,7 +277,7 @@ class FakeStdin:
 # Have to ignore the return type on this one because the colors variable
 # is Optional[MutableMapping[str, int]] but for the purposes of this
 # function it can't be None
-def get_color(config: Config, name: str) -> int:    # type: ignore[return]
+def get_color(config: Config, name: str) -> int:  # type: ignore[return]
     global colors
     if colors:
         return colors[config.color_scheme[name].lower()]
@@ -315,7 +329,7 @@ def make_colors(config: Config) -> MutableMapping[str, int]:
 
 
 class CLIInteraction(repl.Interaction):
-    def __init__(self, config: Config, statusbar: Optional['Statusbar'] = None):
+    def __init__(self, config: Config, statusbar: Optional["Statusbar"] = None):
         super().__init__(config, statusbar)
 
     def confirm(self, q: str) -> bool:
@@ -328,7 +342,9 @@ class CLIInteraction(repl.Interaction):
 
         return reply.lower() in (_("y"), _("yes"))
 
-    def notify(self, s: str, n: int = 10, wait_for_keypress: bool = False) -> None:
+    def notify(
+        self, s: str, n: int = 10, wait_for_keypress: bool = False
+    ) -> None:
         if self.statusbar:
             self.statusbar.message(s, n)
 
@@ -342,12 +358,12 @@ class CLIInteraction(repl.Interaction):
 
 class CLIRepl(repl.Repl):
     def __init__(
-        self, 
-        scr: curses.window, 
-        interp: repl.Interpreter, 
-        statusbar: 'Statusbar', 
-        config: Config, 
-        idle: Optional[Callable] = None
+        self,
+        scr: curses.window,
+        interp: repl.Interpreter,
+        statusbar: "Statusbar",
+        config: Config,
+        idle: Optional[Callable] = None,
     ):
         super().__init__(interp, config)
         self.interp.writetb = self.writetb
@@ -412,10 +428,10 @@ class CLIRepl(repl.Repl):
         y, x = self.scr.getyx()
 
         if not self.s:
-            return None     # type: ignore[return-value]
+            return None  # type: ignore[return-value]
 
         if x == self.ix and y == self.iy:
-            return None     # type: ignore[return-value]
+            return None  # type: ignore[return-value]
 
         n = 1
 
@@ -727,10 +743,10 @@ class CLIRepl(repl.Repl):
         self.echo("\n")
 
     def mkargspec(
-        self, 
-        topline: Any,   # Named tuples don't seem to play nice with mypy
-        in_arg: Union[str, int], 
-        down: bool
+        self,
+        topline: Any,  # Named tuples don't seem to play nice with mypy
+        in_arg: Union[str, int],
+        down: bool,
     ) -> int:
         """This figures out what to do with the argspec and puts it nicely into
         the list window. It returns the number of lines used to display the
@@ -1062,7 +1078,9 @@ class CLIRepl(repl.Repl):
 
         return True
 
-    def print_line(self, s: Optional[str], clr: bool = False, newline: bool = False) -> None:
+    def print_line(
+        self, s: Optional[str], clr: bool = False, newline: bool = False
+    ) -> None:
         """Chuck a line of text through the highlighter, move the cursor
         to the beginning of the line and output it to the screen."""
 
@@ -1098,10 +1116,7 @@ class CLIRepl(repl.Repl):
                 self.mvc(1)
             self.cpos = t
 
-    def prompt(
-        self, 
-        more: Any   # I'm not sure of the type on this one
-    ) -> None:
+    def prompt(self, more: Any) -> None:  # I'm not sure of the type on this one
         """Show the appropriate Python prompt"""
         if not more:
             self.echo(
@@ -1193,7 +1208,9 @@ class CLIRepl(repl.Repl):
                 self.s = ""
         return self.exit_value
 
-    def reprint_line(self, lineno: int, tokens: MutableMapping[_TokenType, str]) -> None:
+    def reprint_line(
+        self, lineno: int, tokens: MutableMapping[_TokenType, str]
+    ) -> None:
         """Helper function for paren highlighting: Reprint line at offset
         `lineno` in current input buffer."""
         if not self.buffer or lineno == len(self.buffer):
@@ -1291,12 +1308,12 @@ class CLIRepl(repl.Repl):
         self.screen_hist.append(s.rstrip())
 
     def show_list(
-        self, 
-        items: List[str], 
-        arg_pos: Union[str, int], 
-        topline: Any = None,    # Named tuples don't play nice with mypy
-        formatter: Optional[Callable] = None, 
-        current_item: Optional[bool] = None
+        self,
+        items: List[str],
+        arg_pos: Union[str, int],
+        topline: Any = None,  # Named tuples don't play nice with mypy
+        formatter: Optional[Callable] = None,
+        current_item: Optional[bool] = None,
     ) -> None:
         shared = ShowListState()
         y, x = self.scr.getyx()
@@ -1591,16 +1608,18 @@ class Statusbar:
 
     def __init__(
         self,
-        scr: curses.window, 
-        pwin: curses.window, 
-        background: int, 
-        config: Config, 
-        s: Optional[str] = None, 
-        c: Optional[int] = None
+        scr: curses.window,
+        pwin: curses.window,
+        background: int,
+        config: Config,
+        s: Optional[str] = None,
+        c: Optional[int] = None,
     ):
         """Initialise the statusbar and display the initial text (if any)"""
         self.size()
-        self.win: curses.window = newwin(background, self.h, self.w, self.y, self.x)
+        self.win: curses.window = newwin(
+            background, self.h, self.w, self.y, self.x
+        )
 
         self.config = config
 
@@ -1724,7 +1743,9 @@ class Statusbar:
         self.win.clear()
 
 
-def init_wins(scr: curses.window, config: Config) -> Tuple[curses.window, Statusbar]:
+def init_wins(
+    scr: curses.window, config: Config
+) -> Tuple[curses.window, Statusbar]:
     """Initialise the two windows (the main repl interface and the little
     status bar at the bottom with some stuff in it)"""
     # TODO: Document better what stuff is on the status bar.
@@ -1788,10 +1809,16 @@ def gethw() -> Tuple[int, int]:
 
     if platform.system() != "Windows":
         h, w = struct.unpack(
-            "hhhh", fcntl.ioctl(sys.__stdout__, termios.TIOCGWINSZ, "\000" * 8)  # type:ignore[call-overload]
+            "hhhh",
+            fcntl.ioctl(
+                sys.__stdout__, termios.TIOCGWINSZ, "\000" * 8
+            ),  # type:ignore[call-overload]
         )[0:2]
     else:
-        from ctypes import windll, create_string_buffer  # type:ignore[attr-defined]
+        from ctypes import (
+            windll,
+            create_string_buffer,
+        )  # type:ignore[attr-defined]
 
         # stdin handle is -10
         # stdout handle is -11
@@ -1916,12 +1943,12 @@ def curses_wrapper(func: Callable, *args: Any, **kwargs: Any) -> Any:
 
 
 def main_curses(
-    scr: curses.window, 
-    args: List[str], 
-    config: Config, 
-    interactive: bool = True, 
-    locals_: Optional[MutableMapping[str, str]] = None, 
-    banner: Optional[str] = None
+    scr: curses.window,
+    args: List[str],
+    config: Config,
+    interactive: bool = True,
+    locals_: Optional[MutableMapping[str, str]] = None,
+    banner: Optional[str] = None,
 ) -> Tuple[Tuple[Any, ...], str]:
     """main function for the curses convenience wrapper
 
@@ -2031,9 +2058,9 @@ def main_curses(
 
 
 def main(
-    args: Optional[List[str]] = None, 
-    locals_: Optional[MutableMapping[str, str]] = None, 
-    banner: Optional[str] = None
+    args: Optional[List[str]] = None,
+    locals_: Optional[MutableMapping[str, str]] = None,
+    banner: Optional[str] = None,
 ) -> Any:
     translations.init()
 
