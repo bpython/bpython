@@ -315,23 +315,29 @@ def make_colors(config: Config) -> MutableMapping[str, int]:
 
 
 class CLIInteraction(repl.Interaction):
-    def __init__(self, config: Config, statusbar: 'Statusbar' = None):
+    def __init__(self, config: Config, statusbar: Optional['Statusbar'] = None):
         super().__init__(config, statusbar)
 
     def confirm(self, q: str) -> bool:
         """Ask for yes or no and return boolean"""
         try:
-            reply = self.statusbar.prompt(q)
+            if self.statusbar:
+                reply = self.statusbar.prompt(q)
         except ValueError:
             return False
 
         return reply.lower() in (_("y"), _("yes"))
 
     def notify(self, s: str, n: int = 10, wait_for_keypress: bool = False) -> None:
-        return self.statusbar.message(s, n)
+        if self.statusbar:
+            self.statusbar.message(s, n)
 
-    def file_prompt(self, s: str) -> str:
-        return self.statusbar.prompt(s)
+    def file_prompt(self, s: str) -> Optional[str]:
+        if self.statusbar:
+            # This thows a mypy error because repl.py isn't typed yet
+            return self.statusbar.prompt(s)  # type:ignore[no-any-return]
+        else:
+            return None
 
 
 class CLIRepl(repl.Repl):
@@ -970,7 +976,7 @@ class CLIRepl(repl.Repl):
 
         elif key in key_dispatch[config.clear_screen_key]:
             # clear all but current line
-            self.screen_hist = [self.screen_hist[-1]]
+            self.screen_hist: List = [self.screen_hist[-1]]
             self.highlighted_paren = None
             self.redraw()
             return ""
@@ -1120,7 +1126,8 @@ class CLIRepl(repl.Repl):
         # curses.raw(True) prevents C-c from causing a SIGINT
         curses.raw(False)
         try:
-            return repl.Repl.push(self, s, insert_into_history)
+            x: bool = repl.Repl.push(self, s, insert_into_history)
+            return x
         except SystemExit as e:
             # Avoid a traceback on e.g. quit()
             self.do_exit = True
@@ -1231,7 +1238,7 @@ class CLIRepl(repl.Repl):
         self.evaluating = True
         self.stdout_hist = ""
         self.f_string = ""
-        self.buffer = []
+        self.buffer: List[str] = []
         self.scr.erase()
         self.screen_hist = []
         # Set cursor position to -1 to prevent paren matching
@@ -1593,7 +1600,7 @@ class Statusbar:
     ):
         """Initialise the statusbar and display the initial text (if any)"""
         self.size()
-        self.win = newwin(background, self.h, self.w, self.y, self.x)
+        self.win: curses.window = newwin(background, self.h, self.w, self.y, self.x)
 
         self.config = config
 
@@ -1908,7 +1915,14 @@ def curses_wrapper(func: Callable, *args: Any, **kwargs: Any) -> Any:
         curses.endwin()
 
 
-def main_curses(scr, args, config, interactive=True, locals_=None, banner=None):
+def main_curses(
+    scr: curses.window, 
+    args: List[str], 
+    config: Config, 
+    interactive: bool = True, 
+    locals_: Optional[MutableMapping[str, str]] = None, 
+    banner: Optional[str] = None
+) -> Tuple[Tuple[Any, ...], str]:
     """main function for the curses convenience wrapper
 
     Initialise the two main objects: the interpreter
@@ -1941,7 +1955,9 @@ def main_curses(scr, args, config, interactive=True, locals_=None, banner=None):
         curses.use_default_colors()
         cols = make_colors(config)
     except curses.error:
-        cols = FakeDict(-1)
+        # Not sure what to do with the types here...
+        # FakeDict acts as a dictionary, but isn't actually a dictionary
+        cols = FakeDict(-1)  # type:ignore[assignment]
 
     # FIXME: Gargh, bad design results in using globals without a refactor :(
     colors = cols
@@ -1956,12 +1972,13 @@ def main_curses(scr, args, config, interactive=True, locals_=None, banner=None):
     clirepl = CLIRepl(main_win, interpreter, statusbar, config, idle)
     clirepl._C = cols
 
-    sys.stdin = FakeStdin(clirepl)
-    sys.stdout = FakeStream(clirepl, lambda: sys.stdout)
-    sys.stderr = FakeStream(clirepl, lambda: sys.stderr)
+    # Not sure how to type these Fake types
+    sys.stdin = FakeStdin(clirepl)  # type:ignore[assignment]
+    sys.stdout = FakeStream(clirepl, lambda: sys.stdout)  # type:ignore
+    sys.stderr = FakeStream(clirepl, lambda: sys.stderr)  # type:ignore
 
     if args:
-        exit_value = ()
+        exit_value: Tuple[Any, ...] = ()
         try:
             bpargs.exec_code(interpreter, args)
         except SystemExit as e:
@@ -1995,7 +2012,8 @@ def main_curses(scr, args, config, interactive=True, locals_=None, banner=None):
 
     exit_value = clirepl.repl()
     if hasattr(sys, "exitfunc"):
-        sys.exitfunc()
+        # Seems like the if statment should satisfy mypy, but it doesn't
+        sys.exitfunc()  # type:ignore[attr-defined]
         delattr(sys, "exitfunc")
 
     main_win.erase()
@@ -2012,7 +2030,11 @@ def main_curses(scr, args, config, interactive=True, locals_=None, banner=None):
     return (exit_value, clirepl.getstdout())
 
 
-def main(args=None, locals_=None, banner=None):
+def main(
+    args: Optional[List[str]] = None, 
+    locals_: Optional[MutableMapping[str, str]] = None, 
+    banner: Optional[str] = None
+) -> Any:
     translations.init()
 
     config, options, exec_args = argsparse(args)
