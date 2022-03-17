@@ -66,6 +66,8 @@ from typing import (
     Optional,
     Union,
     Tuple,
+    Collection,
+    Dict
 )
 import unicodedata
 from dataclasses import dataclass
@@ -287,7 +289,7 @@ def get_colpair(config: Config, name: str) -> int:
     return curses.color_pair(get_color(config, name) + 1)
 
 
-def make_colors(config: Config) -> MutableMapping[str, int]:
+def make_colors(config: Config) -> Dict[str, int]:
     """Init all the colours in curses and bang them into a dictionary"""
 
     # blacK, Red, Green, Yellow, Blue, Magenta, Cyan, White, Default:
@@ -366,8 +368,10 @@ class CLIRepl(repl.Repl):
         idle: Optional[Callable] = None,
     ):
         super().__init__(interp, config)
-        self.interp.writetb = self.writetb
-        self.scr = scr
+        # mypy doesn't quite understand the difference between a class variable with a callable type and a method.
+        # https://github.com/python/mypy/issues/2427
+        self.interp.writetb = self.writetb  # type:ignore[assignment]
+        self.scr: curses.window = scr
         self.stdout_hist = ""  # native str (bytes in Py2, unicode in Py3)
         self.list_win = newwin(get_colpair(config, "background"), 1, 1, 1, 1)
         self.cpos = 0
@@ -382,6 +386,10 @@ class CLIRepl(repl.Repl):
         self.statusbar = statusbar
         self.formatter = BPythonFormatter(config.color_scheme)
         self.interact = CLIInteraction(self.config, statusbar=self.statusbar)
+        self.ix: int
+        self.iy: int
+        self.arg_pos: Union[str, int, None]
+        self.prev_block_finished: int
 
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 0.8
@@ -505,13 +513,18 @@ class CLIRepl(repl.Repl):
             return
 
         list_win_visible = repl.Repl.complete(self, tab)
+
+        f = None
+        if self.matches_iter.completer:
+            f = self.matches_iter.completer.format
+
         if list_win_visible:
             try:
                 self.show_list(
                     self.matches_iter.matches,
                     self.arg_pos,
                     topline=self.funcprops,
-                    formatter=self.matches_iter.completer.format,
+                    formatter=f,
                 )
             except curses.error:
                 # XXX: This is a massive hack, it will go away when I get
@@ -745,7 +758,7 @@ class CLIRepl(repl.Repl):
     def mkargspec(
         self,
         topline: Any,  # Named tuples don't seem to play nice with mypy
-        in_arg: Union[str, int],
+        in_arg: Union[str, int, None],
         down: bool,
     ) -> int:
         """This figures out what to do with the argspec and puts it nicely into
@@ -1310,11 +1323,12 @@ class CLIRepl(repl.Repl):
     def show_list(
         self,
         items: List[str],
-        arg_pos: Union[str, int],
+        arg_pos: Union[str, int, None],
         topline: Any = None,  # Named tuples don't play nice with mypy
         formatter: Optional[Callable] = None,
-        current_item: Optional[bool] = None,
+        current_item: Optional[str] = None,
     ) -> None:
+        v_items: Collection
         shared = ShowListState()
         y, x = self.scr.getyx()
         h, w = self.scr.getmaxyx()
@@ -1475,6 +1489,10 @@ class CLIRepl(repl.Repl):
         and don't indent if there are only whitespace in the line.
         """
 
+        f = None
+        if self.matches_iter.completer:
+            f = self.matches_iter.completer.format
+
         # 1. check if we should add a tab character
         if self.atbol() and not back:
             x_pos = len(self.s) - self.cpos
@@ -1505,15 +1523,16 @@ class CLIRepl(repl.Repl):
 
         # 4. swap current word for a match list item
         elif self.matches_iter.matches:
-            current_match = (
-                back and self.matches_iter.previous() or next(self.matches_iter)
+            n: str = next(self.matches_iter)
+            current_match: Optional[str] = (
+                back and self.matches_iter.previous() or n
             )
             try:
                 self.show_list(
                     self.matches_iter.matches,
                     self.arg_pos,
                     topline=self.funcprops,
-                    formatter=self.matches_iter.completer.format,
+                    formatter=f,
                     current_item=current_match,
                 )
             except curses.error:
@@ -1815,10 +1834,11 @@ def gethw() -> Tuple[int, int]:
             ),  # type:ignore[call-overload]
         )[0:2]
     else:
-        from ctypes import (
+        # Ignoring mypy's windll error because it's Windows-specific
+        from ctypes import (  # type:ignore[attr-defined]
             windll,
             create_string_buffer,
-        )  # type:ignore[attr-defined]
+        )
 
         # stdin handle is -10
         # stdout handle is -11

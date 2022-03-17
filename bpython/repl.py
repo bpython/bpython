@@ -37,11 +37,11 @@ from abc import abstractmethod
 from itertools import takewhile
 from pathlib import Path
 from types import ModuleType, TracebackType
-from typing import cast, List, Tuple, Any, Optional, Type
+from typing import cast, List, Tuple, Any, Optional, Type, Union, MutableMapping, Callable, Dict
 from ._typing_compat import Literal
 
 from pygments.lexers import Python3Lexer
-from pygments.token import Token
+from pygments.token import Token, _TokenType
 
 have_pyperclip = True
 try:
@@ -50,7 +50,8 @@ except ImportError:
     have_pyperclip = False
 
 from . import autocomplete, inspection, simpleeval
-from .config import getpreferredencoding
+from .cli import Statusbar
+from .config import getpreferredencoding, Config
 from .formatter import Parenthesis
 from .history import History
 from .lazyre import LazyReCompile
@@ -92,7 +93,7 @@ class Interpreter(code.InteractiveInterpreter):
 
     bpython_input_re = LazyReCompile(r"<bpython-input-\d+>")
 
-    def __init__(self, locals=None, encoding=None):
+    def __init__(self, locals: Optional[MutableMapping[str, str]] = None, encoding: Optional[str] = None):
         """Constructor.
 
         The optional 'locals' argument specifies the dictionary in which code
@@ -114,7 +115,7 @@ class Interpreter(code.InteractiveInterpreter):
         """
 
         self.encoding = encoding or getpreferredencoding()
-        self.syntaxerror_callback = None
+        self.syntaxerror_callback: Optional[Callable] = None
 
         if locals is None:
             # instead of messing with sys.modules, we should modify sys.modules
@@ -349,7 +350,7 @@ class MatchesIterator:
 
 
 class Interaction:
-    def __init__(self, config, statusbar=None):
+    def __init__(self, config: Config, statusbar: Optional[Statusbar] = None):
         self.config = config
 
         if statusbar:
@@ -402,7 +403,7 @@ class Repl:
     XXX Subclasses should implement echo, current_line, cw
     """
 
-    def __init__(self, interp, config):
+    def __init__(self, interp: Interpreter, config: Config):
         """Initialise the repl.
 
         interp is a Python code.InteractiveInterpreter instance
@@ -412,7 +413,7 @@ class Repl:
 
         self.config = config
         self.cut_buffer = ""
-        self.buffer = []
+        self.buffer: List[str] = []
         self.interp = interp
         self.interp.syntaxerror_callback = self.clear_current_line
         self.match = False
@@ -421,17 +422,17 @@ class Repl:
         )
         # all input and output, stored as old style format strings
         # (\x01, \x02, ...) for cli.py
-        self.screen_hist = []
-        self.history = []  # commands executed since beginning of session
-        self.redo_stack = []
+        self.screen_hist: List[str] = []
+        self.history: List[str] = []  # commands executed since beginning of session
+        self.redo_stack: List[str] = []
         self.evaluating = False
         self.matches_iter = MatchesIterator()
         self.funcprops = None
-        self.arg_pos = None
+        self.arg_pos: Union[str, int, None] = None
         self.current_func = None
         self.highlighted_paren = None
-        self._C = {}
-        self.prev_block_finished = 0
+        self._C: Dict[str, int] = {}
+        self.prev_block_finished: int = 0
         self.interact = Interaction(self.config)
         # previous pastebin content to prevent duplicate pastes, filled on call
         # to repl.pastebin
@@ -441,11 +442,12 @@ class Repl:
         # Necessary to fix mercurial.ui.ui expecting sys.stderr to have this
         # attribute
         self.closed = False
+        self.paster: Union[PasteHelper, PastePinnwand]
 
         if self.config.hist_file.exists():
             try:
                 self.rl_history.load(
-                    self.config.hist_file, getpreferredencoding() or "ascii"
+                    str(self.config.hist_file), getpreferredencoding() or "ascii"
                 )
             except OSError:
                 pass
@@ -472,7 +474,7 @@ class Repl:
     def ps2(self) -> str:
         return cast(str, getattr(sys, "ps2", "... "))
 
-    def startup(self):
+    def startup(self) -> None:
         """
         Execute PYTHONSTARTUP file if it exits. Call this after front
         end-specific initialisation.
@@ -642,7 +644,7 @@ class Repl:
         self.arg_pos = None
         return False
 
-    def get_source_of_current_name(self):
+    def get_source_of_current_name(self) -> str:
         """Return the unicode source code of the object which is bound to the
         current name in the current input line. Throw `SourceNotFound` if the
         source cannot be found."""
@@ -692,7 +694,7 @@ class Repl:
     # If exactly one match that is equal to current line, clear matches
     # If example one match and tab=True, then choose that and clear matches
 
-    def complete(self, tab=False):
+    def complete(self, tab: bool = False) -> Optional[bool]:
         """Construct a full list of possible completions and
         display them in a window. Also check if there's an available argspec
         (via the inspect module) and bang that on top of the completions too.
@@ -743,7 +745,7 @@ class Repl:
         else:
             return tab or completer.shown_before_tab
 
-    def format_docstring(self, docstring, width, height):
+    def format_docstring(self, docstring: str, width: int, height: int) -> str:
         """Take a string and try to format it into a sane list of strings to be
         put into the suggestion box."""
 
@@ -763,7 +765,7 @@ class Repl:
         out[-1] = out[-1].rstrip()
         return out
 
-    def next_indentation(self):
+    def next_indentation(self) -> int:
         """Return the indentation of the next line based on the current
         input buffer."""
         if self.buffer:
@@ -804,7 +806,7 @@ class Repl:
 
         return "\n".join(process())
 
-    def write2file(self):
+    def write2file(self) -> None:
         """Prompt for a filename and write the current contents of the stdout
         buffer to disk."""
 
@@ -851,7 +853,7 @@ class Repl:
         else:
             self.interact.notify(_("Saved to %s.") % (fn,))
 
-    def copy2clipboard(self):
+    def copy2clipboard(self) -> None:
         """Copy current content to clipboard."""
 
         if not have_pyperclip:
@@ -866,7 +868,7 @@ class Repl:
         else:
             self.interact.notify(_("Copied content to clipboard."))
 
-    def pastebin(self, s=None):
+    def pastebin(self, s=None) -> Optional[str]:
         """Upload to a pastebin and display the URL in the status bar."""
 
         if s is None:
@@ -879,7 +881,7 @@ class Repl:
         else:
             return self.do_pastebin(s)
 
-    def do_pastebin(self, s):
+    def do_pastebin(self, s) -> Optional[str]:
         """Actually perform the upload."""
         if s == self.prev_pastebin_content:
             self.interact.notify(
@@ -911,7 +913,7 @@ class Repl:
 
         return paste_url
 
-    def push(self, s, insert_into_history=True):
+    def push(self, s, insert_into_history=True) -> bool:
         """Push a line of code onto the buffer so it can process it all
         at once when a code block ends"""
         # This push method is used by cli and urwid, but not curtsies
@@ -936,7 +938,7 @@ class Repl:
         except RuntimeError as e:
             self.interact.notify(f"{e}")
 
-    def prompt_undo(self):
+    def prompt_undo(self) -> int:
         """Returns how many lines to undo, 0 means don't undo"""
         if (
             self.config.single_undo_time < 0
@@ -944,14 +946,14 @@ class Repl:
         ):
             return 1
         est = self.interp.timer.estimate()
-        n = self.interact.file_prompt(
+        m = self.interact.file_prompt(
             _("Undo how many lines? (Undo will take up to ~%.1f seconds) [1]")
             % (est,)
         )
         try:
-            if n == "":
-                n = "1"
-            n = int(n)
+            if m == "":
+                m = "1"
+            n = int(m)
         except ValueError:
             self.interact.notify(_("Undo canceled"), 0.1)
             return 0
@@ -968,7 +970,7 @@ class Repl:
                 self.interact.notify(message % (n, est), 0.1)
             return n
 
-    def undo(self, n=1):
+    def undo(self, n: int = 1) -> None:
         """Go back in the undo history n steps and call reevaluate()
         Note that in the program this is called "Rewind" because I
         want it to be clear that this is by no means a true undo
@@ -992,7 +994,7 @@ class Repl:
 
         self.rl_history.entries = entries
 
-    def flush(self):
+    def flush(self) -> None:
         """Olivier Grisel brought it to my attention that the logging
         module tries to call this method, since it makes assumptions
         about stdout that may not necessarily be true. The docs for
@@ -1009,7 +1011,7 @@ class Repl:
     def close(self):
         """See the flush() method docstring."""
 
-    def tokenize(self, s, newline=False):
+    def tokenize(self, s, newline=False) -> List[Tuple[_TokenType, str]]:
         """Tokenizes a line of code, returning pygments tokens
         with side effects/impurities:
         - reads self.cpos to see what parens should be highlighted
@@ -1107,11 +1109,11 @@ class Repl:
             return list()
         return line_tokens
 
-    def clear_current_line(self):
+    def clear_current_line(self) -> None:
         """This is used as the exception callback for the Interpreter instance.
         It prevents autoindentation from occurring after a traceback."""
 
-    def send_to_external_editor(self, text):
+    def send_to_external_editor(self, text: str) -> str:
         """Returns modified text from an editor, or the original text if editor
         exited with non-zero"""
 
@@ -1169,7 +1171,7 @@ class Repl:
             self.interact.notify(_("Error editing config file: %s") % e)
 
 
-def next_indentation(line, tab_length):
+def next_indentation(line, tab_length) -> int:
     """Given a code line, return the indentation of the next line."""
     line = line.expandtabs(tab_length)
     indentation = (len(line) - len(line.lstrip(" "))) // tab_length
