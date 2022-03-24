@@ -37,7 +37,18 @@ from abc import abstractmethod
 from itertools import takewhile
 from pathlib import Path
 from types import ModuleType, TracebackType
-from typing import cast, List, Tuple, Any, Optional, Type, Union, MutableMapping, Callable, Dict
+from typing import (
+    cast,
+    List,
+    Tuple,
+    Any,
+    Optional,
+    Type,
+    Union,
+    MutableMapping,
+    Callable,
+    Dict,
+)
 from ._typing_compat import Literal
 
 from pygments.lexers import Python3Lexer
@@ -93,7 +104,11 @@ class Interpreter(code.InteractiveInterpreter):
 
     bpython_input_re = LazyReCompile(r"<bpython-input-\d+>")
 
-    def __init__(self, locals: Optional[MutableMapping[str, str]] = None, encoding: Optional[str] = None):
+    def __init__(
+        self,
+        locals: Optional[MutableMapping[str, str]] = None,
+        encoding: Optional[str] = None,
+    ):
         """Constructor.
 
         The optional 'locals' argument specifies the dictionary in which code
@@ -423,14 +438,18 @@ class Repl:
         # all input and output, stored as old style format strings
         # (\x01, \x02, ...) for cli.py
         self.screen_hist: List[str] = []
-        self.history: List[str] = []  # commands executed since beginning of session
+        self.history: List[
+            str
+        ] = []  # commands executed since beginning of session
         self.redo_stack: List[str] = []
         self.evaluating = False
         self.matches_iter = MatchesIterator()
         self.funcprops = None
         self.arg_pos: Union[str, int, None] = None
         self.current_func = None
-        self.highlighted_paren: Optional[Tuple[Any, List[Tuple[_TokenType, str]]]] = None
+        self.highlighted_paren: Optional[
+            Tuple[Any, List[Tuple[_TokenType, str]]]
+        ] = None
         self._C: Dict[str, int] = {}
         self.prev_block_finished: int = 0
         self.interact = Interaction(self.config)
@@ -447,7 +466,8 @@ class Repl:
         if self.config.hist_file.exists():
             try:
                 self.rl_history.load(
-                    str(self.config.hist_file), getpreferredencoding() or "ascii"
+                    str(self.config.hist_file),
+                    getpreferredencoding() or "ascii",
                 )
             except OSError:
                 pass
@@ -749,7 +769,9 @@ class Repl:
         else:
             return False
 
-    def format_docstring(self, docstring: str, width: int, height: int) -> List[str]:
+    def format_docstring(
+        self, docstring: str, width: int, height: int
+    ) -> List[str]:
         """Take a string and try to format it into a sane list of strings to be
         put into the suggestion box."""
 

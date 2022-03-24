@@ -67,7 +67,7 @@ from typing import (
     Union,
     Tuple,
     Collection,
-    Dict
+    Dict,
 )
 import unicodedata
 from dataclasses import dataclass
@@ -2058,7 +2058,7 @@ def main_curses(
 
     exit_value = clirepl.repl()
     if hasattr(sys, "exitfunc"):
-        # Seems like the if statment should satisfy mypy, but it doesn't
+        # Seems like the if statement should satisfy mypy, but it doesn't
         sys.exitfunc()  # type:ignore[attr-defined]
         delattr(sys, "exitfunc")
 
