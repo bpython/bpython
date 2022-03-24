@@ -352,8 +352,7 @@ class CLIInteraction(repl.Interaction):
 
     def file_prompt(self, s: str) -> Optional[str]:
         if self.statusbar:
-            # This thows a mypy error because repl.py isn't typed yet
-            return self.statusbar.prompt(s)  # type:ignore[no-any-return]
+            return self.statusbar.prompt(s)
         else:
             return None
 
