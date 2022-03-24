@@ -430,7 +430,7 @@ class Repl:
         self.funcprops = None
         self.arg_pos: Union[str, int, None] = None
         self.current_func = None
-        self.highlighted_paren = None
+        self.highlighted_paren: Optional[Tuple[Any, List[Tuple[_TokenType, str]]]] = None
         self._C: Dict[str, int] = {}
         self.prev_block_finished: int = 0
         self.interact = Interaction(self.config)
@@ -649,7 +649,7 @@ class Repl:
         current name in the current input line. Throw `SourceNotFound` if the
         source cannot be found."""
 
-        obj = self.current_func
+        obj: Optional[Callable] = self.current_func
         try:
             if obj is None:
                 line = self.current_line
@@ -657,7 +657,8 @@ class Repl:
                     raise SourceNotFound(_("Nothing to get source of"))
                 if inspection.is_eval_safe_name(line):
                     obj = self.get_object(line)
-            return inspect.getsource(obj)
+            # Ignoring the next mypy error because we want this to fail if obj is None
+            return inspect.getsource(obj)  # type:ignore[arg-type]
         except (AttributeError, NameError) as e:
             msg = _("Cannot get source: %s") % (e,)
         except OSError as e:
@@ -724,28 +725,31 @@ class Repl:
             self.matches_iter.clear()
             return bool(self.funcprops)
 
-        self.matches_iter.update(
-            self.cursor_offset, self.current_line, matches, completer
-        )
+        if completer:
+            self.matches_iter.update(
+                self.cursor_offset, self.current_line, matches, completer
+            )
 
-        if len(matches) == 1:
-            if tab:
-                # if this complete is being run for a tab key press, substitute
-                # common sequence
-                (
-                    self._cursor_offset,
-                    self._current_line,
-                ) = self.matches_iter.substitute_cseq()
-                return Repl.complete(self)  # again for
-            elif self.matches_iter.current_word == matches[0]:
-                self.matches_iter.clear()
-                return False
-            return completer.shown_before_tab
+            if len(matches) == 1:
+                if tab:
+                    # if this complete is being run for a tab key press, substitute
+                    # common sequence
+                    (
+                        self._cursor_offset,
+                        self._current_line,
+                    ) = self.matches_iter.substitute_cseq()
+                    return Repl.complete(self)  # again for
+                elif self.matches_iter.current_word == matches[0]:
+                    self.matches_iter.clear()
+                    return False
+                return completer.shown_before_tab
 
+            else:
+                return tab or completer.shown_before_tab
         else:
-            return tab or completer.shown_before_tab
+            return False
 
-    def format_docstring(self, docstring: str, width: int, height: int) -> str:
+    def format_docstring(self, docstring: str, width: int, height: int) -> List[str]:
         """Take a string and try to format it into a sane list of strings to be
         put into the suggestion box."""
 
@@ -878,11 +882,13 @@ class Repl:
             _("Pastebin buffer? (y/N) ")
         ):
             self.interact.notify(_("Pastebin aborted."))
+            return None
         else:
             return self.do_pastebin(s)
 
     def do_pastebin(self, s) -> Optional[str]:
         """Actually perform the upload."""
+        paste_url: str
         if s == self.prev_pastebin_content:
             self.interact.notify(
                 _("Duplicate pastebin. Previous URL: %s. " "Removal URL: %s")
@@ -896,7 +902,7 @@ class Repl:
             paste_url, removal_url = self.paster.paste(s)
         except PasteFailed as e:
             self.interact.notify(_("Upload failed: %s") % e)
-            return
+            return None
 
         self.prev_pastebin_content = s
         self.prev_pastebin_url = paste_url
@@ -923,7 +929,7 @@ class Repl:
         if insert_into_history:
             self.insert_into_history(s)
 
-        more = self.interp.runsource("\n".join(self.buffer))
+        more: bool = self.interp.runsource("\n".join(self.buffer))
 
         if not more:
             self.buffer = []
@@ -1028,7 +1034,7 @@ class Repl:
         cursor = len(source) - self.cpos
         if self.cpos:
             cursor += 1
-        stack = list()
+        stack: List[Any] = list()
         all_tokens = list(Python3Lexer().get_tokens(source))
         # Unfortunately, Pygments adds a trailing newline and strings with
         # no size, so strip them
@@ -1037,8 +1043,8 @@ class Repl:
         all_tokens[-1] = (all_tokens[-1][0], all_tokens[-1][1].rstrip("\n"))
         line = pos = 0
         parens = dict(zip("{([", "})]"))
-        line_tokens = list()
-        saved_tokens = list()
+        line_tokens: List[Tuple[_TokenType, str]] = list()
+        saved_tokens: List[Tuple[_TokenType, str]] = list()
         search_for_paren = True
         for (token, value) in split_lines(all_tokens):
             pos += len(value)
@@ -1174,7 +1180,7 @@ class Repl:
 def next_indentation(line, tab_length) -> int:
     """Given a code line, return the indentation of the next line."""
     line = line.expandtabs(tab_length)
-    indentation = (len(line) - len(line.lstrip(" "))) // tab_length
+    indentation: int = (len(line) - len(line.lstrip(" "))) // tab_length
     if line.rstrip().endswith(":"):
         indentation += 1
     elif indentation >= 1:
