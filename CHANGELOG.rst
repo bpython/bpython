@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.22.2
+------
+
+Fixes:
+
+* Make tests compatible with Python 3.10.
+
 0.22.1
 ------
 
