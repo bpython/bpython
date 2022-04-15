@@ -68,6 +68,7 @@ from typing import (
     Tuple,
     Collection,
     Dict,
+    Literal,
 )
 import unicodedata
 from dataclasses import dataclass
@@ -1330,7 +1331,7 @@ class CLIRepl(repl.Repl):
         arg_pos: Union[str, int, None],
         topline: Any = None,  # Named tuples don't play nice with mypy
         formatter: Optional[Callable] = None,
-        current_item: Optional[str] = None,
+        current_item: Union[str, Literal[False]] = None,
     ) -> None:
         v_items: Collection
         shared = ShowListState()
@@ -1527,9 +1528,8 @@ class CLIRepl(repl.Repl):
 
         # 4. swap current word for a match list item
         elif self.matches_iter.matches:
-            n: str = next(self.matches_iter)
-            current_match: Optional[str] = (
-                back and self.matches_iter.previous() or n
+            current_match: Union[str, Literal[False]] = (
+                back and self.matches_iter.previous() or next(self.matches_iter)
             )
             try:
                 self.show_list(
