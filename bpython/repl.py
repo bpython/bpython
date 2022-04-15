@@ -48,6 +48,7 @@ from typing import (
     MutableMapping,
     Callable,
     Dict,
+    TYPE_CHECKING,
 )
 from ._typing_compat import Literal
 
@@ -61,7 +62,10 @@ except ImportError:
     have_pyperclip = False
 
 from . import autocomplete, inspection, simpleeval
-from .cli import Statusbar
+
+if TYPE_CHECKING:
+    from .cli import Statusbar
+
 from .config import getpreferredencoding, Config
 from .formatter import Parenthesis
 from .history import History
@@ -365,7 +369,7 @@ class MatchesIterator:
 
 
 class Interaction:
-    def __init__(self, config: Config, statusbar: Optional[Statusbar] = None):
+    def __init__(self, config: Config, statusbar: Optional['Statusbar'] = None):
         self.config = config
 
         if statusbar:
@@ -418,6 +422,29 @@ class Repl:
     XXX Subclasses should implement echo, current_line, cw
     """
 
+    @abstractmethod
+    @property
+    def current_line(self):
+        pass
+
+    @abstractmethod
+    @property
+    def cursor_offset(self):
+        pass
+
+    @abstractmethod
+    def reevaluate(self):
+        pass
+
+    @abstractmethod
+    def reprint_line(
+        self, lineno: int, tokens: List[Tuple[_TokenType, str]]
+    ) -> None:
+        pass
+
+    # not actually defined, subclasses must define
+    cpos: int
+
     def __init__(self, interp: Interpreter, config: Config):
         """Initialise the repl.
 
@@ -425,7 +452,6 @@ class Repl:
 
         config is a populated bpython.config.Struct.
         """
-
         self.config = config
         self.cut_buffer = ""
         self.buffer: List[str] = []
