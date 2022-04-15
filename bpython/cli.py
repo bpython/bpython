@@ -1101,7 +1101,12 @@ class CLIRepl(repl.Repl):
 
         if self.highlighted_paren is not None:
             # Clear previous highlighted paren
-            self.reprint_line(*self.highlighted_paren)
+
+            lineno = self.highlighted_paren[0]
+            tokens = self.highlighted_paren[1]
+            # mypy thinks tokens is List[Tuple[_TokenType, str]]
+            # but it is supposed to be MutableMapping[_TokenType, str]
+            self.reprint_line(lineno, tokens)
             self.highlighted_paren = None
 
         if self.config.syntax and (not self.paste_mode or newline):
@@ -1221,7 +1226,7 @@ class CLIRepl(repl.Repl):
         return self.exit_value
 
     def reprint_line(
-        self, lineno: int, tokens: MutableMapping[_TokenType, str]
+        self, lineno: int, tokens: List[Tuple[_TokenType, str]]
     ) -> None:
         """Helper function for paren highlighting: Reprint line at offset
         `lineno` in current input buffer."""
