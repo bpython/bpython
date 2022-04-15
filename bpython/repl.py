@@ -369,7 +369,7 @@ class MatchesIterator:
 
 
 class Interaction:
-    def __init__(self, config: Config, statusbar: Optional['Statusbar'] = None):
+    def __init__(self, config: Config, statusbar: Optional["Statusbar"] = None):
         self.config = config
 
         if statusbar:
