@@ -422,28 +422,29 @@ class Repl:
     XXX Subclasses should implement echo, current_line, cw
     """
 
-    @abstractmethod
-    @property
-    def current_line(self):
-        pass
+    if TYPE_CHECKING:
+        @property
+        @abstractmethod
+        def current_line(self):
+            pass
 
-    @abstractmethod
-    @property
-    def cursor_offset(self):
-        pass
+        @property
+        @abstractmethod
+        def cursor_offset(self):
+            pass
 
-    @abstractmethod
-    def reevaluate(self):
-        pass
+        @abstractmethod
+        def reevaluate(self):
+            pass
 
-    @abstractmethod
-    def reprint_line(
-        self, lineno: int, tokens: List[Tuple[_TokenType, str]]
-    ) -> None:
-        pass
+        @abstractmethod
+        def reprint_line(
+            self, lineno: int, tokens: List[Tuple[_TokenType, str]]
+        ) -> None:
+            pass
 
-    # not actually defined, subclasses must define
-    cpos: int
+        # not actually defined, subclasses must define
+        cpos: int
 
     def __init__(self, interp: Interpreter, config: Config):
         """Initialise the repl.
