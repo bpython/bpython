@@ -68,8 +68,8 @@ from typing import (
     Tuple,
     Collection,
     Dict,
-    Literal,
 )
+from ._typing_compat import Literal
 import unicodedata
 from dataclasses import dataclass
 
