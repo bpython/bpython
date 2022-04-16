@@ -514,12 +514,12 @@ class CLIRepl(repl.Repl):
 
         list_win_visible = repl.Repl.complete(self, tab)
 
-        f = None
-        if self.matches_iter.completer:
-            f = self.matches_iter.completer.format
-
         if list_win_visible:
             try:
+                f = None
+                if self.matches_iter.completer:
+                    f = self.matches_iter.completer.format
+
                 self.show_list(
                     self.matches_iter.matches,
                     self.arg_pos,
@@ -1494,10 +1494,6 @@ class CLIRepl(repl.Repl):
         and don't indent if there are only whitespace in the line.
         """
 
-        f = None
-        if self.matches_iter.completer:
-            f = self.matches_iter.completer.format
-
         # 1. check if we should add a tab character
         if self.atbol() and not back:
             x_pos = len(self.s) - self.cpos
@@ -1532,6 +1528,10 @@ class CLIRepl(repl.Repl):
                 back and self.matches_iter.previous() or next(self.matches_iter)
             )
             try:
+                f = None
+                if self.matches_iter.completer:
+                    f = self.matches_iter.completer.format
+
                 self.show_list(
                     self.matches_iter.matches,
                     self.arg_pos,

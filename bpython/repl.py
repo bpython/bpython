@@ -423,6 +423,7 @@ class Repl:
     """
 
     if TYPE_CHECKING:
+
         @property
         @abstractmethod
         def current_line(self):
