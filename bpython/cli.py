@@ -68,7 +68,12 @@ from typing import (
     Tuple,
     Collection,
     Dict,
+    TYPE_CHECKING,
 )
+
+if TYPE_CHECKING:
+    from _curses import _CursesWindow
+
 from ._typing_compat import Literal
 import unicodedata
 from dataclasses import dataclass
@@ -361,7 +366,7 @@ class CLIInteraction(repl.Interaction):
 class CLIRepl(repl.Repl):
     def __init__(
         self,
-        scr: curses.window,
+        scr: "_CursesWindow",
         interp: repl.Interpreter,
         statusbar: "Statusbar",
         config: Config,
@@ -371,7 +376,7 @@ class CLIRepl(repl.Repl):
         # mypy doesn't quite understand the difference between a class variable with a callable type and a method.
         # https://github.com/python/mypy/issues/2427
         self.interp.writetb = self.writetb  # type:ignore[assignment]
-        self.scr: curses.window = scr
+        self.scr: "_CursesWindow" = scr
         self.stdout_hist = ""  # native str (bytes in Py2, unicode in Py3)
         self.list_win = newwin(get_colpair(config, "background"), 1, 1, 1, 1)
         self.cpos = 0
@@ -1631,8 +1636,8 @@ class Statusbar:
 
     def __init__(
         self,
-        scr: curses.window,
-        pwin: curses.window,
+        scr: "_CursesWindow",
+        pwin: "_CursesWindow",
         background: int,
         config: Config,
         s: Optional[str] = None,
@@ -1640,7 +1645,7 @@ class Statusbar:
     ):
         """Initialise the statusbar and display the initial text (if any)"""
         self.size()
-        self.win: curses.window = newwin(
+        self.win: "_CursesWindow" = newwin(
             background, self.h, self.w, self.y, self.x
         )
 
@@ -1767,8 +1772,8 @@ class Statusbar:
 
 
 def init_wins(
-    scr: curses.window, config: Config
-) -> Tuple[curses.window, Statusbar]:
+    scr: "_CursesWindow", config: Config
+) -> Tuple["_CursesWindow", Statusbar]:
     """Initialise the two windows (the main repl interface and the little
     status bar at the bottom with some stuff in it)"""
     # TODO: Document better what stuff is on the status bar.
@@ -1803,12 +1808,12 @@ def init_wins(
     return main_win, statusbar
 
 
-def sigwinch(unused_scr: curses.window) -> None:
+def sigwinch(unused_scr: "_CursesWindow") -> None:
     global DO_RESIZE
     DO_RESIZE = True
 
 
-def sigcont(unused_scr: curses.window) -> None:
+def sigcont(unused_scr: "_CursesWindow") -> None:
     sigwinch(unused_scr)
     # Forces the redraw
     curses.ungetch("\x00")
@@ -1933,7 +1938,7 @@ class FakeDict:
         return self._val
 
 
-def newwin(background: int, *args: int) -> curses.window:
+def newwin(background: int, *args: int) -> "_CursesWindow":
     """Wrapper for curses.newwin to automatically set background colour on any
     newly created window."""
     win = curses.newwin(*args)
@@ -1967,7 +1972,7 @@ def curses_wrapper(func: Callable, *args: Any, **kwargs: Any) -> Any:
 
 
 def main_curses(
-    scr: curses.window,
+    scr: "_CursesWindow",
     args: List[str],
     config: Config,
     interactive: bool = True,
