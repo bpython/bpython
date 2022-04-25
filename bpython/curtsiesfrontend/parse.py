@@ -50,9 +50,7 @@ def parse(s: str) -> FmtStr:
     """Returns a FmtStr object from a bpython-formatted colored string"""
     rest = s
     stuff = []
-    while True:
-        if not rest:
-            break
+    while rest:
         start, rest = peel_off_string(rest)
         stuff.append(start)
     return (
