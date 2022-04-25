@@ -15,7 +15,7 @@ preproc = partial(preprocess, compiler=compiler)
 
 
 def get_fodder_source(test_name):
-    pattern = fr"#StartTest-{test_name}\n(.*?)#EndTest"
+    pattern = rf"#StartTest-{test_name}\n(.*?)#EndTest"
     orig, xformed = [
         re.search(pattern, inspect.getsource(module), re.DOTALL)
         for module in [original, processed]
