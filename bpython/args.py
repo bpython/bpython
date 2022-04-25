@@ -77,9 +77,9 @@ Options = Tuple[str, str, Callable[[argparse._ArgumentGroup], None]]
 
 def parse(
     args: Optional[List[str]],
-    extras: Options = None,
+    extras: Optional[Options] = None,
     ignore_stdin: bool = False,
-) -> Tuple:
+) -> Tuple[Config, argparse.Namespace, List[str]]:
     """Receive an argument list - if None, use sys.argv - parse all args and
     take appropriate action. Also receive optional extra argument: this should
     be a tuple of (title, description, callback)
