@@ -1,4 +1,6 @@
 import re
+from functools import partial
+from typing import Any, Callable, Dict, Tuple
 
 from curtsies.formatstring import fmtstr, FmtStr
 from curtsies.termformatconstants import (
@@ -6,7 +8,6 @@ from curtsies.termformatconstants import (
     BG_COLORS,
     colors as CURTSIES_COLORS,
 )
-from functools import partial
 
 from ..config import COLOR_LETTERS
 from ..lazyre import LazyReCompile
@@ -24,7 +25,9 @@ INVERSE_COLORS = {
 INVERSE_COLORS["default"] = INVERSE_COLORS[CURTSIES_COLORS[0]]
 
 
-def func_for_letter(letter_color_code: str, default: str = "k"):
+def func_for_letter(
+    letter_color_code: str, default: str = "k"
+) -> Callable[..., FmtStr]:
     """Returns FmtStr constructor for a bpython-style color code"""
     if letter_color_code == "d":
         letter_color_code = default
@@ -37,13 +40,13 @@ def func_for_letter(letter_color_code: str, default: str = "k"):
     )
 
 
-def color_for_letter(letter_color_code: str, default: str = "k"):
+def color_for_letter(letter_color_code: str, default: str = "k") -> str:
     if letter_color_code == "d":
         letter_color_code = default
     return CNAMES[letter_color_code.lower()]
 
 
-def parse(s):
+def parse(s: str) -> FmtStr:
     """Returns a FmtStr object from a bpython-formatted colored string"""
     rest = s
     stuff = []
@@ -59,7 +62,7 @@ def parse(s):
     )
 
 
-def fs_from_match(d):
+def fs_from_match(d: Dict[str, Any]) -> FmtStr:
     atts = {}
     if d["fg"]:
         # this isn't according to spec as I understand it
@@ -97,7 +100,7 @@ peel_off_string_re = LazyReCompile(
 )
 
 
-def peel_off_string(s):
+def peel_off_string(s: str) -> Tuple[Dict[str, Any], str]:
     m = peel_off_string_re.match(s)
     assert m, repr(s)
     d = m.groupdict()
