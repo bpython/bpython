@@ -1,7 +1,7 @@
 # The MIT License
 #
 # Copyright (c) 2009-2015 the bpython authors.
-# Copyright (c) 2015-2020 Sebastian Ramacher
+# Copyright (c) 2015-2022 Sebastian Ramacher
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -35,9 +35,13 @@ from typing import MutableMapping, Mapping, Any, Dict
 from xdg import BaseDirectory
 
 from .autocomplete import AutocompleteModes
-from .curtsiesfrontend.parse import CNAMES
 
 default_completion = AutocompleteModes.SIMPLE
+# All supported letters for colors for themes
+#
+# Instead of importing it from .curtsiesfrontend.parse, we define them here to
+# avoid a potential import of fcntl on Windows.
+COLOR_LETTERS = tuple("krgybmcwd")
 
 
 class UnknownColorCode(Exception):
@@ -381,7 +385,7 @@ def load_theme(
             colors[k] = theme.get("syntax", k)
         else:
             colors[k] = theme.get("interface", k)
-        if colors[k].lower() not in CNAMES:
+        if colors[k].lower() not in COLOR_LETTERS:
             raise UnknownColorCode(k, colors[k])
 
     # Check against default theme to see if all values are defined

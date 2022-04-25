@@ -8,11 +8,12 @@ from curtsies.termformatconstants import (
 )
 from functools import partial
 
+from ..config import COLOR_LETTERS
 from ..lazyre import LazyReCompile
 
 
 COLORS = CURTSIES_COLORS + ("default",)
-CNAMES = dict(zip("krgybmcwd", COLORS))
+CNAMES = dict(zip(COLOR_LETTERS, COLORS))
 # hack for finding the "inverse"
 INVERSE_COLORS = {
     CURTSIES_COLORS[idx]: CURTSIES_COLORS[
