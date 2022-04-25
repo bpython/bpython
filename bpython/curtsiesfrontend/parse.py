@@ -62,6 +62,7 @@ def parse(s: str) -> FmtStr:
 
 def fs_from_match(d: Dict[str, Any]) -> FmtStr:
     atts = {}
+    color = "default"
     if d["fg"]:
         # this isn't according to spec as I understand it
         if d["fg"].isupper():
