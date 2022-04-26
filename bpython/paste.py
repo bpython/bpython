@@ -22,7 +22,7 @@
 
 import errno
 import subprocess
-from typing import Tuple
+from typing import Optional, Tuple, Protocol
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -34,6 +34,11 @@ from .translations import _
 
 class PasteFailed(Exception):
     pass
+
+
+class Paster(Protocol):
+    def paste(self, s: str) -> Tuple[str, Optional[str]]:
+        ...
 
 
 class PastePinnwand:
