@@ -1,6 +1,6 @@
 # The MIT License
 #
-# Copyright (c) 2014-2020 Sebastian Ramacher
+# Copyright (c) 2014-2022 Sebastian Ramacher
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,13 +21,14 @@
 # THE SOFTWARE.
 
 import errno
-import requests
 import subprocess
-import unicodedata
-
-from locale import getpreferredencoding
+from typing import Tuple
 from urllib.parse import urljoin, urlparse
 
+import requests
+import unicodedata
+
+from .config import getpreferredencoding
 from .translations import _
 
 
@@ -36,11 +37,11 @@ class PasteFailed(Exception):
 
 
 class PastePinnwand:
-    def __init__(self, url, expiry):
+    def __init__(self, url: str, expiry: str) -> None:
         self.url = url
         self.expiry = expiry
 
-    def paste(self, s):
+    def paste(self, s: str) -> Tuple[str, str]:
         """Upload to pastebin via json interface."""
 
         url = urljoin(self.url, "/api/v1/paste")
@@ -64,10 +65,10 @@ class PastePinnwand:
 
 
 class PasteHelper:
-    def __init__(self, executable):
+    def __init__(self, executable: str) -> None:
         self.executable = executable
 
-    def paste(self, s):
+    def paste(self, s: str) -> Tuple[str, None]:
         """Call out to helper program for pastebin upload."""
 
         try:
@@ -77,6 +78,7 @@ class PasteHelper:
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
             )
+            assert helper.stdin is not None
             helper.stdin.write(s.encode(getpreferredencoding()))
             output = helper.communicate()[0].decode(getpreferredencoding())
             paste_url = output.split()[0]
@@ -89,8 +91,8 @@ class PasteHelper:
         if helper.returncode != 0:
             raise PasteFailed(
                 _(
-                    "Helper program returned non-zero exit "
-                    "status %d." % (helper.returncode,)
+                    "Helper program returned non-zero exit status %d."
+                    % (helper.returncode,)
                 )
             )
 
