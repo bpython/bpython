@@ -54,7 +54,7 @@ class PastePinnwand:
             response = requests.post(url, json=payload, verify=True)
             response.raise_for_status()
         except requests.exceptions.RequestException as exc:
-            raise PasteFailed(exc.message)
+            raise PasteFailed(str(exc))
 
         data = response.json()
 
