@@ -79,8 +79,9 @@ class PasteHelper:
                 stdout=subprocess.PIPE,
             )
             assert helper.stdin is not None
-            helper.stdin.write(s.encode(getpreferredencoding()))
-            output = helper.communicate()[0].decode(getpreferredencoding())
+            encoding = getpreferredencoding()
+            helper.stdin.write(s.encode(encoding))
+            output = helper.communicate()[0].decode(encoding)
             paste_url = output.split()[0]
         except OSError as e:
             if e.errno == errno.ENOENT:
