@@ -13,8 +13,21 @@ import time
 import unicodedata
 from enum import Enum
 from types import TracebackType
-from typing import Dict, Any, List, Optional, Tuple, Union, cast, Type
+from typing import (
+    Dict,
+    Any,
+    List,
+    Optional,
+    Tuple,
+    Union,
+    cast,
+    Type,
+    TYPE_CHECKING,
+)
 from .._typing_compat import Literal
+
+if TYPE_CHECKING:
+    from ..repl import Interpreter
 
 import blessings
 import greenlet
@@ -357,7 +370,9 @@ class BaseRepl(Repl):
         )
         self.edit_keys = edit_keys.mapping_with_config(config, key_dispatch)
         logger.debug("starting parent init")
-        super().__init__(interp, config)
+        # interp is a subclass of repl.Interpreter, so it definitely,
+        # implements the methods of Interpreter!
+        super().__init__(cast("Interpreter", interp), config)
 
         self.formatter = BPythonFormatter(config.color_scheme)
 
