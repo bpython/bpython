@@ -243,10 +243,10 @@ def exec_code(
         raise SystemExit(e.errno)
     old_argv, sys.argv = sys.argv, args
     sys.path.insert(0, os.path.abspath(os.path.dirname(args[0])))
-    spec = importlib.util.spec_from_loader("__console__", loader=None)
+    spec = importlib.util.spec_from_loader("__main__", loader=None)
     assert spec
     mod = importlib.util.module_from_spec(spec)
-    sys.modules["__console__"] = mod
+    sys.modules["__main__"] = mod
     interpreter.locals.update(mod.__dict__)  # type: ignore  # TODO use a more specific type that has a .locals attribute
     interpreter.locals["__file__"] = args[0]  # type: ignore  # TODO use a more specific type that has a .locals attribute
     interpreter.runsource(source, args[0], "exec")
