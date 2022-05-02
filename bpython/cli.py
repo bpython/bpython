@@ -123,24 +123,6 @@ class ShowListState:
     wl: int = 0
 
 
-def calculate_screen_lines(
-    tokens: MutableMapping[_TokenType, str], width: int, cursor: int = 0
-) -> int:
-    """Given a stream of tokens and a screen width plus an optional
-    initial cursor position, return the amount of needed lines on the
-    screen."""
-    lines = 1
-    pos = cursor
-    for (token, value) in tokens:
-        if token is Token.Text and value == "\n":
-            lines += 1
-        else:
-            pos += len(value)
-            lines += pos // width
-            pos %= width
-    return lines
-
-
 def forward_if_not_current(func: F) -> F:
     @functools.wraps(func)
     def newfunc(self, *args, **kwargs):  # type: ignore
