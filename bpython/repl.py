@@ -956,7 +956,7 @@ class Repl:
 
         self.prev_pastebin_content = s
         self.prev_pastebin_url = paste_url
-        self.prev_removal_url = removal_url
+        self.prev_removal_url = removal_url if removal_url is not None else ""
 
         if removal_url is not None:
             self.interact.notify(
