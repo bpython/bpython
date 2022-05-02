@@ -55,9 +55,9 @@ class FullCurtsiesRepl(BaseRepl):
     def __init__(
         self,
         config: Config,
-        locals_: Optional[Dict[str, Any]],
-        banner: Optional[str],
-        interp: code.InteractiveInterpreter = None,
+        locals_: Optional[Dict[str, Any]] = None,
+        banner: Optional[str] = None,
+        interp: Optional[Interp] = None,
     ) -> None:
         self.input_generator = curtsies.input.Input(
             keynames="curtsies", sigint_event=True, paste_threshold=None
@@ -182,10 +182,10 @@ class FullCurtsiesRepl(BaseRepl):
 
 
 def main(
-    args: List[str] = None,
-    locals_: Dict[str, Any] = None,
-    banner: str = None,
-    welcome_message: str = None,
+    args: Optional[List[str]] = None,
+    locals_: Optional[Dict[str, Any]] = None,
+    banner: Optional[str] = None,
+    welcome_message: Optional[str] = None,
 ) -> Any:
     """
     banner is displayed directly after the version information.
