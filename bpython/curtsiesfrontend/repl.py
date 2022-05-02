@@ -327,7 +327,7 @@ class BaseRepl(Repl):
         config: Config,
         locals_: Optional[Dict[str, Any]] = None,
         banner: Optional[str] = None,
-        interp: Optional[code.InteractiveInterpreter] = None,
+        interp: Optional["Interpreter"] = None,
         orig_tcattrs: Optional[List[Any]] = None,
     ):
         """
@@ -370,9 +370,8 @@ class BaseRepl(Repl):
         )
         self.edit_keys = edit_keys.mapping_with_config(config, key_dispatch)
         logger.debug("starting parent init")
-        # interp is a subclass of repl.Interpreter, so it definitely,
-        # implements the methods of Interpreter!
-        super().__init__(cast("Interpreter", interp), config)
+
+        super().__init__(interp, config)
 
         self.formatter = BPythonFormatter(config.color_scheme)
 

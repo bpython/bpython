@@ -57,7 +57,7 @@ class FullCurtsiesRepl(BaseRepl):
         config: Config,
         locals_: Optional[Dict[str, Any]],
         banner: Optional[str],
-        interp: code.InteractiveInterpreter = None,
+        interp: Optional[Interp] = None,
     ) -> None:
         self.input_generator = curtsies.input.Input(
             keynames="curtsies", sigint_event=True, paste_threshold=None

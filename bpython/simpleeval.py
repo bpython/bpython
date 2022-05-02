@@ -28,7 +28,7 @@ In order to provide fancy completion, some code can be executed safely.
 import ast
 import sys
 import builtins
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from . import line as line_properties
 from .inspection import getattr_safe
@@ -216,7 +216,7 @@ def find_attribute_with_name(node, name):
 
 
 def evaluate_current_expression(
-    cursor_offset: int, line: str, namespace: Dict[str, Any] = None
+    cursor_offset: int, line: str, namespace: Optional[Dict[str, Any]] = None
 ):
     """
     Return evaluated expression to the right of the dot of current attribute.

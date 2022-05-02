@@ -64,7 +64,8 @@ except ImportError:
 from . import autocomplete, inspection, simpleeval
 
 if TYPE_CHECKING:
-    from .cli import Statusbar
+    from .cli import Statusbar as cliStatusbar
+    from urwid import Statusbar as urwidStatusbar
 
 from .config import getpreferredencoding, Config
 from .formatter import Parenthesis
@@ -369,7 +370,11 @@ class MatchesIterator:
 
 
 class Interaction:
-    def __init__(self, config: Config, statusbar: Optional["Statusbar"] = None):
+    def __init__(
+        self,
+        config: Config,
+        statusbar: Union["cliStatusbar", "urwidStatusbar", None] = None,
+    ):
         self.config = config
 
         if statusbar:
@@ -485,7 +490,7 @@ class Repl:
         # to repl.pastebin
         self.prev_pastebin_content = ""
         self.prev_pastebin_url = ""
-        self.prev_removal_url = ""
+        self.prev_removal_url: Optional[str] = ""
         # Necessary to fix mercurial.ui.ui expecting sys.stderr to have this
         # attribute
         self.closed = False

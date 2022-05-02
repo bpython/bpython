@@ -130,7 +130,7 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(plain("").join(a), expected)
 
     def test_runsource_bytes_over_128_syntax_error_py3(self):
-        i = interpreter.Interp(encoding=b"latin-1")
+        i = interpreter.Interp(encoding="latin-1")
         i.showsyntaxerror = mock.Mock(return_value=None)
 
         i.runsource("a = b'\xfe'")
