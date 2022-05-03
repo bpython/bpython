@@ -166,20 +166,21 @@ class Interpreter(code.InteractiveInterpreter):
         exc_type, value, sys.last_traceback = sys.exc_info()
         sys.last_type = exc_type
         sys.last_value = value
-        if filename and exc_type is SyntaxError:
-            # Work hard to stuff the correct filename in the exception
-            try:
-                msg, (dummy_filename, lineno, offset, line) = value.args
-            except:
-                # Not the format we expect; leave it alone
-                pass
-            else:
-                # Stuff in the right filename and right lineno
-                # strip linecache line number
-                if self.bpython_input_re.match(filename):
-                    filename = "<input>"
-                value = SyntaxError(msg, (filename, lineno, offset, line))
-                sys.last_value = value
+        if (
+            filename
+            and exc_type is SyntaxError
+            and value is not None
+            and len(value.args) >= 4
+        ):
+            msg = str(value)
+            lineno = value.args[1]
+            offset = value.args[2]
+            line = value.args[3]
+            # strip linechache line number
+            if self.bpython_input_re.match(filename):
+                filename = "<input>"
+            value = SyntaxError(msg, (filename, lineno, offset, line))
+            sys.last_value = value
         exc_formatted = traceback.format_exception_only(exc_type, value)
         self.writetb(exc_formatted)
 
