@@ -110,9 +110,8 @@ class Interpreter(code.InteractiveInterpreter):
 
     def __init__(
         self,
-        locals: Optional[MutableMapping[str, str]] = None,
-        encoding: Optional[str] = None,
-    ):
+        locals: Optional[MutableMapping[str, Any]] = None,
+    ) -> None:
         """Constructor.
 
         The optional 'locals' argument specifies the dictionary in which code
@@ -126,14 +125,8 @@ class Interpreter(code.InteractiveInterpreter):
         callback can be added to the Interpreter instance afterwards - more
         specifically, this is so that autoindentation does not occur after a
         traceback.
-
-        encoding is only used in Python 2, where it may be necessary to add an
-        encoding comment to a source bytestring before running it.
-        encoding must be a bytestring in Python 2 because it will be templated
-        into a bytestring source as part of an encoding comment.
         """
 
-        self.encoding = encoding or getpreferredencoding()
         self.syntaxerror_callback: Optional[Callable] = None
 
         if locals is None:
@@ -145,36 +138,21 @@ class Interpreter(code.InteractiveInterpreter):
         super().__init__(locals)
         self.timer = RuntimeTimer()
 
-    def runsource(self, source, filename=None, symbol="single", encode="auto"):
+    def runsource(
+        self,
+        source: str,
+        filename: Optional[str] = None,
+        symbol: str = "single",
+    ) -> bool:
         """Execute Python code.
 
         source, filename and symbol are passed on to
-        code.InteractiveInterpreter.runsource. If encode is True,
-        an encoding comment will be added to the source.
-        On Python 3.X, encode will be ignored.
-
-        encode should only be used for interactive interpreter input,
-        files should always already have an encoding comment or be ASCII.
-        By default an encoding line will be added if no filename is given.
-
-        source must be a string
-
-        Because adding an encoding comment to a unicode string in Python 2
-        would cause a syntax error to be thrown which would reference code
-        the user did not write, setting encoding to True when source is a
-        unicode string in Python 2 will throw a ValueError."""
-        if encode and filename is not None:
-            # files have encoding comments or implicit encoding of ASCII
-            if encode != "auto":
-                raise ValueError("shouldn't add encoding line to file contents")
-            encode = False
+        code.InteractiveInterpreter.runsource."""
 
         if filename is None:
             filename = filename_for_console_input(source)
         with self.timer:
-            return code.InteractiveInterpreter.runsource(
-                self, source, filename, symbol
-            )
+            return super().runsource(source, filename, symbol)
 
     def showsyntaxerror(self, filename=None):
         """Override the regular handler, the code's copied and pasted from
@@ -532,7 +510,7 @@ class Repl:
             encoding = inspection.get_encoding_file(filename)
             with open(filename, encoding=encoding) as f:
                 source = f.read()
-                self.interp.runsource(source, filename, "exec", encode=False)
+                self.interp.runsource(source, filename, "exec")
 
     def current_string(self, concatenate=False):
         """If the line ends in a string get it, otherwise return ''"""

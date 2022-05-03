@@ -1243,7 +1243,7 @@ def main(args=None, locals_=None, banner=None):
         extend_locals["service"] = serv
         reactor.callWhenRunning(serv.startService)
         exec_args = []
-    interpreter = repl.Interpreter(locals_, locale.getpreferredencoding())
+    interpreter = repl.Interpreter(locals_)
     # TODO: replace with something less hack-ish
     interpreter.locals.update(extend_locals)
 

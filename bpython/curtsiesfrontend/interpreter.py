@@ -63,14 +63,13 @@ class Interp(ReplInterpreter):
     def __init__(
         self,
         locals: Optional[Dict[str, Any]] = None,
-        encoding: Optional[str] = None,
     ) -> None:
         """Constructor.
 
         We include an argument for the outfile to pass to the formatter for it
         to write to.
         """
-        super().__init__(locals, encoding)
+        super().__init__(locals)
 
         # typically changed after being instantiated
         # but used when interpreter used corresponding REPL

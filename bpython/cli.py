@@ -2005,7 +2005,7 @@ def main_curses(
     curses.raw(True)
     main_win, statusbar = init_wins(scr, config)
 
-    interpreter = repl.Interpreter(locals_, getpreferredencoding())
+    interpreter = repl.Interpreter(locals_)
 
     clirepl = CLIRepl(main_win, interpreter, statusbar, config, idle)
     clirepl._C = cols

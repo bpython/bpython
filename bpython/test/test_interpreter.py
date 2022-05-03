@@ -38,7 +38,7 @@ class TestInterpreter(unittest.TestCase):
         if (3, 10, 1) <= sys.version_info[:3]:
             expected = (
                 "  File "
-                + green('"<bpython-input-148>"')
+                + green('"<bpython-input-147>"')
                 + ", line "
                 + bold(magenta("1"))
                 + "\n    1.1.1.1\n       ^^\n"
@@ -50,7 +50,7 @@ class TestInterpreter(unittest.TestCase):
         elif (3, 10) <= sys.version_info[:2]:
             expected = (
                 "  File "
-                + green('"<bpython-input-148>"')
+                + green('"<bpython-input-147>"')
                 + ", line "
                 + bold(magenta("1"))
                 + "\n    1.1.1.1\n    ^^^^^\n"
@@ -128,13 +128,6 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertMultiLineEqual(str(plain("").join(a)), str(expected))
         self.assertEqual(plain("").join(a), expected)
-
-    def test_runsource_bytes_over_128_syntax_error_py3(self):
-        i = interpreter.Interp(encoding="latin-1")
-        i.showsyntaxerror = mock.Mock(return_value=None)
-
-        i.runsource("a = b'\xfe'")
-        i.showsyntaxerror.assert_called_with(mock.ANY)
 
     def test_getsource_works_on_interactively_defined_functions(self):
         source = "def foo(x):\n    return x + 1\n"
