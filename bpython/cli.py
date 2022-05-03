@@ -333,7 +333,7 @@ class CLIInteraction(repl.Interaction):
         return reply.lower() in (_("y"), _("yes"))
 
     def notify(
-        self, s: str, n: int = 10, wait_for_keypress: bool = False
+        self, s: str, n: float = 10.0, wait_for_keypress: bool = False
     ) -> None:
         self.statusbar.message(s, n)
 

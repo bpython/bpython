@@ -39,6 +39,7 @@ from itertools import takewhile
 from pathlib import Path
 from types import ModuleType, TracebackType
 from typing import (
+    Iterable,
     cast,
     List,
     Tuple,
@@ -155,7 +156,7 @@ class Interpreter(code.InteractiveInterpreter):
         with self.timer:
             return super().runsource(source, filename, symbol)
 
-    def showsyntaxerror(self, filename=None):
+    def showsyntaxerror(self, filename: Optional[str] = None) -> None:
         """Override the regular handler, the code's copied and pasted from
         code.py, as per showtraceback, but with the syntaxerror callback called
         and the text in a pretty colour."""
@@ -182,7 +183,7 @@ class Interpreter(code.InteractiveInterpreter):
         exc_formatted = traceback.format_exception_only(exc_type, value)
         self.writetb(exc_formatted)
 
-    def showtraceback(self):
+    def showtraceback(self) -> None:
         """This needs to override the default traceback thing
         so it can put it into a pretty colour and maybe other
         stuff, I don't know"""
@@ -194,11 +195,10 @@ class Interpreter(code.InteractiveInterpreter):
             tblist = traceback.extract_tb(tb)
             del tblist[:1]
 
-            for i, (fname, lineno, module, something) in enumerate(tblist):
-                # strip linecache line number
-                if self.bpython_input_re.match(fname):
-                    fname = "<input>"
-                    tblist[i] = (fname, lineno, module, something)
+            for frame in tblist:
+                if self.bpython_input_re.match(frame.filename):
+                    # strip linecache line number
+                    frame.filename = "<input>"
 
             l = traceback.format_list(tblist)
             if l:
@@ -209,7 +209,7 @@ class Interpreter(code.InteractiveInterpreter):
 
         self.writetb(l)
 
-    def writetb(self, lines):
+    def writetb(self, lines: Iterable[str]) -> None:
         """This outputs the traceback and should be overridden for anything
         fancy."""
         for line in lines:
@@ -463,9 +463,8 @@ class Repl:
         # all input and output, stored as old style format strings
         # (\x01, \x02, ...) for cli.py
         self.screen_hist: List[str] = []
-        self.history: List[
-            str
-        ] = []  # commands executed since beginning of session
+        # commands executed since beginning of session
+        self.history: List[str] = []
         self.redo_stack: List[str] = []
         self.evaluating = False
         self.matches_iter = MatchesIterator()
@@ -870,25 +869,22 @@ class Repl:
             self.interact.notify(_("Save cancelled."))
             return
 
-        fn = Path(fn).expanduser()
-        if fn.suffix != ".py" and self.config.save_append_py:
+        path = Path(fn).expanduser()
+        if path.suffix != ".py" and self.config.save_append_py:
             # fn.with_suffix(".py") does not append if fn has a non-empty suffix
-            fn = Path(f"{fn}.py")
+            path = Path(f"{path}.py")
 
         mode = "w"
-        if fn.exists():
-            mode = self.interact.file_prompt(
+        if path.exists():
+            new_mode = self.interact.file_prompt(
                 _(
-                    "%s already exists. Do you "
-                    "want to (c)ancel, "
-                    " (o)verwrite or "
-                    "(a)ppend? "
+                    "%s already exists. Do you want to (c)ancel, (o)verwrite or (a)ppend? "
                 )
-                % (fn,)
+                % (path,)
             )
-            if mode in ("o", "overwrite", _("overwrite")):
+            if new_mode in ("o", "overwrite", _("overwrite")):
                 mode = "w"
-            elif mode in ("a", "append", _("append")):
+            elif new_mode in ("a", "append", _("append")):
                 mode = "a"
             else:
                 self.interact.notify(_("Save cancelled."))
@@ -897,12 +893,12 @@ class Repl:
         stdout_text = self.get_session_formatted_for_file()
 
         try:
-            with open(fn, mode) as f:
+            with open(path, mode) as f:
                 f.write(stdout_text)
         except OSError as e:
-            self.interact.notify(_("Error writing file '%s': %s") % (fn, e))
+            self.interact.notify(_("Error writing file '%s': %s") % (path, e))
         else:
-            self.interact.notify(_("Saved to %s.") % (fn,))
+            self.interact.notify(_("Saved to %s.") % (path,))
 
     def copy2clipboard(self) -> None:
         """Copy current content to clipboard."""
@@ -1003,6 +999,10 @@ class Repl:
             _("Undo how many lines? (Undo will take up to ~%.1f seconds) [1]")
             % (est,)
         )
+        if m is None:
+            self.interact.notify(_("Undo canceled"), 0.1)
+            return 0
+
         try:
             if m == "":
                 m = "1"
