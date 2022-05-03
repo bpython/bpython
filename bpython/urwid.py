@@ -38,6 +38,7 @@ import time
 import locale
 import signal
 import urwid
+from typing import Optional
 
 from . import args as bpargs, repl, translations
 from .formatter import theme_map
@@ -526,7 +527,8 @@ class Tooltip(urwid.BoxWidget):
 
 class URWIDInteraction(repl.Interaction):
     def __init__(self, config, statusbar, frame):
-        super().__init__(config, statusbar)
+        super().__init__(config)
+        self.statusbar = statusbar
         self.frame = frame
         urwid.connect_signal(statusbar, "prompt_result", self._prompt_result)
         self.callback = None
@@ -562,6 +564,9 @@ class URWIDInteraction(repl.Interaction):
             callback = self.callback
             self.callback = None
             callback(text)
+
+    def file_prompt(self, s: str) -> Optional[str]:
+        raise NotImplementedError
 
 
 class URWIDRepl(repl.Repl):

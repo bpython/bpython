@@ -319,14 +319,14 @@ def make_colors(config: Config) -> Dict[str, int]:
 
 
 class CLIInteraction(repl.Interaction):
-    def __init__(self, config: Config, statusbar: Optional["Statusbar"] = None):
-        super().__init__(config, statusbar)
+    def __init__(self, config: Config, statusbar: "Statusbar"):
+        super().__init__(config)
+        self.statusbar = statusbar
 
     def confirm(self, q: str) -> bool:
         """Ask for yes or no and return boolean"""
         try:
-            if self.statusbar:
-                reply = self.statusbar.prompt(q)
+            reply = self.statusbar.prompt(q)
         except ValueError:
             return False
 
@@ -335,14 +335,10 @@ class CLIInteraction(repl.Interaction):
     def notify(
         self, s: str, n: int = 10, wait_for_keypress: bool = False
     ) -> None:
-        if self.statusbar:
-            self.statusbar.message(s, n)
+        self.statusbar.message(s, n)
 
     def file_prompt(self, s: str) -> Optional[str]:
-        if self.statusbar:
-            return self.statusbar.prompt(s)
-        else:
-            return None
+        return self.statusbar.prompt(s)
 
 
 class CLIRepl(repl.Repl):
@@ -1675,7 +1671,7 @@ class Statusbar:
 
         self.settext(self._s)
 
-    def message(self, s: str, n: int = 3) -> None:
+    def message(self, s: str, n: float = 3.0) -> None:
         """Display a message for a short n seconds on the statusbar and return
         it to its original state."""
         self.timer = int(time.time() + n)

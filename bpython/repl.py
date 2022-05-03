@@ -21,6 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import abc
 import code
 import inspect
 import os
@@ -346,21 +347,39 @@ class MatchesIterator:
         self.index = -1
 
 
-class Interaction:
-    def __init__(self, config: Config, statusbar: Optional["Statusbar"] = None):
+class Interaction(metaclass=abc.ABCMeta):
+    def __init__(self, config: Config):
         self.config = config
 
-        if statusbar:
-            self.statusbar = statusbar
+    @abc.abstractmethod
+    def confirm(self, s: str) -> bool:
+        pass
 
-    def confirm(self, s):
-        raise NotImplementedError
+    @abc.abstractmethod
+    def notify(
+        self, s: str, n: float = 10.0, wait_for_keypress: bool = False
+    ) -> None:
+        pass
 
-    def notify(self, s, n=10, wait_for_keypress=False):
-        raise NotImplementedError
+    @abc.abstractmethod
+    def file_prompt(self, s: str) -> Optional[str]:
+        pass
 
-    def file_prompt(self, s):
-        raise NotImplementedError
+
+class NoInteraction(Interaction):
+    def __init__(self, config: Config):
+        super().__init__(config)
+
+    def confirm(self, s: str) -> bool:
+        return False
+
+    def notify(
+        self, s: str, n: float = 10.0, wait_for_keypress: bool = False
+    ) -> None:
+        pass
+
+    def file_prompt(self, s: str) -> Optional[str]:
+        return None
 
 
 class SourceNotFound(Exception):
@@ -458,7 +477,7 @@ class Repl:
         ] = None
         self._C: Dict[str, int] = {}
         self.prev_block_finished: int = 0
-        self.interact = Interaction(self.config)
+        self.interact: Interaction = NoInteraction(self.config)
         # previous pastebin content to prevent duplicate pastes, filled on call
         # to repl.pastebin
         self.prev_pastebin_content = ""

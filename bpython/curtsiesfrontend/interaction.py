@@ -39,7 +39,7 @@ class StatusBar(Interaction):
         self.prompt = ""
         self._message = ""
         self.message_start_time = time.time()
-        self.message_time = 3
+        self.message_time = 3.0
         self.permanent_stack = []
         if permanent_text:
             self.permanent_stack.append(permanent_text)
@@ -149,7 +149,7 @@ class StatusBar(Interaction):
         return bool(self.current_line)
 
     # interaction interface - should be called from other greenlets
-    def notify(self, msg, n=3, wait_for_keypress=False):
+    def notify(self, msg, n=3.0, wait_for_keypress=False):
         self.request_context = greenlet.getcurrent()
         self.message_time = n
         self.message(msg, schedule_refresh=wait_for_keypress)
