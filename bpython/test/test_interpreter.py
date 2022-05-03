@@ -38,7 +38,7 @@ class TestInterpreter(unittest.TestCase):
         if (3, 10, 1) <= sys.version_info[:3]:
             expected = (
                 "  File "
-                + green('"<bpython-input-147>"')
+                + green('"<input>"')
                 + ", line "
                 + bold(magenta("1"))
                 + "\n    1.1.1.1\n       ^^\n"
@@ -50,7 +50,7 @@ class TestInterpreter(unittest.TestCase):
         elif (3, 10) <= sys.version_info[:2]:
             expected = (
                 "  File "
-                + green('"<bpython-input-147>"')
+                + green('"<input>"')
                 + ", line "
                 + bold(magenta("1"))
                 + "\n    1.1.1.1\n    ^^^^^\n"
