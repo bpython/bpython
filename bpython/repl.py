@@ -35,6 +35,7 @@ import textwrap
 import time
 import traceback
 from abc import abstractmethod
+from dataclasses import dataclass
 from itertools import takewhile
 from pathlib import Path
 from types import ModuleType, TracebackType
@@ -380,6 +381,17 @@ class SourceNotFound(Exception):
     """Exception raised when the requested source could not be found."""
 
 
+@dataclass
+class _FuncExpr:
+    """Stack element in Repl._funcname_and_argnum"""
+
+    full_expr: str
+    function_expr: str
+    arg_number: int
+    opening: str
+    keyword: Optional[str] = None
+
+
 class Repl:
     """Implements the necessary guff for a Python-repl-alike interface
 
@@ -564,37 +576,37 @@ class Repl:
         return obj
 
     @classmethod
-    def _funcname_and_argnum(cls, line):
+    def _funcname_and_argnum(
+        cls, line: str
+    ) -> Tuple[Optional[str], Optional[Union[str, int]]]:
         """Parse out the current function name and arg from a line of code."""
-        # each list in stack:
-        # [full_expr, function_expr, arg_number, opening]
-        # arg_number may be a string if we've encountered a keyword
-        # argument so we're done counting
-        stack = [["", "", 0, ""]]
+        # each element in stack is a _FuncExpr instance
+        # if keyword is not None, we've encountered a keyword and so we're done counting
+        stack = [_FuncExpr("", "", 0, "")]
         try:
             for (token, value) in Python3Lexer().get_tokens(line):
                 if token is Token.Punctuation:
                     if value in "([{":
-                        stack.append(["", "", 0, value])
+                        stack.append(_FuncExpr("", "", 0, value))
                     elif value in ")]}":
-                        full, _, _, start = stack.pop()
-                        expr = start + full + value
-                        stack[-1][1] += expr
-                        stack[-1][0] += expr
+                        element = stack.pop()
+                        expr = element.opening + element.full_expr + value
+                        stack[-1].function_expr += expr
+                        stack[-1].full_expr += expr
                     elif value == ",":
-                        try:
-                            stack[-1][2] += 1
-                        except TypeError:
-                            stack[-1][2] = ""
-                        stack[-1][1] = ""
-                        stack[-1][0] += value
-                    elif value == ":" and stack[-1][3] == "lambda":
-                        expr = stack.pop()[0] + ":"
-                        stack[-1][1] += expr
-                        stack[-1][0] += expr
+                        if stack[-1].keyword is None:
+                            stack[-1].arg_number += 1
+                        else:
+                            stack[-1].keyword = ""
+                        stack[-1].function_expr = ""
+                        stack[-1].full_expr += value
+                    elif value == ":" and stack[-1].opening == "lambda":
+                        expr = stack.pop().full_expr + ":"
+                        stack[-1].function_expr += expr
+                        stack[-1].full_expr += expr
                     else:
-                        stack[-1][1] = ""
-                        stack[-1][0] += value
+                        stack[-1].function_expr = ""
+                        stack[-1].full_expr += value
                 elif (
                     token is Token.Number
                     or token in Token.Number.subtypes
@@ -603,25 +615,25 @@ class Repl:
                     or token is Token.Operator
                     and value == "."
                 ):
-                    stack[-1][1] += value
-                    stack[-1][0] += value
+                    stack[-1].function_expr += value
+                    stack[-1].full_expr += value
                 elif token is Token.Operator and value == "=":
-                    stack[-1][2] = stack[-1][1]
-                    stack[-1][1] = ""
-                    stack[-1][0] += value
+                    stack[-1].keyword = stack[-1].function_expr
+                    stack[-1].function_expr = ""
+                    stack[-1].full_expr += value
                 elif token is Token.Number or token in Token.Number.subtypes:
-                    stack[-1][1] = value
-                    stack[-1][0] += value
+                    stack[-1].function_expr = value
+                    stack[-1].full_expr += value
                 elif token is Token.Keyword and value == "lambda":
-                    stack.append([value, "", 0, value])
+                    stack.append(_FuncExpr(value, "", 0, value))
                 else:
-                    stack[-1][1] = ""
-                    stack[-1][0] += value
-            while stack[-1][3] in "[{":
+                    stack[-1].function_expr = ""
+                    stack[-1].full_expr += value
+            while stack[-1].opening in "[{":
                 stack.pop()
-            _, _, arg_number, _ = stack.pop()
-            _, func, _, _ = stack.pop()
-            return func, arg_number
+            elem1 = stack.pop()
+            elem2 = stack.pop()
+            return elem2.function_expr, elem1.keyword or elem1.arg_number
         except IndexError:
             return None, None
 
