@@ -22,9 +22,10 @@
 # THE SOFTWARE.
 
 import os
+from pathlib import Path
 import stat
 from itertools import islice, chain
-from typing import Iterable, Optional, List, TextIO
+from typing import Iterable, Optional, List, TextIO, Union
 
 from .translations import _
 from .filelock import FileLock
@@ -190,9 +191,9 @@ class History:
         self.index = 0
         self.saved_line = ""
 
-    def load(self, filename: str, encoding: str) -> None:
+    def load(self, filename: Path, encoding: str) -> None:
         with open(filename, encoding=encoding, errors="ignore") as hfile:
-            with FileLock(hfile, filename=filename):
+            with FileLock(hfile, filename=str(filename)):
                 self.entries = self.load_from(hfile)
 
     def load_from(self, fd: TextIO) -> List[str]:
@@ -201,14 +202,14 @@ class History:
             self.append_to(entries, line)
         return entries if len(entries) else [""]
 
-    def save(self, filename: str, encoding: str, lines: int = 0) -> None:
+    def save(self, filename: Path, encoding: str, lines: int = 0) -> None:
         fd = os.open(
             filename,
             os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
             stat.S_IRUSR | stat.S_IWUSR,
         )
         with open(fd, "w", encoding=encoding, errors="ignore") as hfile:
-            with FileLock(hfile, filename=filename):
+            with FileLock(hfile, filename=str(filename)):
                 self.save_to(hfile, self.entries, lines)
 
     def save_to(
@@ -221,7 +222,7 @@ class History:
             fd.write("\n")
 
     def append_reload_and_write(
-        self, s: str, filename: str, encoding: str
+        self, s: str, filename: Path, encoding: str
     ) -> None:
         if not self.hist_size:
             return self.append(s)
@@ -233,7 +234,7 @@ class History:
                 stat.S_IRUSR | stat.S_IWUSR,
             )
             with open(fd, "a+", encoding=encoding, errors="ignore") as hfile:
-                with FileLock(hfile, filename=filename):
+                with FileLock(hfile, filename=str(filename)):
                     # read entries
                     hfile.seek(0, os.SEEK_SET)
                     entries = self.load_from(hfile)

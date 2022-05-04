@@ -520,7 +520,7 @@ class Repl(metaclass=abc.ABCMeta):
         if self.config.hist_file.exists():
             try:
                 self.rl_history.load(
-                    str(self.config.hist_file),
+                    self.config.hist_file,
                     getpreferredencoding() or "ascii",
                 )
             except OSError:
@@ -744,7 +744,7 @@ class Repl(metaclass=abc.ABCMeta):
                 msg = _("No source code found for %s") % (self.current_line,)
         raise SourceNotFound(msg)
 
-    def set_docstring(self):
+    def set_docstring(self) -> None:
         self.docstring = None
         if not self.get_args():
             self.funcprops = None
@@ -1009,7 +1009,7 @@ class Repl(metaclass=abc.ABCMeta):
 
         return more
 
-    def insert_into_history(self, s):
+    def insert_into_history(self, s: str):
         try:
             self.rl_history.append_reload_and_write(
                 s, self.config.hist_file, getpreferredencoding()

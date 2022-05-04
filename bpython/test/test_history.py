@@ -86,7 +86,7 @@ class TestHistory(unittest.TestCase):
 class TestHistoryFileAccess(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
-        self.filename = str(Path(self.tempdir.name) / "history_temp_file")
+        self.filename = Path(self.tempdir.name) / "history_temp_file"
         self.encoding = getpreferredencoding()
 
         with open(
