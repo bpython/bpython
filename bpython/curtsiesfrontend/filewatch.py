@@ -20,7 +20,6 @@ else:
             self.on_change = on_change
             self.modules_to_add_later: List[str] = []
             self.observer = Observer()
-            self.old_dirs: Dict[str, Set[str]] = defaultdict(set)
             self.started = False
             self.activated = False
             for path in paths:
@@ -31,7 +30,6 @@ else:
         def reset(self) -> None:
             self.dirs = defaultdict(set)
             del self.modules_to_add_later[:]
-            self.old_dirs = defaultdict(set)
             self.observer.unschedule_all()
 
         def _add_module(self, path: str) -> None:
