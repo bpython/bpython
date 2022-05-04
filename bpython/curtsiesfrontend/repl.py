@@ -1536,15 +1536,15 @@ class BaseRepl(Repl):
 
         Should return zero unless there are fullwidth characters."""
         full_line = self.current_cursor_line_without_suggestion
-        line_with_padding = "".join(
-            line.s
+        line_with_padding_len = sum(
+            len(line.s)
             for line in paint.display_linize(
                 self.current_cursor_line_without_suggestion.s, self.width
             )
         )
 
         # the difference in length here is how much padding there is
-        return len(line_with_padding) - len(full_line)
+        return line_with_padding_len - len(full_line)
 
     def paint(
         self,
