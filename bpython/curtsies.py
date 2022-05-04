@@ -3,7 +3,6 @@
 # mypy: disallow_untyped_calls=True
 
 import argparse
-import code
 import collections
 import logging
 import sys
