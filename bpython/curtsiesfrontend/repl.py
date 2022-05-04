@@ -1866,18 +1866,13 @@ class BaseRepl(Repl):
   lines scrolled down: {self.scroll_offset}
 >"""
 
-    @property
-    def current_line(self):
+    def _get_current_line(self) -> str:
         """The current line"""
         return self._current_line
 
-    @current_line.setter
-    def current_line(self, value):
-        self._set_current_line(value)
-
     def _set_current_line(
         self,
-        line,
+        line: str,
         update_completion=True,
         reset_rl_history=True,
         clear_special_mode=True,
@@ -1895,18 +1890,13 @@ class BaseRepl(Repl):
             self.special_mode = None
         self.unhighlight_paren()
 
-    @property
-    def cursor_offset(self):
+    def _get_cursor_offset(self) -> int:
         """The current cursor offset from the front of the "line"."""
         return self._cursor_offset
 
-    @cursor_offset.setter
-    def cursor_offset(self, value):
-        self._set_cursor_offset(value)
-
     def _set_cursor_offset(
         self,
-        offset,
+        offset: int,
         update_completion=True,
         reset_rl_history=False,
         clear_special_mode=True,

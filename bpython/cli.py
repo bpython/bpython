@@ -383,13 +383,6 @@ class CLIRepl(repl.Repl):
     def _set_cursor_offset(self, offset: int) -> None:
         self.cpos = len(self.s) - offset
 
-    cursor_offset = property(
-        _get_cursor_offset,
-        _set_cursor_offset,
-        None,
-        "The cursor offset from the beginning of the line",
-    )
-
     def addstr(self, s: str) -> None:
         """Add a string to the current input line and figure out
         where it should go, depending on the cursor position."""
@@ -538,13 +531,6 @@ class CLIRepl(repl.Repl):
 
     def _set_current_line(self, line: str) -> None:
         self.s = line
-
-    current_line = property(
-        _get_current_line,
-        _set_current_line,
-        None,
-        "The characters of the current line",
-    )
 
     def cut_to_buffer(self) -> None:
         """Clear from cursor to end of line, placing into cut buffer"""

@@ -392,7 +392,7 @@ class _FuncExpr:
     keyword: Optional[str] = None
 
 
-class Repl:
+class Repl(metaclass=abc.ABCMeta):
     """Implements the necessary guff for a Python-repl-alike interface
 
     The execution of the code entered and all that stuff was taken from the
@@ -425,27 +425,51 @@ class Repl:
     XXX Subclasses should implement echo, current_line, cw
     """
 
+    @abc.abstractmethod
+    def reevaluate(self):
+        pass
+
+    @abc.abstractmethod
+    def reprint_line(
+        self, lineno: int, tokens: List[Tuple[_TokenType, str]]
+    ) -> None:
+        pass
+
+    @abc.abstractmethod
+    def _get_current_line(self) -> str:
+        pass
+
+    @abc.abstractmethod
+    def _set_current_line(self, val: str) -> None:
+        pass
+
+    @property
+    def current_line(self) -> str:
+        """The current line"""
+        return self._get_current_line()
+
+    @current_line.setter
+    def current_line(self, value: str) -> None:
+        self._set_current_line(value)
+
+    @abc.abstractmethod
+    def _get_cursor_offset(self) -> int:
+        pass
+
+    @abc.abstractmethod
+    def _set_cursor_offset(self, val: int) -> None:
+        pass
+
+    @property
+    def cursor_offset(self) -> int:
+        """The current cursor offset from the front of the "line"."""
+        return self._get_cursor_offset()
+
+    @cursor_offset.setter
+    def cursor_offset(self, value: int) -> None:
+        self._set_cursor_offset(value)
+
     if TYPE_CHECKING:
-
-        @property
-        @abstractmethod
-        def current_line(self) -> str:
-            pass
-
-        @property
-        @abstractmethod
-        def cursor_offset(self) -> int:
-            pass
-
-        @abstractmethod
-        def reevaluate(self):
-            pass
-
-        @abstractmethod
-        def reprint_line(
-            self, lineno: int, tokens: List[Tuple[_TokenType, str]]
-        ) -> None:
-            pass
 
         # not actually defined, subclasses must define
         cpos: int
