@@ -1211,12 +1211,12 @@ class BaseRepl(Repl):
 
         The only operations allowed in incremental search mode are
         adding characters and backspacing."""
-        if char is None and not backspace:
-            raise ValueError("must provide a char or set backspace to True")
         if backspace:
             self.incr_search_target = self.incr_search_target[:-1]
-        else:
+        elif char is not None:
             self.incr_search_target += char
+        else:
+            raise ValueError("must provide a char or set backspace to True")
         if self.incr_search_mode == SearchMode.REVERSE_INCREMENTAL_SEARCH:
             self.incremental_search(reverse=True, include_current=True)
         elif self.incr_search_mode == SearchMode.INCREMENTAL_SEARCH:
