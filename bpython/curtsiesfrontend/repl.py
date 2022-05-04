@@ -84,6 +84,12 @@ EDIT_SESSION_HEADER = """### current bpython session - make changes and save to 
 MAX_EVENTS_POSSIBLY_NOT_PASTE = 20
 
 
+class SearchMode(Enum):
+    NO_SEARCH = 0
+    INCREMENTAL_SEARCH = 1
+    REVERSE_INCREMENTAL_SEARCH = 2
+
+
 class LineType(Enum):
     """Used when adding a tuple to all_logical_lines, to get input / output values
     having to actually type/know the strings"""
@@ -452,9 +458,7 @@ class BaseRepl(Repl):
         # whether auto reloading active
         self.watching_files = config.default_autoreload
 
-        # 'reverse_incremental_search', 'incremental_search' or None
-        self.incr_search_mode = None
-
+        self.incr_search_mode = SearchMode.NO_SEARCH
         self.incr_search_target = ""
 
         self.original_modules = set(sys.modules.keys())
@@ -758,7 +762,7 @@ class BaseRepl(Repl):
             self.incremental_search()
         elif (
             e in (("<BACKSPACE>",) + key_dispatch[self.config.backspace_key])
-            and self.incr_search_mode
+            and self.incr_search_mode != SearchMode.NO_SEARCH
         ):
             self.add_to_incremental_search(self, backspace=True)
         elif e in self.edit_keys.cut_buffer_edits:
@@ -808,7 +812,7 @@ class BaseRepl(Repl):
         elif e in key_dispatch[self.config.edit_current_block_key]:
             self.send_current_block_to_external_editor()
         elif e in ("<ESC>",):
-            self.incr_search_mode = None
+            self.incr_search_mode = SearchMode.NO_SEARCH
         elif e in ("<SPACE>",):
             self.add_normal_character(" ")
         elif e in CHARACTER_PAIR_MAP.keys():
@@ -852,7 +856,11 @@ class BaseRepl(Repl):
                 if not can_lookup_next
                 else self._current_line[self._cursor_offset]
             )
-            if start_of_line or end_of_line or next_char in "})] ":
+            if (
+                start_of_line
+                or end_of_line
+                or (next_char is not None and next_char in "})] ")
+            ):
                 self.add_normal_character(
                     CHARACTER_PAIR_MAP[e], narrow_search=False
                 )
@@ -891,7 +899,7 @@ class BaseRepl(Repl):
         )
 
     def incremental_search(self, reverse=False, include_current=False):
-        if self.incr_search_mode is None:
+        if self.incr_search_mode == SearchMode.NO_SEARCH:
             self.rl_history.enter(self.current_line)
             self.incr_search_target = ""
         else:
@@ -920,9 +928,9 @@ class BaseRepl(Repl):
                     clear_special_mode=False,
                 )
         if reverse:
-            self.incr_search_mode = "reverse_incremental_search"
+            self.incr_search_mode = SearchMode.REVERSE_INCREMENTAL_SEARCH
         else:
-            self.incr_search_mode = "incremental_search"
+            self.incr_search_mode = SearchMode.INCREMENTAL_SEARCH
 
     def readline_kill(self, e):
         func = self.edit_keys[e]
@@ -1172,7 +1180,7 @@ class BaseRepl(Repl):
     def add_normal_character(self, char, narrow_search=True):
         if len(char) > 1 or is_nop(char):
             return
-        if self.incr_search_mode:
+        if self.incr_search_mode != SearchMode.NO_SEARCH:
             self.add_to_incremental_search(char)
         else:
             self._set_current_line(
@@ -1209,9 +1217,9 @@ class BaseRepl(Repl):
             self.incr_search_target = self.incr_search_target[:-1]
         else:
             self.incr_search_target += char
-        if self.incr_search_mode == "reverse_incremental_search":
+        if self.incr_search_mode == SearchMode.REVERSE_INCREMENTAL_SEARCH:
             self.incremental_search(reverse=True, include_current=True)
-        elif self.incr_search_mode == "incremental_search":
+        elif self.incr_search_mode == SearchMode.INCREMENTAL_SEARCH:
             self.incremental_search(include_current=True)
         else:
             raise ValueError("add_to_incremental_search not in a special mode")
@@ -1419,7 +1427,7 @@ class BaseRepl(Repl):
             fs = bpythonparse(
                 pygformat(self.tokenize(self.current_line), self.formatter)
             )
-            if self.incr_search_mode:
+            if self.incr_search_mode != SearchMode.NO_SEARCH:
                 if self.incr_search_target in self.current_line:
                     fs = fmtfuncs.on_magenta(self.incr_search_target).join(
                         fs.split(self.incr_search_target)
@@ -1467,12 +1475,12 @@ class BaseRepl(Repl):
         """colored line with prompt"""
         prompt = func_for_letter(self.config.color_scheme["prompt"])
         more = func_for_letter(self.config.color_scheme["prompt_more"])
-        if self.incr_search_mode == "reverse_incremental_search":
+        if self.incr_search_mode == SearchMode.REVERSE_INCREMENTAL_SEARCH:
             return (
                 prompt(f"(reverse-i-search)`{self.incr_search_target}': ")
                 + self.current_line_formatted
             )
-        elif self.incr_search_mode == "incremental_search":
+        elif self.incr_search_mode == SearchMode.INCREMENTAL_SEARCH:
             return prompt(f"(i-search)`%s': ") + self.current_line_formatted
         return (
             prompt(self.ps1) if self.done else more(self.ps2)
@@ -1905,7 +1913,7 @@ class BaseRepl(Repl):
         if reset_rl_history:
             self.rl_history.reset()
         if clear_special_mode:
-            self.incr_search_mode = None
+            self.incr_search_mode = SearchMode.NO_SEARCH
         self._cursor_offset = offset
         if update_completion:
             self.update_completion()
