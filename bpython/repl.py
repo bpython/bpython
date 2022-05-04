@@ -417,12 +417,12 @@ class Repl:
 
         @property
         @abstractmethod
-        def current_line(self):
+        def current_line(self) -> str:
             pass
 
         @property
         @abstractmethod
-        def cursor_offset(self):
+        def cursor_offset(self) -> int:
             pass
 
         @abstractmethod
