@@ -1,4 +1,3 @@
-import code
 import contextlib
 import errno
 import itertools
@@ -22,12 +21,8 @@ from typing import (
     Union,
     cast,
     Type,
-    TYPE_CHECKING,
 )
 from .._typing_compat import Literal
-
-if TYPE_CHECKING:
-    from ..repl import Interpreter
 
 import blessings
 import greenlet
@@ -327,7 +322,7 @@ class BaseRepl(Repl):
         config: Config,
         locals_: Optional[Dict[str, Any]] = None,
         banner: Optional[str] = None,
-        interp: Optional[code.InteractiveInterpreter] = None,
+        interp: Optional[Interp] = None,
         orig_tcattrs: Optional[List[Any]] = None,
     ):
         """
@@ -372,7 +367,7 @@ class BaseRepl(Repl):
         logger.debug("starting parent init")
         # interp is a subclass of repl.Interpreter, so it definitely,
         # implements the methods of Interpreter!
-        super().__init__(cast("Interpreter", interp), config)
+        super().__init__(interp, config)
 
         self.formatter = BPythonFormatter(config.color_scheme)
 
