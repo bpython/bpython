@@ -544,7 +544,7 @@ class BaseRepl(Repl):
         if self.watching_files:
             self._request_reload(files_modified=files_modified)
 
-    def schedule_refresh(self, when="now"):
+    def schedule_refresh(self, when: float = 0) -> None:
         """Schedule a ScheduledRefreshRequestEvent for when.
 
         Such a event should interrupt if blockied waiting for keyboard input"""
