@@ -24,7 +24,6 @@ from typing import (
 )
 from .._typing_compat import Literal
 
-import blessings
 import greenlet
 from curtsies import (
     FSArray,
@@ -37,6 +36,7 @@ from curtsies import (
 )
 from curtsies.configfile_keynames import keymap as key_dispatch
 from curtsies.input import is_main_thread
+from curtsies.window import BaseWindow
 from cwcwidth import wcswidth
 from pygments import format as pygformat
 from pygments.formatters import TerminalFormatter
@@ -326,6 +326,7 @@ class BaseRepl(Repl):
     def __init__(
         self,
         config: Config,
+        window: BaseWindow,
         locals_: Optional[Dict[str, Any]] = None,
         banner: Optional[str] = None,
         interp: Optional[Interp] = None,
@@ -340,6 +341,7 @@ class BaseRepl(Repl):
         """
 
         logger.debug("starting init")
+        self.window = window
 
         # If creating a new interpreter on undo would be unsafe because initial
         # state was passed in
@@ -2077,7 +2079,7 @@ class BaseRepl(Repl):
         try:
             signal.signal(signal.SIGWINCH, self.orig_sigwinch_handler)
             with Termmode(self.orig_stdin, self.orig_tcattrs):
-                terminal = blessings.Terminal(stream=sys.__stdout__)
+                terminal = self.window.t
                 with terminal.fullscreen():
                     sys.__stdout__.write(terminal.save)
                     sys.__stdout__.write(terminal.move(0, 0))

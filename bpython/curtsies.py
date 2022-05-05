@@ -61,7 +61,7 @@ class FullCurtsiesRepl(BaseRepl):
         self.input_generator = curtsies.input.Input(
             keynames="curtsies", sigint_event=True, paste_threshold=None
         )
-        self.window = curtsies.window.CursorAwareWindow(
+        window = curtsies.window.CursorAwareWindow(
             sys.stdout,
             sys.stdin,
             keep_last_line=True,
@@ -92,6 +92,7 @@ class FullCurtsiesRepl(BaseRepl):
 
         super().__init__(
             config,
+            window,
             locals_=locals_,
             banner=banner,
             interp=interp,
