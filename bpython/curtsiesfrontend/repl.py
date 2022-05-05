@@ -464,7 +464,12 @@ class BaseRepl(Repl):
 
         # as long as the first event received is a window resize event,
         # this works fine...
-        self.width, self.height = os.get_terminal_size()
+        try:
+            self.width, self.height = os.get_terminal_size()
+        except OSError:
+            # this case will trigger during unit tests when stdout is redirected
+            self.width = -1
+            self.height = -1
 
         self.status_bar.message(banner)
 
