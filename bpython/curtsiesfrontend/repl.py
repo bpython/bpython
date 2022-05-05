@@ -122,40 +122,42 @@ class FakeStdin:
         assert self.has_focus
 
         logger.debug("fake input processing event %r", e)
-        if isinstance(e, events.PasteEvent):
-            for ee in e.events:
-                if ee not in self.rl_char_sequences:
-                    self.add_input_character(ee)
-        elif e in self.rl_char_sequences:
-            self.cursor_offset, self.current_line = self.rl_char_sequences[e](
-                self.cursor_offset, self.current_line
-            )
-        elif isinstance(e, events.SigIntEvent):
-            self.coderunner.sigint_happened_in_main_context = True
-            self.has_focus = False
-            self.current_line = ""
-            self.cursor_offset = 0
-            self.repl.run_code_and_maybe_finish()
-        elif e in ("<ESC>",):
-            pass
-        elif e in ("<Ctrl-d>",):
-            if self.current_line == "":
-                self.repl.send_to_stdin("\n")
+        if isinstance(e, events.Event):
+            if isinstance(e, events.PasteEvent):
+                for ee in e.events:
+                    if ee not in self.rl_char_sequences:
+                        self.add_input_character(ee)
+            elif isinstance(e, events.SigIntEvent):
+                self.coderunner.sigint_happened_in_main_context = True
                 self.has_focus = False
                 self.current_line = ""
                 self.cursor_offset = 0
-                self.repl.run_code_and_maybe_finish(for_code="")
-            else:
+                self.repl.run_code_and_maybe_finish()
+        else:
+            if e in self.rl_char_sequences:
+                self.cursor_offset, self.current_line = self.rl_char_sequences[
+                    e
+                ](self.cursor_offset, self.current_line)
+            elif e in ("<ESC>",):
                 pass
-        elif e in ("\n", "\r", "<Ctrl-j>", "<Ctrl-m>"):
-            line = self.current_line
-            self.repl.send_to_stdin(line + "\n")
-            self.has_focus = False
-            self.current_line = ""
-            self.cursor_offset = 0
-            self.repl.run_code_and_maybe_finish(for_code=line + "\n")
-        else:  # add normal character
-            self.add_input_character(e)
+            elif e in ("<Ctrl-d>",):
+                if self.current_line == "":
+                    self.repl.send_to_stdin("\n")
+                    self.has_focus = False
+                    self.current_line = ""
+                    self.cursor_offset = 0
+                    self.repl.run_code_and_maybe_finish(for_code="")
+                else:
+                    pass
+            elif e in ("\n", "\r", "<Ctrl-j>", "<Ctrl-m>"):
+                line = self.current_line
+                self.repl.send_to_stdin(line + "\n")
+                self.has_focus = False
+                self.current_line = ""
+                self.cursor_offset = 0
+                self.repl.run_code_and_maybe_finish(for_code=line + "\n")
+            else:  # add normal character
+                self.add_input_character(e)
 
         if self.current_line.endswith(("\n", "\r")):
             pass
@@ -163,17 +165,16 @@ class FakeStdin:
             self.repl.send_to_stdin(self.current_line)
 
     def add_input_character(self, e: str) -> None:
-        if e in ("<SPACE>",):
+        if e == "<SPACE>":
             e = " "
         if e.startswith("<") and e.endswith(">"):
             return
         assert len(e) == 1, "added multiple characters: %r" % e
         logger.debug("adding normal char %r to current line", e)
 
-        c = e
         self.current_line = (
             self.current_line[: self.cursor_offset]
-            + c
+            + e
             + self.current_line[self.cursor_offset :]
         )
         self.cursor_offset += 1
@@ -756,11 +757,11 @@ class BaseRepl(Repl):
             self.up_one_line()
         elif e in ("<DOWN>",) + key_dispatch[self.config.down_one_line_key]:
             self.down_one_line()
-        elif e in ("<Ctrl-d>",):
+        elif e == "<Ctrl-d>":
             self.on_control_d()
-        elif e in ("<Ctrl-o>",):
+        elif e == "<Ctrl-o>":
             self.operate_and_get_next()
-        elif e in ("<Esc+.>",):
+        elif e == "<Esc+.>":
             self.get_last_word()
         elif e in key_dispatch[self.config.reverse_incremental_search_key]:
             self.incremental_search(reverse=True)
@@ -796,9 +797,9 @@ class BaseRepl(Repl):
             raise SystemExit()
         elif e in ("\n", "\r", "<PADENTER>", "<Ctrl-j>", "<Ctrl-m>"):
             self.on_enter()
-        elif e in ("<TAB>",):  # tab
+        elif e == "<TAB>":  # tab
             self.on_tab()
-        elif e in ("<Shift-TAB>",):
+        elif e == "<Shift-TAB>":
             self.on_tab(back=True)
         elif e in key_dispatch[self.config.undo_key]:  # ctrl-r for undo
             self.prompt_undo()
@@ -817,9 +818,9 @@ class BaseRepl(Repl):
         # TODO add PAD keys hack as in bpython.cli
         elif e in key_dispatch[self.config.edit_current_block_key]:
             self.send_current_block_to_external_editor()
-        elif e in ("<ESC>",):
+        elif e == "<ESC>":
             self.incr_search_mode = SearchMode.NO_SEARCH
-        elif e in ("<SPACE>",):
+        elif e == "<SPACE>":
             self.add_normal_character(" ")
         elif e in CHARACTER_PAIR_MAP.keys():
             if e in ["'", '"']:
@@ -1093,7 +1094,7 @@ class BaseRepl(Repl):
                 self.process_event(bpythonevents.RefreshRequestEvent())
         elif isinstance(e, events.Event):
             pass  # ignore events
-        elif e in ("<SPACE>",):
+        elif e == "<SPACE>":
             self.add_normal_character(" ")
         else:
             self.add_normal_character(e)
