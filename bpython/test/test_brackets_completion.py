@@ -1,8 +1,11 @@
 import os
+from typing import cast
 
 from bpython.test import FixLanguageTestCase as TestCase, TEST_CONFIG
 from bpython.curtsiesfrontend import repl as curtsiesrepl
 from bpython import config
+
+from curtsies.window import CursorAwareWindow
 
 
 def setup_config(conf):
@@ -18,7 +21,9 @@ def create_repl(brackets_enabled=False, **kwargs):
     config = setup_config(
         {"editor": "true", "brackets_completion": brackets_enabled}
     )
-    repl = curtsiesrepl.BaseRepl(config, **kwargs)
+    repl = curtsiesrepl.BaseRepl(
+        config, cast(None, CursorAwareWindow), **kwargs
+    )
     os.environ["PAGER"] = "true"
     os.environ.pop("PYTHONSTARTUP", None)
     repl.width = 50

@@ -36,7 +36,7 @@ from curtsies import (
 )
 from curtsies.configfile_keynames import keymap as key_dispatch
 from curtsies.input import is_main_thread
-from curtsies.window import BaseWindow
+from curtsies.window import CursorAwareWindow
 from cwcwidth import wcswidth
 from pygments import format as pygformat
 from pygments.formatters import TerminalFormatter
@@ -326,7 +326,7 @@ class BaseRepl(Repl):
     def __init__(
         self,
         config: Config,
-        window: Optional[BaseWindow] = None,
+        window: CursorAwareWindow,
         locals_: Optional[Dict[str, Any]] = None,
         banner: Optional[str] = None,
         interp: Optional[Interp] = None,

@@ -5,12 +5,14 @@ import string
 import sys
 
 from contextlib import contextmanager
+from typing import cast
 from curtsies.formatstringarray import (
     fsarray,
     assertFSArraysEqual,
     assertFSArraysEqualIgnoringFormatting,
 )
 from curtsies.fmtfuncs import cyan, bold, green, yellow, on_magenta, red
+from curtsies.window import CursorAwareWindow
 from unittest import mock
 
 from bpython.curtsiesfrontend.events import RefreshRequestEvent
@@ -56,7 +58,7 @@ class CurtsiesPaintingTest(ClearEnviron):
             def _request_refresh(inner_self):
                 pass
 
-        self.repl = TestRepl(config=setup_config())
+        self.repl = TestRepl(setup_config(), cast(None, CursorAwareWindow))
         self.repl.height, self.repl.width = (5, 10)
 
     @property
@@ -284,7 +286,9 @@ class HigherLevelCurtsiesPaintingTest(CurtsiesPaintingTest):
             def _request_refresh(inner_self):
                 self.refresh()
 
-        self.repl = TestRepl(banner="", config=setup_config())
+        self.repl = TestRepl(
+            setup_config(), cast(None, CursorAwareWindow), banner=""
+        )
         self.repl.height, self.repl.width = (5, 32)
 
     def send_key(self, key):

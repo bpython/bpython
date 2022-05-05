@@ -3,6 +3,7 @@ import os
 import sys
 import tempfile
 import io
+from typing import cast
 import unittest
 
 from contextlib import contextmanager
@@ -23,6 +24,7 @@ from bpython.test import (
 )
 
 from curtsies import events
+from curtsies.window import CursorAwareWindow
 from importlib import invalidate_caches
 
 
@@ -231,7 +233,9 @@ def captured_output():
 
 def create_repl(**kwargs):
     config = setup_config({"editor": "true"})
-    repl = curtsiesrepl.BaseRepl(config, **kwargs)
+    repl = curtsiesrepl.BaseRepl(
+        config, cast(CursorAwareWindow, None), **kwargs
+    )
     os.environ["PAGER"] = "true"
     os.environ.pop("PYTHONSTARTUP", None)
     repl.width = 50
