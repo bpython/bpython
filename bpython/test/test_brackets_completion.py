@@ -22,7 +22,7 @@ def create_repl(brackets_enabled=False, **kwargs):
         {"editor": "true", "brackets_completion": brackets_enabled}
     )
     repl = curtsiesrepl.BaseRepl(
-        config, cast(None, CursorAwareWindow), **kwargs
+        config, cast(CursorAwareWindow, None), **kwargs
     )
     os.environ["PAGER"] = "true"
     os.environ.pop("PYTHONSTARTUP", None)

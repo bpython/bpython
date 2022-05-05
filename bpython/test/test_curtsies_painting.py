@@ -58,7 +58,7 @@ class CurtsiesPaintingTest(ClearEnviron):
             def _request_refresh(inner_self):
                 pass
 
-        self.repl = TestRepl(setup_config(), cast(None, CursorAwareWindow))
+        self.repl = TestRepl(setup_config(), cast(CursorAwareWindow, None))
         self.repl.height, self.repl.width = (5, 10)
 
     @property
@@ -287,7 +287,7 @@ class HigherLevelCurtsiesPaintingTest(CurtsiesPaintingTest):
                 self.refresh()
 
         self.repl = TestRepl(
-            setup_config(), cast(None, CursorAwareWindow), banner=""
+            setup_config(), cast(CursorAwareWindow, None), banner=""
         )
         self.repl.height, self.repl.width = (5, 32)
 
