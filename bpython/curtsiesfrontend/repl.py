@@ -11,7 +11,7 @@ import tempfile
 import time
 import unicodedata
 from enum import Enum
-from types import TracebackType
+from types import FrameType, TracebackType
 from typing import (
     Dict,
     Any,
@@ -611,7 +611,7 @@ class BaseRepl(Repl):
         sys.meta_path = self.orig_meta_path
         return False
 
-    def sigwinch_handler(self, signum, frame):
+    def sigwinch_handler(self, signum: int, frame: Optional[FrameType]) -> None:
         old_rows, old_columns = self.height, self.width
         self.height, self.width = self.get_term_hw()
         cursor_dy = self.get_cursor_vertical_diff()
@@ -627,7 +627,7 @@ class BaseRepl(Repl):
             self.scroll_offset,
         )
 
-    def sigtstp_handler(self, signum, frame):
+    def sigtstp_handler(self, signum: int, frame: Optional[FrameType]) -> None:
         self.scroll_offset = len(self.lines_for_display)
         self.__exit__(None, None, None)
         self.on_suspend()
