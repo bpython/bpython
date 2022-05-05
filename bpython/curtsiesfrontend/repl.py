@@ -326,7 +326,7 @@ class BaseRepl(Repl):
     def __init__(
         self,
         config: Config,
-        window: BaseWindow,
+        window: Optional[BaseWindow] = None,
         locals_: Optional[Dict[str, Any]] = None,
         banner: Optional[str] = None,
         interp: Optional[Interp] = None,
@@ -2078,6 +2078,7 @@ class BaseRepl(Repl):
         try:
             signal.signal(signal.SIGWINCH, self.orig_sigwinch_handler)
             with Termmode(self.orig_stdin, self.orig_tcattrs):
+                assert self.window is not None
                 terminal = self.window.t
                 with terminal.fullscreen():
                     sys.__stdout__.write(terminal.save)
