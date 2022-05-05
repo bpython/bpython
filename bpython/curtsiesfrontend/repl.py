@@ -19,7 +19,6 @@ from typing import (
     Optional,
     Tuple,
     Union,
-    cast,
     Type,
 )
 from .._typing_compat import Literal
@@ -465,8 +464,7 @@ class BaseRepl(Repl):
 
         # as long as the first event received is a window resize event,
         # this works fine...
-        self.width: int = cast(int, None)
-        self.height: int = cast(int, None)
+        self.width, self.height = os.get_terminal_size()
 
         self.status_bar.message(banner)
 
