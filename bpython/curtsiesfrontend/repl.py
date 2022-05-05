@@ -388,7 +388,7 @@ class BaseRepl(Repl):
         self._current_line = ""
 
         # current line of output - stdout and stdin go here
-        self.current_stdouterr_line = ""  # Union[str, FmtStr]
+        self.current_stdouterr_line: Union[str, FmtStr] = ""
 
         # this is every line that's been displayed (input and output)
         # as with formatting applied. Logical lines that exceeded the terminal width
@@ -657,8 +657,7 @@ class BaseRepl(Repl):
             self.process_key_event(e)
             return None
 
-    def process_control_event(self, e) -> Optional[bool]:
-
+    def process_control_event(self, e: events.Event) -> Optional[bool]:
         if isinstance(e, bpythonevents.ScheduledRefreshRequestEvent):
             # This is a scheduled refresh - it's really just a refresh (so nop)
             pass
@@ -703,9 +702,9 @@ class BaseRepl(Repl):
         elif isinstance(e, bpythonevents.RunStartupFileEvent):
             try:
                 self.startup()
-            except OSError as e:
+            except OSError as err:
                 self.status_bar.message(
-                    _("Executing PYTHONSTARTUP failed: %s") % (e,)
+                    _("Executing PYTHONSTARTUP failed: %s") % (err,)
                 )
 
         elif isinstance(e, bpythonevents.UndoEvent):
