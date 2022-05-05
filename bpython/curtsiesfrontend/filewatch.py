@@ -1,6 +1,6 @@
 import os
 from collections import defaultdict
-from typing import Dict, Iterable, Set, List
+from typing import Callable, Dict, Iterable, Sequence, Set, List
 
 from .. import importcompletion
 
@@ -15,7 +15,11 @@ except ImportError:
 else:
 
     class ModuleChangedEventHandler(FileSystemEventHandler):  # type: ignore [no-redef]
-        def __init__(self, paths: Iterable[str], on_change) -> None:
+        def __init__(
+            self,
+            paths: Iterable[str],
+            on_change: Callable[[Sequence[str]], None],
+        ) -> None:
             self.dirs: Dict[str, Set[str]] = defaultdict(set)
             self.on_change = on_change
             self.modules_to_add_later: List[str] = []
@@ -77,6 +81,7 @@ else:
 
         def on_any_event(self, event: FileSystemEvent) -> None:
             dirpath = os.path.dirname(event.src_path)
-            paths = [path + ".py" for path in self.dirs[dirpath]]
-            if event.src_path in paths:
-                self.on_change(files_modified=[event.src_path])
+            if any(
+                event.src_path == f"{path}.py" for path in self.dirs[dirpath]
+            ):
+                self.on_change((event.src_path,))

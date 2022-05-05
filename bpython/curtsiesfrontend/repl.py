@@ -17,6 +17,7 @@ from typing import (
     Any,
     List,
     Optional,
+    Sequence,
     Tuple,
     Union,
     Type,
@@ -516,7 +517,7 @@ class BaseRepl(Repl):
         RefreshRequestEvent."""
         raise NotImplementedError
 
-    def _request_reload(self, files_modified=("?",)):
+    def _request_reload(self, files_modified: Sequence[str]) -> None:
         """Like request_refresh, but for reload requests events."""
         raise NotImplementedError
 
@@ -546,10 +547,10 @@ class BaseRepl(Repl):
         else:
             self._request_refresh()
 
-    def request_reload(self, files_modified=()):
+    def request_reload(self, files_modified: Sequence[str] = ()) -> None:
         """Request that a ReloadEvent be passed next into process_event"""
         if self.watching_files:
-            self._request_reload(files_modified=files_modified)
+            self._request_reload(files_modified)
 
     def schedule_refresh(self, when: float = 0) -> None:
         """Schedule a ScheduledRefreshRequestEvent for when.
