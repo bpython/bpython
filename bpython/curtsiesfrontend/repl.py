@@ -15,6 +15,7 @@ from types import FrameType, TracebackType
 from typing import (
     Dict,
     Any,
+    Iterable,
     List,
     Optional,
     Sequence,
@@ -161,7 +162,7 @@ class FakeStdin:
         else:
             self.repl.send_to_stdin(self.current_line)
 
-    def add_input_character(self, e):
+    def add_input_character(self, e: str) -> None:
         if e in ("<SPACE>",):
             e = " "
         if e.startswith("<") and e.endswith(">"):
@@ -190,10 +191,10 @@ class FakeStdin:
     def __iter__(self):
         return iter(self.readlines())
 
-    def isatty(self):
+    def isatty(self) -> bool:
         return True
 
-    def flush(self):
+    def flush(self) -> None:
         """Flush the internal buffer. This is a no-op. Flushing stdin
         doesn't make any sense anyway."""
 
@@ -202,7 +203,7 @@ class FakeStdin:
         # others, so here's a hack to keep them happy
         raise OSError(errno.EBADF, "sys.stdin is read-only")
 
-    def close(self):
+    def close(self) -> None:
         # hack to make closing stdin a nop
         # This is useful for multiprocessing.Process, which does work
         # for the most part, although output from other processes is
@@ -210,7 +211,7 @@ class FakeStdin:
         pass
 
     @property
-    def encoding(self):
+    def encoding(self) -> str:
         return sys.__stdin__.encoding
 
     # TODO write a read() method?
@@ -1083,7 +1084,7 @@ class BaseRepl(Repl):
         )
         self._set_cursor_offset(len(self.current_line), reset_rl_history=False)
 
-    def process_simple_keypress(self, e):
+    def process_simple_keypress(self, e: str):
         # '\n' needed for pastes
         if e in ("<Ctrl-j>", "<Ctrl-m>", "<PADENTER>", "\n", "\r"):
             self.on_enter()
@@ -1980,7 +1981,7 @@ class BaseRepl(Repl):
 
         greenlet.greenlet(prompt_for_undo).switch()
 
-    def redo(self):
+    def redo(self) -> None:
         if self.redo_stack:
             temp = self.redo_stack.pop()
             self.history.append(temp)
@@ -2061,7 +2062,7 @@ class BaseRepl(Repl):
 
         del self.coderunner.interp.locals["_repl"]
 
-    def getstdout(self):
+    def getstdout(self) -> str:
         """
         Returns a string of the current bpython session, wrapped, WITH prompts.
         """
@@ -2096,7 +2097,7 @@ class BaseRepl(Repl):
         finally:
             signal.signal(signal.SIGWINCH, prev_sigwinch_handler)
 
-    def pager(self, text):
+    def pager(self, text: str) -> None:
         """Runs an external pager on text
 
         text must be a str"""
@@ -2106,7 +2107,7 @@ class BaseRepl(Repl):
             tmp.flush()
             self.focus_on_subprocess(command + [tmp.name])
 
-    def show_source(self):
+    def show_source(self) -> None:
         try:
             source = self.get_source_of_current_name()
         except SourceNotFound as e:
@@ -2118,10 +2119,10 @@ class BaseRepl(Repl):
                 )
             self.pager(source)
 
-    def help_text(self):
+    def help_text(self) -> str:
         return self.version_help_text() + "\n" + self.key_help_text()
 
-    def version_help_text(self):
+    def version_help_text(self) -> str:
         help_message = _(
             """
 Thanks for using bpython!
@@ -2148,7 +2149,7 @@ Press {config.edit_config_key} to edit this config file.
 
         return f"bpython-curtsies version {__version__} using curtsies version {curtsies_version}\n{help_message}"
 
-    def key_help_text(self):
+    def key_help_text(self) -> str:
         NOT_IMPLEMENTED = (
             "suspend",
             "cut to buffer",
@@ -2198,15 +2199,15 @@ Press {config.edit_config_key} to edit this config file.
         return _process_ps(super().ps2, "... ")
 
 
-def is_nop(char):
-    return unicodedata.category(str(char)) == "Cc"
+def is_nop(char: str) -> bool:
+    return unicodedata.category(char) == "Cc"
 
 
-def tabs_to_spaces(line):
+def tabs_to_spaces(line: str) -> str:
     return line.replace("\t", "    ")
 
 
-def _last_word(line):
+def _last_word(line: str) -> str:
     split_line = line.split()
     return split_line.pop() if split_line else ""
 
@@ -2230,29 +2231,29 @@ def compress_paste_event(paste_event):
         return None
 
 
-def just_simple_events(event_list):
+def just_simple_events(
+    event_list: Iterable[Union[str, events.Event]]
+) -> List[str]:
     simple_events = []
     for e in event_list:
+        if isinstance(e, events.Event):
+            continue  # ignore events
         # '\n' necessary for pastes
-        if e in ("<Ctrl-j>", "<Ctrl-m>", "<PADENTER>", "\n", "\r"):
+        elif e in ("<Ctrl-j>", "<Ctrl-m>", "<PADENTER>", "\n", "\r"):
             simple_events.append("\n")
-        elif isinstance(e, events.Event):
-            pass  # ignore events
-        elif e in ("<SPACE>",):
+        elif e == "<SPACE>":
             simple_events.append(" ")
         elif len(e) > 1:
-            pass  # get rid of <Ctrl-a> etc.
+            continue  # get rid of <Ctrl-a> etc.
         else:
             simple_events.append(e)
     return simple_events
 
 
-def is_simple_event(e):
+def is_simple_event(e: Union[str, events.Event]) -> bool:
     if isinstance(e, events.Event):
         return False
-    if e in ("<Ctrl-j>", "<Ctrl-m>", "<PADENTER>", "\n", "\r", "<SPACE>"):
-        return True
-    if len(e) > 1:
-        return False
-    else:
-        return True
+    return (
+        e in ("<Ctrl-j>", "<Ctrl-m>", "<PADENTER>", "\n", "\r", "<SPACE>")
+        or len(e) <= 1
+    )
