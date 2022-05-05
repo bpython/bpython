@@ -12,3 +12,4 @@ doc/sphinx/build/*
 bpython/_version.py
 venv/
 .venv/
+.mypy_cache/
