@@ -65,10 +65,6 @@ except ImportError:
     have_pyperclip = False
 
 from . import autocomplete, inspection, simpleeval
-
-if TYPE_CHECKING:
-    from .cli import Statusbar
-
 from .config import getpreferredencoding, Config
 from .formatter import Parenthesis
 from .history import History
