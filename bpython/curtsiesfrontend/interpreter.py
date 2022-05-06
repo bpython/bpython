@@ -44,9 +44,7 @@ class BPythonFormatter(Formatter):
     straightforward."""
 
     def __init__(self, color_scheme, **options):
-        self.f_strings = {}
-        for k, v in color_scheme.items():
-            self.f_strings[k] = f"\x01{v}"
+        self.f_strings = {k: f"\x01{v}" for k, v in color_scheme.items()}
         super().__init__(**options)
 
     def format(self, tokensource, outfile):
