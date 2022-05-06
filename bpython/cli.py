@@ -1940,7 +1940,7 @@ def main_curses(
     args: List[str],
     config: Config,
     interactive: bool = True,
-    locals_: Optional[MutableMapping[str, str]] = None,
+    locals_: Optional[Dict[str, Any]] = None,
     banner: Optional[str] = None,
 ) -> Tuple[Tuple[Any, ...], str]:
     """main function for the curses convenience wrapper

@@ -48,7 +48,6 @@ from typing import (
     Optional,
     Type,
     Union,
-    MutableMapping,
     Callable,
     Dict,
     TYPE_CHECKING,
@@ -109,7 +108,7 @@ class Interpreter(code.InteractiveInterpreter):
 
     def __init__(
         self,
-        locals: Optional[MutableMapping[str, Any]] = None,
+        locals: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Constructor.
 
