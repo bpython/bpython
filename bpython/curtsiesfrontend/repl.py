@@ -1363,9 +1363,8 @@ class BaseRepl(Repl):
     def clear_current_block(self, remove_from_history=True):
         self.display_buffer = []
         if remove_from_history:
-            for unused in self.buffer:
-                self.history.pop()
-                self.all_logical_lines.pop()
+            del self.history[-len(self.buffer) :]
+            del self.all_logical_lines[-len(self.buffer) :]
         self.buffer = []
         self.cursor_offset = 0
         self.saved_indent = 0
@@ -2080,7 +2079,6 @@ class BaseRepl(Repl):
         try:
             signal.signal(signal.SIGWINCH, self.orig_sigwinch_handler)
             with Termmode(self.orig_stdin, self.orig_tcattrs):
-                assert self.window is not None
                 terminal = self.window.t
                 with terminal.fullscreen():
                     sys.__stdout__.write(terminal.save)

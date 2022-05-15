@@ -94,9 +94,9 @@ class Interp(ReplInterpreter):
         # TODO for tracebacks get_lexer_by_name("pytb", stripall=True)
 
     def format(self, tbtext: str, lexer: Any) -> None:
-        # FIXME: lexer should is a Lexer
+        # FIXME: lexer should be "Lexer"
         traceback_informative_formatter = BPythonFormatter(default_colors)
-        traceback_code_formatter = BPythonFormatter({Token: ("d")})
+        traceback_code_formatter = BPythonFormatter({Token: "d"})
 
         no_format_mode = False
         cur_line = []
@@ -111,7 +111,7 @@ class Interp(ReplInterpreter):
                         cur_line, self.outfile
                     )
                 cur_line = []
-            elif text == "    " and cur_line == []:
+            elif text == "    " and len(cur_line) == 0:
                 no_format_mode = True
                 cur_line.append((token, text))
             else:
@@ -130,9 +130,6 @@ def code_finished_will_parse(
     False, True means code block is unfinished
     False, False isn't possible - an predicted error makes code block done"""
     try:
-        finished = bool(compiler(s))
-        code_will_parse = True
+        return bool(compiler(s)), True
     except (ValueError, SyntaxError, OverflowError):
-        finished = True
-        code_will_parse = False
-    return finished, code_will_parse
+        return True, False
