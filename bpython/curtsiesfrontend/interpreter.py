@@ -96,11 +96,10 @@ class Interp(ReplInterpreter):
         # FIXME: lexer should is a Lexer
         traceback_informative_formatter = BPythonFormatter(default_colors)
         traceback_code_formatter = BPythonFormatter({Token: ("d")})
-        tokens = list(lexer.get_tokens(tbtext))
 
         no_format_mode = False
         cur_line = []
-        for token, text in tokens:
+        for token, text in lexer.get_tokens(tbtext):
             if text.endswith("\n"):
                 cur_line.append((token, text))
                 if no_format_mode:
