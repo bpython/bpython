@@ -51,7 +51,8 @@ class BPythonFormatter(Formatter):
         **options: Union[str, bool, None],
     ) -> None:
         self.f_strings = {k: f"\x01{v}" for k, v in color_scheme.items()}
-        super().__init__(**options)
+        # FIXME: mypy currently fails to handle this properly
+        super().__init__(**options)  # type: ignore
 
     def format(self, tokensource, outfile):
         o = ""
