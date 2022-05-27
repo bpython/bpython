@@ -181,9 +181,11 @@ class FakeStdin:
 
     def readline(self, size=-1):
         if not isinstance(size, int):
-            raise TypeError(f"'{type(size).__name__}' object cannot be interpreted as an integer")
+            raise TypeError(
+                f"'{type(size).__name__}' object cannot be interpreted as an integer"
+            )
         elif size == 0:
-            return ''
+            return ""
         else:
             self.has_focus = True
             self.repl.send_to_stdin(self.current_line)
