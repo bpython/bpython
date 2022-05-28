@@ -193,8 +193,22 @@ class FakeStdin:
         self.readline_results.append(value)
         return value if size <= -1 else value[:size]
 
-    def readlines(self, size=-1):
-        return list(iter(self.readline, ""))
+    def readlines(self, size: Optional[int] = -1) -> List[str]:
+        if size is None:
+            # the default readlines implementation also accepts None
+            size = -1
+        if not isinstance(size, int):
+            raise TypeError("argument should be integer or None, not 'str'")
+        if size <= 0:
+            # read as much as we can
+            return list(iter(self.readline, ""))
+
+        lines = []
+        while size > 0:
+            line = self.readline()
+            lines.append(line)
+            size -= len(line)
+        return lines
 
     def __iter__(self):
         return iter(self.readlines())
