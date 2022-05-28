@@ -179,7 +179,7 @@ class FakeStdin:
         )
         self.cursor_offset += 1
 
-    def readline(self, size: int = -1) -> Union[str, Any]:
+    def readline(self, size: int = -1) -> str:
         if not isinstance(size, int):
             raise TypeError(
                 f"'{type(size).__name__}' object cannot be interpreted as an integer"
@@ -189,6 +189,7 @@ class FakeStdin:
         self.has_focus = True
         self.repl.send_to_stdin(self.current_line)
         value = self.coderunner.request_from_main_context()
+        assert isinstance(value, str)
         self.readline_results.append(value)
         return value if size <= -1 else value[:size]
 
