@@ -133,35 +133,28 @@ class FakeStdin:
                 self.current_line = ""
                 self.cursor_offset = 0
                 self.repl.run_code_and_maybe_finish()
-        else:
-            if e in self.rl_char_sequences:
-                self.cursor_offset, self.current_line = self.rl_char_sequences[
-                    e
-                ](self.cursor_offset, self.current_line)
-            elif e in ("<ESC>",):
-                pass
-            elif e in ("<Ctrl-d>",):
-                if self.current_line == "":
-                    self.repl.send_to_stdin("\n")
-                    self.has_focus = False
-                    self.current_line = ""
-                    self.cursor_offset = 0
-                    self.repl.run_code_and_maybe_finish(for_code="")
-                else:
-                    pass
-            elif e in ("\n", "\r", "<Ctrl-j>", "<Ctrl-m>"):
-                line = self.current_line
-                self.repl.send_to_stdin(line + "\n")
+        elif e in self.rl_char_sequences:
+            self.cursor_offset, self.current_line = self.rl_char_sequences[e](
+                self.cursor_offset, self.current_line
+            )
+        elif e == "<Ctrl-d>":
+            if not len(self.current_line):
+                self.repl.send_to_stdin("\n")
                 self.has_focus = False
                 self.current_line = ""
                 self.cursor_offset = 0
-                self.repl.run_code_and_maybe_finish(for_code=line + "\n")
-            else:  # add normal character
-                self.add_input_character(e)
+                self.repl.run_code_and_maybe_finish(for_code="")
+        elif e in ("\n", "\r", "<Ctrl-j>", "<Ctrl-m>"):
+            line = f"{self.current_line}\n"
+            self.repl.send_to_stdin(line)
+            self.has_focus = False
+            self.current_line = ""
+            self.cursor_offset = 0
+            self.repl.run_code_and_maybe_finish(for_code=line)
+        elif e != "<ESC>":  # add normal character
+            self.add_input_character(e)
 
-        if self.current_line.endswith(("\n", "\r")):
-            pass
-        else:
+        if not self.current_line.endswith(("\n", "\r")):
             self.repl.send_to_stdin(self.current_line)
 
     def add_input_character(self, e: str) -> None:
