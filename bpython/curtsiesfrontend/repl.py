@@ -13,15 +13,15 @@ import unicodedata
 from enum import Enum
 from types import FrameType, TracebackType
 from typing import (
-    Dict,
     Any,
     Iterable,
+    Dict,
     List,
     Optional,
     Sequence,
     Tuple,
-    Union,
     Type,
+    Union,
 )
 from .._typing_compat import Literal
 
@@ -55,7 +55,11 @@ from .interpreter import (
     Interp,
     code_finished_will_parse,
 )
-from .manual_readline import edit_keys, cursor_on_closing_char_pair
+from .manual_readline import (
+    edit_keys,
+    cursor_on_closing_char_pair,
+    AbstractEdits,
+)
 from .parse import parse as bpythonparse, func_for_letter, color_for_letter
 from .preprocess import preprocess
 from .. import __version__
@@ -105,15 +109,20 @@ class FakeStdin:
     In user code, sys.stdin.read() asks the user for interactive input,
     so this class returns control to the UI to get that input."""
 
-    def __init__(self, coderunner, repl, configured_edit_keys=None):
+    def __init__(
+        self,
+        coderunner: CodeRunner,
+        repl: "BaseRepl",
+        configured_edit_keys: Optional[AbstractEdits] = None,
+    ):
         self.coderunner = coderunner
         self.repl = repl
         self.has_focus = False  # whether FakeStdin receives keypress events
         self.current_line = ""
         self.cursor_offset = 0
         self.old_num_lines = 0
-        self.readline_results = []
-        if configured_edit_keys:
+        self.readline_results: List[str] = []
+        if configured_edit_keys is not None:
             self.rl_char_sequences = configured_edit_keys
         else:
             self.rl_char_sequences = edit_keys
@@ -236,7 +245,7 @@ class ReevaluateFakeStdin:
     """Stdin mock used during reevaluation (undo) so raw_inputs don't have to
     be reentered"""
 
-    def __init__(self, fakestdin, repl):
+    def __init__(self, fakestdin: FakeStdin, repl: "BaseRepl"):
         self.fakestdin = fakestdin
         self.repl = repl
         self.readline_results = fakestdin.readline_results[:]
