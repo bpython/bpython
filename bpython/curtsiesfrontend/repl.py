@@ -179,7 +179,7 @@ class FakeStdin:
         )
         self.cursor_offset += 1
 
-    def readline(self, size: int = -1) -> str:
+    def readline(self, size: int = -1) -> Union[str, Any]:
         if not isinstance(size, int):
             raise TypeError(
                 f"'{type(size).__name__}' object cannot be interpreted as an integer"
