@@ -1128,8 +1128,7 @@ class CLIRepl(repl.Repl):
         # curses.raw(True) prevents C-c from causing a SIGINT
         curses.raw(False)
         try:
-            x: bool = repl.Repl.push(self, s, insert_into_history)
-            return x
+            return super().push(s, insert_into_history)
         except SystemExit as e:
             # Avoid a traceback on e.g. quit()
             self.do_exit = True

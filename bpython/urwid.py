@@ -938,7 +938,7 @@ class URWIDRepl(repl.Repl):
         signal.signal(signal.SIGINT, signal.default_int_handler)
         # Pretty blindly adapted from bpython.cli
         try:
-            return repl.Repl.push(self, s, insert_into_history)
+            return super().push(s, insert_into_history)
         except SystemExit as e:
             self.exit_value = e.args
             raise urwid.ExitMainLoop()

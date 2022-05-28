@@ -28,14 +28,14 @@ class BPdb(pdb.Pdb):
     """PDB with BPython support."""
 
     def __init__(self, *args, **kwargs):
-        pdb.Pdb.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.prompt = "(BPdb) "
         self.intro = 'Use "B" to enter bpython, Ctrl-d to exit it.'
 
     def postloop(self):
         # We only want to show the intro message once.
         self.intro = None
-        pdb.Pdb.postloop(self)
+        super().postloop()
 
     # cmd.Cmd commands
 
