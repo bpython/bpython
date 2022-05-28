@@ -32,8 +32,8 @@ else:
             super().__init__()
 
         def reset(self) -> None:
-            self.dirs = defaultdict(set)
-            del self.modules_to_add_later[:]
+            self.dirs.clear()
+            self.modules_to_add_later.clear()
             self.observer.unschedule_all()
 
         def _add_module(self, path: str) -> None:
@@ -70,7 +70,7 @@ else:
                 self.observer.schedule(self, dirname, recursive=False)
             for module in self.modules_to_add_later:
                 self._add_module(module)
-            del self.modules_to_add_later[:]
+            self.modules_to_add_later.clear()
             self.activated = True
 
         def deactivate(self) -> None:
