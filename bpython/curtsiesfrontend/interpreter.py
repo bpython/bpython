@@ -1,6 +1,6 @@
 import sys
 from codeop import CommandCompiler
-from typing import Any, Dict, Iterable, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Optional, Tuple, Union, IO
 
 from pygments.token import Generic, Token, Keyword, Name, Comment, String
 from pygments.token import Error, Literal, Number, Operator, Punctuation
@@ -54,7 +54,7 @@ class BPythonFormatter(Formatter):
         # FIXME: mypy currently fails to handle this properly
         super().__init__(**options)  # type: ignore
 
-    def format(self, tokensource, outfile):
+    def format(self, tokensource: Iterable[MutableMapping[_TokenType, str]], outfile: IO) -> None:
         o = ""
 
         for token, text in tokensource:
