@@ -1,6 +1,8 @@
+# mypy: disallow_untyped_defs=True
+# mypy: disallow_untyped_calls=True
 import sys
 from codeop import CommandCompiler
-from typing import Any, Dict, Iterable, Optional, Tuple, Union, IO
+from typing import Any, Dict, Iterable, Optional, Tuple, Union, IO, MutableMapping, List
 
 from pygments.token import Generic, Token, Keyword, Name, Comment, String
 from pygments.token import Error, Literal, Number, Operator, Punctuation
@@ -54,7 +56,7 @@ class BPythonFormatter(Formatter):
         # FIXME: mypy currently fails to handle this properly
         super().__init__(**options)  # type: ignore
 
-    def format(self, tokensource: Iterable[MutableMapping[_TokenType, str]], outfile: IO) -> None:
+    def format(self, tokensource: List[Tuple[_TokenType, str]], outfile: IO) -> None:
         o = ""
 
         for token, text in tokensource:
