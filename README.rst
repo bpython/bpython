@@ -146,6 +146,14 @@ Fedora users can install ``bpython`` directly from the command line using ``dnf`
 .. code-block:: bash
 
     $ dnf install bpython
+    
+GNU Guix
+----------
+Guix users can install ``bpython`` on any GNU/Linux distribution directly from the command line:
+
+.. code-block:: bash
+
+    $ guix install bpython
 
 macOS
 -----
