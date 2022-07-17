@@ -582,7 +582,7 @@ class BaseRepl(Repl):
     def schedule_refresh(self, when: float = 0) -> None:
         """Schedule a ScheduledRefreshRequestEvent for when.
 
-        Such a event should interrupt if blockied waiting for keyboard input"""
+        Such a event should interrupt if blocked waiting for keyboard input"""
         if self.reevaluating or self.paste_mode:
             self.fake_refresh_requested = True
         else:
