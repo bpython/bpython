@@ -140,6 +140,37 @@ class TestInspection(unittest.TestCase):
         # np.array(object, dtype=None, *, ...).
         self.assertEqual(props.argspec.args, ["object", "dtype"])
 
+    @unittest.expectedFailure
+    def test_issue_966_freestanding(self):
+        def fun(number, lst=[]):
+            """
+            Return a list of numbers
+
+            Example:
+            ========
+            C.cmethod(1337, [1, 2]) # => [1, 2, 1337]
+            """
+            return lst + [number]
+
+        def fun_annotations(number: int, lst: list[int] = []) -> list[int]:
+            """
+            Return a list of numbers
+
+            Example:
+            ========
+            C.cmethod(1337, [1, 2]) # => [1, 2, 1337]
+            """
+            return lst + [number]
+
+        props = inspection.getfuncprops("fun", fun)
+        self.assertEqual(props.func, "fun")
+        self.assertEqual(props.argspec.args, ["number", "lst"])
+        self.assertEqual(props.argspec.defaults[0], [])
+
+        props = inspection.getfuncprops("fun_annotations", fun_annotations)
+        self.assertEqual(props.func, "fun_annotations")
+        self.assertEqual(props.argspec.args, ["number", "lst"])
+        self.assertEqual(props.argspec.defaults[0], [])
 
 class A:
     a = "a"
