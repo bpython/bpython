@@ -292,12 +292,12 @@ def get_argspec_from_signature(f):
 
     signature = inspect.signature(f)
     for parameter in signature.parameters.values():
-        if parameter.annotation is not inspect._empty:
+        if parameter.annotation is not parameter.empty:
             annotations[parameter.name] = parameter.annotation
 
         if parameter.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD:
             args.append(parameter.name)
-            if parameter.default is not inspect._empty:
+            if parameter.default is not parameter.empty:
                 defaults.append(parameter.default)
         elif parameter.kind == inspect.Parameter.POSITIONAL_ONLY:
             args.append(parameter.name)
