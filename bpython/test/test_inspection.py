@@ -77,6 +77,13 @@ class TestInspection(unittest.TestCase):
         self.assertEqual(repr(defaults[0]), "23")
         self.assertEqual(repr(defaults[1]), "'yay'")
 
+    def test_pasekeywordpairs_annotation(self):
+        def spam(eggs: str = "foo, bar"):
+            pass
+
+        defaults = inspection.getfuncprops("spam", spam).argspec.defaults
+        self.assertEqual(repr(defaults[0]), "'foo, bar'")
+
     def test_get_encoding_ascii(self):
         self.assertEqual(inspection.get_encoding(encoding_ascii), "ascii")
         self.assertEqual(inspection.get_encoding(encoding_ascii.foo), "ascii")
