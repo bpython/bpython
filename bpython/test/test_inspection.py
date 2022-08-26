@@ -147,7 +147,6 @@ class TestInspection(unittest.TestCase):
         # np.array(object, dtype=None, *, ...).
         self.assertEqual(props.argspec.args, ["object", "dtype"])
 
-    @unittest.expectedFailure
     def test_issue_966_freestanding(self):
         def fun(number, lst=[]):
             """

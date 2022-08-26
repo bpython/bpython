@@ -26,7 +26,7 @@ import keyword
 import pydoc
 import re
 from collections import namedtuple
-from typing import Any, Optional, Type
+from typing import Any, Optional, Type, Dict, List
 from types import MemberDescriptorType, TracebackType
 from ._typing_compat import Literal
 
@@ -121,15 +121,16 @@ class _Repr:
     __str__ = __repr__
 
 
-def parsekeywordpairs(signature):
-    tokens = Python3Lexer().get_tokens(signature)
+def parsekeywordpairs(signature: str) -> Dict[str, str]:
     preamble = True
     stack = []
-    substack = []
+    substack: List[str] = []
     parendepth = 0
-    for token, value in tokens:
+    annotation = False
+    for token, value in Python3Lexer().get_tokens(signature):
         if preamble:
             if token is Token.Punctuation and value == "(":
+                # First "(" starts the list of arguments
                 preamble = False
             continue
 
@@ -141,14 +142,23 @@ def parsekeywordpairs(signature):
             elif value == ":" and parendepth == -1:
                 # End of signature reached
                 break
+            elif value == ":" and parendepth == 0:
+                # Start of type annotation
+                annotation = True
+
             if (value == "," and parendepth == 0) or (
                 value == ")" and parendepth == -1
             ):
                 stack.append(substack)
                 substack = []
+                # If type annotation didn't end before, ti does now.
+                annotation = False
                 continue
+        elif token is Token.Operator and value == "=" and parendepth == 0:
+            # End of type annotation
+            annotation = False
 
-        if value and (parendepth > 0 or value.strip()):
+        if value and not annotation and (parendepth > 0 or value.strip()):
             substack.append(value)
 
     return {item[0]: "".join(item[2:]) for item in stack if len(item) >= 3}
