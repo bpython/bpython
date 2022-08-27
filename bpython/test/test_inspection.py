@@ -2,6 +2,7 @@ import inspect
 import os
 import sys
 import unittest
+from typing import List
 
 from bpython import inspection
 from bpython.test.fodder import encoding_ascii
@@ -158,7 +159,7 @@ class TestInspection(unittest.TestCase):
             """
             return lst + [number]
 
-        def fun_annotations(number: int, lst: list[int] = []) -> list[int]:
+        def fun_annotations(number: int, lst: List[int] = []) -> List[int]:
             """
             Return a list of numbers
 
