@@ -1,6 +1,6 @@
 Pygments
 backports.cached-property; python_version < "3.8"
-curtsies >=0.3.5
+curtsies >=0.4.0
 cwcwidth
 greenlet
 pyxdg

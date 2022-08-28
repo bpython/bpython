@@ -91,7 +91,7 @@ your config file as **~/.config/bpython/config** (i.e.
 Dependencies
 ============
 * Pygments
-* curtsies >= 0.3.5
+* curtsies >= 0.4.0
 * greenlet
 * pyxdg
 * requests
