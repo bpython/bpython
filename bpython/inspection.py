@@ -25,7 +25,6 @@ import inspect
 import keyword
 import pydoc
 import re
-from collections import namedtuple
 from dataclasses import dataclass
 from typing import Any, Callable, Optional, Type, Dict, List
 from types import MemberDescriptorType, TracebackType
@@ -37,18 +36,15 @@ from pygments.lexers import Python3Lexer
 from .lazyre import LazyReCompile
 
 
-ArgSpec = namedtuple(
-    "ArgSpec",
-    [
-        "args",
-        "varargs",
-        "varkwargs",
-        "defaults",
-        "kwonly",
-        "kwonly_defaults",
-        "annotations",
-    ],
-)
+@dataclass
+class ArgSpec:
+    args: List[str]
+    varargs: Optional[str]
+    varkwargs: Optional[str]
+    defaults: Optional[List[Any]]
+    kwonly: List[str]
+    kwonly_defaults: Optional[Dict[str, Any]]
+    annotations: Optional[Dict[str, Any]]
 
 
 @dataclass
@@ -171,24 +167,24 @@ def parsekeywordpairs(signature: str) -> Dict[str, str]:
     return {item[0]: "".join(item[2:]) for item in stack if len(item) >= 3}
 
 
-def fixlongargs(f, argspec):
+def fixlongargs(f: Callable, argspec: ArgSpec) -> ArgSpec:
     """Functions taking default arguments that are references to other objects
     whose str() is too big will cause breakage, so we swap out the object
     itself with the name it was referenced with in the source by parsing the
     source itself !"""
-    if argspec[3] is None:
+    if argspec.defaults is None:
         # No keyword args, no need to do anything
-        return
-    values = list(argspec[3])
+        return argspec
+    values = list(argspec.defaults)
     if not values:
-        return
-    keys = argspec[0][-len(values) :]
+        return argspec
+    keys = argspec.args[-len(values) :]
     try:
         src = inspect.getsourcelines(f)
     except (OSError, IndexError):
         # IndexError is raised in inspect.findsource(), can happen in
         # some situations. See issue #94.
-        return
+        return argspec
     signature = "".join(src[0])
     kwparsed = parsekeywordpairs(signature)
 
@@ -196,7 +192,8 @@ def fixlongargs(f, argspec):
         if len(repr(value)) != len(kwparsed[key]):
             values[i] = _Repr(kwparsed[key])
 
-    argspec[3] = values
+    argspec.defaults = values
+    return argspec
 
 
 getpydocspec_re = LazyReCompile(
@@ -247,7 +244,7 @@ def getpydocspec(f, func):
     )
 
 
-def getfuncprops(func, f):
+def getfuncprops(func: str, f: Callable) -> Optional[FuncProps]:
     # Check if it's a real bound method or if it's implicitly calling __init__
     # (i.e. FooClass(...) and not FooClass.__init__(...) -- the former would
     # not take 'self', the latter would:
@@ -268,9 +265,8 @@ def getfuncprops(func, f):
         # '__init__' throws xmlrpclib.Fault (see #202)
         return None
     try:
-        argspec = get_argspec_from_signature(f)
-        fixlongargs(f, argspec)
-        argspec = ArgSpec(*argspec)
+        argspec = _get_argspec_from_signature(f)
+        argspec = fixlongargs(f, argspec)
         fprops = FuncProps(func, argspec, is_bound_method)
     except (TypeError, KeyError, ValueError):
         argspec = getpydocspec(f, func)
@@ -289,7 +285,7 @@ def is_eval_safe_name(string: str) -> bool:
     )
 
 
-def get_argspec_from_signature(f):
+def _get_argspec_from_signature(f: Callable) -> ArgSpec:
     """Get callable signature from inspect.signature in argspec format.
 
     inspect.signature is a Python 3 only function that returns the signature of
@@ -324,26 +320,15 @@ def get_argspec_from_signature(f):
         elif parameter.kind == inspect.Parameter.VAR_KEYWORD:
             varkwargs = parameter.name
 
-    # inspect.getfullargspec returns None for 'defaults', 'kwonly_defaults' and
-    # 'annotations' if there are no values for them.
-    if not defaults:
-        defaults = None
-
-    if not kwonly_defaults:
-        kwonly_defaults = None
-
-    if not annotations:
-        annotations = None
-
-    return [
+    return ArgSpec(
         args,
         varargs,
         varkwargs,
-        defaults,
+        defaults if defaults else None,
         kwonly,
-        kwonly_defaults,
-        annotations,
-    ]
+        kwonly_defaults if kwonly_defaults else None,
+        annotations if annotations else None,
+    )
 
 
 get_encoding_line_re = LazyReCompile(r"^.*coding[:=]\s*([-\w.]+).*$")

@@ -570,11 +570,11 @@ class ParameterNameCompletion(BaseCompletionType):
 
         matches = {
             f"{name}="
-            for name in argspec.argspec[0]
+            for name in argspec.argspec.args
             if isinstance(name, str) and name.startswith(r.word)
         }
         matches.update(
-            name + "=" for name in argspec.argspec[4] if name.startswith(r.word)
+            name + "=" for name in argspec.argspec.kwonly if name.startswith(r.word)
         )
         return matches if matches else None
 

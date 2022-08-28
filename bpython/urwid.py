@@ -763,10 +763,12 @@ class URWIDRepl(repl.Repl):
             if self.funcprops:
                 # This is mostly just stolen from the cli module.
                 func_name = self.funcprops.func
-                args = self.funcprops.argspec
+                args = self.funcprops.argspec.args
                 is_bound = self.funcprops.is_bound_method
                 in_arg = self.arg_pos
-                args, varargs, varkw, defaults = args[:4]
+                varargs = self.funcprops.argspec.varargs
+                varkw = self.funcprops.argspec.varkwargs
+                defaults = self.funcprops.argspec.defaults
                 kwonly = self.funcprops.argspec.kwonly
                 kwonly_defaults = self.funcprops.argspec.kwonly_defaults or {}
                 markup = [("bold name", func_name), ("name", ": (")]
