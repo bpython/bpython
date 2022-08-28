@@ -28,6 +28,7 @@
 import __main__
 import abc
 import glob
+import itertools
 import keyword
 import logging
 import os
@@ -383,11 +384,15 @@ class AttrCompletion(BaseCompletionType):
     attr_matches_re = LazyReCompile(r"(\w+(\.\w+)*)\.(\w*)")
 
     def matches(
-        self, cursor_offset: int, line: str, **kwargs: Any
+        self,
+        cursor_offset: int,
+        line: str,
+        *,
+        locals_: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> Optional[Set]:
-        if "locals_" not in kwargs:
+        if locals_ is None:
             return None
-        locals_ = cast(Dict[str, Any], kwargs["locals_"])
 
         r = self.locate(cursor_offset, line)
         if r is None:
@@ -465,11 +470,15 @@ class AttrCompletion(BaseCompletionType):
 
 class DictKeyCompletion(BaseCompletionType):
     def matches(
-        self, cursor_offset: int, line: str, **kwargs: Any
+        self,
+        cursor_offset: int,
+        line: str,
+        *,
+        locals_: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> Optional[Set]:
-        if "locals_" not in kwargs:
+        if locals_ is None:
             return None
-        locals_ = kwargs["locals_"]
 
         r = self.locate(cursor_offset, line)
         if r is None:
@@ -500,11 +509,16 @@ class DictKeyCompletion(BaseCompletionType):
 
 class MagicMethodCompletion(BaseCompletionType):
     def matches(
-        self, cursor_offset: int, line: str, **kwargs: Any
+        self,
+        cursor_offset: int,
+        line: str,
+        *,
+        current_block: Optional[str] = None,
+        complete_magic_methods: Optional[bool] = None,
+        **kwargs: Any,
     ) -> Optional[Set]:
-        if "current_block" not in kwargs:
+        if current_block is None or complete_magic_methods is None or not complete_magic_methods:
             return None
-        current_block = kwargs["current_block"]
 
         r = self.locate(cursor_offset, line)
         if r is None:
@@ -519,15 +533,19 @@ class MagicMethodCompletion(BaseCompletionType):
 
 class GlobalCompletion(BaseCompletionType):
     def matches(
-        self, cursor_offset: int, line: str, **kwargs: Any
+        self,
+        cursor_offset: int,
+        line: str,
+        *,
+        locals_: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> Optional[Set]:
         """Compute matches when text is a simple name.
         Return a list of all keywords, built-in functions and names currently
         defined in self.namespace that match.
         """
-        if "locals_" not in kwargs:
+        if locals_ is None:
             return None
-        locals_ = kwargs["locals_"]
 
         r = self.locate(cursor_offset, line)
         if r is None:
@@ -556,25 +574,29 @@ class GlobalCompletion(BaseCompletionType):
 
 class ParameterNameCompletion(BaseCompletionType):
     def matches(
-        self, cursor_offset: int, line: str, **kwargs: Any
+        self,
+        cursor_offset: int,
+        line: str,
+        *,
+        funcprops: Optional[inspection.FuncProps] = None,
+        **kwargs: Any,
     ) -> Optional[Set]:
-        if "argspec" not in kwargs:
+        if funcprops is None:
             return None
-        argspec = kwargs["argspec"]
 
-        if not argspec:
-            return None
         r = self.locate(cursor_offset, line)
         if r is None:
             return None
 
         matches = {
             f"{name}="
-            for name in argspec.argspec.args
+            for name in funcprops.argspec.args
             if isinstance(name, str) and name.startswith(r.word)
         }
         matches.update(
-            name + "=" for name in argspec.argspec.kwonly if name.startswith(r.word)
+            name + "="
+            for name in funcprops.argspec.kwonly
+            if name.startswith(r.word)
         )
         return matches if matches else None
 
@@ -588,12 +610,13 @@ class ExpressionAttributeCompletion(AttrCompletion):
         return lineparts.current_expression_attribute(cursor_offset, line)
 
     def matches(
-        self, cursor_offset: int, line: str, **kwargs: Any
+        self,
+        cursor_offset: int,
+        line: str,
+        *,
+        locals_: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> Optional[Set]:
-        if "locals_" not in kwargs:
-            return None
-        locals_ = kwargs["locals_"]
-
         if locals_ is None:
             locals_ = __main__.__dict__
 
@@ -629,20 +652,23 @@ else:
         _orig_start: Optional[int]
 
         def matches(
-            self, cursor_offset: int, line: str, **kwargs: Any
+            self,
+            cursor_offset: int,
+            line: str,
+            *,
+            history: Optional[List[str]] = None,
+            **kwargs: Any,
         ) -> Optional[Set]:
-            if "history" not in kwargs:
+            if history is None:
                 return None
-            history = kwargs["history"]
-
             if not lineparts.current_word(cursor_offset, line):
                 return None
-            history = "\n".join(history) + "\n" + line
 
+            combined_history = "\n".join(itertools.chain(history, (line,)))
             try:
-                script = jedi.Script(history, path="fake.py")
+                script = jedi.Script(combined_history, path="fake.py")
                 completions = script.complete(
-                    len(history.splitlines()), cursor_offset
+                    len(combined_history.splitlines()), cursor_offset
                 )
             except (jedi.NotFoundError, IndexError, KeyError):
                 # IndexError for #483
@@ -679,12 +705,16 @@ else:
 
     class MultilineJediCompletion(JediCompletion):  # type: ignore [no-redef]
         def matches(
-            self, cursor_offset: int, line: str, **kwargs: Any
+            self,
+            cursor_offset: int,
+            line: str,
+            *,
+            current_block: Optional[str] = None,
+            history: Optional[List[str]] = None,
+            **kwargs: Any,
         ) -> Optional[Set]:
-            if "current_block" not in kwargs or "history" not in kwargs:
+            if current_block is None or history is None:
                 return None
-            current_block = kwargs["current_block"]
-            history = kwargs["history"]
 
             if "\n" in current_block:
                 assert cursor_offset <= len(line), "{!r} {!r}".format(
@@ -701,7 +731,12 @@ def get_completer(
     completers: Sequence[BaseCompletionType],
     cursor_offset: int,
     line: str,
-    **kwargs: Any,
+    *,
+    locals_: Optional[Dict[str, Any]] = None,
+    argspec: Optional[inspection.FuncProps] = None,
+    history: Optional[List[str]] = None,
+    current_block: Optional[str] = None,
+    complete_magic_methods: Optional[bool] = None,
 ) -> Tuple[List[str], Optional[BaseCompletionType]]:
     """Returns a list of matches and an applicable completer
 
@@ -711,7 +746,7 @@ def get_completer(
     line is a string of the current line
     kwargs (all optional):
         locals_ is a dictionary of the environment
-        argspec is an inspect.FuncProps instance for the current function where
+        argspec is an inspection.FuncProps instance for the current function where
             the cursor is
         current_block is the possibly multiline not-yet-evaluated block of
             code which the current line is part of
@@ -721,7 +756,15 @@ def get_completer(
 
     for completer in completers:
         try:
-            matches = completer.matches(cursor_offset, line, **kwargs)
+            matches = completer.matches(
+                cursor_offset,
+                line,
+                locals_=locals_,
+                funcprops=argspec,
+                history=history,
+                current_block=current_block,
+                complete_magic_methods=complete_magic_methods,
+            )
         except Exception as e:
             # Instead of crashing the UI, log exceptions from autocompleters.
             logger = logging.getLogger(__name__)

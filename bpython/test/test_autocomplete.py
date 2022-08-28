@@ -324,7 +324,7 @@ class TestMagicMethodCompletion(unittest.TestCase):
         com = autocomplete.MagicMethodCompletion()
         block = "class Something(object)\n    def __"
         self.assertSetEqual(
-            com.matches(10, "    def __", current_block=block),
+            com.matches(10, "    def __", current_block=block, complete_magic_methods=True),
             set(autocomplete.MAGIC_METHODS),
         )
 
@@ -419,10 +419,14 @@ class TestParameterNameCompletion(unittest.TestCase):
             pass
 
         argspec = inspection.ArgSpec(*inspect.getfullargspec(func))
-        argspec = inspection.FuncProps("func", argspec, False)
+        funcspec = inspection.FuncProps("func", argspec, False)
         com = autocomplete.ParameterNameCompletion()
         self.assertSetEqual(
-            com.matches(1, "a", argspec=argspec), {"apple=", "apricot="}
+            com.matches(1, "a", funcprops=funcspec), {"apple=", "apricot="}
         )
-        self.assertSetEqual(com.matches(2, "ba", argspec=argspec), {"banana="})
-        self.assertSetEqual(com.matches(3, "car", argspec=argspec), {"carrot="})
+        self.assertSetEqual(
+            com.matches(2, "ba", funcprops=funcspec), {"banana="}
+        )
+        self.assertSetEqual(
+            com.matches(3, "car", funcprops=funcspec), {"carrot="}
+        )
