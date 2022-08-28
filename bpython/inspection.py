@@ -185,8 +185,7 @@ def fixlongargs(f: Callable, argspec: ArgSpec) -> ArgSpec:
         # IndexError is raised in inspect.findsource(), can happen in
         # some situations. See issue #94.
         return argspec
-    signature = "".join(src[0])
-    kwparsed = parsekeywordpairs(signature)
+    kwparsed = parsekeywordpairs("".join(src[0]))
 
     for i, (key, value) in enumerate(zip(keys, values)):
         if len(repr(value)) != len(kwparsed[key]):
@@ -201,7 +200,7 @@ getpydocspec_re = LazyReCompile(
 )
 
 
-def getpydocspec(f, func):
+def _getpydocspec(f: Callable) -> Optional[ArgSpec]:
     try:
         argspec = pydoc.getdoc(f)
     except NameError:
@@ -218,7 +217,7 @@ def getpydocspec(f, func):
     defaults = []
     varargs = varkwargs = None
     kwonly_args = []
-    kwonly_defaults = dict()
+    kwonly_defaults = {}
     for arg in s.group(2).split(","):
         arg = arg.strip()
         if arg.startswith("**"):
@@ -266,15 +265,14 @@ def getfuncprops(func: str, f: Callable) -> Optional[FuncProps]:
         return None
     try:
         argspec = _get_argspec_from_signature(f)
-        argspec = fixlongargs(f, argspec)
-        fprops = FuncProps(func, argspec, is_bound_method)
+        fprops = FuncProps(func, fixlongargs(f, argspec), is_bound_method)
     except (TypeError, KeyError, ValueError):
-        argspec = getpydocspec(f, func)
-        if argspec is None:
+        argspec_pydoc = _getpydocspec(f)
+        if argspec_pydoc is None:
             return None
         if inspect.ismethoddescriptor(f):
-            argspec.args.insert(0, "obj")
-        fprops = FuncProps(func, argspec, is_bound_method)
+            argspec_pydoc.args.insert(0, "obj")
+        fprops = FuncProps(func, argspec_pydoc, is_bound_method)
     return fprops
 
 
