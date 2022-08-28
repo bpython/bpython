@@ -762,7 +762,9 @@ class URWIDRepl(repl.Repl):
         if self.complete():
             if self.funcprops:
                 # This is mostly just stolen from the cli module.
-                func_name, args, is_bound = self.funcprops
+                func_name = self.funcprops.func
+                args = self.funcprops.argspec
+                is_bound = self.funcprops.is_bound_method
                 in_arg = self.arg_pos
                 args, varargs, varkw, defaults = args[:4]
                 kwonly = self.funcprops.argspec.kwonly

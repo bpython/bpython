@@ -11,7 +11,7 @@ try:
 except ImportError:
     has_jedi = False
 
-from bpython import autocomplete
+from bpython import autocomplete, inspection
 from bpython.line import LinePart
 
 glob_function = "glob.iglob"
@@ -418,8 +418,8 @@ class TestParameterNameCompletion(unittest.TestCase):
         def func(apple, apricot, banana, carrot):
             pass
 
-        argspec = list(inspect.getfullargspec(func))
-        argspec = ["func", argspec, False]
+        argspec = inspection.ArgSpec(*inspect.getfullargspec(func))
+        argspec = inspection.FuncProps("func", argspec, False)
         com = autocomplete.ParameterNameCompletion()
         self.assertSetEqual(
             com.matches(1, "a", argspec=argspec), {"apple=", "apricot="}

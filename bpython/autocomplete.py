@@ -570,11 +570,11 @@ class ParameterNameCompletion(BaseCompletionType):
 
         matches = {
             f"{name}="
-            for name in argspec[1][0]
+            for name in argspec.argspec[0]
             if isinstance(name, str) and name.startswith(r.word)
         }
         matches.update(
-            name + "=" for name in argspec[1][4] if name.startswith(r.word)
+            name + "=" for name in argspec.argspec[4] if name.startswith(r.word)
         )
         return matches if matches else None
 
@@ -711,7 +711,7 @@ def get_completer(
     line is a string of the current line
     kwargs (all optional):
         locals_ is a dictionary of the environment
-        argspec is an inspect.ArgSpec instance for the current function where
+        argspec is an inspect.FuncProps instance for the current function where
             the cursor is
         current_block is the possibly multiline not-yet-evaluated block of
             code which the current line is part of
