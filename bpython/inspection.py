@@ -270,8 +270,6 @@ def getfuncprops(func, f):
     try:
         argspec = get_argspec_from_signature(f)
         fixlongargs(f, argspec)
-        if len(argspec) == 4:
-            argspec = argspec + [list(), dict(), None]
         argspec = ArgSpec(*argspec)
         fprops = FuncProps(func, argspec, is_bound_method)
     except (TypeError, KeyError, ValueError):
