@@ -517,7 +517,11 @@ class MagicMethodCompletion(BaseCompletionType):
         complete_magic_methods: Optional[bool] = None,
         **kwargs: Any,
     ) -> Optional[Set]:
-        if current_block is None or complete_magic_methods is None or not complete_magic_methods:
+        if (
+            current_block is None
+            or complete_magic_methods is None
+            or not complete_magic_methods
+        ):
             return None
 
         r = self.locate(cursor_offset, line)
