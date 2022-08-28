@@ -39,14 +39,13 @@ import builtins
 from enum import Enum
 from typing import (
     Any,
-    cast,
     Dict,
     Iterator,
     List,
     Optional,
+    Sequence,
     Set,
     Tuple,
-    Sequence,
 )
 from . import inspection
 from . import line as lineparts
@@ -391,9 +390,6 @@ class AttrCompletion(BaseCompletionType):
         locals_: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> Optional[Set]:
-        if locals_ is None:
-            return None
-
         r = self.locate(cursor_offset, line)
         if r is None:
             return None

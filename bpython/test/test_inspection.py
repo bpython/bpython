@@ -179,6 +179,7 @@ class TestInspection(unittest.TestCase):
         self.assertEqual(props.argspec.args, ["number", "lst"])
         self.assertEqual(props.argspec.defaults[0], [])
 
+
 class A:
     a = "a"
 
