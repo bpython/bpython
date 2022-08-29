@@ -55,6 +55,8 @@ from .simpleeval import safe_eval, evaluate_current_expression, EvaluationError
 from .importcompletion import ModuleGatherer
 
 
+logger = logging.getLogger(__name__)
+
 # Autocomplete modes
 class AutocompleteModes(Enum):
     NONE = "none"
@@ -767,11 +769,8 @@ def get_completer(
             )
         except Exception as e:
             # Instead of crashing the UI, log exceptions from autocompleters.
-            logger = logging.getLogger(__name__)
             logger.debug(
-                "Completer {} failed with unhandled exception: {}".format(
-                    completer, e
-                )
+                "Completer %r failed with unhandled exception: %s", completer, e
             )
             continue
         if matches is not None:

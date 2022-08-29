@@ -204,24 +204,17 @@ def parse(
         bpython_logger.addHandler(logging.NullHandler())
         curtsies_logger.addHandler(logging.NullHandler())
 
-    logger.info(f"Starting bpython {__version__}")
-    logger.info(f"Python {sys.executable}: {sys.version_info}")
-    logger.info(f"curtsies: {curtsies.__version__}")
-    logger.info(f"cwcwidth: {cwcwidth.__version__}")
-    logger.info(f"greenlet: {greenlet.__version__}")
-    logger.info(f"pygments: {pygments.__version__}")  # type: ignore
-    logger.info(f"requests: {requests.__version__}")
-    logger.info(
-        "environment:\n{}".format(
-            "\n".join(
-                f"{key}: {value}"
-                for key, value in sorted(os.environ.items())
-                if key.startswith("LC")
-                or key.startswith("LANG")
-                or key == "TERM"
-            )
-        )
-    )
+    logger.info("Starting bpython %s", __version__)
+    logger.info("Python %s: %s", sys.executable, sys.version_info)
+    logger.info("curtsies: %s", curtsies.__version__)
+    logger.info("cwcwidth: %s", cwcwidth.__version__)
+    logger.info("greenlet: %s", greenlet.__version__)
+    logger.info("pygments: %s", pygments.__version__)  # type: ignore
+    logger.info("requests: %s", requests.__version__)
+    logger.info("environment:")
+    for key, value in sorted(os.environ.items()):
+        if key.startswith("LC") or key.startswith("LANG") or key == "TERM":
+            logger.info("%s: %s", key, value)
 
     return Config(options.config), options, options.args
 
