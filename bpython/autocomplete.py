@@ -715,16 +715,14 @@ else:
         ) -> Optional[Set]:
             if current_block is None or history is None:
                 return None
-
-            if "\n" in current_block:
-                assert cursor_offset <= len(line), "{!r} {!r}".format(
-                    cursor_offset,
-                    line,
-                )
-                results = super().matches(cursor_offset, line, history=history)
-                return results
-            else:
+            if "\n" not in current_block:
                 return None
+
+            assert cursor_offset <= len(line), "{!r} {!r}".format(
+                cursor_offset,
+                line,
+            )
+            return super().matches(cursor_offset, line, history=history)
 
 
 def get_completer(
