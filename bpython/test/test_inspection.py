@@ -180,7 +180,6 @@ class TestInspection(unittest.TestCase):
         self.assertEqual(props.argspec.args, ["number", "lst"])
         self.assertEqual(props.argspec.defaults[0], [])
 
-    @unittest.expectedFailure
     def test_issue_966_class_method(self):
         class Issue966(Sequence):
             @classmethod

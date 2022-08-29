@@ -358,6 +358,9 @@ def getattr_safe(obj: Any, name: str) -> Any:
     # Slots are a MemberDescriptorType
     if isinstance(result, MemberDescriptorType):
         result = getattr(obj, name)
+    # classmethods are safe to access (see #966)
+    if isinstance(result, classmethod):
+        result = result.__get__(obj, obj)
     return result
 
 
