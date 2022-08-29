@@ -359,7 +359,7 @@ def getattr_safe(obj: Any, name: str) -> Any:
     if isinstance(result, MemberDescriptorType):
         result = getattr(obj, name)
     # classmethods are safe to access (see #966)
-    if isinstance(result, classmethod):
+    if isinstance(result, (classmethod, staticmethod)):
         result = result.__get__(obj, obj)
     return result
 
