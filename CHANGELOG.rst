@@ -6,13 +6,29 @@ Changelog
 
 General information:
 
+* More and more type annotations have been added to the bpython code base.
+* Some work has been performed to stop relying on blessings.
+
 New features:
-* Auto-closing brackets option added. To enable, add `brackets_completion = True` in the bpython config (press F3 to create)
+
+* #905: Auto-closing brackets option added. To enable, add `brackets_completion = True` in the bpython config
   Thanks to samuelgregorovic
 
 Fixes:
 
-* Support for Python 3.6 has been dropped.
+* Improve handling of SyntaxErrors
+* #948: Fix crash on Ctrl-Z
+* #952: Fix tests for Python 3.10.1 and newer
+* #955: Handle optional `readline` parameters in `stdin` emulation
+  Thanks to thevibingcat
+* #959: Fix handling of `__name__`
+* #966: Fix function signature completion for `classmethod`s
+
+Changes to dependencies:
+
+* curtsies 0.4 or newer is now required
+
+Support for Python 3.6 has been dropped.
 
 0.22.1
 ------
