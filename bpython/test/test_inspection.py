@@ -2,6 +2,7 @@ import inspect
 import os
 import sys
 import unittest
+from collections.abc import Sequence
 from typing import List
 
 from bpython import inspection
@@ -176,6 +177,44 @@ class TestInspection(unittest.TestCase):
 
         props = inspection.getfuncprops("fun_annotations", fun_annotations)
         self.assertEqual(props.func, "fun_annotations")
+        self.assertEqual(props.argspec.args, ["number", "lst"])
+        self.assertEqual(props.argspec.defaults[0], [])
+
+    @unittest.expectedFailure
+    def test_issue_966_class_method(self):
+        class Issue966(Sequence):
+            @classmethod
+            def cmethod(cls, number: int, lst: List[int] = []):
+                """
+                Return a list of numbers
+
+                Example:
+                ========
+                C.cmethod(1337, [1, 2]) # => [1, 2, 1337]
+                """
+                return lst + [number]
+
+            @classmethod
+            def bmethod(cls, number, lst):
+                """
+                Return a list of numbers
+
+                Example:
+                ========
+                C.cmethod(1337, [1, 2]) # => [1, 2, 1337]
+                """
+                return lst + [number]
+
+        props = inspection.getfuncprops(
+            "bmethod", inspection.getattr_safe(Issue966, "bmethod")
+        )
+        self.assertEqual(props.func, "bmethod")
+        self.assertEqual(props.argspec.args, ["number", "lst"])
+
+        props = inspection.getfuncprops(
+            "cmethod", inspection.getattr_safe(Issue966, "cmethod")
+        )
+        self.assertEqual(props.func, "cmethod")
         self.assertEqual(props.argspec.args, ["number", "lst"])
         self.assertEqual(props.argspec.defaults[0], [])
 
