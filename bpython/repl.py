@@ -586,12 +586,11 @@ class Repl(metaclass=abc.ABCMeta):
             return ""
         return "".join(string)
 
-    def get_object(self, name):
+    def get_object(self, name: str) -> Any:
         attributes = name.split(".")
         obj = eval(attributes.pop(0), cast(Dict[str, Any], self.interp.locals))
         while attributes:
-            with inspection.AttrCleaner(obj):
-                obj = getattr(obj, attributes.pop(0))
+            obj = inspection.getattr_safe(obj, attributes.pop(0))
         return obj
 
     @classmethod
