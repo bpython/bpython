@@ -418,25 +418,27 @@ class AttrCompletion(BaseCompletionType):
     def format(self, word: str) -> str:
         return _after_last_dot(word)
 
-    def attr_matches(self, text: str, namespace: Dict[str, Any]) -> List:
+    def attr_matches(
+        self, text: str, namespace: Dict[str, Any]
+    ) -> Iterator[str]:
         """Taken from rlcompleter.py and bent to my will."""
 
         m = self.attr_matches_re.match(text)
         if not m:
-            return []
+            return (_ for _ in ())
 
         expr, attr = m.group(1, 3)
         if expr.isdigit():
             # Special case: float literal, using attrs here will result in
             # a SyntaxError
-            return []
+            return (_ for _ in ())
         try:
             obj = safe_eval(expr, namespace)
         except EvaluationError:
-            return []
+            return (_ for _ in ())
         return self.attr_lookup(obj, expr, attr)
 
-    def attr_lookup(self, obj: Any, expr: str, attr: str) -> List:
+    def attr_lookup(self, obj: Any, expr: str, attr: str) -> Iterator[str]:
         """Second half of attr_matches."""
         words = self.list_attributes(obj)
         if inspection.hasattr_safe(obj, "__class__"):
@@ -449,12 +451,12 @@ class AttrCompletion(BaseCompletionType):
                 except ValueError:
                     pass
 
-        matches = []
         n = len(attr)
-        for word in words:
-            if self.method_match(word, n, attr) and word != "__builtins__":
-                matches.append(f"{expr}.{word}")
-        return matches
+        return (
+            f"{expr}.{word}"
+            for word in words
+            if self.method_match(word, n, attr) and word != "__builtins__"
+        )
 
     def list_attributes(self, obj: Any) -> List[str]:
         # TODO: re-implement dir without AttrCleaner here
