@@ -72,10 +72,10 @@ class FullCurtsiesRepl(BaseRepl):
         self._request_refresh_callback: Callable[
             [], None
         ] = self.input_generator.event_trigger(events.RefreshRequestEvent)
-        self._schedule_refresh_callback: Callable[
-            [float], None
-        ] = self.input_generator.scheduled_event_trigger(
-            events.ScheduledRefreshRequestEvent
+        self._schedule_refresh_callback = (
+            self.input_generator.scheduled_event_trigger(
+                events.ScheduledRefreshRequestEvent
+            )
         )
         self._request_reload_callback = (
             self.input_generator.threadsafe_event_trigger(events.ReloadEvent)
@@ -252,7 +252,7 @@ def main(
 
 
 def _combined_events(
-    event_provider: "SupportsEventGeneration", paste_threshold: int
+    event_provider: SupportsEventGeneration, paste_threshold: int
 ) -> Generator[Union[str, curtsies.events.Event, None], Optional[float], None]:
     """Combines consecutive keypress events into paste events."""
     timeout = yield "nonsense_event"  # so send can be used immediately
