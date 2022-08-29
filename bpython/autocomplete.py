@@ -308,7 +308,7 @@ class CumulativeCompleter(BaseCompletionType):
 
     def matches(
         self, cursor_offset: int, line: str, **kwargs: Any
-    ) -> Optional[Set]:
+    ) -> Optional[Set[str]]:
         return_value = None
         all_matches = set()
         for completer in self._completers:
@@ -333,7 +333,7 @@ class ImportCompletion(BaseCompletionType):
 
     def matches(
         self, cursor_offset: int, line: str, **kwargs: Any
-    ) -> Optional[Set]:
+    ) -> Optional[Set[str]]:
         return self.module_gatherer.complete(cursor_offset, line)
 
     def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
@@ -353,7 +353,7 @@ class FilenameCompletion(BaseCompletionType):
 
     def matches(
         self, cursor_offset: int, line: str, **kwargs: Any
-    ) -> Optional[Set]:
+    ) -> Optional[Set[str]]:
         cs = lineparts.current_string(cursor_offset, line)
         if cs is None:
             return None
@@ -389,7 +389,7 @@ class AttrCompletion(BaseCompletionType):
         *,
         locals_: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Optional[Set]:
+    ) -> Optional[Set[str]]:
         r = self.locate(cursor_offset, line)
         if r is None:
             return None
@@ -474,7 +474,7 @@ class DictKeyCompletion(BaseCompletionType):
         *,
         locals_: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Optional[Set]:
+    ) -> Optional[Set[str]]:
         if locals_ is None:
             return None
 
@@ -514,7 +514,7 @@ class MagicMethodCompletion(BaseCompletionType):
         current_block: Optional[str] = None,
         complete_magic_methods: Optional[bool] = None,
         **kwargs: Any,
-    ) -> Optional[Set]:
+    ) -> Optional[Set[str]]:
         if (
             current_block is None
             or complete_magic_methods is None
@@ -541,7 +541,7 @@ class GlobalCompletion(BaseCompletionType):
         *,
         locals_: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Optional[Set]:
+    ) -> Optional[Set[str]]:
         """Compute matches when text is a simple name.
         Return a list of all keywords, built-in functions and names currently
         defined in self.namespace that match.
@@ -582,7 +582,7 @@ class ParameterNameCompletion(BaseCompletionType):
         *,
         funcprops: Optional[inspection.FuncProps] = None,
         **kwargs: Any,
-    ) -> Optional[Set]:
+    ) -> Optional[Set[str]]:
         if funcprops is None:
             return None
 
@@ -618,7 +618,7 @@ class ExpressionAttributeCompletion(AttrCompletion):
         *,
         locals_: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Optional[Set]:
+    ) -> Optional[Set[str]]:
         if locals_ is None:
             locals_ = __main__.__dict__
 
@@ -642,7 +642,7 @@ except ImportError:
     class MultilineJediCompletion(BaseCompletionType):  # type: ignore [no-redef]
         def matches(
             self, cursor_offset: int, line: str, **kwargs: Any
-        ) -> Optional[Set]:
+        ) -> Optional[Set[str]]:
             return None
 
         def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
@@ -660,7 +660,7 @@ else:
             *,
             history: Optional[List[str]] = None,
             **kwargs: Any,
-        ) -> Optional[Set]:
+        ) -> Optional[Set[str]]:
             if history is None:
                 return None
             if not lineparts.current_word(cursor_offset, line):
@@ -714,7 +714,7 @@ else:
             current_block: Optional[str] = None,
             history: Optional[List[str]] = None,
             **kwargs: Any,
-        ) -> Optional[Set]:
+        ) -> Optional[Set[str]]:
             if current_block is None or history is None:
                 return None
             if "\n" not in current_block:
