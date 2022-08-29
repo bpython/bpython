@@ -58,7 +58,7 @@ class AttrCleaner(ContextManager[None]):
     """A context manager that tries to make an object not exhibit side-effects
     on attribute lookup.
 
-    Unless explicitely required, prefer `getattr_safe`."""
+    Unless explicitly required, prefer `getattr_safe`."""
 
     def __init__(self, obj: Any) -> None:
         self._obj = obj
