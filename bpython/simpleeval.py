@@ -227,9 +227,6 @@ def evaluate_current_expression(
     # Find the biggest valid ast.
     # Once our attribute access is found, return its .value subtree
 
-    if namespace is None:
-        namespace = {}
-
     # in case attribute is blank, e.g. foo.| -> foo.xxx|
     temp_line = line[:cursor_offset] + "xxx" + line[cursor_offset:]
     temp_cursor = cursor_offset + 3
