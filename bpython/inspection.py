@@ -167,7 +167,7 @@ def parsekeywordpairs(signature: str) -> Dict[str, str]:
     return {item[0]: "".join(item[2:]) for item in stack if len(item) >= 3}
 
 
-def fixlongargs(f: Callable, argspec: ArgSpec) -> ArgSpec:
+def _fixlongargs(f: Callable, argspec: ArgSpec) -> ArgSpec:
     """Functions taking default arguments that are references to other objects
     whose str() is too big will cause breakage, so we swap out the object
     itself with the name it was referenced with in the source by parsing the
@@ -195,7 +195,7 @@ def fixlongargs(f: Callable, argspec: ArgSpec) -> ArgSpec:
     return argspec
 
 
-getpydocspec_re = LazyReCompile(
+_getpydocspec_re = LazyReCompile(
     r"([a-zA-Z_][a-zA-Z0-9_]*?)\((.*?)\)", re.DOTALL
 )
 
@@ -206,7 +206,7 @@ def _getpydocspec(f: Callable) -> Optional[ArgSpec]:
     except NameError:
         return None
 
-    s = getpydocspec_re.search(argspec)
+    s = _getpydocspec_re.search(argspec)
     if s is None:
         return None
 
@@ -265,7 +265,7 @@ def getfuncprops(func: str, f: Callable) -> Optional[FuncProps]:
         return None
     try:
         argspec = _get_argspec_from_signature(f)
-        fprops = FuncProps(func, fixlongargs(f, argspec), is_bound_method)
+        fprops = FuncProps(func, _fixlongargs(f, argspec), is_bound_method)
     except (TypeError, KeyError, ValueError):
         argspec_pydoc = _getpydocspec(f)
         if argspec_pydoc is None:
