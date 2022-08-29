@@ -35,7 +35,7 @@ class TestFormatters(unittest.TestCase):
         self.assertEqual(last_part_of_filename("ab.c/e.f.g/"), "e.f.g/")
 
     def test_attribute(self):
-        self.assertEqual(autocomplete.after_last_dot("abc.edf"), "edf")
+        self.assertEqual(autocomplete._after_last_dot("abc.edf"), "edf")
 
 
 def completer(matches):

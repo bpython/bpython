@@ -176,11 +176,11 @@ MAGIC_METHODS = tuple(
 KEYWORDS = frozenset(keyword.kwlist)
 
 
-def after_last_dot(name: str) -> str:
+def _after_last_dot(name: str) -> str:
     return name.rstrip(".").rsplit(".")[-1]
 
 
-def few_enough_underscores(current: str, match: str) -> bool:
+def _few_enough_underscores(current: str, match: str) -> bool:
     """Returns whether match should be shown based on current
 
     if current is _, True if match starts with 0 or 1 underscore
@@ -340,7 +340,7 @@ class ImportCompletion(BaseCompletionType):
         return lineparts.current_word(cursor_offset, line)
 
     def format(self, word: str) -> str:
-        return after_last_dot(word)
+        return _after_last_dot(word)
 
 
 def _safe_glob(pathname: str) -> Iterator[str]:
@@ -409,14 +409,14 @@ class AttrCompletion(BaseCompletionType):
         return {
             m
             for m in matches
-            if few_enough_underscores(r.word.split(".")[-1], m.split(".")[-1])
+            if _few_enough_underscores(r.word.split(".")[-1], m.split(".")[-1])
         }
 
     def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
         return lineparts.current_dotted_attribute(cursor_offset, line)
 
     def format(self, word: str) -> str:
-        return after_last_dot(word)
+        return _after_last_dot(word)
 
     def attr_matches(self, text: str, namespace: Dict[str, Any]) -> List:
         """Taken from rlcompleter.py and bent to my will."""
@@ -434,8 +434,7 @@ class AttrCompletion(BaseCompletionType):
             obj = safe_eval(expr, namespace)
         except EvaluationError:
             return []
-        matches = self.attr_lookup(obj, expr, attr)
-        return matches
+        return self.attr_lookup(obj, expr, attr)
 
     def attr_lookup(self, obj: Any, expr: str, attr: str) -> List:
         """Second half of attr_matches."""
@@ -631,7 +630,7 @@ class ExpressionAttributeCompletion(AttrCompletion):
 
         # strips leading dot
         matches = (m[1:] for m in self.attr_lookup(obj, "", attr.word))
-        return {m for m in matches if few_enough_underscores(attr.word, m)}
+        return {m for m in matches if _few_enough_underscores(attr.word, m)}
 
 
 try:
