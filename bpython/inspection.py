@@ -138,9 +138,9 @@ def parsekeywordpairs(signature: str) -> Dict[str, str]:
             continue
 
         if token is Token.Punctuation:
-            if value in ("(", "{", "["):
+            if value in "({[":
                 parendepth += 1
-            elif value in (")", "}", "]"):
+            elif value in ")}]":
                 parendepth -= 1
             elif value == ":" and parendepth == -1:
                 # End of signature reached
