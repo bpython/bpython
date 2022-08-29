@@ -21,6 +21,9 @@
 # THE SOFTWARE.
 
 import os.path
+from rich import pretty
+
+pretty.install()
 
 try:
     from ._version import __version__ as version  # type: ignore
