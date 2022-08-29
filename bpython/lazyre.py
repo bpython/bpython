@@ -21,7 +21,7 @@
 # THE SOFTWARE.
 
 import re
-from typing import Optional, Iterator, Pattern, Match, Optional
+from typing import Optional, Pattern, Match, Optional
 
 try:
     from functools import cached_property
