@@ -26,7 +26,7 @@ import keyword
 import pydoc
 import re
 from dataclasses import dataclass
-from typing import Any, Callable, Optional, Type, Dict, List
+from typing import Any, Callable, Optional, Type, Dict, List, ContextManager
 from types import MemberDescriptorType, TracebackType
 from ._typing_compat import Literal
 
@@ -54,9 +54,11 @@ class FuncProps:
     is_bound_method: bool
 
 
-class AttrCleaner:
+class AttrCleaner(ContextManager[None]):
     """A context manager that tries to make an object not exhibit side-effects
-    on attribute lookup."""
+    on attribute lookup.
+
+    Unless explicitely required, prefer `getattr_safe`."""
 
     def __init__(self, obj: Any) -> None:
         self._obj = obj
@@ -351,7 +353,7 @@ def get_encoding_file(fname: str) -> str:
 
 
 def getattr_safe(obj: Any, name: str) -> Any:
-    """side effect free getattr (calls getattr_static)."""
+    """Side effect free getattr (calls getattr_static)."""
     result = inspect.getattr_static(obj, name)
     # Slots are a MemberDescriptorType
     if isinstance(result, MemberDescriptorType):

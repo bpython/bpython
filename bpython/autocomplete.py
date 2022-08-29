@@ -458,8 +458,9 @@ class AttrCompletion(BaseCompletionType):
         return matches
 
     def list_attributes(self, obj: Any) -> List[str]:
-        # TODO: re-implement dir using getattr_static to avoid using
-        # AttrCleaner here?
+        # TODO: re-implement dir without AttrCleaner here
+        #
+        # Note: accessing `obj.__dir__` via `getattr_static` is not side-effect free.
         with inspection.AttrCleaner(obj):
             return dir(obj)
 
