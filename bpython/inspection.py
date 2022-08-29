@@ -59,14 +59,12 @@ class AttrCleaner:
     on attribute lookup."""
 
     def __init__(self, obj: Any) -> None:
-        self.obj = obj
+        self._obj = obj
 
     def __enter__(self) -> None:
         """Try to make an object not exhibit side-effects on attribute
         lookup."""
-        type_ = type(self.obj)
-        __getattribute__ = None
-        __getattr__ = None
+        type_ = type(self._obj)
         # Dark magic:
         # If __getattribute__ doesn't exist on the class and __getattr__ does
         # then __getattr__ will be called when doing
@@ -89,7 +87,7 @@ class AttrCleaner:
             except TypeError:
                 # XXX: This happens for e.g. built-in types
                 __getattribute__ = None
-        self.attribs = (__getattribute__, __getattr__)
+        self._attribs = (__getattribute__, __getattr__)
         # /Dark magic
 
     def __exit__(
@@ -99,8 +97,8 @@ class AttrCleaner:
         exc_tb: Optional[TracebackType],
     ) -> Literal[False]:
         """Restore an object's magic methods."""
-        type_ = type(self.obj)
-        __getattribute__, __getattr__ = self.attribs
+        type_ = type(self._obj)
+        __getattribute__, __getattr__ = self._attribs
         # Dark magic:
         if __getattribute__ is not None:
             setattr(type_, "__getattribute__", __getattribute__)
@@ -329,13 +327,13 @@ def _get_argspec_from_signature(f: Callable) -> ArgSpec:
     )
 
 
-get_encoding_line_re = LazyReCompile(r"^.*coding[:=]\s*([-\w.]+).*$")
+_get_encoding_line_re = LazyReCompile(r"^.*coding[:=]\s*([-\w.]+).*$")
 
 
 def get_encoding(obj) -> str:
     """Try to obtain encoding information of the source of an object."""
     for line in inspect.findsource(obj)[0][:2]:
-        m = get_encoding_line_re.search(line)
+        m = _get_encoding_line_re.search(line)
         if m:
             return m.group(1)
     return "utf8"
@@ -344,9 +342,9 @@ def get_encoding(obj) -> str:
 def get_encoding_file(fname: str) -> str:
     """Try to obtain encoding information from a Python source file."""
     with open(fname, encoding="ascii", errors="ignore") as f:
-        for unused in range(2):
+        for _ in range(2):
             line = f.readline()
-            match = get_encoding_line_re.search(line)
+            match = _get_encoding_line_re.search(line)
             if match:
                 return match.group(1)
     return "utf8"
