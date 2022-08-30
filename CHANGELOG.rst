@@ -1,6 +1,22 @@
 Changelog
 =========
 
+0.24
+----
+
+General information:
+
+
+New features:
+
+
+Fixes:
+
+
+Changes to dependencies:
+
+
+
 0.23
 ----
 
@@ -22,7 +38,7 @@ Fixes:
 * #955: Handle optional `readline` parameters in `stdin` emulation
   Thanks to thevibingcat
 * #959: Fix handling of `__name__`
-* #966: Fix function signature completion for `classmethod`s
+* #966: Fix function signature completion for `classmethod`
 
 Changes to dependencies:
 
