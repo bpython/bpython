@@ -5,4 +5,5 @@ build:
 
 python:
   install:
-    method: pip
+    - method: pip
+      path: .
