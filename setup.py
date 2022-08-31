@@ -6,7 +6,7 @@ import re
 import subprocess
 
 from setuptools import setup
-from distutils.command.build import build
+from distutils.command.build_py import build_py
 
 try:
     from babel.messages import frontend as babel
@@ -122,7 +122,7 @@ with open(version_file, "w") as vf:
     vf.write(f'__version__ = "{version}"\n')
 
 
-cmdclass = {"build": build}
+cmdclass = {"build_py": build_py}
 
 from bpython import package_dir, __author__
 
@@ -130,7 +130,7 @@ translations_dir = os.path.join(package_dir, "translations")
 
 # localization options
 if using_translations:
-    build.sub_commands.insert(0, ("compile_catalog", None))
+    build_py.sub_commands.insert(0, ("compile_catalog", None))
 
     cmdclass["compile_catalog"] = babel.compile_catalog
     cmdclass["extract_messages"] = babel.extract_messages
@@ -138,7 +138,7 @@ if using_translations:
     cmdclass["init_catalog"] = babel.init_catalog
 
 if using_sphinx:
-    build.sub_commands.insert(0, ("build_sphinx_man", None))
+    build_py.sub_commands.insert(0, ("build_sphinx_man", None))
     cmdclass["build_sphinx_man"] = BuildDoc
 
     if platform.system() in ("FreeBSD", "OpenBSD"):
