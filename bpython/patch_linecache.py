@@ -1,21 +1,24 @@
 import linecache
-from typing import Any, List, Tuple
+from typing import Any, List, Tuple, Optional
 
 
 class BPythonLinecache(dict):
     """Replaces the cache dict in the standard-library linecache module,
     to also remember (in an unerasable way) bpython console input."""
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(
+        self,
+        bpython_history: Optional[
+            List[Tuple[int, None, List[str], str]]
+        ] = None,
+        *args,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, **kwargs)
-        self.bpython_history: List[Tuple[int, None, List[str], str]] = []
+        self.bpython_history = bpython_history or []
 
     def is_bpython_filename(self, fname: Any) -> bool:
-        if isinstance(fname, str):
-            return fname.startswith("<bpython-input-")
-        else:
-            # In case the key isn't a string
-            return False
+        return isinstance(fname, str) and fname.startswith("<bpython-input-")
 
     def get_bpython_history(self, key: str) -> Tuple[int, None, List[str], str]:
         """Given a filename provided by remember_bpython_input,
@@ -58,14 +61,13 @@ def _bpython_clear_linecache() -> None:
     if isinstance(linecache.cache, BPythonLinecache):
         bpython_history = linecache.cache.bpython_history
     else:
-        bpython_history = []
-    linecache.cache = BPythonLinecache()
-    linecache.cache.bpython_history = bpython_history
+        bpython_history = None
+    linecache.cache = BPythonLinecache(bpython_history)
 
 
-# Monkey-patch the linecache module so that we're able
+# Monkey-patch the linecache module so that we are able
 # to hold our command history there and have it persist
-linecache.cache = BPythonLinecache(linecache.cache)  # type: ignore
+linecache.cache = BPythonLinecache(None, linecache.cache)  # type: ignore
 linecache.clearcache = _bpython_clear_linecache
 
 
