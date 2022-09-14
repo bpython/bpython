@@ -154,7 +154,7 @@ def parsekeywordpairs(signature: str) -> Dict[str, str]:
             ):
                 stack.append(substack)
                 substack = []
-                # If type annotation didn't end before, ti does now.
+                # If type annotation didn't end before, it does now.
                 annotation = False
                 continue
         elif token is Token.Operator and value == "=" and parendepth == 0:
