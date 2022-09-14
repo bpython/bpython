@@ -240,9 +240,9 @@ class ModuleGatherer:
                     self.modules.add(module)
                 yield
 
-    def find_coroutine(self) -> Optional[bool]:
+    def find_coroutine(self) -> bool:
         if self.fully_loaded:
-            return None
+            return False
 
         try:
             next(self.find_iterator)
