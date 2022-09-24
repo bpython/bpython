@@ -66,6 +66,7 @@ class ModuleGatherer:
             skiplist if skiplist is not None else tuple()
         )
         self.fully_loaded = False
+        self.print_packages_traversed = False
 
         if paths is None:
             self.modules.update(sys.builtin_module_names)
@@ -220,6 +221,8 @@ class ModuleGatherer:
                         continue
                     if (stat.st_dev, stat.st_ino) not in self.paths:
                         self.paths.add((stat.st_dev, stat.st_ino))
+                        if (self.print_packages_traversed):
+                            print(path_real)
                         for subname in self.find_modules(path_real):
                             if subname is None:
                                 yield None  # take a break to avoid unresponsiveness
@@ -250,3 +253,33 @@ class ModuleGatherer:
             self.fully_loaded = True
 
         return True
+
+
+def discover(
+        skiplist: Optional[Sequence[str]] = None,
+        print_packages_traversed=True
+    ):
+    module_gatherer = ModuleGatherer(skiplist=skiplist)
+    module_gatherer.print_packages_traversed = print_packages_traversed
+    while module_gatherer.find_coroutine():
+        pass
+
+
+if __name__ == "__main__":
+    import argparse
+    from pathlib import Path
+
+    from bpython.config import Config, default_config_path
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--config",
+        default=default_config_path(),
+        type=Path,
+        help="Use CONFIG instead of default config file.",
+    )
+    config = Config(default_config_path())
+    discover(
+        config.import_completion_skiplist,
+        print_packages_traversed=True
+    )
