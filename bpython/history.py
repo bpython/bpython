@@ -25,7 +25,7 @@ import os
 from pathlib import Path
 import stat
 from itertools import islice, chain
-from typing import Iterable, Optional, List, TextIO, Union
+from typing import Iterable, Optional, List, TextIO
 
 from .translations import _
 from .filelock import FileLock
