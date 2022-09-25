@@ -206,23 +206,22 @@ class ModuleGatherer:
                 # Workaround for issue #166
                 continue
             try:
-                is_package = False
+                package_pathname = None
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", ImportWarning)
                     spec = finder.find_spec(name)
                     if spec is None:
                         continue
                     if spec.submodule_search_locations is not None:
-                        pathname = spec.submodule_search_locations[0]
-                        is_package = True
+                        package_pathname = spec.submodule_search_locations[0]
             except (ImportError, OSError, SyntaxError):
                 continue
             except UnicodeEncodeError:
                 # Happens with Python 3 when there is a filename in some invalid encoding
                 continue
             else:
-                if is_package:
-                    path_real = Path(pathname).resolve()
+                if package_pathname is not None:
+                    path_real = Path(package_pathname).resolve()
                     try:
                         stat = path_real.stat()
                     except OSError:
