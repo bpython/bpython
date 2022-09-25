@@ -598,7 +598,7 @@ class ParameterNameCompletion(BaseCompletionType):
             if isinstance(name, str) and name.startswith(r.word)
         }
         matches.update(
-            name + "="
+            f"{name}="
             for name in funcprops.argspec.kwonly
             if name.startswith(r.word)
         )

@@ -142,16 +142,16 @@ def parsekeywordpairs(signature: str) -> Dict[str, str]:
                 parendepth += 1
             elif value in ")}]":
                 parendepth -= 1
-            elif value == ":" and parendepth == -1:
-                # End of signature reached
-                break
-            elif value == ":" and parendepth == 0:
-                # Start of type annotation
-                annotation = True
+            elif value == ":":
+                if parendepth == -1:
+                    # End of signature reached
+                    break
+                elif parendepth == 0:
+                    # Start of type annotation
+                    annotation = True
 
-            if (value == "," and parendepth == 0) or (
-                value == ")" and parendepth == -1
-            ):
+            if (value, parendepth) in ((",", 0), (")", -1)):
+                # End of current argument
                 stack.append(substack)
                 substack = []
                 # If type annotation didn't end before, it does now.
