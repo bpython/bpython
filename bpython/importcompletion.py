@@ -49,7 +49,7 @@ LOADERS = (
 )
 
 _LOADED_INODE_DATACLASS_ARGS = {"frozen": True}
-if sys.version_info[2:] >= (3, 10):
+if sys.version_info[:2] >= (3, 10):
     _LOADED_INODE_DATACLASS_ARGS["slots"] = True
 
 
