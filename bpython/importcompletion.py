@@ -186,7 +186,10 @@ class ModuleGatherer:
 
         finder = importlib.machinery.FileFinder(str(path), *LOADERS)  # type: ignore
         for p in children:
-            if any(fnmatch.fnmatch(p.name, entry) for entry in self.skiplist):
+            if p.name.startswith(".") or p.name == "__pycache__":
+                # Impossible to import from names starting with . and we can skip __pycache__
+                continue
+            elif any(fnmatch.fnmatch(p.name, entry) for entry in self.skiplist):
                 # Path is on skiplist
                 continue
             elif not any(p.name.endswith(suffix) for suffix in SUFFIXES):
