@@ -155,9 +155,7 @@ class ModuleGatherer:
         else:
             return None
 
-    def find_modules(
-        self, path: Path
-    ) -> Generator[Union[str, None], None, None]:
+    def find_modules(self, path: Path) -> Generator[Optional[str], None, None]:
         """Find all modules (and packages) for a given directory."""
         if not path.is_dir():
             # Perhaps a zip file
