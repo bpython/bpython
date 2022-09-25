@@ -25,8 +25,9 @@ import fnmatch
 import importlib.machinery
 import sys
 import warnings
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Set, Generator, Tuple, Sequence, Iterable, Union
+from typing import Optional, Set, Generator, Sequence, Iterable, Union
 
 from .line import (
     current_word,
@@ -47,6 +48,16 @@ LOADERS = (
     ),
 )
 
+_LOADED_INODE_DATACLASS_ARGS = {"frozen": True}
+if sys.version_info[2:] >= (3, 10):
+    _LOADED_INODE_DATACLASS_ARGS["slots"] = True
+
+
+@dataclass(**_LOADED_INODE_DATACLASS_ARGS)
+class _LoadedInode:
+    dev: int
+    inode: int
+
 
 class ModuleGatherer:
     def __init__(
@@ -60,7 +71,7 @@ class ModuleGatherer:
         # Cached list of all known modules
         self.modules: Set[str] = set()
         # Set of (st_dev, st_ino) to compare against so that paths are not repeated
-        self.paths: Set[Tuple[int, int]] = set()
+        self.paths: Set[_LoadedInode] = set()
         # Patterns to skip
         self.skiplist: Sequence[str] = (
             skiplist if skiplist is not None else tuple()
@@ -216,8 +227,9 @@ class ModuleGatherer:
                         stat = path_real.stat()
                     except OSError:
                         continue
-                    if (stat.st_dev, stat.st_ino) not in self.paths:
-                        self.paths.add((stat.st_dev, stat.st_ino))
+                    loaded_inode = _LoadedInode(stat.st_dev, stat.st_ino)
+                    if loaded_inode not in self.paths:
+                        self.paths.add(loaded_inode)
                         for subname in self.find_modules(path_real):
                             if subname is None:
                                 yield None  # take a break to avoid unresponsiveness
