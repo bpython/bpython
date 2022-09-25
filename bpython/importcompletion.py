@@ -83,7 +83,7 @@ class ModuleGatherer:
             paths = sys.path
 
         self.find_iterator = self.find_all_modules(
-            (Path(p).resolve() if p else Path.cwd() for p in paths)
+            Path(p).resolve() if p else Path.cwd() for p in paths
         )
 
     def module_matches(self, cw: str, prefix: str = "") -> Set[str]:
@@ -120,7 +120,7 @@ class ModuleGatherer:
             matches = {
                 name for name in dir(module) if name.startswith(name_after_dot)
             }
-        module_part, _, _ = cw.rpartition(".")
+        module_part = cw.rpartition(".")[0]
         if module_part:
             matches = {f"{module_part}.{m}" for m in matches}
 
@@ -208,8 +208,9 @@ class ModuleGatherer:
             if name == "badsyntax_pep3120":
                 # Workaround for issue #166
                 continue
+
+            package_pathname = None
             try:
-                package_pathname = None
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", ImportWarning)
                     spec = finder.find_spec(name)
@@ -217,27 +218,25 @@ class ModuleGatherer:
                         continue
                     if spec.submodule_search_locations is not None:
                         package_pathname = spec.submodule_search_locations[0]
-            except (ImportError, OSError, SyntaxError):
+            except (ImportError, OSError, SyntaxError, UnicodeEncodeError):
+                # UnicodeEncodeError happens with Python 3 when there is a filename in some invalid encoding
                 continue
-            except UnicodeEncodeError:
-                # Happens with Python 3 when there is a filename in some invalid encoding
-                continue
-            else:
-                if package_pathname is not None:
-                    path_real = Path(package_pathname).resolve()
-                    try:
-                        stat = path_real.stat()
-                    except OSError:
-                        continue
-                    loaded_inode = _LoadedInode(stat.st_dev, stat.st_ino)
-                    if loaded_inode not in self.paths:
-                        self.paths.add(loaded_inode)
-                        for subname in self.find_modules(path_real):
-                            if subname is None:
-                                yield None  # take a break to avoid unresponsiveness
-                            elif subname != "__init__":
-                                yield f"{name}.{subname}"
-                yield name
+
+            if package_pathname is not None:
+                path_real = Path(package_pathname).resolve()
+                try:
+                    stat = path_real.stat()
+                except OSError:
+                    continue
+                loaded_inode = _LoadedInode(stat.st_dev, stat.st_ino)
+                if loaded_inode not in self.paths:
+                    self.paths.add(loaded_inode)
+                    for subname in self.find_modules(path_real):
+                        if subname is None:
+                            yield None  # take a break to avoid unresponsiveness
+                        elif subname != "__init__":
+                            yield f"{name}.{subname}"
+            yield name
         yield None  # take a break to avoid unresponsiveness
 
     def find_all_modules(
