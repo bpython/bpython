@@ -555,11 +555,10 @@ class GlobalCompletion(BaseCompletionType):
         if r is None:
             return None
 
-        matches = set()
         n = len(r.word)
-        for word in KEYWORDS:
-            if self.method_match(word, n, r.word):
-                matches.add(word)
+        matches = {
+            word for word in KEYWORDS if self.method_match(word, n, r.word)
+        }
         for nspace in (builtins.__dict__, locals_):
             for word, val in nspace.items():
                 # if identifier isn't ascii, don't complete (syntax error)
@@ -652,7 +651,7 @@ except ImportError:
 
 else:
 
-    class JediCompletion(BaseCompletionType):
+    class MultilineJediCompletion(BaseCompletionType):  # type: ignore [no-redef]
         _orig_start: Optional[int]
 
         def matches(
@@ -660,19 +659,28 @@ else:
             cursor_offset: int,
             line: str,
             *,
+            current_block: Optional[str] = None,
             history: Optional[List[str]] = None,
             **kwargs: Any,
         ) -> Optional[Set[str]]:
-            if history is None:
+            if (
+                current_block is None
+                or history is None
+                or "\n" not in current_block
+                or not lineparts.current_word(cursor_offset, line)
+            ):
                 return None
-            if not lineparts.current_word(cursor_offset, line):
-                return None
+
+            assert cursor_offset <= len(line), "{!r} {!r}".format(
+                cursor_offset,
+                line,
+            )
 
             combined_history = "\n".join(itertools.chain(history, (line,)))
             try:
                 script = jedi.Script(combined_history, path="fake.py")
                 completions = script.complete(
-                    len(combined_history.splitlines()), cursor_offset
+                    combined_history.count("\n") + 1, cursor_offset
                 )
             except (jedi.NotFoundError, IndexError, KeyError):
                 # IndexError for #483
@@ -688,8 +696,6 @@ else:
                 return None
             assert isinstance(self._orig_start, int)
 
-            first_letter = line[self._orig_start : self._orig_start + 1]
-
             matches = [c.name for c in completions]
             if any(
                 not m.lower().startswith(matches[0][0].lower()) for m in matches
@@ -699,34 +705,14 @@ else:
                 return None
             else:
                 # case-sensitive matches only
+                first_letter = line[self._orig_start]
                 return {m for m in matches if m.startswith(first_letter)}
 
         def locate(self, cursor_offset: int, line: str) -> LinePart:
-            assert isinstance(self._orig_start, int)
+            assert self._orig_start is not None
             start = self._orig_start
             end = cursor_offset
             return LinePart(start, end, line[start:end])
-
-    class MultilineJediCompletion(JediCompletion):  # type: ignore [no-redef]
-        def matches(
-            self,
-            cursor_offset: int,
-            line: str,
-            *,
-            current_block: Optional[str] = None,
-            history: Optional[List[str]] = None,
-            **kwargs: Any,
-        ) -> Optional[Set[str]]:
-            if current_block is None or history is None:
-                return None
-            if "\n" not in current_block:
-                return None
-
-            assert cursor_offset <= len(line), "{!r} {!r}".format(
-                cursor_offset,
-                line,
-            )
-            return super().matches(cursor_offset, line, history=history)
 
 
 def get_completer(
