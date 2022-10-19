@@ -25,7 +25,7 @@ jobs:
     - uses: codespell-project/actions-codespell@master
       with:
         skip: '*.po'
-        ignore_words_list: ba,te,deltion
+        ignore_words_list: ba,te,deltion,dedent,dedented
 
   mypy:
     runs-on: ubuntu-latest
