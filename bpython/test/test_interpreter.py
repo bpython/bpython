@@ -112,19 +112,35 @@ class TestInterpreter(unittest.TestCase):
 
         global_not_found = "name 'gfunc' is not defined"
 
-        expected = (
-            "Traceback (most recent call last):\n  File "
-            + green('"<input>"')
-            + ", line "
-            + bold(magenta("1"))
-            + ", in "
-            + cyan("<module>")
-            + "\n    gfunc()\n"
-            + bold(red("NameError"))
-            + ": "
-            + cyan(global_not_found)
-            + "\n"
-        )
+        if (3, 11) <= sys.version_info[:2]:
+            expected = (
+                "Traceback (most recent call last):\n  File "
+                + green('"<input>"')
+                + ", line "
+                + bold(magenta("1"))
+                + ", in "
+                + cyan("<module>")
+                + "\n    gfunc()"
+                + "\n     ^^^^^\n"
+                + bold(red("NameError"))
+                + ": "
+                + cyan(global_not_found)
+                + "\n"
+            )
+        else:
+            expected = (
+                "Traceback (most recent call last):\n  File "
+                + green('"<input>"')
+                + ", line "
+                + bold(magenta("1"))
+                + ", in "
+                + cyan("<module>")
+                + "\n    gfunc()\n"
+                + bold(red("NameError"))
+                + ": "
+                + cyan(global_not_found)
+                + "\n"
+            )
 
         self.assertMultiLineEqual(str(plain("").join(a)), str(expected))
         self.assertEqual(plain("").join(a), expected)
