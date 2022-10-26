@@ -11,6 +11,7 @@ from bpython.test.fodder import encoding_latin1
 from bpython.test.fodder import encoding_utf8
 
 pypy = "PyPy" in sys.version
+_is_py311 = sys.version_info[:2] >= (3, 11)
 
 try:
     import numpy
@@ -53,23 +54,17 @@ class TestInspection(unittest.TestCase):
         def fails(spam=["-a", "-b"]):
             pass
 
-        default_arg_repr = "['-a', '-b']"
-        self.assertEqual(
-            str(["-a", "-b"]),
-            default_arg_repr,
-            "This test is broken (repr does not match), fix me.",
-        )
-
         argspec = inspection.getfuncprops("fails", fails)
+        self.assertIsNotNone(argspec)
         defaults = argspec.argspec.defaults
-        self.assertEqual(str(defaults[0]), default_arg_repr)
+        self.assertEqual(str(defaults[0]), '["-a", "-b"]')
 
     def test_pasekeywordpairs_string(self):
         def spam(eggs="foo, bar"):
             pass
 
         defaults = inspection.getfuncprops("spam", spam).argspec.defaults
-        self.assertEqual(repr(defaults[0]), "'foo, bar'")
+        self.assertEqual(repr(defaults[0]), '"foo, bar"')
 
     def test_parsekeywordpairs_multiple_keywords(self):
         def spam(eggs=23, foobar="yay"):
@@ -77,14 +72,14 @@ class TestInspection(unittest.TestCase):
 
         defaults = inspection.getfuncprops("spam", spam).argspec.defaults
         self.assertEqual(repr(defaults[0]), "23")
-        self.assertEqual(repr(defaults[1]), "'yay'")
+        self.assertEqual(repr(defaults[1]), '"yay"')
 
     def test_pasekeywordpairs_annotation(self):
         def spam(eggs: str = "foo, bar"):
             pass
 
         defaults = inspection.getfuncprops("spam", spam).argspec.defaults
-        self.assertEqual(repr(defaults[0]), "'foo, bar'")
+        self.assertEqual(repr(defaults[0]), '"foo, bar"')
 
     def test_get_encoding_ascii(self):
         self.assertEqual(inspection.get_encoding(encoding_ascii), "ascii")
@@ -134,8 +129,15 @@ class TestInspection(unittest.TestCase):
         self.assertIn("file", props.argspec.kwonly)
         self.assertIn("flush", props.argspec.kwonly)
         self.assertIn("sep", props.argspec.kwonly)
-        self.assertEqual(props.argspec.kwonly_defaults["file"], "sys.stdout")
-        self.assertEqual(props.argspec.kwonly_defaults["flush"], "False")
+        if _is_py311:
+            self.assertEqual(
+                repr(props.argspec.kwonly_defaults["file"]), "None"
+            )
+        else:
+            self.assertEqual(
+                repr(props.argspec.kwonly_defaults["file"]), "sys.stdout"
+            )
+        self.assertEqual(repr(props.argspec.kwonly_defaults["flush"]), "False")
 
     @unittest.skipUnless(
         numpy is not None and numpy.__version__ >= "1.18",
@@ -173,12 +175,12 @@ class TestInspection(unittest.TestCase):
         props = inspection.getfuncprops("fun", fun)
         self.assertEqual(props.func, "fun")
         self.assertEqual(props.argspec.args, ["number", "lst"])
-        self.assertEqual(props.argspec.defaults[0], [])
+        self.assertEqual(repr(props.argspec.defaults[0]), "[]")
 
         props = inspection.getfuncprops("fun_annotations", fun_annotations)
         self.assertEqual(props.func, "fun_annotations")
         self.assertEqual(props.argspec.args, ["number", "lst"])
-        self.assertEqual(props.argspec.defaults[0], [])
+        self.assertEqual(repr(props.argspec.defaults[0]), "[]")
 
     def test_issue_966_class_method(self):
         class Issue966(Sequence):
@@ -215,7 +217,7 @@ class TestInspection(unittest.TestCase):
         )
         self.assertEqual(props.func, "cmethod")
         self.assertEqual(props.argspec.args, ["number", "lst"])
-        self.assertEqual(props.argspec.defaults[0], [])
+        self.assertEqual(repr(props.argspec.defaults[0]), "[]")
 
     def test_issue_966_static_method(self):
         class Issue966(Sequence):
@@ -252,7 +254,7 @@ class TestInspection(unittest.TestCase):
         )
         self.assertEqual(props.func, "cmethod")
         self.assertEqual(props.argspec.args, ["number", "lst"])
-        self.assertEqual(props.argspec.defaults[0], [])
+        self.assertEqual(repr(props.argspec.defaults[0]), "[]")
 
 
 class A:

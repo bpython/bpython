@@ -57,9 +57,9 @@ class ArgSpec:
     args: List[str]
     varargs: Optional[str]
     varkwargs: Optional[str]
-    defaults: Optional[List[Any]]
+    defaults: Optional[List[_Repr]]
     kwonly: List[str]
-    kwonly_defaults: Optional[Dict[str, Any]]
+    kwonly_defaults: Optional[Dict[str, _Repr]]
     annotations: Optional[Dict[str, Any]]
 
 
@@ -169,31 +169,51 @@ def parsekeywordpairs(signature: str) -> Dict[str, str]:
     return {item[0]: "".join(item[2:]) for item in stack if len(item) >= 3}
 
 
-def _fixlongargs(f: Callable, argspec: ArgSpec) -> ArgSpec:
+def _fix_default_values(f: Callable, argspec: ArgSpec) -> ArgSpec:
     """Functions taking default arguments that are references to other objects
-    whose str() is too big will cause breakage, so we swap out the object
-    itself with the name it was referenced with in the source by parsing the
-    source itself !"""
-    if argspec.defaults is None:
+    will cause breakage, so we swap out the object itself with the name it was
+    referenced with in the source by parsing the source itself!"""
+
+    if argspec.defaults is None and argspec.kwonly_defaults is None:
         # No keyword args, no need to do anything
         return argspec
-    values = list(argspec.defaults)
-    if not values:
-        return argspec
-    keys = argspec.args[-len(values) :]
+
     try:
-        src = inspect.getsourcelines(f)
+        src, _ = inspect.getsourcelines(f)
     except (OSError, IndexError):
         # IndexError is raised in inspect.findsource(), can happen in
         # some situations. See issue #94.
         return argspec
-    kwparsed = parsekeywordpairs("".join(src[0]))
+    except TypeError:
+        # No source code is available (for Python >= 3.11)
+        #
+        # If the function is a builtin, we replace the default values.
+        # Otherwise, let's bail out.
+        if not inspect.isbuiltin(f):
+            raise
 
-    for i, (key, value) in enumerate(zip(keys, values)):
-        if len(repr(value)) != len(kwparsed[key]):
+        if argspec.defaults is not None:
+            argspec.defaults = [_Repr(str(value)) for value in argspec.defaults]
+        if argspec.kwonly_defaults is not None:
+            argspec.kwonly_defaults = {
+                key: _Repr(str(value))
+                for key, value in argspec.kwonly_defaults.items()
+            }
+        return argspec
+
+    kwparsed = parsekeywordpairs("".join(src))
+
+    if argspec.defaults is not None:
+        values = list(argspec.defaults)
+        keys = argspec.args[-len(values) :]
+        for i, key in enumerate(keys):
             values[i] = _Repr(kwparsed[key])
 
-    argspec.defaults = values
+        argspec.defaults = values
+    if argspec.kwonly_defaults is not None:
+        for key in argspec.kwonly_defaults.keys():
+            argspec.kwonly_defaults[key] = _Repr(kwparsed[key])
+
     return argspec
 
 
@@ -234,11 +254,11 @@ def _getpydocspec(f: Callable) -> Optional[ArgSpec]:
             if varargs is not None:
                 kwonly_args.append(arg)
                 if default:
-                    kwonly_defaults[arg] = default
+                    kwonly_defaults[arg] = _Repr(default)
             else:
                 args.append(arg)
                 if default:
-                    defaults.append(default)
+                    defaults.append(_Repr(default))
 
     return ArgSpec(
         args, varargs, varkwargs, defaults, kwonly_args, kwonly_defaults, None
@@ -267,7 +287,9 @@ def getfuncprops(func: str, f: Callable) -> Optional[FuncProps]:
         return None
     try:
         argspec = _get_argspec_from_signature(f)
-        fprops = FuncProps(func, _fixlongargs(f, argspec), is_bound_method)
+        fprops = FuncProps(
+            func, _fix_default_values(f, argspec), is_bound_method
+        )
     except (TypeError, KeyError, ValueError):
         argspec_pydoc = _getpydocspec(f)
         if argspec_pydoc is None:
