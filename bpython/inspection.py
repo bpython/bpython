@@ -185,13 +185,7 @@ def _fix_default_values(f: Callable, argspec: ArgSpec) -> ArgSpec:
         # some situations. See issue #94.
         return argspec
     except TypeError:
-        # No source code is available (for Python >= 3.11)
-        #
-        # If the function is a builtin, we replace the default values.
-        # Otherwise, let's bail out.
-        if not inspect.isbuiltin(f):
-            raise
-
+        # No source code is available, so replace the default values with what we have.
         if argspec.defaults is not None:
             argspec.defaults = [_Repr(str(value)) for value in argspec.defaults]
         if argspec.kwonly_defaults is not None:
