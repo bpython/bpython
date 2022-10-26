@@ -36,6 +36,22 @@ from pygments.lexers import Python3Lexer
 from .lazyre import LazyReCompile
 
 
+class _Repr:
+    """
+    Helper for `ArgSpec`: Returns the given value in `__repr__()`.
+    """
+
+    __slots__ = ("value",)
+
+    def __init__(self, value: str) -> None:
+        self.value = value
+
+    def __repr__(self) -> str:
+        return self.value
+
+    __str__ = __repr__
+
+
 @dataclass
 class ArgSpec:
     args: List[str]
@@ -108,20 +124,6 @@ class AttrCleaner(ContextManager[None]):
             setattr(type_, "__getattr__", __getattr__)
         # /Dark magic
         return False
-
-
-class _Repr:
-    """
-    Helper for `fixlongargs()`: Returns the given value in `__repr__()`.
-    """
-
-    def __init__(self, value: str) -> None:
-        self.value = value
-
-    def __repr__(self) -> str:
-        return self.value
-
-    __str__ = __repr__
 
 
 def parsekeywordpairs(signature: str) -> Dict[str, str]:
@@ -293,12 +295,15 @@ def _get_argspec_from_signature(f: Callable) -> ArgSpec:
 
     """
     args = []
-    varargs = varkwargs = None
+    varargs = None
+    varkwargs = None
     defaults = []
     kwonly = []
     kwonly_defaults = {}
     annotations = {}
 
+    # We use signature here instead of getfullargspec as the latter also returns
+    # self and cls (for class methods).
     signature = inspect.signature(f)
     for parameter in signature.parameters.values():
         if parameter.annotation is not parameter.empty:
