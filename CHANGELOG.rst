@@ -12,9 +12,12 @@ New features:
 
 Fixes:
 
+* Improve inspection of builtin functions.
 
 Changes to dependencies:
 
+
+Support for Python 3.11 has been added.
 
 
 0.23
