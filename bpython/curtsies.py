@@ -106,7 +106,7 @@ class FullCurtsiesRepl(BaseRepl):
         return self._schedule_refresh_callback(when)
 
     def _request_reload(self, files_modified: Sequence[str]) -> None:
-        return self._request_reload_callback(files_modified)
+        return self._request_reload_callback(files_modified=files_modified)
 
     def interrupting_refresh(self) -> None:
         return self._interrupting_refresh_callback()
