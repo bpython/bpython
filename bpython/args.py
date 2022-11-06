@@ -214,6 +214,27 @@ def parse(
     logger.info("pygments: %s", pygments.__version__)  # type: ignore
     logger.info("pyxdg: %s", xdg.__version__)  # type: ignore
     logger.info("requests: %s", requests.__version__)
+
+    # versions of optional dependencies
+    try:
+        import pyperclip
+
+        logger.info("pyperclip: %s", pyperclip.__version__)  # type: ignore
+    except ImportError:
+        logger.info("pyperclip: not available")
+    try:
+        import jedi
+
+        logger.info("jedi: %s", jedi.__version__)
+    except ImportError:
+        logger.info("jedi: not available")
+    try:
+        import watchdog
+
+        logger.info("watchdog: available")
+    except ImportError:
+        logger.info("watchdog: not available")
+
     logger.info("environment:")
     for key, value in sorted(os.environ.items()):
         if key.startswith("LC") or key.startswith("LANG") or key == "TERM":
