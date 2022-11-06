@@ -41,6 +41,7 @@ import os
 import pygments
 import requests
 import sys
+import xdg
 from pathlib import Path
 
 from . import __version__, __copyright__
@@ -206,10 +207,12 @@ def parse(
 
     logger.info("Starting bpython %s", __version__)
     logger.info("Python %s: %s", sys.executable, sys.version_info)
+    # versions of required dependencies
     logger.info("curtsies: %s", curtsies.__version__)
     logger.info("cwcwidth: %s", cwcwidth.__version__)
     logger.info("greenlet: %s", greenlet.__version__)
     logger.info("pygments: %s", pygments.__version__)  # type: ignore
+    logger.info("pyxdg: %s", xdg.__version__)  # type: ignore
     logger.info("requests: %s", requests.__version__)
     logger.info("environment:")
     for key, value in sorted(os.environ.items()):
