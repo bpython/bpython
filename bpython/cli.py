@@ -1299,7 +1299,7 @@ class CLIRepl(repl.Repl):
         arg_pos: Union[str, int, None],
         topline: Optional[inspection.FuncProps] = None,
         formatter: Optional[Callable] = None,
-        current_item: Union[str, Literal[False]] = None,
+        current_item: Optional[str] = None,
     ) -> None:
         v_items: Collection
         shared = ShowListState()
@@ -1315,7 +1315,7 @@ class CLIRepl(repl.Repl):
 
         if items and formatter:
             items = [formatter(x) for x in items]
-            if current_item:
+            if current_item is not None:
                 current_item = formatter(current_item)
 
         if topline:
@@ -1492,8 +1492,10 @@ class CLIRepl(repl.Repl):
 
         # 4. swap current word for a match list item
         elif self.matches_iter.matches:
-            current_match: Union[str, Literal[False]] = (
-                back and self.matches_iter.previous() or next(self.matches_iter)
+            current_match = (
+                self.matches_iter.previous()
+                if back
+                else next(self.matches_iter)
             )
             try:
                 f = None

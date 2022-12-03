@@ -2,7 +2,7 @@ import gettext
 import locale
 import os.path
 import sys
-from typing import cast, List
+from typing import Optional, cast, List
 
 from .. import package_dir
 
@@ -17,7 +17,9 @@ def ngettext(singular, plural, n):
     return translator.ngettext(singular, plural, n)
 
 
-def init(locale_dir: str = None, languages: List[str] = None) -> None:
+def init(
+    locale_dir: Optional[str] = None, languages: Optional[List[str]] = None
+) -> None:
     try:
         locale.setlocale(locale.LC_ALL, "")
     except locale.Error:
