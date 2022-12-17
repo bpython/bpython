@@ -1,37 +1,25 @@
 import sys
-import re
 import unittest
 
 from curtsies.fmtfuncs import bold, green, magenta, cyan, red, plain
-from unittest import mock
 
 from bpython.curtsiesfrontend import interpreter
 
 pypy = "PyPy" in sys.version
 
 
-def remove_ansi(s):
-    return re.sub(r"(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]".encode("ascii"), b"", s)
+class Interpreter(interpreter.Interp):
+    def __init__(self):
+        super().__init__()
+        self.a = []
+
+    def write(self, data):
+        self.a.append(data)
 
 
 class TestInterpreter(unittest.TestCase):
-    def interp_errlog(self):
-        i = interpreter.Interp()
-        a = []
-        i.write = a.append
-        return i, a
-
-    def err_lineno(self, a):
-        strings = [x.__unicode__() for x in a]
-        for line in reversed(strings):
-            clean_line = remove_ansi(line)
-            m = re.search(r"line (\d+)[,]", clean_line)
-            if m:
-                return int(m.group(1))
-        return None
-
     def test_syntaxerror(self):
-        i, a = self.interp_errlog()
+        i = Interpreter()
 
         i.runsource("1.1.1.1")
 
@@ -96,11 +84,12 @@ class TestInterpreter(unittest.TestCase):
                 + "\n"
             )
 
+        a = i.a
         self.assertMultiLineEqual(str(plain("").join(a)), str(expected))
         self.assertEqual(plain("").join(a), expected)
 
     def test_traceback(self):
-        i, a = self.interp_errlog()
+        i = Interpreter()
 
         def f():
             return 1 / 0
@@ -142,6 +131,7 @@ class TestInterpreter(unittest.TestCase):
                 + "\n"
             )
 
+        a = i.a
         self.assertMultiLineEqual(str(plain("").join(a)), str(expected))
         self.assertEqual(plain("").join(a), expected)
 
