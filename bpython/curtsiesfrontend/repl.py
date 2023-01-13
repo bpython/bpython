@@ -1252,7 +1252,9 @@ class BaseRepl(Repl):
         elif (
             line
             and ":" not in line
-            and line.strip().startswith(("return", "pass", "raise", "yield"))
+            and line.strip().startswith(
+                ("return", "pass", "...", "raise", "yield", "break", "continue")
+            )
         ):
             indent = max(0, indent - self.config.tab_length)
         logger.debug("indent we found was %s", indent)
