@@ -124,9 +124,7 @@ with open(version_file, "w") as vf:
 
 cmdclass = {"build": build}
 
-from bpython import package_dir, __author__
-
-translations_dir = os.path.join(package_dir, "translations")
+translations_dir = os.path.join("bpython", "translations")
 
 # localization options
 if using_translations:
@@ -179,8 +177,6 @@ for language in os.listdir(translations_dir):
 
 setup(
     version=version,
-    author=__author__,
-    author_email="robertanthonyfarrell@gmail.com",
     data_files=data_files,
     package_data={
         "bpython": ["sample-config"],
