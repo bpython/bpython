@@ -6,9 +6,12 @@ Changelog
 
 General information:
 
+* This release is focused on Python 3.11 support.
 
 New features:
 
+* #980: Add more keywords to trigger auto-deindent.
+  Thanks to Eric Burgess
 
 Fixes:
 
@@ -16,6 +19,7 @@ Fixes:
 
 Changes to dependencies:
 
+* wheel is no required as part of pyproject.toml's build dependencies
 
 Support for Python 3.11 has been added.
 
