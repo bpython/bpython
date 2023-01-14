@@ -30,7 +30,7 @@ except ImportError:
 __author__ = (
     "Bob Farrell, Andreas Stuehrk, Sebastian Ramacher, Thomas Ballinger, et al."
 )
-__copyright__ = f"(C) 2008-2020 {__author__}"
+__copyright__ = f"(C) 2008-2023 {__author__}"
 __license__ = "MIT"
 __version__ = version
 package_dir = os.path.abspath(os.path.dirname(__file__))
