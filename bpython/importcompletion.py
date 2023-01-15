@@ -175,8 +175,14 @@ class ModuleGatherer:
             # Path is on skiplist
             return
 
+        try:
+            children = path.iterdir()
+        except OSError:
+            # Path is not readable
+            return
+
         finder = importlib.machinery.FileFinder(str(path), *LOADERS)  # type: ignore
-        for p in path.iterdir():
+        for p in children:
             if p.name.startswith(".") or p.name == "__pycache__":
                 # Impossible to import from names starting with . and we can skip __pycache__
                 continue
