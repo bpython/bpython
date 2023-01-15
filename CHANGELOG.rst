@@ -1,6 +1,21 @@
 Changelog
 =========
 
+0.25
+----
+
+General information:
+
+
+New features:
+
+
+Fixes:
+
+
+Changes to dependencies:
+
+
 0.24
 ----
 
@@ -22,7 +37,6 @@ Changes to dependencies:
 * wheel is no required as part of pyproject.toml's build dependencies
 
 Support for Python 3.11 has been added.
-
 
 0.23
 ----
