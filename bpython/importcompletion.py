@@ -175,65 +175,67 @@ class ModuleGatherer:
             # Path is on skiplist
             return
 
+        finder = importlib.machinery.FileFinder(str(path), *LOADERS)  # type: ignore
         try:
-            children = path.iterdir()
+            for p in path.iterdir():
+                if p.name.startswith(".") or p.name == "__pycache__":
+                    # Impossible to import from names starting with . and we can skip __pycache__
+                    continue
+                elif any(
+                    fnmatch.fnmatch(p.name, entry) for entry in self.skiplist
+                ):
+                    # Path is on skiplist
+                    continue
+                elif not any(p.name.endswith(suffix) for suffix in SUFFIXES):
+                    # Possibly a package
+                    if "." in p.name:
+                        continue
+                elif p.is_dir():
+                    # Unfortunately, CPython just crashes if there is a directory
+                    # which ends with a python extension, so work around.
+                    continue
+                name = p.name
+                for suffix in SUFFIXES:
+                    if name.endswith(suffix):
+                        name = name[: -len(suffix)]
+                        break
+                if name == "badsyntax_pep3120":
+                    # Workaround for issue #166
+                    continue
+
+                package_pathname = None
+                try:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore", ImportWarning)
+                        spec = finder.find_spec(name)
+                        if spec is None:
+                            continue
+                        if spec.submodule_search_locations is not None:
+                            package_pathname = spec.submodule_search_locations[
+                                0
+                            ]
+                except (ImportError, OSError, SyntaxError, UnicodeEncodeError):
+                    # UnicodeEncodeError happens with Python 3 when there is a filename in some invalid encoding
+                    continue
+
+                if package_pathname is not None:
+                    path_real = Path(package_pathname).resolve()
+                    try:
+                        stat = path_real.stat()
+                    except OSError:
+                        continue
+                    loaded_inode = _LoadedInode(stat.st_dev, stat.st_ino)
+                    if loaded_inode not in self.paths:
+                        self.paths.add(loaded_inode)
+                        for subname in self.find_modules(path_real):
+                            if subname is None:
+                                yield None  # take a break to avoid unresponsiveness
+                            elif subname != "__init__":
+                                yield f"{name}.{subname}"
+                yield name
         except OSError:
             # Path is not readable
             return
-
-        finder = importlib.machinery.FileFinder(str(path), *LOADERS)  # type: ignore
-        for p in children:
-            if p.name.startswith(".") or p.name == "__pycache__":
-                # Impossible to import from names starting with . and we can skip __pycache__
-                continue
-            elif any(fnmatch.fnmatch(p.name, entry) for entry in self.skiplist):
-                # Path is on skiplist
-                continue
-            elif not any(p.name.endswith(suffix) for suffix in SUFFIXES):
-                # Possibly a package
-                if "." in p.name:
-                    continue
-            elif p.is_dir():
-                # Unfortunately, CPython just crashes if there is a directory
-                # which ends with a python extension, so work around.
-                continue
-            name = p.name
-            for suffix in SUFFIXES:
-                if name.endswith(suffix):
-                    name = name[: -len(suffix)]
-                    break
-            if name == "badsyntax_pep3120":
-                # Workaround for issue #166
-                continue
-
-            package_pathname = None
-            try:
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore", ImportWarning)
-                    spec = finder.find_spec(name)
-                    if spec is None:
-                        continue
-                    if spec.submodule_search_locations is not None:
-                        package_pathname = spec.submodule_search_locations[0]
-            except (ImportError, OSError, SyntaxError, UnicodeEncodeError):
-                # UnicodeEncodeError happens with Python 3 when there is a filename in some invalid encoding
-                continue
-
-            if package_pathname is not None:
-                path_real = Path(package_pathname).resolve()
-                try:
-                    stat = path_real.stat()
-                except OSError:
-                    continue
-                loaded_inode = _LoadedInode(stat.st_dev, stat.st_ino)
-                if loaded_inode not in self.paths:
-                    self.paths.add(loaded_inode)
-                    for subname in self.find_modules(path_real):
-                        if subname is None:
-                            yield None  # take a break to avoid unresponsiveness
-                        elif subname != "__init__":
-                            yield f"{name}.{subname}"
-            yield name
         yield None  # take a break to avoid unresponsiveness
 
     def find_all_modules(
