@@ -12,9 +12,7 @@ class Interpreter(interpreter.Interp):
     def __init__(self):
         super().__init__()
         self.a = []
-
-    def write(self, data):
-        self.a.append(data)
+        self.write = self.a.append
 
 
 class TestInterpreter(unittest.TestCase):
