@@ -17,13 +17,13 @@ from typing import (
     Iterable,
     Dict,
     List,
+    Literal,
     Optional,
     Sequence,
     Tuple,
     Type,
     Union,
 )
-from .._typing_compat import Literal
 
 import greenlet
 from curtsies import (

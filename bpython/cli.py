@@ -69,12 +69,12 @@ from typing import (
     Collection,
     Dict,
     TYPE_CHECKING,
+    Literal,
 )
 
 if TYPE_CHECKING:
     from _curses import _CursesWindow
 
-from ._typing_compat import Literal
 import unicodedata
 from dataclasses import dataclass
 

@@ -40,19 +40,19 @@ from itertools import takewhile
 from pathlib import Path
 from types import ModuleType, TracebackType
 from typing import (
-    Iterable,
-    cast,
-    List,
-    Tuple,
     Any,
-    Optional,
-    Type,
-    Union,
     Callable,
     Dict,
+    Iterable,
+    List,
+    Literal,
+    Optional,
     TYPE_CHECKING,
+    Tuple,
+    Type,
+    Union,
+    cast,
 )
-from ._typing_compat import Literal
 
 from pygments.lexers import Python3Lexer
 from pygments.token import Token, _TokenType

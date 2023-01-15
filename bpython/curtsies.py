@@ -28,11 +28,11 @@ from typing import (
     Generator,
     List,
     Optional,
+    Protocol,
     Sequence,
     Tuple,
     Union,
 )
-from ._typing_compat import Protocol
 
 logger = logging.getLogger(__name__)
 
