@@ -16,7 +16,6 @@ getargspec = lambda func: inspect.signature(func).parameters
 
 
 class AbstractEdits:
-
     default_kwargs = {
         "line": "hello world",
         "cursor_offset": 5,

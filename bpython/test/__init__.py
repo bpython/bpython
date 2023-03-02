@@ -13,7 +13,6 @@ class FixLanguageTestCase(unittest.TestCase):
 
 
 class MagicIterMock(unittest.mock.MagicMock):
-
     __next__ = unittest.mock.Mock(return_value=None)
 
 

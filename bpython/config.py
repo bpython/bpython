@@ -90,7 +90,7 @@ def fill_config_with_default_values(
         if not config.has_section(section):
             config.add_section(section)
 
-        for (opt, val) in default_values[section].items():
+        for opt, val in default_values[section].items():
             if not config.has_option(section, opt):
                 config.set(section, opt, str(val))
 

@@ -57,6 +57,7 @@ from .importcompletion import ModuleGatherer
 
 logger = logging.getLogger(__name__)
 
+
 # Autocomplete modes
 class AutocompleteModes(Enum):
     NONE = "none"
@@ -381,7 +382,6 @@ class FilenameCompletion(BaseCompletionType):
 
 
 class AttrCompletion(BaseCompletionType):
-
     attr_matches_re = LazyReCompile(r"(\w+(\.\w+)*)\.(\w*)")
 
     def matches(

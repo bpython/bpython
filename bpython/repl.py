@@ -465,7 +465,6 @@ class Repl(metaclass=abc.ABCMeta):
         self._set_cursor_offset(value)
 
     if TYPE_CHECKING:
-
         # not actually defined, subclasses must define
         cpos: int
 
@@ -567,7 +566,7 @@ class Repl(metaclass=abc.ABCMeta):
             return ""
         opening = string_tokens.pop()[1]
         string = list()
-        for (token, value) in reversed(string_tokens):
+        for token, value in reversed(string_tokens):
             if token is Token.Text:
                 continue
             elif opening is None:
@@ -602,7 +601,7 @@ class Repl(metaclass=abc.ABCMeta):
         # if keyword is not None, we've encountered a keyword and so we're done counting
         stack = [_FuncExpr("", "", 0, "")]
         try:
-            for (token, value) in Python3Lexer().get_tokens(line):
+            for token, value in Python3Lexer().get_tokens(line):
                 if token is Token.Punctuation:
                     if value in "([{":
                         stack.append(_FuncExpr("", "", 0, value))
@@ -692,7 +691,6 @@ class Repl(metaclass=abc.ABCMeta):
                     # py3
                     f.__new__.__class__ is not object.__new__.__class__
                 ):
-
                     class_f = f.__new__
 
                 if class_f:
@@ -1117,7 +1115,7 @@ class Repl(metaclass=abc.ABCMeta):
         line_tokens: List[Tuple[_TokenType, str]] = list()
         saved_tokens: List[Tuple[_TokenType, str]] = list()
         search_for_paren = True
-        for (token, value) in split_lines(all_tokens):
+        for token, value in split_lines(all_tokens):
             pos += len(value)
             if token is Token.Text and value == "\n":
                 line += 1
@@ -1263,7 +1261,7 @@ def next_indentation(line, tab_length) -> int:
 
 
 def split_lines(tokens):
-    for (token, value) in tokens:
+    for token, value in tokens:
         if not value:
             continue
         while value:

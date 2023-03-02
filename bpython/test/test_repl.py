@@ -183,7 +183,7 @@ class TestArgspec(unittest.TestCase):
         self.repl.cursor_offset = len(line)
 
     def test_func_name(self):
-        for (line, expected_name) in [
+        for line, expected_name in [
             ("spam(", "spam"),
             # map pydoc has no signature in pypy
             ("spam(any([]", "any") if pypy else ("spam(map([]", "map"),
@@ -194,7 +194,7 @@ class TestArgspec(unittest.TestCase):
             self.assertEqual(self.repl.current_func.__name__, expected_name)
 
     def test_func_name_method_issue_479(self):
-        for (line, expected_name) in [
+        for line, expected_name in [
             ("o.spam(", "spam"),
             # map pydoc has no signature in pypy
             ("o.spam(any([]", "any") if pypy else ("o.spam(map([]", "map"),

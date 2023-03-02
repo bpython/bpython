@@ -74,7 +74,6 @@ except ImportError:
 else:
 
     class EvalProtocol(basic.LineOnlyReceiver):
-
         delimiter = "\n"
 
         def __init__(self, myrepl):
@@ -570,7 +569,6 @@ class URWIDInteraction(repl.Interaction):
 
 
 class URWIDRepl(repl.Repl):
-
     _time_between_redraws = 0.05  # seconds
 
     def __init__(self, event_loop, palette, interpreter, config):

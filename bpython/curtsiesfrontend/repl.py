@@ -893,7 +893,6 @@ class BaseRepl(Repl):
         self.add_normal_character(e)
 
     def get_last_word(self):
-
         previous_word = _last_word(self.rl_history.entry)
         word = _last_word(self.rl_history.back())
         line = self.current_line

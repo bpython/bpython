@@ -264,6 +264,7 @@ class FakeStdin:
 # the addstr stuff to a higher level.
 #
 
+
 # Have to ignore the return type on this one because the colors variable
 # is Optional[MutableMapping[str, int]] but for the purposes of this
 # function it can't be None
