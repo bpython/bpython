@@ -30,7 +30,10 @@ environment with
     # necessary every time you work on bpython
     $ source bpython-dev/bin/activate
 
-Fork bpython in the GitHub web interface, then clone the repo:
+Fork bpython in the GitHub web interface. Be sure to include the tags
+in your fork by un-selecting the option to copy only the main branch.
+
+Then, clone the forked repo:
 
 .. code-block:: bash
 
