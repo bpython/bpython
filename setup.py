@@ -20,7 +20,7 @@ try:
     from sphinx.setup_command import BuildDoc
 
     # Sphinx 1.5 and newer support Python 3.6
-    using_sphinx = sphinx.__version__ >= "1.5"
+    using_sphinx = sphinx.__version__ >= "1.5" and sphinx.__version__ < "7.0"
 except ImportError:
     using_sphinx = False
 
