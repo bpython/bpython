@@ -1,5 +1,6 @@
 import collections
 import inspect
+import os
 import socket
 import sys
 import tempfile
@@ -523,13 +524,19 @@ class TestRepl(unittest.TestCase):
                 inspect.Parameter("pinetree", inspect.Parameter.KEYWORD_ONLY),
             ])
         """
-        for line in code.split("\n"):
-            print(line[8:])
-            self.repl.push(line[8:])
+        code = [x[8:] for x in code.split("\n")]
+        for line in code:
+            self.repl.push(line)
 
-        self.assertTrue(self.repl.complete())
-        self.assertTrue(hasattr(self.repl.matches_iter, "matches"))
-        self.assertEqual(self.repl.matches_iter.matches, ["apple2=", "apple="])
+        with mock.patch(
+            "bpython.inspection.inspect.getsourcelines",
+            return_value=(code, None),
+        ):
+            self.assertTrue(self.repl.complete())
+            self.assertTrue(hasattr(self.repl.matches_iter, "matches"))
+            self.assertEqual(
+                self.repl.matches_iter.matches, ["apple2=", "apple="]
+            )
 
 
 if __name__ == "__main__":
