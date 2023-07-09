@@ -289,9 +289,13 @@ def getfuncprops(func: str, f: Callable) -> Optional[FuncProps]:
         return None
     try:
         argspec = _get_argspec_from_signature(f)
-        fprops = FuncProps(
-            func, _fix_default_values(f, argspec), is_bound_method
-        )
+        try:
+            argspec = _fix_default_values(f, argspec)
+        except KeyError as ex:
+            # Parsing of the source failed. If f has a __signature__, we trust it.
+            if not hasattr(f, "__signature__"):
+                raise ex
+        fprops = FuncProps(func, argspec, is_bound_method)
     except (TypeError, KeyError, ValueError):
         argspec_pydoc = _getpydocspec(f)
         if argspec_pydoc is None:
