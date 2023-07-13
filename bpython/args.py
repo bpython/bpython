@@ -131,7 +131,7 @@ def parse(
         "--quiet",
         "-q",
         action="store_true",
-        help=_("Don't flush the output to stdout."),
+        help=_("Don't print version banner."),
     )
     parser.add_argument(
         "--version",
