@@ -435,3 +435,7 @@ class TestParameterNameCompletion(unittest.TestCase):
         self.assertSetEqual(
             com.matches(3, "car", funcprops=funcspec), {"carrot="}
         )
+        self.assertSetEqual(
+            com.matches(5, "func(", funcprops=funcspec),
+            {"apple=", "apricot=", "banana=", "carrot="},
+        )

@@ -604,7 +604,12 @@ class ParameterNameCompletion(BaseCompletionType):
         return matches if matches else None
 
     def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
-        return lineparts.current_word(cursor_offset, line)
+        r = lineparts.current_word(cursor_offset, line)
+        if r and r.word[-1] == "(":
+            # if the word ends with a (, it's the parent word with an empty
+            # param. Return an empty word
+            return lineparts.LinePart(r.stop, r.stop, "")
+        return r
 
 
 class ExpressionAttributeCompletion(AttrCompletion):
