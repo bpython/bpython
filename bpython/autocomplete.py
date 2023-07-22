@@ -747,6 +747,16 @@ def get_completer(
             double underscore methods like __len__ in method signatures
     """
 
+    def _cmpl_sort(x: str) -> Tuple[Any, ...]:
+        """
+        Function used to sort the matches.
+        """
+        # put parameters above everything in completion
+        return (
+            x[-1] != "=",
+            x,
+        )
+
     for completer in completers:
         try:
             matches = completer.matches(
@@ -765,7 +775,9 @@ def get_completer(
             )
             continue
         if matches is not None:
-            return sorted(matches), (completer if matches else None)
+            return sorted(matches, key=_cmpl_sort), (
+                completer if matches else None
+            )
 
     return [], None
 
