@@ -747,7 +747,7 @@ def get_completer(
             double underscore methods like __len__ in method signatures
     """
 
-    def _cmpl_sort(x: str) -> Tuple[bool, ...]:
+    def _cmpl_sort(x: str) -> Tuple[bool, str]:
         """
         Function used to sort the matches.
         """
