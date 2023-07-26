@@ -106,6 +106,15 @@ class TestCumulativeCompleter(unittest.TestCase):
         cumulative = autocomplete.CumulativeCompleter([a, b])
         self.assertEqual(cumulative.matches(3, "abc"), {"a", "b"})
 
+    def test_order_completer(self):
+        a = self.completer(["ax", "ab="])
+        b = self.completer(["aa"])
+        cumulative = autocomplete.CumulativeCompleter([a, b])
+        self.assertEqual(
+            autocomplete.get_completer([cumulative], 1, "a"),
+            (["ab=", "aa", "ax"], cumulative),
+        )
+
 
 class TestFilenameCompletion(unittest.TestCase):
     def setUp(self):
@@ -434,4 +443,8 @@ class TestParameterNameCompletion(unittest.TestCase):
         )
         self.assertSetEqual(
             com.matches(3, "car", funcprops=funcspec), {"carrot="}
+        )
+        self.assertSetEqual(
+            com.matches(5, "func(", funcprops=funcspec),
+            {"apple=", "apricot=", "banana=", "carrot="},
         )

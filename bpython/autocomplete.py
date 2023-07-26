@@ -604,7 +604,12 @@ class ParameterNameCompletion(BaseCompletionType):
         return matches if matches else None
 
     def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
-        return lineparts.current_word(cursor_offset, line)
+        r = lineparts.current_word(cursor_offset, line)
+        if r and r.word[-1] == "(":
+            # if the word ends with a (, it's the parent word with an empty
+            # param. Return an empty word
+            return lineparts.LinePart(r.stop, r.stop, "")
+        return r
 
 
 class ExpressionAttributeCompletion(AttrCompletion):
@@ -742,6 +747,16 @@ def get_completer(
             double underscore methods like __len__ in method signatures
     """
 
+    def _cmpl_sort(x: str) -> Tuple[bool, ...]:
+        """
+        Function used to sort the matches.
+        """
+        # put parameters above everything in completion
+        return (
+            x[-1] != "=",
+            x,
+        )
+
     for completer in completers:
         try:
             matches = completer.matches(
@@ -760,7 +775,9 @@ def get_completer(
             )
             continue
         if matches is not None:
-            return sorted(matches), (completer if matches else None)
+            return sorted(matches, key=_cmpl_sort), (
+                completer if matches else None
+            )
 
     return [], None
 
