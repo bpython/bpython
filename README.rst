@@ -17,6 +17,12 @@ to IDEs. These features include **syntax highlighting**, **expected parameter
 list**, **auto-indentation**, and **autocompletion**. (See below for example
 usage).
 
+***bpython is a lightweight Python interpreter that enhances the Python interactive experience by incorporating several features commonly found in Integrated Development Environments (IDEs). It offers syntax highlighting, autocompletion, auto-indentation, and an expected parameter list for functions, among others. This README provides an overview of bpython's key features, installation instructions, configuration options, and how to contribute to the project.****
+
+***** bpython is not intended to be a full-fledged IDE like IPython or Jupyter Notebook. Instead, it aims to provide a more pleasant and productive experience when using the Python interpreter directly, making it useful for quickly testing code snippets, debugging, and experimenting. *****
+
+***** If you are a data scientist or a researcher please go to IPython. IPython is widely used in the scientific and data analysis communities due to its robust features and ease of use. It is an essential tool for many researchers and data scientists for prototyping, analysis, and sharing interactive workflows. ******
+
 .. image:: https://bpython-interpreter.org/images/math.gif
   :alt: bpython
   :width: 566
@@ -77,6 +83,8 @@ Features & Examples
 
 * Reload imported Python modules.  Use <F6> to clear sys.modules and rerun your
   session to test changes to code in a module you're working on.
+
+
 
 =============
 Configuration
