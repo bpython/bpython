@@ -104,13 +104,13 @@ class AttrCleaner(ContextManager[None]):
         if __getattr__ is not None:
             try:
                 setattr(type_, "__getattr__", (lambda *_, **__: None))
-            except TypeError:
+            except (TypeError, AttributeError):
                 __getattr__ = None
         __getattribute__ = getattr(type_, "__getattribute__", None)
         if __getattribute__ is not None:
             try:
                 setattr(type_, "__getattribute__", object.__getattribute__)
-            except TypeError:
+            except (TypeError, AttributeError):
                 # XXX: This happens for e.g. built-in types
                 __getattribute__ = None
         self._attribs = (__getattribute__, __getattr__)
