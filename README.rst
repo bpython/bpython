@@ -12,16 +12,20 @@
 bpython: A fancy interface to the Python interactive interpreter
 ****************************************************************
 
-`bpython`_ is a lightweight Python interpreter that adds several features common
-to IDEs. These features include **syntax highlighting**, **expected parameter
-list**, **auto-indentation**, and **autocompletion**. (See below for example
-usage).
+**Introduction:**
+bpython is a lightweight Python interpreter with added features commonly found in integrated development environments (IDEs). These features include syntax highlighting, auto-indentation, autocompletion, and displaying expected parameter lists for functions.
 
-***bpython is a lightweight Python interpreter that enhances the Python interactive experience by incorporating several features commonly found in Integrated Development Environments (IDEs). It offers syntax highlighting, autocompletion, auto-indentation, and an expected parameter list for functions, among others. This README provides an overview of bpython's key features, installation instructions, configuration options, and how to contribute to the project.****
-
-***** bpython is not intended to be a full-fledged IDE like IPython or Jupyter Notebook. Instead, it aims to provide a more pleasant and productive experience when using the Python interpreter directly, making it useful for quickly testing code snippets, debugging, and experimenting. *****
-
-***** If you are a data scientist or a researcher please go to IPython. IPython is widely used in the scientific and data analysis communities due to its robust features and ease of use. It is an essential tool for many researchers and data scientists for prototyping, analysis, and sharing interactive workflows. ******
+**Features:**
+- Autocomplete suggestions as you type (similar to Readline).
+- In-line syntax highlighting using Pygments.
+- Display of expected parameter lists for functions.
+- Rewind function to re-evaluate and edit previous code.
+- Open current session in an external text editor.
+- Paste code to pastebin or write to a file.
+- Reload imported Python modules to test changes.
+  
+**Usage:**
+bpython is not a full IDE but a practical and lightweight solution. It's ideal for testing code, helping others on IRC, or quick experimentation.
 
 .. image:: https://bpython-interpreter.org/images/math.gif
   :alt: bpython
@@ -44,19 +48,22 @@ You can find more about bpython - including `full documentation`_ - at our
 Installation & Basic Usage
 ==========================
 
-Installation using Pip
-----------------------
+**Installation:**
+Using Pip: 
+If you have pip installed, run: `$ pip install bpython`
+Start bpython by typing `bpython` in the terminal. Exit with `exit()` or `ctrl-D`.
 
-If you have `pip`_ installed, you can simply run:
-
-.. code-block:: bash
-
-    $ pip install bpython
-
-Start bpython by typing ``bpython`` in your terminal. You can exit bpython by
-using the ``exit()`` command or by pressing control-D like regular interactive
-Python.
-
+**Dependencies:**
+- Pygments
+- curtsies >= 0.4.0
+- greenlet
+- pyxdg
+- requests
+- Sphinx >= 1.5 (optional, for documentation)
+- babel (optional, for internationalization)
+- jedi (optional, for multiline completion)
+- watchdog (optional, for monitoring module changes)
+- pyperclip (optional, for clipboard copying)
 ===================
 Features & Examples
 ===================
@@ -95,19 +102,7 @@ your config file as **~/.config/bpython/config** (i.e.
 
   bpython --config /path/to/bpython/config
 
-============
-Dependencies
-============
-* Pygments
-* curtsies >= 0.4.0
-* greenlet
-* pyxdg
-* requests
-* Sphinx >= 1.5 (optional, for the documentation)
-* babel (optional, for internationalization)
-* jedi (optional, for experimental multiline completion)
-* watchdog (optional, for monitoring imported modules for changes)
-* pyperclip (optional, for copying to the clipboard)
+
 
 bpython-urwid
 -------------
