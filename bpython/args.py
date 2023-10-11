@@ -37,6 +37,7 @@ import os
 import sys
 from pathlib import Path
 from typing import Tuple, List, Optional, NoReturn, Callable
+from types import ModuleType
 
 from . import __version__, __copyright__
 from .config import default_config_path, Config
@@ -65,6 +66,13 @@ def version_banner(base: str = "bpython") -> str:
 
 def copyright_banner() -> str:
     return _("{} See AUTHORS.rst for details.").format(__copyright__)
+
+
+def log_version(module: ModuleType, name: str) -> None:
+    try:
+        logger.info("%s: %s", name, module.__version__)  # type: ignore
+    except AttributeError:
+        logger.info("%s: unknown version", name)
 
 
 Options = Tuple[str, str, Callable[[argparse._ArgumentGroup], None]]
@@ -211,27 +219,27 @@ def parse(
     try:
         import curtsies
 
-        logger.info("curtsies: %s", curtsies.__version__)
+        log_version(curtsies, "curtsies")
     except ImportError:
         # may happen on Windows
         logger.info("curtsies: not available")
-    logger.info("cwcwidth: %s", cwcwidth.__version__)
-    logger.info("greenlet: %s", greenlet.__version__)
-    logger.info("pygments: %s", pygments.__version__)  # type: ignore
-    logger.info("pyxdg: %s", xdg.__version__)  # type: ignore
-    logger.info("requests: %s", requests.__version__)
+    log_version(cwcwidth, "cwcwidth")
+    log_version(greenlet, "greenlet")
+    log_version(pygments, "pygments")
+    log_version(xdg, "pyxdg")
+    log_version(requests, "requests")
 
     # versions of optional dependencies
     try:
         import pyperclip
 
-        logger.info("pyperclip: %s", pyperclip.__version__)  # type: ignore
+        log_version(pyperclip, "pyperclip")
     except ImportError:
         logger.info("pyperclip: not available")
     try:
         import jedi
 
-        logger.info("jedi: %s", jedi.__version__)
+        log_version(jedi, "jedi")
     except ImportError:
         logger.info("jedi: not available")
     try:
