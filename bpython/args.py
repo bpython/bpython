@@ -69,10 +69,7 @@ def copyright_banner() -> str:
 
 
 def log_version(module: ModuleType, name: str) -> None:
-    try:
-        logger.info("%s: %s", name, module.__version__)  # type: ignore
-    except AttributeError:
-        logger.info("%s: unknown version", name)
+    logger.info("%s: %s", name, module.__version__ if hasattr(module, "__version__") else "unknown version")  # type: ignore
 
 
 Options = Tuple[str, str, Callable[[argparse._ArgumentGroup], None]]
