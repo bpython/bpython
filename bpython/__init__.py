@@ -21,6 +21,7 @@
 # THE SOFTWARE.
 
 import os.path
+from typing import Any
 
 try:
     from ._version import __version__ as version  # type: ignore
@@ -36,7 +37,7 @@ __version__ = version
 package_dir = os.path.abspath(os.path.dirname(__file__))
 
 
-def embed(locals_=None, args=None, banner=None):
+def embed(locals_=None, args=None, banner=None) -> Any:
     if args is None:
         args = ["-i", "-q"]
 
