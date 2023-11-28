@@ -42,10 +42,10 @@ class KeyMap(Generic[T]):
                 f"Configured keymap ({key}) does not exist in bpython.keys"
             )
 
-    def __delitem__(self, key: str):
+    def __delitem__(self, key: str) -> None:
         del self.map[key]
 
-    def __setitem__(self, key: str, value: T):
+    def __setitem__(self, key: str, value: T) -> None:
         self.map[key] = value
 
 

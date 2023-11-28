@@ -21,7 +21,7 @@
 # THE SOFTWARE.
 
 import re
-from typing import Optional, Pattern, Match, Optional
+from typing import Optional, Pattern, Match, Optional, Iterator
 
 try:
     from functools import cached_property
@@ -43,7 +43,7 @@ class LazyReCompile:
     def compiled(self) -> Pattern[str]:
         return re.compile(self.regex, self.flags)
 
-    def finditer(self, *args, **kwargs):
+    def finditer(self, *args, **kwargs) -> Iterator[Match[str]]:
         return self.compiled.finditer(*args, **kwargs)
 
     def search(self, *args, **kwargs) -> Optional[Match[str]]:
