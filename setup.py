@@ -6,7 +6,7 @@ import re
 import subprocess
 
 from setuptools import setup
-from distutils.command.build import build
+from setuptools.command.build import build
 
 try:
     from babel.messages import frontend as babel
