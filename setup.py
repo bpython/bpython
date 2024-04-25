@@ -6,7 +6,7 @@ import re
 import subprocess
 
 from setuptools import setup
-from setuptools.command.build import build
+from setuptools.command.build import build as _orig_build
 
 try:
     from babel.messages import frontend as babel
@@ -120,6 +120,11 @@ if version == "unknown":
 with open(version_file, "w") as vf:
     vf.write("# Auto-generated file, do not edit!\n")
     vf.write(f'__version__ = "{version}"\n')
+
+
+class build(_orig_build):
+    # Avoid patching the original class' attribute (more robust customisation)
+    sub_commands = _orig_build.sub_commands[:]
 
 
 cmdclass = {"build": build}
