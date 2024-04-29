@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 class SimpleRepl(BaseRepl):
     def __init__(self, config):
         self.requested_events = []
-        BaseRepl.__init__(self, config)
+        BaseRepl.__init__(self, config, window=None)
 
     def _request_refresh(self):
         self.requested_events.append(bpythonevents.RefreshRequestEvent())
