@@ -4,4 +4,4 @@ cwcwidth
 greenlet
 pyxdg
 requests
-setuptools
+setuptools>=62.4.0
