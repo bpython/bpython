@@ -1801,9 +1801,11 @@ class BaseRepl(Repl):
                 self.current_match,
                 self.docstring,
                 self.config,
-                self.matches_iter.completer.format
-                if self.matches_iter.completer
-                else None,
+                (
+                    self.matches_iter.completer.format
+                    if self.matches_iter.completer
+                    else None
+                ),
             )
 
             if (

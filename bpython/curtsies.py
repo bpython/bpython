@@ -40,14 +40,11 @@ logger = logging.getLogger(__name__)
 class SupportsEventGeneration(Protocol):
     def send(
         self, timeout: Optional[float]
-    ) -> Union[str, curtsies.events.Event, None]:
-        ...
+    ) -> Union[str, curtsies.events.Event, None]: ...
 
-    def __iter__(self) -> "SupportsEventGeneration":
-        ...
+    def __iter__(self) -> "SupportsEventGeneration": ...
 
-    def __next__(self) -> Union[str, curtsies.events.Event, None]:
-        ...
+    def __next__(self) -> Union[str, curtsies.events.Event, None]: ...
 
 
 class FullCurtsiesRepl(BaseRepl):
@@ -69,9 +66,9 @@ class FullCurtsiesRepl(BaseRepl):
             extra_bytes_callback=self.input_generator.unget_bytes,
         )
 
-        self._request_refresh_callback: Callable[
-            [], None
-        ] = self.input_generator.event_trigger(events.RefreshRequestEvent)
+        self._request_refresh_callback: Callable[[], None] = (
+            self.input_generator.event_trigger(events.RefreshRequestEvent)
+        )
         self._schedule_refresh_callback = (
             self.input_generator.scheduled_event_trigger(
                 events.ScheduledRefreshRequestEvent

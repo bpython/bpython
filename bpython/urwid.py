@@ -99,7 +99,6 @@ else:
 if urwid.VERSION < (1, 0, 0) and hasattr(urwid, "TwistedEventLoop"):
 
     class TwistedEventLoop(urwid.TwistedEventLoop):
-
         """TwistedEventLoop modified to properly stop the reactor.
 
         urwid 0.9.9 and 0.9.9.1 crash the reactor on ExitMainLoop instead

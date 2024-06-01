@@ -16,10 +16,10 @@ preproc = partial(preprocess, compiler=compiler)
 
 def get_fodder_source(test_name):
     pattern = rf"#StartTest-{test_name}\n(.*?)#EndTest"
-    orig, xformed = [
+    orig, xformed = (
         re.search(pattern, inspect.getsource(module), re.DOTALL)
         for module in [original, processed]
-    ]
+    )
 
     if not orig:
         raise ValueError(

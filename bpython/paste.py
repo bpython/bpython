@@ -37,8 +37,7 @@ class PasteFailed(Exception):
 
 
 class Paster(Protocol):
-    def paste(self, s: str) -> Tuple[str, Optional[str]]:
-        ...
+    def paste(self, s: str) -> Tuple[str, Optional[str]]: ...
 
 
 class PastePinnwand:

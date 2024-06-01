@@ -74,9 +74,11 @@ def matches_lines(rows, columns, matches, current, config, match_format):
 
     result = [
         fmtstr(" ").join(
-            color(m.ljust(max_match_width))
-            if m != current
-            else highlight_color(m.ljust(max_match_width))
+            (
+                color(m.ljust(max_match_width))
+                if m != current
+                else highlight_color(m.ljust(max_match_width))
+            )
             for m in matches[i : i + words_wide]
         )
         for i in range(0, len(matches), words_wide)
