@@ -36,7 +36,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Tuple, List, Optional, Never, Callable
+from typing import Tuple, List, Optional, NoReturn, Callable
 from types import ModuleType
 
 from . import __version__, __copyright__
@@ -51,7 +51,7 @@ class ArgumentParserFailed(ValueError):
 
 
 class RaisingArgumentParser(argparse.ArgumentParser):
-    def error(self, msg: str) -> Never:
+    def error(self, msg: str) -> NoReturn:
         raise ArgumentParserFailed()
 
 
