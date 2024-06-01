@@ -341,6 +341,7 @@ if using_translations:
     cmdclass["init_catalog"] = babel.init_catalog
 
 if using_sphinx:
+    cmdclass["build_sphinx"] = BuildDoc
     cmdclass["build_sphinx_man"] = BuildDoc
 
     if platform.system() in ("FreeBSD", "OpenBSD"):
