@@ -6,7 +6,7 @@ import re
 import subprocess
 
 from setuptools import setup, Command
-from setuptools.command.build import build as _orig_build
+from setuptools.command.build import build
 
 try:
     from babel.messages import frontend as babel
@@ -320,26 +320,27 @@ with open(version_file, "w") as vf:
     vf.write(f'__version__ = "{version}"\n')
 
 
-class build(_orig_build):
-    # Avoid patching the original class' attribute (more robust customisation)
-    sub_commands = _orig_build.sub_commands[:]
+class custom_build(build):
+    def run(self):
+        if using_translations:
+            self.run_command("compile_catalog")
+        if using_sphinx:
+            self.run_command("build_sphinx_man")
 
 
-cmdclass = {"build": build}
+cmdclass = {"build": custom_build}
+
 
 translations_dir = os.path.join("bpython", "translations")
 
 # localization options
 if using_translations:
-    build.sub_commands.insert(0, ("compile_catalog", None))
-
     cmdclass["compile_catalog"] = babel.compile_catalog
     cmdclass["extract_messages"] = babel.extract_messages
     cmdclass["update_catalog"] = babel.update_catalog
     cmdclass["init_catalog"] = babel.init_catalog
 
 if using_sphinx:
-    build.sub_commands.insert(0, ("build_sphinx_man", None))
     cmdclass["build_sphinx_man"] = BuildDoc
 
     if platform.system() in ("FreeBSD", "OpenBSD"):
@@ -378,6 +379,7 @@ for language in os.listdir(translations_dir):
     if os.path.exists(os.path.join(translations_dir, mo_subpath)):
         mo_files.append(mo_subpath)
 
+
 setup(
     version=version,
     data_files=data_files,
@@ -388,6 +390,7 @@ setup(
     },
     cmdclass=cmdclass,
     test_suite="bpython.test",
+    zip_safe=False,
 )
 
 # vim: fileencoding=utf-8 sw=4 ts=4 sts=4 ai et sta
