@@ -76,10 +76,10 @@ else:
     class EvalProtocol(basic.LineOnlyReceiver):
         delimiter = "\n"
 
-        def __init__(self, myrepl):
+        def __init__(self, myrepl) -> None:
             self.repl = myrepl
 
-        def lineReceived(self, line):
+        def lineReceived(self, line) -> None:
             # HACK!
             # TODO: deal with encoding issues here...
             self.repl.main_loop.process_input(line)

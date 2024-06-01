@@ -27,24 +27,24 @@ import bpython
 class BPdb(pdb.Pdb):
     """PDB with BPython support."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.prompt = "(BPdb) "
         self.intro = 'Use "B" to enter bpython, Ctrl-d to exit it.'
 
-    def postloop(self):
+    def postloop(self) -> None:
         # We only want to show the intro message once.
         self.intro = None
         super().postloop()
 
     # cmd.Cmd commands
 
-    def do_Bpython(self, arg):
+    def do_Bpython(self, arg: str) -> None:
         locals_ = self.curframe.f_globals.copy()
         locals_.update(self.curframe.f_locals)
         bpython.embed(locals_, ["-i"])
 
-    def help_Bpython(self):
+    def help_Bpython(self) -> None:
         print("B(python)")
         print("")
         print(
