@@ -36,12 +36,13 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Tuple, List, Optional, NoReturn, Callable
+from typing import Tuple, List, Optional, Callable
 from types import ModuleType
 
 from . import __version__, __copyright__
 from .config import default_config_path, Config
 from .translations import _
+from ._typing_compat import Never
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ class ArgumentParserFailed(ValueError):
 
 
 class RaisingArgumentParser(argparse.ArgumentParser):
-    def error(self, msg: str) -> NoReturn:
+    def error(self, msg: str) -> Never:
         raise ArgumentParserFailed()
 
 
