@@ -25,4 +25,3 @@ try:
     from typing import Never
 except ImportError:
     from typing import NoReturn as Never  # type: ignore
-
