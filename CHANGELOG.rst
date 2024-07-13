@@ -6,18 +6,29 @@ Changelog
 
 General information:
 
-* The bpython-cli rendering backend has been removed following deprecation in
+* The `bpython-cli` rendering backend has been removed following deprecation in
   version 0.19.
-
+* This release is focused on Python 3.12 support.
 
 New features:
 
 
 Fixes:
 
+* Fix __signature__ support
+  Thanks to gpotter2
+* #995: Fix handling of `SystemExit`
+* #996: Improve order of completion results
+  Thanks to gpotter2
+* Fix build of documentation and manpages with Sphinx >= 7
+* #1001: Do not fail if modules don't have __version__
 
 Changes to dependencies:
 
+* Remove use of distutils
+  Thanks to Anderson Bravalheri
+
+Support for Python 3.12 has been added. Support for Python 3.7 has been dropped.
 
 0.24
 ----
@@ -37,7 +48,7 @@ Fixes:
 
 Changes to dependencies:
 
-* wheel is no required as part of pyproject.toml's build dependencies
+* wheel is not required as part of pyproject.toml's build dependencies
 
 Support for Python 3.11 has been added.
 
