@@ -130,8 +130,8 @@ class TestInterpreter(unittest.TestCase):
             )
 
         a = i.a
-        self.assertMultiLineEqual(str(plain("").join(a)), str(expected))
-        self.assertEqual(plain("").join(a), expected)
+        self.assertMultiLineEqual(str(expected), str(plain("").join(a)))
+        self.assertEqual(expected, plain("").join(a))
 
     def test_getsource_works_on_interactively_defined_functions(self):
         source = "def foo(x):\n    return x + 1\n"

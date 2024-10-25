@@ -307,7 +307,7 @@ class TestGetSource(unittest.TestCase):
         try:
             self.repl.get_source_of_current_name()
         except repl.SourceNotFound as e:
-            self.assertEqual(e.args[0], msg)
+            self.assertEqual(msg, e.args[0])
         else:
             self.fail("Should have raised SourceNotFound")
 
