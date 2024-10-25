@@ -332,9 +332,14 @@ class TestGetSource(unittest.TestCase):
         self.assert_get_source_error_for_current_function(
             collections.defaultdict.copy, "No source code found for INPUTLINE"
         )
-        self.assert_get_source_error_for_current_function(
-            collections.defaultdict, "could not find class definition"
-        )
+        if sys.version_info[:2] >= (3, 13):
+            self.assert_get_source_error_for_current_function(
+                collections.defaultdict, "source code not available"
+            )
+        else:
+            self.assert_get_source_error_for_current_function(
+                collections.defaultdict, "could not find class definition"
+            )
 
     def test_current_line(self):
         self.repl.interp.locals["a"] = socket.socket
