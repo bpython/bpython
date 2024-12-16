@@ -55,7 +55,8 @@ def page(data: str, use_internal: bool = False) -> None:
         try:
             popen = subprocess.Popen(command, stdin=subprocess.PIPE)
             assert popen.stdin is not None
-            data_bytes = data.encode(sys.__stdout__.encoding, "replace")
+            # `encoding` is new in py39
+            data_bytes = data.encode(sys.__stdout__.encoding, "replace")  # type: ignore
             popen.stdin.write(data_bytes)
             popen.stdin.close()
         except OSError as e:

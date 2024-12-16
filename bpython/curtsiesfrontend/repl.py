@@ -236,7 +236,8 @@ class FakeStdin:
 
     @property
     def encoding(self) -> str:
-        return sys.__stdin__.encoding
+        # `encoding` is new in py39
+        return sys.__stdin__.encoding  # type: ignore
 
     # TODO write a read() method?
 
