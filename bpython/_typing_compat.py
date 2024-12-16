@@ -24,4 +24,4 @@ try:
     # introduced in Python 3.11
     from typing import Never
 except ImportError:
-    from typing import NoReturn as Never  # type: ignore
+    from typing_extensions import Never  # type: ignore
