@@ -152,7 +152,9 @@ class Interpreter(code.InteractiveInterpreter):
         with self.timer:
             return super().runsource(source, filename, symbol)
 
-    def showsyntaxerror(self, filename: Optional[str] = None, source: Optional[str] = None) -> None:
+    def showsyntaxerror(
+        self, filename: Optional[str] = None, source: Optional[str] = None
+    ) -> None:
         """Override the regular handler, the code's copied and pasted from
         code.py, as per showtraceback, but with the syntaxerror callback called
         and the text in a pretty colour."""
