@@ -24,8 +24,8 @@ jobs:
     - uses: actions/checkout@v4
     - uses: codespell-project/actions-codespell@master
       with:
-        skip: '*.po'
-        ignore_words_list: ba,te,deltion,dedent,dedented
+        skip: '*.po',encoding_latin1.py
+        ignore_words_list: ba,te,deltion,dedent,dedented,assertIn
 
   mypy:
     runs-on: ubuntu-latest
