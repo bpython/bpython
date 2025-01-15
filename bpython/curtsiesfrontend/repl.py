@@ -2101,10 +2101,10 @@ class BaseRepl(Repl):
         finally:
             signal.signal(signal.SIGWINCH, prev_sigwinch_handler)
 
-    def pager(self, text: str) -> None:
-        """Runs an external pager on text
+    def pager(self, text: str, title: str = "") -> None:
+        """Runs an external pager on text"""
 
-        text must be a str"""
+        # TODO: make less handle title
         command = get_pager_command()
         with tempfile.NamedTemporaryFile() as tmp:
             tmp.write(text.encode(getpreferredencoding()))

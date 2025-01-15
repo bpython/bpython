@@ -52,8 +52,8 @@ class _Helper(_internal._Helper):
 
         super().__init__()
 
-    def pager(self, output):
-        self._repl.pager(output)
+    def pager(self, output, title=""):
+        self._repl.pager(output, title)
 
     def __call__(self, *args, **kwargs):
         if self._repl.reevaluating:
