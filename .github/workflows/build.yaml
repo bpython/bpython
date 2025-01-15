@@ -4,53 +4,52 @@ on:
   push:
   pull_request:
   schedule:
-  # run at 7:00 on the first of every month
-  - cron: '0 7 1 * *'
+    # run at 7:00 on the first of every month
+    - cron: "0 7 1 * *"
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix.python-version == 'pypy-3.8' }}
+    continue-on-error: ${{ matrix.python-version == 'pypy-3.9' }}
     strategy:
       fail-fast: false
       matrix:
         python-version:
-        - "3.8"
-        - "3.9"
-        - "3.10"
-        - "3.11"
-        - "3.12"
-        - "3.13"
-        - "pypy-3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
+          - "pypy-3.9"
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install urwid twisted watchdog "jedi >=0.16" babel "sphinx >=1.5"
-        pip install pytest pytest-cov numpy
-    - name: Build with Python ${{ matrix.python-version }}
-      run: |
-        python setup.py build
-    - name: Build documentation
-      run: |
-        python setup.py build_sphinx
-        python setup.py build_sphinx_man
-    - name: Test with pytest
-      run: |
-        pytest --cov=bpython --cov-report=xml -v
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v5
-      env:
-        PYTHON_VERSION: ${{ matrix.python-version }}
-      with:
-        file: ./coverage.xml
-        env_vars: PYTHON_VERSION
-      if: ${{ always() }}
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install urwid twisted watchdog "jedi >=0.16" babel "sphinx >=1.5"
+          pip install pytest pytest-cov numpy
+      - name: Build with Python ${{ matrix.python-version }}
+        run: |
+          python setup.py build
+      - name: Build documentation
+        run: |
+          python setup.py build_sphinx
+          python setup.py build_sphinx_man
+      - name: Test with pytest
+        run: |
+          pytest --cov=bpython --cov-report=xml -v
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        env:
+          PYTHON_VERSION: ${{ matrix.python-version }}
+        with:
+          file: ./coverage.xml
+          env_vars: PYTHON_VERSION
+        if: ${{ always() }}
