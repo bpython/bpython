@@ -8,7 +8,7 @@ General information:
 
 * The `bpython-cli` rendering backend has been removed following deprecation in
   version 0.19.
-* This release is focused on Python 3.12 support.
+* This release is focused on Python 3.13 support.
 
 New features:
 
@@ -28,7 +28,7 @@ Changes to dependencies:
 * Remove use of distutils
   Thanks to Anderson Bravalheri
 
-Support for Python 3.12 has been added. Support for Python 3.7 has been dropped.
+Support for Python 3.12 and 3.13 has been added. Support for Python 3.7 and 3.8 has been dropped.
 
 0.24
 ----
