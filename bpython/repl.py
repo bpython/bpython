@@ -153,7 +153,7 @@ class Interpreter(code.InteractiveInterpreter):
             return super().runsource(source, filename, symbol)
 
     def showsyntaxerror(
-        self, filename: Optional[str] = None, source: Optional[str] = None
+        self, filename: Optional[str] = None, **kwargs
     ) -> None:
         """Override the regular handler, the code's copied and pasted from
         code.py, as per showtraceback, but with the syntaxerror callback called
