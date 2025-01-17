@@ -21,14 +21,10 @@
 # THE SOFTWARE.
 
 import re
-from typing import Optional, Optional
 from collections.abc import Iterator
+from functools import cached_property
 from re import Pattern, Match
-
-try:
-    from functools import cached_property
-except ImportError:
-    from backports.cached_property import cached_property  # type: ignore [no-redef]
+from typing import Optional, Optional
 
 
 class LazyReCompile:
