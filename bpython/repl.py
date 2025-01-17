@@ -43,7 +43,6 @@ from typing import (
     Any,
     Callable,
     Dict,
-    Iterable,
     List,
     Literal,
     Optional,
@@ -53,6 +52,7 @@ from typing import (
     Union,
     cast,
 )
+from collections.abc import Iterable
 
 from pygments.lexers import Python3Lexer
 from pygments.token import Token, _TokenType
@@ -85,7 +85,7 @@ class RuntimeTimer:
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> Literal[False]:
@@ -108,7 +108,7 @@ class Interpreter(code.InteractiveInterpreter):
 
     def __init__(
         self,
-        locals: Optional[Dict[str, Any]] = None,
+        locals: Optional[dict[str, Any]] = None,
     ) -> None:
         """Constructor.
 
@@ -152,9 +152,7 @@ class Interpreter(code.InteractiveInterpreter):
         with self.timer:
             return super().runsource(source, filename, symbol)
 
-    def showsyntaxerror(
-        self, filename: Optional[str] = None, **kwargs
-    ) -> None:
+    def showsyntaxerror(self, filename: Optional[str] = None, **kwargs) -> None:
         """Override the regular handler, the code's copied and pasted from
         code.py, as per showtraceback, but with the syntaxerror callback called
         and the text in a pretty colour."""
@@ -221,7 +219,7 @@ class MatchesIterator:
         # word being replaced in the original line of text
         self.current_word = ""
         # possible replacements for current_word
-        self.matches: List[str] = []
+        self.matches: list[str] = []
         # which word is currently replacing the current word
         self.index = -1
         # cursor position in the original line
@@ -265,12 +263,12 @@ class MatchesIterator:
 
         return self.matches[self.index]
 
-    def cur_line(self) -> Tuple[int, str]:
+    def cur_line(self) -> tuple[int, str]:
         """Returns a cursor offset and line with the current substitution
         made"""
         return self.substitute(self.current())
 
-    def substitute(self, match: str) -> Tuple[int, str]:
+    def substitute(self, match: str) -> tuple[int, str]:
         """Returns a cursor offset and line with match substituted in"""
         assert self.completer is not None
 
@@ -286,7 +284,7 @@ class MatchesIterator:
             os.path.commonprefix(self.matches)[len(self.current_word) :]
         )
 
-    def substitute_cseq(self) -> Tuple[int, str]:
+    def substitute_cseq(self) -> tuple[int, str]:
         """Returns a new line by substituting a common sequence in, and update
         matches"""
         assert self.completer is not None
@@ -307,7 +305,7 @@ class MatchesIterator:
         self,
         cursor_offset: int,
         current_line: str,
-        matches: List[str],
+        matches: list[str],
         completer: autocomplete.BaseCompletionType,
     ) -> None:
         """Called to reset the match index and update the word being replaced
@@ -428,7 +426,7 @@ class Repl(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def reprint_line(
-        self, lineno: int, tokens: List[Tuple[_TokenType, str]]
+        self, lineno: int, tokens: list[tuple[_TokenType, str]]
     ) -> None:
         pass
 
@@ -479,7 +477,7 @@ class Repl(metaclass=abc.ABCMeta):
         """
         self.config = config
         self.cut_buffer = ""
-        self.buffer: List[str] = []
+        self.buffer: list[str] = []
         self.interp = interp
         self.interp.syntaxerror_callback = self.clear_current_line
         self.match = False
@@ -488,19 +486,19 @@ class Repl(metaclass=abc.ABCMeta):
         )
         # all input and output, stored as old style format strings
         # (\x01, \x02, ...) for cli.py
-        self.screen_hist: List[str] = []
+        self.screen_hist: list[str] = []
         # commands executed since beginning of session
-        self.history: List[str] = []
-        self.redo_stack: List[str] = []
+        self.history: list[str] = []
+        self.redo_stack: list[str] = []
         self.evaluating = False
         self.matches_iter = MatchesIterator()
         self.funcprops = None
         self.arg_pos: Union[str, int, None] = None
         self.current_func = None
         self.highlighted_paren: Optional[
-            Tuple[Any, List[Tuple[_TokenType, str]]]
+            tuple[Any, list[tuple[_TokenType, str]]]
         ] = None
-        self._C: Dict[str, int] = {}
+        self._C: dict[str, int] = {}
         self.prev_block_finished: int = 0
         self.interact: Interaction = NoInteraction(self.config)
         # previous pastebin content to prevent duplicate pastes, filled on call
@@ -589,7 +587,7 @@ class Repl(metaclass=abc.ABCMeta):
 
     def get_object(self, name: str) -> Any:
         attributes = name.split(".")
-        obj = eval(attributes.pop(0), cast(Dict[str, Any], self.interp.locals))
+        obj = eval(attributes.pop(0), cast(dict[str, Any], self.interp.locals))
         while attributes:
             obj = inspection.getattr_safe(obj, attributes.pop(0))
         return obj
@@ -597,7 +595,7 @@ class Repl(metaclass=abc.ABCMeta):
     @classmethod
     def _funcname_and_argnum(
         cls, line: str
-    ) -> Tuple[Optional[str], Optional[Union[str, int]]]:
+    ) -> tuple[Optional[str], Optional[Union[str, int]]]:
         """Parse out the current function name and arg from a line of code."""
         # each element in stack is a _FuncExpr instance
         # if keyword is not None, we've encountered a keyword and so we're done counting
@@ -782,7 +780,7 @@ class Repl(metaclass=abc.ABCMeta):
             self.completers,
             cursor_offset=self.cursor_offset,
             line=self.current_line,
-            locals_=cast(Dict[str, Any], self.interp.locals),
+            locals_=cast(dict[str, Any], self.interp.locals),
             argspec=self.funcprops,
             current_block="\n".join(self.buffer + [self.current_line]),
             complete_magic_methods=self.config.complete_magic_methods,
@@ -819,7 +817,7 @@ class Repl(metaclass=abc.ABCMeta):
 
     def format_docstring(
         self, docstring: str, width: int, height: int
-    ) -> List[str]:
+    ) -> list[str]:
         """Take a string and try to format it into a sane list of strings to be
         put into the suggestion box."""
 
@@ -1088,7 +1086,7 @@ class Repl(metaclass=abc.ABCMeta):
     def close(self):
         """See the flush() method docstring."""
 
-    def tokenize(self, s, newline=False) -> List[Tuple[_TokenType, str]]:
+    def tokenize(self, s, newline=False) -> list[tuple[_TokenType, str]]:
         """Tokenizes a line of code, returning pygments tokens
         with side effects/impurities:
         - reads self.cpos to see what parens should be highlighted
@@ -1105,7 +1103,7 @@ class Repl(metaclass=abc.ABCMeta):
         cursor = len(source) - self.cpos
         if self.cpos:
             cursor += 1
-        stack: List[Any] = list()
+        stack: list[Any] = list()
         all_tokens = list(Python3Lexer().get_tokens(source))
         # Unfortunately, Pygments adds a trailing newline and strings with
         # no size, so strip them
@@ -1114,8 +1112,8 @@ class Repl(metaclass=abc.ABCMeta):
         all_tokens[-1] = (all_tokens[-1][0], all_tokens[-1][1].rstrip("\n"))
         line = pos = 0
         parens = dict(zip("{([", "})]"))
-        line_tokens: List[Tuple[_TokenType, str]] = list()
-        saved_tokens: List[Tuple[_TokenType, str]] = list()
+        line_tokens: list[tuple[_TokenType, str]] = list()
+        saved_tokens: list[tuple[_TokenType, str]] = list()
         search_for_paren = True
         for token, value in split_lines(all_tokens):
             pos += len(value)
@@ -1298,7 +1296,7 @@ def token_is_any_of(token_types):
     return token_is_any_of
 
 
-def extract_exit_value(args: Tuple[Any, ...]) -> Any:
+def extract_exit_value(args: tuple[Any, ...]) -> Any:
     """Given the arguments passed to `SystemExit`, return the value that
     should be passed to `sys.exit`.
     """

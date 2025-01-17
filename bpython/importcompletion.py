@@ -27,7 +27,8 @@ import sys
 import warnings
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Set, Generator, Sequence, Iterable, Union
+from typing import Optional, Set, Union
+from collections.abc import Generator, Sequence, Iterable
 
 from .line import (
     current_word,
@@ -69,9 +70,9 @@ class ModuleGatherer:
         directory names. If `paths` is not given, `sys.path` will be used."""
 
         # Cached list of all known modules
-        self.modules: Set[str] = set()
+        self.modules: set[str] = set()
         # Set of (st_dev, st_ino) to compare against so that paths are not repeated
-        self.paths: Set[_LoadedInode] = set()
+        self.paths: set[_LoadedInode] = set()
         # Patterns to skip
         self.skiplist: Sequence[str] = (
             skiplist if skiplist is not None else tuple()
@@ -86,7 +87,7 @@ class ModuleGatherer:
             Path(p).resolve() if p else Path.cwd() for p in paths
         )
 
-    def module_matches(self, cw: str, prefix: str = "") -> Set[str]:
+    def module_matches(self, cw: str, prefix: str = "") -> set[str]:
         """Modules names to replace cw with"""
 
         full = f"{prefix}.{cw}" if prefix else cw
@@ -102,7 +103,7 @@ class ModuleGatherer:
 
     def attr_matches(
         self, cw: str, prefix: str = "", only_modules: bool = False
-    ) -> Set[str]:
+    ) -> set[str]:
         """Attributes to replace name with"""
         full = f"{prefix}.{cw}" if prefix else cw
         module_name, _, name_after_dot = full.rpartition(".")
@@ -126,11 +127,11 @@ class ModuleGatherer:
 
         return matches
 
-    def module_attr_matches(self, name: str) -> Set[str]:
+    def module_attr_matches(self, name: str) -> set[str]:
         """Only attributes which are modules to replace name with"""
         return self.attr_matches(name, only_modules=True)
 
-    def complete(self, cursor_offset: int, line: str) -> Optional[Set[str]]:
+    def complete(self, cursor_offset: int, line: str) -> Optional[set[str]]:
         """Construct a full list of possibly completions for imports."""
         tokens = line.split()
         if "from" not in tokens and "import" not in tokens:

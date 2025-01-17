@@ -1,6 +1,7 @@
 import sys
 from codeop import CommandCompiler
-from typing import Any, Dict, Iterable, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union
+from collections.abc import Iterable
 
 from pygments.token import Generic, Token, Keyword, Name, Comment, String
 from pygments.token import Error, Literal, Number, Operator, Punctuation
@@ -47,7 +48,7 @@ class BPythonFormatter(Formatter):
 
     def __init__(
         self,
-        color_scheme: Dict[_TokenType, str],
+        color_scheme: dict[_TokenType, str],
         **options: Union[str, bool, None],
     ) -> None:
         self.f_strings = {k: f"\x01{v}" for k, v in color_scheme.items()}
@@ -67,7 +68,7 @@ class BPythonFormatter(Formatter):
 class Interp(ReplInterpreter):
     def __init__(
         self,
-        locals: Optional[Dict[str, Any]] = None,
+        locals: Optional[dict[str, Any]] = None,
     ) -> None:
         """Constructor.
 
@@ -121,7 +122,7 @@ class Interp(ReplInterpreter):
 
 def code_finished_will_parse(
     s: str, compiler: CommandCompiler
-) -> Tuple[bool, bool]:
+) -> tuple[bool, bool]:
     """Returns a tuple of whether the buffer could be complete and whether it
     will parse
 

@@ -25,7 +25,8 @@ import os
 from pathlib import Path
 import stat
 from itertools import islice, chain
-from typing import Iterable, Optional, List, TextIO
+from typing import Optional, List, TextIO
+from collections.abc import Iterable
 
 from .translations import _
 from .filelock import FileLock
@@ -55,7 +56,7 @@ class History:
     def append(self, line: str) -> None:
         self.append_to(self.entries, line)
 
-    def append_to(self, entries: List[str], line: str) -> None:
+    def append_to(self, entries: list[str], line: str) -> None:
         line = line.rstrip("\n")
         if line:
             if not self.duplicates:
@@ -100,7 +101,7 @@ class History:
         return self.entries[-self.index] if self.index else self.saved_line
 
     @property
-    def entries_by_index(self) -> List[str]:
+    def entries_by_index(self) -> list[str]:
         return list(chain((self.saved_line,), reversed(self.entries)))
 
     def find_match_backward(
@@ -196,8 +197,8 @@ class History:
             with FileLock(hfile, filename=str(filename)):
                 self.entries = self.load_from(hfile)
 
-    def load_from(self, fd: TextIO) -> List[str]:
-        entries: List[str] = []
+    def load_from(self, fd: TextIO) -> list[str]:
+        entries: list[str] = []
         for line in fd:
             self.append_to(entries, line)
         return entries if len(entries) else [""]
@@ -213,7 +214,7 @@ class History:
                 self.save_to(hfile, self.entries, lines)
 
     def save_to(
-        self, fd: TextIO, entries: Optional[List[str]] = None, lines: int = 0
+        self, fd: TextIO, entries: Optional[list[str]] = None, lines: int = 0
     ) -> None:
         if entries is None:
             entries = self.entries

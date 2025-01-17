@@ -73,14 +73,14 @@ def log_version(module: ModuleType, name: str) -> None:
     logger.info("%s: %s", name, module.__version__ if hasattr(module, "__version__") else "unknown version")  # type: ignore
 
 
-Options = Tuple[str, str, Callable[[argparse._ArgumentGroup], None]]
+Options = tuple[str, str, Callable[[argparse._ArgumentGroup], None]]
 
 
 def parse(
-    args: Optional[List[str]],
+    args: Optional[list[str]],
     extras: Optional[Options] = None,
     ignore_stdin: bool = False,
-) -> Tuple[Config, argparse.Namespace, List[str]]:
+) -> tuple[Config, argparse.Namespace, list[str]]:
     """Receive an argument list - if None, use sys.argv - parse all args and
     take appropriate action. Also receive optional extra argument: this should
     be a tuple of (title, description, callback)
@@ -256,7 +256,7 @@ def parse(
 
 
 def exec_code(
-    interpreter: code.InteractiveInterpreter, args: List[str]
+    interpreter: code.InteractiveInterpreter, args: list[str]
 ) -> None:
     """
     Helper to execute code in a given interpreter, e.g. to implement the behavior of python3 [-i] file.py

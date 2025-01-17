@@ -27,7 +27,7 @@ def cursor(s):
     return cursor_offset, line
 
 
-def decode(s: str) -> Tuple[Tuple[int, str], Optional[LinePart]]:
+def decode(s: str) -> tuple[tuple[int, str], Optional[LinePart]]:
     """'a<bd|c>d' -> ((3, 'abcd'), (1, 3, 'bdc'))"""
 
     if not s.count("|") == 1:

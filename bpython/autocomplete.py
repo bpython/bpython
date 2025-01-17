@@ -40,13 +40,13 @@ from enum import Enum
 from typing import (
     Any,
     Dict,
-    Iterator,
     List,
     Optional,
-    Sequence,
     Set,
     Tuple,
 )
+from collections.abc import Iterator, Sequence
+
 from . import inspection
 from . import line as lineparts
 from .line import LinePart
@@ -236,7 +236,7 @@ class BaseCompletionType:
     @abc.abstractmethod
     def matches(
         self, cursor_offset: int, line: str, **kwargs: Any
-    ) -> Optional[Set[str]]:
+    ) -> Optional[set[str]]:
         """Returns a list of possible matches given a line and cursor, or None
         if this completion type isn't applicable.
 
@@ -268,7 +268,7 @@ class BaseCompletionType:
 
     def substitute(
         self, cursor_offset: int, line: str, match: str
-    ) -> Tuple[int, str]:
+    ) -> tuple[int, str]:
         """Returns a cursor offset and line with match swapped in"""
         lpart = self.locate(cursor_offset, line)
         assert lpart
@@ -311,7 +311,7 @@ class CumulativeCompleter(BaseCompletionType):
 
     def matches(
         self, cursor_offset: int, line: str, **kwargs: Any
-    ) -> Optional[Set[str]]:
+    ) -> Optional[set[str]]:
         return_value = None
         all_matches = set()
         for completer in self._completers:
@@ -336,7 +336,7 @@ class ImportCompletion(BaseCompletionType):
 
     def matches(
         self, cursor_offset: int, line: str, **kwargs: Any
-    ) -> Optional[Set[str]]:
+    ) -> Optional[set[str]]:
         return self.module_gatherer.complete(cursor_offset, line)
 
     def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
@@ -356,7 +356,7 @@ class FilenameCompletion(BaseCompletionType):
 
     def matches(
         self, cursor_offset: int, line: str, **kwargs: Any
-    ) -> Optional[Set[str]]:
+    ) -> Optional[set[str]]:
         cs = lineparts.current_string(cursor_offset, line)
         if cs is None:
             return None
@@ -389,9 +389,9 @@ class AttrCompletion(BaseCompletionType):
         cursor_offset: int,
         line: str,
         *,
-        locals_: Optional[Dict[str, Any]] = None,
+        locals_: Optional[dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Optional[Set[str]]:
+    ) -> Optional[set[str]]:
         r = self.locate(cursor_offset, line)
         if r is None:
             return None
@@ -421,7 +421,7 @@ class AttrCompletion(BaseCompletionType):
         return _after_last_dot(word)
 
     def attr_matches(
-        self, text: str, namespace: Dict[str, Any]
+        self, text: str, namespace: dict[str, Any]
     ) -> Iterator[str]:
         """Taken from rlcompleter.py and bent to my will."""
 
@@ -460,7 +460,7 @@ class AttrCompletion(BaseCompletionType):
             if self.method_match(word, n, attr) and word != "__builtins__"
         )
 
-    def list_attributes(self, obj: Any) -> List[str]:
+    def list_attributes(self, obj: Any) -> list[str]:
         # TODO: re-implement dir without AttrCleaner here
         #
         # Note: accessing `obj.__dir__` via `getattr_static` is not side-effect free.
@@ -474,9 +474,9 @@ class DictKeyCompletion(BaseCompletionType):
         cursor_offset: int,
         line: str,
         *,
-        locals_: Optional[Dict[str, Any]] = None,
+        locals_: Optional[dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Optional[Set[str]]:
+    ) -> Optional[set[str]]:
         if locals_ is None:
             return None
 
@@ -516,7 +516,7 @@ class MagicMethodCompletion(BaseCompletionType):
         current_block: Optional[str] = None,
         complete_magic_methods: Optional[bool] = None,
         **kwargs: Any,
-    ) -> Optional[Set[str]]:
+    ) -> Optional[set[str]]:
         if (
             current_block is None
             or complete_magic_methods is None
@@ -541,9 +541,9 @@ class GlobalCompletion(BaseCompletionType):
         cursor_offset: int,
         line: str,
         *,
-        locals_: Optional[Dict[str, Any]] = None,
+        locals_: Optional[dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Optional[Set[str]]:
+    ) -> Optional[set[str]]:
         """Compute matches when text is a simple name.
         Return a list of all keywords, built-in functions and names currently
         defined in self.namespace that match.
@@ -583,7 +583,7 @@ class ParameterNameCompletion(BaseCompletionType):
         *,
         funcprops: Optional[inspection.FuncProps] = None,
         **kwargs: Any,
-    ) -> Optional[Set[str]]:
+    ) -> Optional[set[str]]:
         if funcprops is None:
             return None
 
@@ -622,9 +622,9 @@ class ExpressionAttributeCompletion(AttrCompletion):
         cursor_offset: int,
         line: str,
         *,
-        locals_: Optional[Dict[str, Any]] = None,
+        locals_: Optional[dict[str, Any]] = None,
         **kwargs: Any,
-    ) -> Optional[Set[str]]:
+    ) -> Optional[set[str]]:
         if locals_ is None:
             locals_ = __main__.__dict__
 
@@ -648,7 +648,7 @@ except ImportError:
     class MultilineJediCompletion(BaseCompletionType):  # type: ignore [no-redef]
         def matches(
             self, cursor_offset: int, line: str, **kwargs: Any
-        ) -> Optional[Set[str]]:
+        ) -> Optional[set[str]]:
             return None
 
         def locate(self, cursor_offset: int, line: str) -> Optional[LinePart]:
@@ -665,9 +665,9 @@ else:
             line: str,
             *,
             current_block: Optional[str] = None,
-            history: Optional[List[str]] = None,
+            history: Optional[list[str]] = None,
             **kwargs: Any,
-        ) -> Optional[Set[str]]:
+        ) -> Optional[set[str]]:
             if (
                 current_block is None
                 or history is None
@@ -725,12 +725,12 @@ def get_completer(
     cursor_offset: int,
     line: str,
     *,
-    locals_: Optional[Dict[str, Any]] = None,
+    locals_: Optional[dict[str, Any]] = None,
     argspec: Optional[inspection.FuncProps] = None,
-    history: Optional[List[str]] = None,
+    history: Optional[list[str]] = None,
     current_block: Optional[str] = None,
     complete_magic_methods: Optional[bool] = None,
-) -> Tuple[List[str], Optional[BaseCompletionType]]:
+) -> tuple[list[str], Optional[BaseCompletionType]]:
     """Returns a list of matches and an applicable completer
 
     If no matches available, returns a tuple of an empty list and None
@@ -747,7 +747,7 @@ def get_completer(
             double underscore methods like __len__ in method signatures
     """
 
-    def _cmpl_sort(x: str) -> Tuple[bool, str]:
+    def _cmpl_sort(x: str) -> tuple[bool, str]:
         """
         Function used to sort the matches.
         """
@@ -784,7 +784,7 @@ def get_completer(
 
 def get_default_completer(
     mode: AutocompleteModes, module_gatherer: ModuleGatherer
-) -> Tuple[BaseCompletionType, ...]:
+) -> tuple[BaseCompletionType, ...]:
     return (
         (
             DictKeyCompletion(mode=mode),

@@ -14,16 +14,15 @@ from enum import Enum
 from types import FrameType, TracebackType
 from typing import (
     Any,
-    Iterable,
     Dict,
     List,
     Literal,
     Optional,
-    Sequence,
     Tuple,
     Type,
     Union,
 )
+from collections.abc import Iterable, Sequence
 
 import greenlet
 from curtsies import (
@@ -121,7 +120,7 @@ class FakeStdin:
         self.current_line = ""
         self.cursor_offset = 0
         self.old_num_lines = 0
-        self.readline_results: List[str] = []
+        self.readline_results: list[str] = []
         if configured_edit_keys is not None:
             self.rl_char_sequences = configured_edit_keys
         else:
@@ -195,7 +194,7 @@ class FakeStdin:
         self.readline_results.append(value)
         return value if size <= -1 else value[:size]
 
-    def readlines(self, size: Optional[int] = -1) -> List[str]:
+    def readlines(self, size: Optional[int] = -1) -> list[str]:
         if size is None:
             # the default readlines implementation also accepts None
             size = -1
@@ -338,10 +337,10 @@ class BaseRepl(Repl):
         self,
         config: Config,
         window: CursorAwareWindow,
-        locals_: Optional[Dict[str, Any]] = None,
+        locals_: Optional[dict[str, Any]] = None,
         banner: Optional[str] = None,
         interp: Optional[Interp] = None,
-        orig_tcattrs: Optional[List[Any]] = None,
+        orig_tcattrs: Optional[list[Any]] = None,
     ):
         """
         locals_ is a mapping of locals to pass into the interpreter
@@ -404,7 +403,7 @@ class BaseRepl(Repl):
         # this is every line that's been displayed (input and output)
         # as with formatting applied. Logical lines that exceeded the terminal width
         # at the time of output are split across multiple entries in this list.
-        self.display_lines: List[FmtStr] = []
+        self.display_lines: list[FmtStr] = []
 
         # this is every line that's been executed; it gets smaller on rewind
         self.history = []
@@ -415,11 +414,11 @@ class BaseRepl(Repl):
         #   - the first element the line (string, not fmtsr)
         #   - the second element is one of 2 global constants: "input" or "output"
         #     (use LineType.INPUT or LineType.OUTPUT to avoid typing these strings)
-        self.all_logical_lines: List[Tuple[str, LineType]] = []
+        self.all_logical_lines: list[tuple[str, LineType]] = []
 
         # formatted version of lines in the buffer kept around so we can
         # unhighlight parens using self.reprint_line as called by bpython.Repl
-        self.display_buffer: List[FmtStr] = []
+        self.display_buffer: list[FmtStr] = []
 
         # how many times display has been scrolled down
         # because there wasn't room to display everything
@@ -428,7 +427,7 @@ class BaseRepl(Repl):
         # cursor position relative to start of current_line, 0 is first char
         self._cursor_offset = 0
 
-        self.orig_tcattrs: Optional[List[Any]] = orig_tcattrs
+        self.orig_tcattrs: Optional[list[Any]] = orig_tcattrs
 
         self.coderunner = CodeRunner(self.interp, self.request_refresh)
 
@@ -460,7 +459,7 @@ class BaseRepl(Repl):
         # some commands act differently based on the prev event
         # this list doesn't include instances of event.Event,
         # only keypress-type events (no refresh screen events etc.)
-        self.last_events: List[Optional[str]] = [None] * 50
+        self.last_events: list[Optional[str]] = [None] * 50
 
         # displays prev events in a column on the right hand side
         self.presentation_mode = False
@@ -601,7 +600,7 @@ class BaseRepl(Repl):
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> Literal[False]:
@@ -1561,7 +1560,7 @@ class BaseRepl(Repl):
         user_quit=False,
         try_preserve_history_height=30,
         min_infobox_height=5,
-    ) -> Tuple[FSArray, Tuple[int, int]]:
+    ) -> tuple[FSArray, tuple[int, int]]:
         """Returns an array of min_height or more rows and width columns, plus
         cursor position
 
@@ -2237,7 +2236,7 @@ def compress_paste_event(paste_event):
 
 def just_simple_events(
     event_list: Iterable[Union[str, events.Event]]
-) -> List[str]:
+) -> list[str]:
     simple_events = []
     for e in event_list:
         if isinstance(e, events.Event):

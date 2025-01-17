@@ -291,7 +291,7 @@ def current_expression_attribute(
 
 def cursor_on_closing_char_pair(
     cursor_offset: int, line: str, ch: Optional[str] = None
-) -> Tuple[bool, bool]:
+) -> tuple[bool, bool]:
     """Checks if cursor sits on closing character of a pair
     and whether its pair character is directly behind it
     """

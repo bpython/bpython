@@ -60,7 +60,7 @@ def parse(s: str) -> FmtStr:
     )
 
 
-def fs_from_match(d: Dict[str, Any]) -> FmtStr:
+def fs_from_match(d: dict[str, Any]) -> FmtStr:
     atts = {}
     color = "default"
     if d["fg"]:
@@ -99,7 +99,7 @@ peel_off_string_re = LazyReCompile(
 )
 
 
-def peel_off_string(s: str) -> Tuple[Dict[str, Any], str]:
+def peel_off_string(s: str) -> tuple[dict[str, Any], str]:
     m = peel_off_string_re.match(s)
     assert m, repr(s)
     d = m.groupdict()

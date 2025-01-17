@@ -2,7 +2,7 @@
 etc)"""
 
 from codeop import CommandCompiler
-from typing import Match
+from re import Match
 from itertools import tee, islice, chain
 
 from ..lazyre import LazyReCompile

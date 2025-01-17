@@ -31,7 +31,8 @@ import locale
 from configparser import ConfigParser
 from itertools import chain
 from pathlib import Path
-from typing import MutableMapping, Mapping, Any, Dict
+from typing import Any, Dict
+from collections.abc import MutableMapping, Mapping
 from xdg import BaseDirectory
 
 from .autocomplete import AutocompleteModes
@@ -115,7 +116,7 @@ class Config:
         "right_arrow_suggestion": "K",
     }
 
-    defaults: Dict[str, Dict[str, Any]] = {
+    defaults: dict[str, dict[str, Any]] = {
         "general": {
             "arg_spec": True,
             "auto_display_list": True,

@@ -56,7 +56,7 @@ class BaseLock:
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> Literal[False]:

@@ -42,7 +42,7 @@ class EvaluationError(Exception):
     """Raised if an exception occurred in safe_eval."""
 
 
-def safe_eval(expr: str, namespace: Dict[str, Any]) -> Any:
+def safe_eval(expr: str, namespace: dict[str, Any]) -> Any:
     """Not all that safe, just catches some errors"""
     try:
         return eval(expr, namespace)
@@ -199,7 +199,7 @@ def find_attribute_with_name(node, name):
 
 
 def evaluate_current_expression(
-    cursor_offset: int, line: str, namespace: Optional[Dict[str, Any]] = None
+    cursor_offset: int, line: str, namespace: Optional[dict[str, Any]] = None
 ) -> Any:
     """
     Return evaluated expression to the right of the dot of current attribute.

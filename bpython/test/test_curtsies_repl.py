@@ -435,7 +435,7 @@ class TestCurtsiesStartup(TestCase):
         self.repl = create_repl()
 
     def write_startup_file(self, fname, encoding):
-        with open(fname, mode="wt", encoding=encoding) as f:
+        with open(fname, mode="w", encoding=encoding) as f:
             f.write("# coding: ")
             f.write(encoding)
             f.write("\n")

@@ -1,6 +1,7 @@
 import os
 from collections import defaultdict
-from typing import Callable, Dict, Iterable, Sequence, Set, List
+from typing import Callable, Dict, Set, List
+from collections.abc import Iterable, Sequence
 
 from .. import importcompletion
 
@@ -20,9 +21,9 @@ else:
             paths: Iterable[str],
             on_change: Callable[[Sequence[str]], None],
         ) -> None:
-            self.dirs: Dict[str, Set[str]] = defaultdict(set)
+            self.dirs: dict[str, set[str]] = defaultdict(set)
             self.on_change = on_change
-            self.modules_to_add_later: List[str] = []
+            self.modules_to_add_later: list[str] = []
             self.observer = Observer()
             self.started = False
             self.activated = False

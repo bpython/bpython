@@ -60,7 +60,7 @@ class FakeRepl(repl.Repl):
         raise NotImplementedError
 
     def reprint_line(
-        self, lineno: int, tokens: List[Tuple[repl._TokenType, str]]
+        self, lineno: int, tokens: list[tuple[repl._TokenType, str]]
     ) -> None:
         raise NotImplementedError
 

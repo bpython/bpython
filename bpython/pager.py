@@ -33,7 +33,7 @@ import shlex
 from typing import List
 
 
-def get_pager_command(default: str = "less -rf") -> List[str]:
+def get_pager_command(default: str = "less -rf") -> list[str]:
     command = shlex.split(os.environ.get("PAGER", default))
     return command
 

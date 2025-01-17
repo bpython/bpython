@@ -162,7 +162,7 @@ class TestInspection(unittest.TestCase):
             """
             return lst + [number]
 
-        def fun_annotations(number: int, lst: List[int] = []) -> List[int]:
+        def fun_annotations(number: int, lst: list[int] = []) -> list[int]:
             """
             Return a list of numbers
 
@@ -185,7 +185,7 @@ class TestInspection(unittest.TestCase):
     def test_issue_966_class_method(self):
         class Issue966(Sequence):
             @classmethod
-            def cmethod(cls, number: int, lst: List[int] = []):
+            def cmethod(cls, number: int, lst: list[int] = []):
                 """
                 Return a list of numbers
 
@@ -222,7 +222,7 @@ class TestInspection(unittest.TestCase):
     def test_issue_966_static_method(self):
         class Issue966(Sequence):
             @staticmethod
-            def cmethod(number: int, lst: List[int] = []):
+            def cmethod(number: int, lst: list[int] = []):
                 """
                 Return a list of numbers
 

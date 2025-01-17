@@ -28,7 +28,7 @@ T = TypeVar("T")
 
 class KeyMap(Generic[T]):
     def __init__(self, default: T) -> None:
-        self.map: Dict[str, T] = {}
+        self.map: dict[str, T] = {}
         self.default = default
 
     def __getitem__(self, key: str) -> T:
@@ -49,7 +49,7 @@ class KeyMap(Generic[T]):
         self.map[key] = value
 
 
-cli_key_dispatch: KeyMap[Tuple[str, ...]] = KeyMap(tuple())
+cli_key_dispatch: KeyMap[tuple[str, ...]] = KeyMap(tuple())
 urwid_key_dispatch = KeyMap("")
 
 # fill dispatch with letters

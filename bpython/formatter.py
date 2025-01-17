@@ -28,7 +28,8 @@
 # mypy: disallow_untyped_calls=True
 
 
-from typing import Any, MutableMapping, Iterable, TextIO
+from typing import Any, TextIO
+from collections.abc import MutableMapping, Iterable
 from pygments.formatter import Formatter
 from pygments.token import (
     _TokenType,

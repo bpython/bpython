@@ -1,7 +1,7 @@
 """Non-keyboard events used in bpython curtsies REPL"""
 
 import time
-from typing import Sequence
+from collections.abc import Sequence
 
 import curtsies.events
 

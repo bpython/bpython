@@ -62,13 +62,13 @@ class _Repr:
 
 @dataclass
 class ArgSpec:
-    args: List[str]
+    args: list[str]
     varargs: Optional[str]
     varkwargs: Optional[str]
-    defaults: Optional[List[_Repr]]
-    kwonly: List[str]
-    kwonly_defaults: Optional[Dict[str, _Repr]]
-    annotations: Optional[Dict[str, Any]]
+    defaults: Optional[list[_Repr]]
+    kwonly: list[str]
+    kwonly_defaults: Optional[dict[str, _Repr]]
+    annotations: Optional[dict[str, Any]]
 
 
 @dataclass
@@ -118,7 +118,7 @@ class AttrCleaner(ContextManager[None]):
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> Literal[False]:
@@ -134,10 +134,10 @@ class AttrCleaner(ContextManager[None]):
         return False
 
 
-def parsekeywordpairs(signature: str) -> Dict[str, str]:
+def parsekeywordpairs(signature: str) -> dict[str, str]:
     preamble = True
     stack = []
-    substack: List[str] = []
+    substack: list[str] = []
     parendepth = 0
     annotation = False
     for token, value in Python3Lexer().get_tokens(signature):

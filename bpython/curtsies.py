@@ -25,14 +25,13 @@ from typing import (
     Any,
     Callable,
     Dict,
-    Generator,
     List,
     Optional,
     Protocol,
-    Sequence,
     Tuple,
     Union,
 )
+from collections.abc import Generator, Sequence
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +50,7 @@ class FullCurtsiesRepl(BaseRepl):
     def __init__(
         self,
         config: Config,
-        locals_: Optional[Dict[str, Any]] = None,
+        locals_: Optional[dict[str, Any]] = None,
         banner: Optional[str] = None,
         interp: Optional[Interp] = None,
     ) -> None:
@@ -111,7 +110,7 @@ class FullCurtsiesRepl(BaseRepl):
     def request_undo(self, n: int = 1) -> None:
         return self._request_undo_callback(n=n)
 
-    def get_term_hw(self) -> Tuple[int, int]:
+    def get_term_hw(self) -> tuple[int, int]:
         return self.window.get_term_hw()
 
     def get_cursor_vertical_diff(self) -> int:
@@ -179,8 +178,8 @@ class FullCurtsiesRepl(BaseRepl):
 
 
 def main(
-    args: Optional[List[str]] = None,
-    locals_: Optional[Dict[str, Any]] = None,
+    args: Optional[list[str]] = None,
+    locals_: Optional[dict[str, Any]] = None,
     banner: Optional[str] = None,
     welcome_message: Optional[str] = None,
 ) -> Any:
@@ -209,7 +208,7 @@ def main(
 
     interp = None
     paste = None
-    exit_value: Tuple[Any, ...] = ()
+    exit_value: tuple[Any, ...] = ()
     if exec_args:
         if not options:
             raise ValueError("don't pass in exec_args without options")
