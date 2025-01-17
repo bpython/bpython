@@ -12,7 +12,7 @@ from bpython.curtsiesfrontend.preprocess import preprocess
 from bpython.test.fodder import original, processed
 
 
-preproc = partial(preprocess, compiler=CommandCompiler)
+preproc = partial(preprocess, compiler=CommandCompiler())
 
 
 def get_fodder_source(test_name):
