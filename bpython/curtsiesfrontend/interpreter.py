@@ -49,7 +49,7 @@ class BPythonFormatter(Formatter):
     def __init__(
         self,
         color_scheme: dict[_TokenType, str],
-        **options: Union[str, bool, None],
+        **options: str | bool | None,
     ) -> None:
         self.f_strings = {k: f"\x01{v}" for k, v in color_scheme.items()}
         # FIXME: mypy currently fails to handle this properly
@@ -68,7 +68,7 @@ class BPythonFormatter(Formatter):
 class Interp(ReplInterpreter):
     def __init__(
         self,
-        locals: Optional[dict[str, Any]] = None,
+        locals: dict[str, Any] | None = None,
     ) -> None:
         """Constructor.
 
@@ -79,7 +79,7 @@ class Interp(ReplInterpreter):
 
         # typically changed after being instantiated
         # but used when interpreter used corresponding REPL
-        def write(err_line: Union[str, FmtStr]) -> None:
+        def write(err_line: str | FmtStr) -> None:
             """Default stderr handler for tracebacks
 
             Accepts FmtStrs so interpreters can output them"""

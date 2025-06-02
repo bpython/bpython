@@ -23,7 +23,6 @@ from .translations import _
 
 from typing import (
     Any,
-    Callable,
     Dict,
     List,
     Optional,
@@ -31,28 +30,28 @@ from typing import (
     Tuple,
     Union,
 )
-from collections.abc import Generator, Sequence
+from collections.abc import Callable, Generator, Sequence
 
 logger = logging.getLogger(__name__)
 
 
 class SupportsEventGeneration(Protocol):
     def send(
-        self, timeout: Optional[float]
-    ) -> Union[str, curtsies.events.Event, None]: ...
+        self, timeout: float | None
+    ) -> str | curtsies.events.Event | None: ...
 
     def __iter__(self) -> "SupportsEventGeneration": ...
 
-    def __next__(self) -> Union[str, curtsies.events.Event, None]: ...
+    def __next__(self) -> str | curtsies.events.Event | None: ...
 
 
 class FullCurtsiesRepl(BaseRepl):
     def __init__(
         self,
         config: Config,
-        locals_: Optional[dict[str, Any]] = None,
-        banner: Optional[str] = None,
-        interp: Optional[Interp] = None,
+        locals_: dict[str, Any] | None = None,
+        banner: str | None = None,
+        interp: Interp | None = None,
     ) -> None:
         self.input_generator = curtsies.input.Input(
             keynames="curtsies", sigint_event=True, paste_threshold=None
@@ -129,7 +128,7 @@ class FullCurtsiesRepl(BaseRepl):
         self.interrupting_refresh()
 
     def process_event_and_paint(
-        self, e: Union[str, curtsies.events.Event, None]
+        self, e: str | curtsies.events.Event | None
     ) -> None:
         """If None is passed in, just paint the screen"""
         try:
@@ -151,7 +150,7 @@ class FullCurtsiesRepl(BaseRepl):
     def mainloop(
         self,
         interactive: bool = True,
-        paste: Optional[curtsies.events.PasteEvent] = None,
+        paste: curtsies.events.PasteEvent | None = None,
     ) -> None:
         if interactive:
             # Add custom help command
@@ -178,10 +177,10 @@ class FullCurtsiesRepl(BaseRepl):
 
 
 def main(
-    args: Optional[list[str]] = None,
-    locals_: Optional[dict[str, Any]] = None,
-    banner: Optional[str] = None,
-    welcome_message: Optional[str] = None,
+    args: list[str] | None = None,
+    locals_: dict[str, Any] | None = None,
+    banner: str | None = None,
+    welcome_message: str | None = None,
 ) -> Any:
     """
     banner is displayed directly after the version information.
@@ -249,7 +248,7 @@ def main(
 
 def _combined_events(
     event_provider: SupportsEventGeneration, paste_threshold: int
-) -> Generator[Union[str, curtsies.events.Event, None], Optional[float], None]:
+) -> Generator[str | curtsies.events.Event | None, float | None, None]:
     """Combines consecutive keypress events into paste events."""
     timeout = yield "nonsense_event"  # so send can be used immediately
     queue: collections.deque = collections.deque()

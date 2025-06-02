@@ -199,7 +199,7 @@ def find_attribute_with_name(node, name):
 
 
 def evaluate_current_expression(
-    cursor_offset: int, line: str, namespace: Optional[dict[str, Any]] = None
+    cursor_offset: int, line: str, namespace: dict[str, Any] | None = None
 ) -> Any:
     """
     Return evaluated expression to the right of the dot of current attribute.

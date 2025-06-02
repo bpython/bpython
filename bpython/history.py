@@ -37,7 +37,7 @@ class History:
 
     def __init__(
         self,
-        entries: Optional[Iterable[str]] = None,
+        entries: Iterable[str] | None = None,
         duplicates: bool = True,
         hist_size: int = 100,
     ) -> None:
@@ -78,7 +78,7 @@ class History:
         self,
         start: bool = True,
         search: bool = False,
-        target: Optional[str] = None,
+        target: str | None = None,
         include_current: bool = False,
     ) -> str:
         """Move one step back in the history."""
@@ -128,7 +128,7 @@ class History:
         self,
         start: bool = True,
         search: bool = False,
-        target: Optional[str] = None,
+        target: str | None = None,
         include_current: bool = False,
     ) -> str:
         """Move one step forward in the history."""
@@ -214,7 +214,7 @@ class History:
                 self.save_to(hfile, self.entries, lines)
 
     def save_to(
-        self, fd: TextIO, entries: Optional[list[str]] = None, lines: int = 0
+        self, fd: TextIO, entries: list[str] | None = None, lines: int = 0
     ) -> None:
         if entries is None:
             entries = self.entries

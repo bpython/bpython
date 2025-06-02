@@ -1,6 +1,7 @@
 import re
 from functools import partial
-from typing import Any, Callable, Dict, Tuple
+from typing import Any, Dict, Tuple
+from collections.abc import Callable
 
 from curtsies.formatstring import fmtstr, FmtStr
 from curtsies.termformatconstants import (

@@ -41,7 +41,6 @@ from pathlib import Path
 from types import ModuleType, TracebackType
 from typing import (
     Any,
-    Callable,
     Dict,
     List,
     Literal,
@@ -52,7 +51,7 @@ from typing import (
     Union,
     cast,
 )
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 
 from pygments.lexers import Python3Lexer
 from pygments.token import Token, _TokenType
@@ -85,9 +84,9 @@ class RuntimeTimer:
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> Literal[False]:
         self.last_command = time.monotonic() - self.start
         self.running_time += self.last_command
@@ -108,7 +107,7 @@ class Interpreter(code.InteractiveInterpreter):
 
     def __init__(
         self,
-        locals: Optional[dict[str, Any]] = None,
+        locals: dict[str, Any] | None = None,
     ) -> None:
         """Constructor.
 
@@ -125,7 +124,7 @@ class Interpreter(code.InteractiveInterpreter):
         traceback.
         """
 
-        self.syntaxerror_callback: Optional[Callable] = None
+        self.syntaxerror_callback: Callable | None = None
 
         if locals is None:
             # instead of messing with sys.modules, we should modify sys.modules
@@ -139,7 +138,7 @@ class Interpreter(code.InteractiveInterpreter):
     def runsource(
         self,
         source: str,
-        filename: Optional[str] = None,
+        filename: str | None = None,
         symbol: str = "single",
     ) -> bool:
         """Execute Python code.
@@ -152,7 +151,7 @@ class Interpreter(code.InteractiveInterpreter):
         with self.timer:
             return super().runsource(source, filename, symbol)
 
-    def showsyntaxerror(self, filename: Optional[str] = None, **kwargs) -> None:
+    def showsyntaxerror(self, filename: str | None = None, **kwargs) -> None:
         """Override the regular handler, the code's copied and pasted from
         code.py, as per showtraceback, but with the syntaxerror callback called
         and the text in a pretty colour."""
@@ -227,9 +226,9 @@ class MatchesIterator:
         # original line (before match replacements)
         self.orig_line = ""
         # class describing the current type of completion
-        self.completer: Optional[autocomplete.BaseCompletionType] = None
-        self.start: Optional[int] = None
-        self.end: Optional[int] = None
+        self.completer: autocomplete.BaseCompletionType | None = None
+        self.start: int | None = None
+        self.end: int | None = None
 
     def __nonzero__(self) -> bool:
         """MatchesIterator is False when word hasn't been replaced yet"""
@@ -352,7 +351,7 @@ class Interaction(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def file_prompt(self, s: str) -> Optional[str]:
+    def file_prompt(self, s: str) -> str | None:
         pass
 
 
@@ -368,7 +367,7 @@ class NoInteraction(Interaction):
     ) -> None:
         pass
 
-    def file_prompt(self, s: str) -> Optional[str]:
+    def file_prompt(self, s: str) -> str | None:
         return None
 
 
@@ -384,7 +383,7 @@ class _FuncExpr:
     function_expr: str
     arg_number: int
     opening: str
-    keyword: Optional[str] = None
+    keyword: str | None = None
 
 
 class Repl(metaclass=abc.ABCMeta):
@@ -493,11 +492,11 @@ class Repl(metaclass=abc.ABCMeta):
         self.evaluating = False
         self.matches_iter = MatchesIterator()
         self.funcprops = None
-        self.arg_pos: Union[str, int, None] = None
+        self.arg_pos: str | int | None = None
         self.current_func = None
-        self.highlighted_paren: Optional[
+        self.highlighted_paren: None | (
             tuple[Any, list[tuple[_TokenType, str]]]
-        ] = None
+        ) = None
         self._C: dict[str, int] = {}
         self.prev_block_finished: int = 0
         self.interact: Interaction = NoInteraction(self.config)
@@ -509,7 +508,7 @@ class Repl(metaclass=abc.ABCMeta):
         # Necessary to fix mercurial.ui.ui expecting sys.stderr to have this
         # attribute
         self.closed = False
-        self.paster: Union[PasteHelper, PastePinnwand]
+        self.paster: PasteHelper | PastePinnwand
 
         if self.config.hist_file.exists():
             try:
@@ -595,7 +594,7 @@ class Repl(metaclass=abc.ABCMeta):
     @classmethod
     def _funcname_and_argnum(
         cls, line: str
-    ) -> tuple[Optional[str], Optional[Union[str, int]]]:
+    ) -> tuple[str | None, str | int | None]:
         """Parse out the current function name and arg from a line of code."""
         # each element in stack is a _FuncExpr instance
         # if keyword is not None, we've encountered a keyword and so we're done counting
@@ -715,7 +714,7 @@ class Repl(metaclass=abc.ABCMeta):
         current name in the current input line. Throw `SourceNotFound` if the
         source cannot be found."""
 
-        obj: Optional[Callable] = self.current_func
+        obj: Callable | None = self.current_func
         try:
             if obj is None:
                 line = self.current_line
@@ -761,7 +760,7 @@ class Repl(metaclass=abc.ABCMeta):
     # If exactly one match that is equal to current line, clear matches
     # If example one match and tab=True, then choose that and clear matches
 
-    def complete(self, tab: bool = False) -> Optional[bool]:
+    def complete(self, tab: bool = False) -> bool | None:
         """Construct a full list of possible completions and
         display them in a window. Also check if there's an available argspec
         (via the inspect module) and bang that on top of the completions too.
@@ -937,7 +936,7 @@ class Repl(metaclass=abc.ABCMeta):
         else:
             self.interact.notify(_("Copied content to clipboard."))
 
-    def pastebin(self, s=None) -> Optional[str]:
+    def pastebin(self, s=None) -> str | None:
         """Upload to a pastebin and display the URL in the status bar."""
 
         if s is None:
@@ -951,7 +950,7 @@ class Repl(metaclass=abc.ABCMeta):
         else:
             return self.do_pastebin(s)
 
-    def do_pastebin(self, s) -> Optional[str]:
+    def do_pastebin(self, s) -> str | None:
         """Actually perform the upload."""
         paste_url: str
         if s == self.prev_pastebin_content:

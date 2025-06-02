@@ -103,9 +103,7 @@ class TestInspection(unittest.TestCase):
         self.assertEqual(inspect.getsource(encoding_latin1.foo), foo_non_ascii)
 
     def test_get_source_file(self):
-        path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "fodder"
-        )
+        path = os.path.join(os.path.dirname(__file__), "fodder")
 
         encoding = inspection.get_encoding_file(
             os.path.join(path, "encoding_ascii.py")

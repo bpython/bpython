@@ -63,8 +63,8 @@ class _LoadedInode:
 class ModuleGatherer:
     def __init__(
         self,
-        paths: Optional[Iterable[Union[str, Path]]] = None,
-        skiplist: Optional[Sequence[str]] = None,
+        paths: Iterable[str | Path] | None = None,
+        skiplist: Sequence[str] | None = None,
     ) -> None:
         """Initialize module gatherer with all modules in `paths`, which should be a list of
         directory names. If `paths` is not given, `sys.path` will be used."""
@@ -131,7 +131,7 @@ class ModuleGatherer:
         """Only attributes which are modules to replace name with"""
         return self.attr_matches(name, only_modules=True)
 
-    def complete(self, cursor_offset: int, line: str) -> Optional[set[str]]:
+    def complete(self, cursor_offset: int, line: str) -> set[str] | None:
         """Construct a full list of possibly completions for imports."""
         tokens = line.split()
         if "from" not in tokens and "import" not in tokens:
@@ -167,7 +167,7 @@ class ModuleGatherer:
         else:
             return None
 
-    def find_modules(self, path: Path) -> Generator[Optional[str], None, None]:
+    def find_modules(self, path: Path) -> Generator[str | None, None, None]:
         """Find all modules (and packages) for a given directory."""
         if not path.is_dir():
             # Perhaps a zip file

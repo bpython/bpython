@@ -8,9 +8,7 @@ class BPythonLinecache(dict):
 
     def __init__(
         self,
-        bpython_history: Optional[
-            list[tuple[int, None, list[str], str]]
-        ] = None,
+        bpython_history: None | (list[tuple[int, None, list[str], str]]) = None,
         *args,
         **kwargs,
     ) -> None:

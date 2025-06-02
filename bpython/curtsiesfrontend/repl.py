@@ -112,7 +112,7 @@ class FakeStdin:
         self,
         coderunner: CodeRunner,
         repl: "BaseRepl",
-        configured_edit_keys: Optional[AbstractEdits] = None,
+        configured_edit_keys: AbstractEdits | None = None,
     ):
         self.coderunner = coderunner
         self.repl = repl
@@ -126,7 +126,7 @@ class FakeStdin:
         else:
             self.rl_char_sequences = edit_keys
 
-    def process_event(self, e: Union[events.Event, str]) -> None:
+    def process_event(self, e: events.Event | str) -> None:
         assert self.has_focus
 
         logger.debug("fake input processing event %r", e)
@@ -194,7 +194,7 @@ class FakeStdin:
         self.readline_results.append(value)
         return value if size <= -1 else value[:size]
 
-    def readlines(self, size: Optional[int] = -1) -> list[str]:
+    def readlines(self, size: int | None = -1) -> list[str]:
         if size is None:
             # the default readlines implementation also accepts None
             size = -1
@@ -337,10 +337,10 @@ class BaseRepl(Repl):
         self,
         config: Config,
         window: CursorAwareWindow,
-        locals_: Optional[dict[str, Any]] = None,
-        banner: Optional[str] = None,
-        interp: Optional[Interp] = None,
-        orig_tcattrs: Optional[list[Any]] = None,
+        locals_: dict[str, Any] | None = None,
+        banner: str | None = None,
+        interp: Interp | None = None,
+        orig_tcattrs: list[Any] | None = None,
     ):
         """
         locals_ is a mapping of locals to pass into the interpreter
@@ -398,7 +398,7 @@ class BaseRepl(Repl):
         self._current_line = ""
 
         # current line of output - stdout and stdin go here
-        self.current_stdouterr_line: Union[str, FmtStr] = ""
+        self.current_stdouterr_line: str | FmtStr = ""
 
         # this is every line that's been displayed (input and output)
         # as with formatting applied. Logical lines that exceeded the terminal width
@@ -427,7 +427,7 @@ class BaseRepl(Repl):
         # cursor position relative to start of current_line, 0 is first char
         self._cursor_offset = 0
 
-        self.orig_tcattrs: Optional[list[Any]] = orig_tcattrs
+        self.orig_tcattrs: list[Any] | None = orig_tcattrs
 
         self.coderunner = CodeRunner(self.interp, self.request_refresh)
 
@@ -459,7 +459,7 @@ class BaseRepl(Repl):
         # some commands act differently based on the prev event
         # this list doesn't include instances of event.Event,
         # only keypress-type events (no refresh screen events etc.)
-        self.last_events: list[Optional[str]] = [None] * 50
+        self.last_events: list[str | None] = [None] * 50
 
         # displays prev events in a column on the right hand side
         self.presentation_mode = False
@@ -600,9 +600,9 @@ class BaseRepl(Repl):
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> Literal[False]:
         sys.stdin = self.orig_stdin
         sys.stdout = self.orig_stdout
@@ -616,7 +616,7 @@ class BaseRepl(Repl):
         sys.meta_path = self.orig_meta_path
         return False
 
-    def sigwinch_handler(self, signum: int, frame: Optional[FrameType]) -> None:
+    def sigwinch_handler(self, signum: int, frame: FrameType | None) -> None:
         old_rows, old_columns = self.height, self.width
         self.height, self.width = self.get_term_hw()
         cursor_dy = self.get_cursor_vertical_diff()
@@ -632,7 +632,7 @@ class BaseRepl(Repl):
             self.scroll_offset,
         )
 
-    def sigtstp_handler(self, signum: int, frame: Optional[FrameType]) -> None:
+    def sigtstp_handler(self, signum: int, frame: FrameType | None) -> None:
         self.scroll_offset = len(self.lines_for_display)
         self.__exit__(None, None, None)
         self.on_suspend()
@@ -647,7 +647,7 @@ class BaseRepl(Repl):
         self.unhighlight_paren()
 
     # Event handling
-    def process_event(self, e: Union[events.Event, str]) -> Optional[bool]:
+    def process_event(self, e: events.Event | str) -> bool | None:
         """Returns True if shutting down, otherwise returns None.
         Mostly mutates state of Repl object"""
 
@@ -660,7 +660,7 @@ class BaseRepl(Repl):
             self.process_key_event(e)
             return None
 
-    def process_control_event(self, e: events.Event) -> Optional[bool]:
+    def process_control_event(self, e: events.Event) -> bool | None:
         if isinstance(e, bpythonevents.ScheduledRefreshRequestEvent):
             # This is a scheduled refresh - it's really just a refresh (so nop)
             pass
@@ -2234,9 +2234,7 @@ def compress_paste_event(paste_event):
         return None
 
 
-def just_simple_events(
-    event_list: Iterable[Union[str, events.Event]]
-) -> list[str]:
+def just_simple_events(event_list: Iterable[str | events.Event]) -> list[str]:
     simple_events = []
     for e in event_list:
         if isinstance(e, events.Event):
@@ -2253,7 +2251,7 @@ def just_simple_events(
     return simple_events
 
 
-def is_simple_event(e: Union[str, events.Event]) -> bool:
+def is_simple_event(e: str | events.Event) -> bool:
     if isinstance(e, events.Event):
         return False
     return (

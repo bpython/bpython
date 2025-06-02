@@ -27,7 +27,7 @@ def cursor(s):
     return cursor_offset, line
 
 
-def decode(s: str) -> tuple[tuple[int, str], Optional[LinePart]]:
+def decode(s: str) -> tuple[tuple[int, str], LinePart | None]:
     """'a<bd|c>d' -> ((3, 'abcd'), (1, 3, 'bdc'))"""
 
     if not s.count("|") == 1:
@@ -52,7 +52,7 @@ def line_with_cursor(cursor_offset: int, line: str) -> str:
     return line[:cursor_offset] + "|" + line[cursor_offset:]
 
 
-def encode(cursor_offset: int, line: str, result: Optional[LinePart]) -> str:
+def encode(cursor_offset: int, line: str, result: LinePart | None) -> str:
     """encode(3, 'abdcd', (1, 3, 'bdc')) -> a<bd|c>d'
 
     Written for prettier assert error messages

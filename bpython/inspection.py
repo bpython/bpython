@@ -28,7 +28,6 @@ import re
 from dataclasses import dataclass
 from typing import (
     Any,
-    Callable,
     Optional,
     Type,
     Dict,
@@ -36,6 +35,7 @@ from typing import (
     ContextManager,
     Literal,
 )
+from collections.abc import Callable
 from types import MemberDescriptorType, TracebackType
 
 from pygments.token import Token
@@ -63,12 +63,12 @@ class _Repr:
 @dataclass
 class ArgSpec:
     args: list[str]
-    varargs: Optional[str]
-    varkwargs: Optional[str]
-    defaults: Optional[list[_Repr]]
+    varargs: str | None
+    varkwargs: str | None
+    defaults: list[_Repr] | None
     kwonly: list[str]
-    kwonly_defaults: Optional[dict[str, _Repr]]
-    annotations: Optional[dict[str, Any]]
+    kwonly_defaults: dict[str, _Repr] | None
+    annotations: dict[str, Any] | None
 
 
 @dataclass
@@ -118,9 +118,9 @@ class AttrCleaner(ContextManager[None]):
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> Literal[False]:
         """Restore an object's magic methods."""
         type_ = type(self._obj)
@@ -224,7 +224,7 @@ _getpydocspec_re = LazyReCompile(
 )
 
 
-def _getpydocspec(f: Callable) -> Optional[ArgSpec]:
+def _getpydocspec(f: Callable) -> ArgSpec | None:
     try:
         argspec = pydoc.getdoc(f)
     except NameError:
@@ -267,7 +267,7 @@ def _getpydocspec(f: Callable) -> Optional[ArgSpec]:
     )
 
 
-def getfuncprops(func: str, f: Callable) -> Optional[FuncProps]:
+def getfuncprops(func: str, f: Callable) -> FuncProps | None:
     # Check if it's a real bound method or if it's implicitly calling __init__
     # (i.e. FooClass(...) and not FooClass.__init__(...) -- the former would
     # not take 'self', the latter would:

@@ -56,9 +56,9 @@ class BaseLock:
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> Literal[False]:
         if self.locked:
             self.release()
@@ -122,7 +122,7 @@ class WindowsFileLock(BaseLock):
 
 
 def FileLock(
-    fileobj: IO, mode: int = 0, filename: Optional[str] = None
+    fileobj: IO, mode: int = 0, filename: str | None = None
 ) -> BaseLock:
     if has_fcntl:
         return UnixFileLock(fileobj, mode)

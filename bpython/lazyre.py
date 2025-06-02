@@ -44,10 +44,10 @@ class LazyReCompile:
     def finditer(self, *args, **kwargs) -> Iterator[Match[str]]:
         return self.compiled.finditer(*args, **kwargs)
 
-    def search(self, *args, **kwargs) -> Optional[Match[str]]:
+    def search(self, *args, **kwargs) -> Match[str] | None:
         return self.compiled.search(*args, **kwargs)
 
-    def match(self, *args, **kwargs) -> Optional[Match[str]]:
+    def match(self, *args, **kwargs) -> Match[str] | None:
         return self.compiled.match(*args, **kwargs)
 
     def sub(self, *args, **kwargs) -> str:

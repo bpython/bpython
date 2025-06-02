@@ -36,7 +36,8 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Tuple, List, Optional, Callable
+from typing import Tuple, List, Optional
+from collections.abc import Callable
 from types import ModuleType
 
 from . import __version__, __copyright__
@@ -77,8 +78,8 @@ Options = tuple[str, str, Callable[[argparse._ArgumentGroup], None]]
 
 
 def parse(
-    args: Optional[list[str]],
-    extras: Optional[Options] = None,
+    args: list[str] | None,
+    extras: Options | None = None,
     ignore_stdin: bool = False,
 ) -> tuple[Config, argparse.Namespace, list[str]]:
     """Receive an argument list - if None, use sys.argv - parse all args and

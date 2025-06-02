@@ -18,7 +18,7 @@ def ngettext(singular, plural, n):
 
 
 def init(
-    locale_dir: Optional[str] = None, languages: Optional[list[str]] = None
+    locale_dir: str | None = None, languages: list[str] | None = None
 ) -> None:
     try:
         locale.setlocale(locale.LC_ALL, "")

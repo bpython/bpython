@@ -563,7 +563,7 @@ class URWIDInteraction(repl.Interaction):
             self.callback = None
             callback(text)
 
-    def file_prompt(self, s: str) -> Optional[str]:
+    def file_prompt(self, s: str) -> str | None:
         raise NotImplementedError
 
 

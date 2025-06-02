@@ -24,7 +24,7 @@ _current_word_re = LazyReCompile(r"(?<![)\]\w_.])" r"([\w_][\w0-9._]*[(]?)")
 CHARACTER_PAIR_MAP = {"(": ")", "{": "}", "[": "]", "'": "'", '"': '"'}
 
 
-def current_word(cursor_offset: int, line: str) -> Optional[LinePart]:
+def current_word(cursor_offset: int, line: str) -> LinePart | None:
     """the object.attribute.attribute just before or under the cursor"""
     start = cursor_offset
     end = cursor_offset
@@ -76,7 +76,7 @@ _current_dict_key_re = LazyReCompile(
 )
 
 
-def current_dict_key(cursor_offset: int, line: str) -> Optional[LinePart]:
+def current_dict_key(cursor_offset: int, line: str) -> LinePart | None:
     """If in dictionary completion, return the current key"""
     for m in _current_dict_key_re.finditer(line):
         if m.start(1) <= cursor_offset <= m.end(1):
@@ -96,7 +96,7 @@ _current_dict_re = LazyReCompile(
 )
 
 
-def current_dict(cursor_offset: int, line: str) -> Optional[LinePart]:
+def current_dict(cursor_offset: int, line: str) -> LinePart | None:
     """If in dictionary completion, return the dict that should be used"""
     for m in _current_dict_re.finditer(line):
         if m.start(2) <= cursor_offset <= m.end(2):
@@ -110,7 +110,7 @@ _current_string_re = LazyReCompile(
 )
 
 
-def current_string(cursor_offset: int, line: str) -> Optional[LinePart]:
+def current_string(cursor_offset: int, line: str) -> LinePart | None:
     """If inside a string of nonzero length, return the string (excluding
     quotes)
 
@@ -126,7 +126,7 @@ def current_string(cursor_offset: int, line: str) -> Optional[LinePart]:
 _current_object_re = LazyReCompile(r"([\w_][\w0-9_]*)[.]")
 
 
-def current_object(cursor_offset: int, line: str) -> Optional[LinePart]:
+def current_object(cursor_offset: int, line: str) -> LinePart | None:
     """If in attribute completion, the object on which attribute should be
     looked up."""
     match = current_word(cursor_offset, line)
@@ -145,9 +145,7 @@ def current_object(cursor_offset: int, line: str) -> Optional[LinePart]:
 _current_object_attribute_re = LazyReCompile(r"([\w_][\w0-9_]*)[.]?")
 
 
-def current_object_attribute(
-    cursor_offset: int, line: str
-) -> Optional[LinePart]:
+def current_object_attribute(cursor_offset: int, line: str) -> LinePart | None:
     """If in attribute completion, the attribute being completed"""
     # TODO replace with more general current_expression_attribute
     match = current_word(cursor_offset, line)
@@ -168,9 +166,7 @@ _current_from_import_from_re = LazyReCompile(
 )
 
 
-def current_from_import_from(
-    cursor_offset: int, line: str
-) -> Optional[LinePart]:
+def current_from_import_from(cursor_offset: int, line: str) -> LinePart | None:
     """If in from import completion, the word after from
 
     returns None if cursor not in or just after one of the two interesting
@@ -194,7 +190,7 @@ _current_from_import_import_re_3 = LazyReCompile(r", *([\w0-9_]*)")
 
 def current_from_import_import(
     cursor_offset: int, line: str
-) -> Optional[LinePart]:
+) -> LinePart | None:
     """If in from import completion, the word after import being completed
 
     returns None if cursor not in or just after one of these words
@@ -221,7 +217,7 @@ _current_import_re_2 = LazyReCompile(r"([\w0-9_.]+)")
 _current_import_re_3 = LazyReCompile(r"[,][ ]*([\w0-9_.]*)")
 
 
-def current_import(cursor_offset: int, line: str) -> Optional[LinePart]:
+def current_import(cursor_offset: int, line: str) -> LinePart | None:
     # TODO allow for multiple as's
     baseline = _current_import_re_1.search(line)
     if baseline is None:
@@ -244,7 +240,7 @@ _current_method_definition_name_re = LazyReCompile(r"def\s+([a-zA-Z_][\w]*)")
 
 def current_method_definition_name(
     cursor_offset: int, line: str
-) -> Optional[LinePart]:
+) -> LinePart | None:
     """The name of a method being defined"""
     for m in _current_method_definition_name_re.finditer(line):
         if m.start(1) <= cursor_offset <= m.end(1):
@@ -255,7 +251,7 @@ def current_method_definition_name(
 _current_single_word_re = LazyReCompile(r"(?<![.])\b([a-zA-Z_][\w]*)")
 
 
-def current_single_word(cursor_offset: int, line: str) -> Optional[LinePart]:
+def current_single_word(cursor_offset: int, line: str) -> LinePart | None:
     """the un-dotted word just before or under the cursor"""
     for m in _current_single_word_re.finditer(line):
         if m.start(1) <= cursor_offset <= m.end(1):
@@ -263,9 +259,7 @@ def current_single_word(cursor_offset: int, line: str) -> Optional[LinePart]:
     return None
 
 
-def current_dotted_attribute(
-    cursor_offset: int, line: str
-) -> Optional[LinePart]:
+def current_dotted_attribute(cursor_offset: int, line: str) -> LinePart | None:
     """The dotted attribute-object pair before the cursor"""
     match = current_word(cursor_offset, line)
     if match is not None and "." in match.word[1:]:
@@ -280,7 +274,7 @@ _current_expression_attribute_re = LazyReCompile(
 
 def current_expression_attribute(
     cursor_offset: int, line: str
-) -> Optional[LinePart]:
+) -> LinePart | None:
     """If after a dot, the attribute being completed"""
     # TODO replace with more general current_expression_attribute
     for m in _current_expression_attribute_re.finditer(line):
@@ -290,7 +284,7 @@ def current_expression_attribute(
 
 
 def cursor_on_closing_char_pair(
-    cursor_offset: int, line: str, ch: Optional[str] = None
+    cursor_offset: int, line: str, ch: str | None = None
 ) -> tuple[bool, bool]:
     """Checks if cursor sits on closing character of a pair
     and whether its pair character is directly behind it
