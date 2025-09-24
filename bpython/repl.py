@@ -535,11 +535,17 @@ class Repl(metaclass=abc.ABCMeta):
 
     @property
     def ps1(self) -> str:
-        return cast(str, getattr(sys, "ps1", ">>> "))
+        if hasattr(sys, "ps1"):
+            # noop in most cases, but at least vscode injects a non-str ps1
+            # see #1041
+            return str(sys.ps1)
+        return ">>> "
 
     @property
     def ps2(self) -> str:
-        return cast(str, getattr(sys, "ps2", "... "))
+        if hasattr(sys, "ps2"):
+            return str(sys.ps2)
+        return ">>> "
 
     def startup(self) -> None:
         """
