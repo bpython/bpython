@@ -545,7 +545,7 @@ class Repl(metaclass=abc.ABCMeta):
     def ps2(self) -> str:
         if hasattr(sys, "ps2"):
             return str(sys.ps2)
-        return ">>> "
+        return "... "
 
     def startup(self) -> None:
         """
