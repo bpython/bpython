@@ -4,9 +4,9 @@ just the ones that fit the model of transforming the current line
 and the cursor location
 based on http://www.bigsmoke.us/readline/shortcuts"""
 
-from ..lazyre import LazyReCompile
 import inspect
 
+from ..lazyre import LazyReCompile
 from ..line import cursor_on_closing_char_pair
 
 INDENT = 4
@@ -67,12 +67,6 @@ class AbstractEdits:
         params = getargspec(func)
         args = {k: v for k, v in kwargs.items() if k in params}
         return func(**args)
-
-    def call_without_cut(self, key, **kwargs):
-        """Looks up the function and calls it, returning only line and cursor
-        offset"""
-        r = self.call_for_two(key, **kwargs)
-        return r[:2]
 
     def __contains__(self, key):
         return key in self.simple_edits or key in self.cut_buffer_edits
