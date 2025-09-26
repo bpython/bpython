@@ -1250,7 +1250,7 @@ class BaseRepl(Repl):
         logger.debug("indent we found was %s", indent)
         return indent
 
-    def push(self, line, insert_into_history=True):
+    def push(self, line, insert_into_history=True) -> bool:
         """Push a line of code onto the buffer, start running the buffer
 
         If the interpreter successfully runs the code, clear the buffer
@@ -1297,6 +1297,7 @@ class BaseRepl(Repl):
 
         self.coderunner.load_code(code_to_run)
         self.run_code_and_maybe_finish()
+        return not code_will_parse
 
     def run_code_and_maybe_finish(self, for_code=None):
         r = self.coderunner.run_code(for_code=for_code)

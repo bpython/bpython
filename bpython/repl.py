@@ -989,11 +989,11 @@ class Repl(metaclass=abc.ABCMeta):
 
         return paste_url
 
-    def push(self, s, insert_into_history=True) -> bool:
+    def push(self, line, insert_into_history=True) -> bool:
         """Push a line of code onto the buffer so it can process it all
         at once when a code block ends"""
         # This push method is used by cli and urwid, but not curtsies
-        s = s.rstrip("\n")
+        s = line.rstrip("\n")
         self.buffer.append(s)
 
         if insert_into_history:
