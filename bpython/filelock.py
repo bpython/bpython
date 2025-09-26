@@ -23,20 +23,6 @@
 from typing import IO, Literal
 from types import TracebackType
 
-has_fcntl = True
-try:
-    import fcntl
-    import errno
-except ImportError:
-    has_fcntl = False
-
-has_msvcrt = True
-try:
-    import msvcrt
-    import os
-except ImportError:
-    has_msvcrt = False
-
 
 class BaseLock:
     """Base class for file locking"""
@@ -69,56 +55,72 @@ class BaseLock:
             self.release()
 
 
-class UnixFileLock(BaseLock):
-    """Simple file locking for Unix using fcntl"""
+try:
+    import fcntl
+    import errno
 
-    def __init__(self, fileobj, mode: int = 0) -> None:
-        super().__init__()
-        self.fileobj = fileobj
-        self.mode = mode | fcntl.LOCK_EX
+    class UnixFileLock(BaseLock):
+        """Simple file locking for Unix using fcntl"""
 
-    def acquire(self) -> None:
-        try:
-            fcntl.flock(self.fileobj, self.mode)
+        def __init__(self, fileobj, mode: int = 0) -> None:
+            super().__init__()
+            self.fileobj = fileobj
+            self.mode = mode | fcntl.LOCK_EX
+
+        def acquire(self) -> None:
+            try:
+                fcntl.flock(self.fileobj, self.mode)
+                self.locked = True
+            except OSError as e:
+                if e.errno != errno.ENOLCK:
+                    raise e
+
+        def release(self) -> None:
+            self.locked = False
+            fcntl.flock(self.fileobj, fcntl.LOCK_UN)
+
+    has_fcntl = True
+except ImportError:
+    has_fcntl = False
+
+
+try:
+    import msvcrt
+    import os
+
+    class WindowsFileLock(BaseLock):
+        """Simple file locking for Windows using msvcrt"""
+
+        def __init__(self, filename: str) -> None:
+            super().__init__()
+            self.filename = f"{filename}.lock"
+            self.fileobj = -1
+
+        def acquire(self) -> None:
+            # create a lock file and lock it
+            self.fileobj = os.open(
+                self.filename, os.O_RDWR | os.O_CREAT | os.O_TRUNC
+            )
+            msvcrt.locking(self.fileobj, msvcrt.LK_NBLCK, 1)
+
             self.locked = True
-        except OSError as e:
-            if e.errno != errno.ENOLCK:
-                raise e
 
-    def release(self) -> None:
-        self.locked = False
-        fcntl.flock(self.fileobj, fcntl.LOCK_UN)
+        def release(self) -> None:
+            self.locked = False
 
+            # unlock lock file and remove it
+            msvcrt.locking(self.fileobj, msvcrt.LK_UNLCK, 1)
+            os.close(self.fileobj)
+            self.fileobj = -1
 
-class WindowsFileLock(BaseLock):
-    """Simple file locking for Windows using msvcrt"""
+            try:
+                os.remove(self.filename)
+            except OSError:
+                pass
 
-    def __init__(self, filename: str) -> None:
-        super().__init__()
-        self.filename = f"{filename}.lock"
-        self.fileobj = -1
-
-    def acquire(self) -> None:
-        # create a lock file and lock it
-        self.fileobj = os.open(
-            self.filename, os.O_RDWR | os.O_CREAT | os.O_TRUNC
-        )
-        msvcrt.locking(self.fileobj, msvcrt.LK_NBLCK, 1)
-
-        self.locked = True
-
-    def release(self) -> None:
-        self.locked = False
-
-        # unlock lock file and remove it
-        msvcrt.locking(self.fileobj, msvcrt.LK_UNLCK, 1)
-        os.close(self.fileobj)
-        self.fileobj = -1
-
-        try:
-            os.remove(self.filename)
-        except OSError:
-            pass
+    has_msvcrt = True
+except ImportError:
+    has_msvcrt = False
 
 
 def FileLock(
