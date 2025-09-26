@@ -119,8 +119,8 @@ class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
         self.assert_paint(screen, (0, 9))
 
     def test_run_line(self):
+        orig_stdout = sys.stdout
         try:
-            orig_stdout = sys.stdout
             sys.stdout = self.repl.stdout
             [self.repl.add_normal_character(c) for c in "1 + 1"]
             self.repl.on_enter(new_code=False)
