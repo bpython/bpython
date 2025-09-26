@@ -360,15 +360,6 @@ class BaseRepl(Repl):
         if interp is None:
             interp = Interp(locals=locals_)
             interp.write = self.send_to_stdouterr  # type: ignore
-        if banner is None:
-            if config.help_key:
-                banner = (
-                    _("Welcome to bpython!")
-                    + " "
-                    + _("Press <%s> for help.") % config.help_key
-                )
-            else:
-                banner = None
         if config.cli_suggestion_width <= 0 or config.cli_suggestion_width > 1:
             config.cli_suggestion_width = 1
 
@@ -493,15 +484,15 @@ class BaseRepl(Repl):
     # The methods below should be overridden, but the default implementations
     # below can be used as well.
 
-    def get_cursor_vertical_diff(self):
+    def get_cursor_vertical_diff(self) -> int:
         """Return how the cursor moved due to a window size change"""
         return 0
 
-    def get_top_usable_line(self):
+    def get_top_usable_line(self) -> int:
         """Return the top line of display that can be rewritten"""
         return 0
 
-    def get_term_hw(self):
+    def get_term_hw(self) -> tuple[int, int]:
         """Returns the current width and height of the display area."""
         return (50, 10)
 

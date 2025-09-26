@@ -233,6 +233,12 @@ def main(
         print(bpargs.version_banner())
     if banner is not None:
         print(banner)
+    if welcome_message is None and not options.quiet and config.help_key:
+        welcome_message = (
+            _("Welcome to bpython!")
+            + " "
+            + _("Press <%s> for help.") % config.help_key
+        )
 
     repl = FullCurtsiesRepl(config, locals_, welcome_message, interp)
     try:
