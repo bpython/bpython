@@ -26,16 +26,13 @@ In order to provide fancy completion, some code can be executed safely.
 """
 
 import ast
-import sys
 import builtins
-from typing import Dict, Any, Optional
+from typing import Any
 
 from . import line as line_properties
 from .inspection import getattr_safe
 
-_string_type_nodes = (ast.Str, ast.Bytes)
 _numeric_types = (int, float, complex)
-_name_type_nodes = (ast.Name,)
 
 
 class EvaluationError(Exception):
@@ -123,7 +120,7 @@ def simple_eval(node_or_string, namespace=None):
             return list()
 
         # this is a deviation from literal_eval: we allow non-literals
-        elif isinstance(node, _name_type_nodes):
+        elif isinstance(node, ast.Name):
             try:
                 return namespace[node.id]
             except KeyError:
@@ -147,7 +144,9 @@ def simple_eval(node_or_string, namespace=None):
         elif isinstance(node, ast.BinOp) and isinstance(
             node.op, (ast.Add, ast.Sub)
         ):
-            # ast.literal_eval does ast typechecks here, we use type checks
+            # this is a deviation from literal_eval: ast.literal_eval accepts
+            # (+/-) int, float and complex literals as left operand, and complex
+            # as right operation, we evaluate as much as possible
             left = _convert(node.left)
             right = _convert(node.right)
             if not (
