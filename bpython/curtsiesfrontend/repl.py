@@ -14,13 +14,7 @@ from enum import Enum
 from types import FrameType, TracebackType
 from typing import (
     Any,
-    Dict,
-    List,
     Literal,
-    Optional,
-    Tuple,
-    Type,
-    Union,
 )
 from collections.abc import Iterable, Sequence
 

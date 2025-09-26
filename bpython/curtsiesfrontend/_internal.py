@@ -22,7 +22,7 @@
 
 import pydoc
 from types import TracebackType
-from typing import Optional, Type, Literal
+from typing import Literal
 
 from .. import _internal
 

@@ -36,7 +36,6 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Tuple, List, Optional
 from collections.abc import Callable
 from types import ModuleType
 

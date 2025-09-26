@@ -24,7 +24,6 @@ import re
 from collections.abc import Iterator
 from functools import cached_property
 from re import Pattern, Match
-from typing import Optional, Optional
 
 
 class LazyReCompile:

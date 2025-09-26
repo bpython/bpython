@@ -1,6 +1,6 @@
 import sys
 from codeop import CommandCompiler
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any
 from collections.abc import Iterable
 
 from pygments.token import Generic, Token, Keyword, Name, Comment, String

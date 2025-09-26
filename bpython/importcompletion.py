@@ -27,7 +27,6 @@ import sys
 import warnings
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Set, Union
 from collections.abc import Generator, Sequence, Iterable
 
 from .line import (

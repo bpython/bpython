@@ -30,7 +30,6 @@ import pydoc
 import subprocess
 import sys
 import shlex
-from typing import List
 
 
 def get_pager_command(default: str = "less -rf") -> list[str]:

@@ -22,7 +22,7 @@
 
 import errno
 import subprocess
-from typing import Optional, Tuple, Protocol
+from typing import Protocol
 from urllib.parse import urljoin, urlparse
 
 import requests

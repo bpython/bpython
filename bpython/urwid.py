@@ -38,7 +38,6 @@ import time
 import locale
 import signal
 import urwid
-from typing import Optional
 
 from . import args as bpargs, repl, translations
 from .formatter import theme_map
