@@ -1216,6 +1216,10 @@ class Repl(metaclass=abc.ABCMeta):
         return subprocess.call(args) == 0
 
     def edit_config(self):
+        if self.config.config_path is None:
+            self.interact.notify(_("No config file specified."))
+            return
+
         if not self.config.config_path.is_file():
             if self.interact.confirm(
                 _("Config file does not exist - create new from default? (y/N)")
