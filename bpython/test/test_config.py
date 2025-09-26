@@ -2,10 +2,11 @@ import os
 import tempfile
 import textwrap
 import unittest
+from pathlib import Path
 
 from bpython import config
 
-TEST_THEME_PATH = os.path.join(os.path.dirname(__file__), "test.theme")
+TEST_THEME_PATH = Path(os.path.join(os.path.dirname(__file__), "test.theme"))
 
 
 class TestConfig(unittest.TestCase):
@@ -16,7 +17,7 @@ class TestConfig(unittest.TestCase):
             f.write(content.encode("utf8"))
             f.flush()
 
-            return config.Config(f.name)
+            return config.Config(Path(f.name))
 
     def test_load_theme(self):
         color_scheme = dict()
