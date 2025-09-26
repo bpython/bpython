@@ -98,7 +98,7 @@ class TestCurtsiesPaintingTest(CurtsiesPaintingTest):
 
 class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
     def test_startup(self):
-        screen = fsarray([cyan(">>> ")])
+        screen = fsarray([cyan(">>> ")], width=10)
         self.assert_paint(screen, (0, 4))
 
     def test_enter_text(self):
@@ -112,8 +112,9 @@ class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
                     + yellow("+")
                     + cyan(" ")
                     + green("1")
-                )
-            ]
+                ),
+            ],
+            width=10,
         )
         self.assert_paint(screen, (0, 9))
 
