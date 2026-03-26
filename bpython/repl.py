@@ -337,7 +337,7 @@ class MatchesIterator:
 
 
 class Interaction(metaclass=abc.ABCMeta):
-    def __init__(self, config: Config):
+    def __init__(self, config: Config) -> None:
         self.config = config
 
     @abc.abstractmethod
@@ -356,7 +356,7 @@ class Interaction(metaclass=abc.ABCMeta):
 
 
 class NoInteraction(Interaction):
-    def __init__(self, config: Config):
+    def __init__(self, config: Config) -> None:
         super().__init__(config)
 
     def confirm(self, s: str) -> bool:
@@ -467,7 +467,7 @@ class Repl(metaclass=abc.ABCMeta):
         # not actually defined, subclasses must define
         cpos: int
 
-    def __init__(self, interp: Interpreter, config: Config):
+    def __init__(self, interp: Interpreter, config: Config) -> None:
         """Initialise the repl.
 
         interp is a Python code.InteractiveInterpreter instance
@@ -851,7 +851,7 @@ class Repl(metaclass=abc.ABCMeta):
             )
             if indentation and self.config.dedent_after > 0:
 
-                def line_is_empty(line):
+                def line_is_empty(line: str) -> bool:
                     return not line.strip()
 
                 empty_lines = takewhile(line_is_empty, reversed(self.buffer))
@@ -942,7 +942,7 @@ class Repl(metaclass=abc.ABCMeta):
         else:
             self.interact.notify(_("Copied content to clipboard."))
 
-    def pastebin(self, s=None) -> str | None:
+    def pastebin(self, s: str | None = None) -> str | None:
         """Upload to a pastebin and display the URL in the status bar."""
 
         if s is None:
@@ -956,9 +956,8 @@ class Repl(metaclass=abc.ABCMeta):
         else:
             return self.do_pastebin(s)
 
-    def do_pastebin(self, s) -> str | None:
+    def do_pastebin(self, s: str) -> str | None:
         """Actually perform the upload."""
-        paste_url: str
         if s == self.prev_pastebin_content:
             self.interact.notify(
                 _("Duplicate pastebin. Previous URL: %s. " "Removal URL: %s")
@@ -989,7 +988,7 @@ class Repl(metaclass=abc.ABCMeta):
 
         return paste_url
 
-    def push(self, line, insert_into_history=True) -> bool:
+    def push(self, line: str, insert_into_history: bool = True) -> bool:
         """Push a line of code onto the buffer so it can process it all
         at once when a code block ends"""
         # This push method is used by cli and urwid, but not curtsies
