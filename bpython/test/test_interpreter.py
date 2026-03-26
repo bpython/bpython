@@ -1,11 +1,8 @@
-import sys
 import unittest
 
 from curtsies.fmtfuncs import bold, green, magenta, cyan, red, plain
 
 from bpython.curtsiesfrontend import interpreter
-
-pypy = "PyPy" in sys.version
 
 
 class Interpreter(interpreter.Interp):
