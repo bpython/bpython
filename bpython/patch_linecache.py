@@ -36,6 +36,11 @@ class BPythonLinecache(dict):
         )
         return filename
 
+    def get(self, key: Any, default: Any | None = None) -> Any:
+        if self.is_bpython_filename(key):
+            return self.get_bpython_history(key)
+        return super().get(key, default)
+
     def __getitem__(self, key: Any) -> Any:
         if self.is_bpython_filename(key):
             return self.get_bpython_history(key)
