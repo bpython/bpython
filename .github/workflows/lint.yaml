@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -32,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
