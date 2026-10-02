@@ -269,7 +269,7 @@ def getfuncprops(func: str, f: Callable) -> FuncProps | None:
     # not take 'self', the latter would:
     try:
         func_name = getattr(f, "__name__", None)
-    except:
+    except Exception:
         # if calling foo.__name__ would result in an error
         func_name = None
 
@@ -279,7 +279,7 @@ def getfuncprops(func: str, f: Callable) -> FuncProps | None:
             or (func_name == "__init__" and not func.endswith(".__init__"))
             or (func_name == "__new__" and not func.endswith(".__new__"))
         )
-    except:
+    except Exception:
         # if f is a method from a xmlrpclib.Server instance, func_name ==
         # '__init__' throws xmlrpclib.Fault (see #202)
         return None
