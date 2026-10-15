@@ -11,7 +11,7 @@ New features:
 
 
 Fixes:
-
+* #1057: Preserve the indentation of pasted code
 
 Changes to dependencies:
 
