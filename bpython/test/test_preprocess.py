@@ -105,3 +105,76 @@ class TestPreprocessing(unittest.TestCase):
 
     def test_tabs(self):
         self.assertIndented(original.tabs)
+
+
+class TestSeparateBlocks(unittest.TestCase):
+    """Pasted code has no blank line after a block, so one has to be added
+    for the statement that follows it to be run separately (#1057)"""
+
+    def test_statement_after_block(self):
+        self.assertEqual(
+            preproc("for i in r:\n    f(i)\nprint(1)\n"),
+            "for i in r:\n    f(i)\n\nprint(1)\n",
+        )
+
+    def test_statement_after_nested_blocks(self):
+        self.assertEqual(
+            preproc("for i in r:\n    if i:\n        f(i)\nprint(1)\n"),
+            "for i in r:\n    if i:\n        f(i)\n\nprint(1)\n",
+        )
+
+    def test_consecutive_blocks(self):
+        self.assertEqual(
+            preproc("if a:\n    f()\nwhile b:\n    g()\n"),
+            "if a:\n    f()\n\nwhile b:\n    g()\n",
+        )
+
+    def test_clauses_continuing_a_block_are_left_alone(self):
+        for source in (
+            "if a:\n    f()\nelif b:\n    g()\nelse:\n    h()\n",
+            "try:\n    f()\nexcept E:\n    g()\nfinally:\n    h()\n",
+            "for i in r:\n    f(i)\nelse:\n    g()\n",
+        ):
+            with self.subTest(source=source):
+                self.assertEqual(preproc(source), source)
+
+    def test_unindented_lines_inside_brackets_are_left_alone(self):
+        # an unclosed bracket keeps the statement going, so these lines are
+        # continuations rather than new statements
+        for source in (
+            "total = (\n1 +\n2\n)\n",
+            "items = [\n'a',\n'b',\n]\n",
+            "f(\nx,\n)\n",
+        ):
+            with self.subTest(source=source):
+                self.assertEqual(preproc(source), source)
+
+    def test_consecutive_simple_statements_are_left_alone(self):
+        source = "a = 1\nb = 2\nprint(a + b)\n"
+        self.assertEqual(preproc(source), source)
+
+    def test_existing_blank_line_is_not_doubled(self):
+        source = "for i in r:\n    f(i)\n\nprint(1)\n"
+        self.assertEqual(preproc(source), source)
+
+    def test_block_after_statement(self):
+        source = "a = 1\nfor i in r:\n    f(i)\n"
+        self.assertEqual(preproc(source), source)
+
+    def test_comment_above_a_continuing_clause_is_left_alone(self):
+        source = "if a:\n    f()\n# why not\nelse:\n    g()\n"
+        self.assertEqual(preproc(source), source)
+
+    def test_decorator_is_not_separated_from_its_definition(self):
+        self.assertEqual(
+            preproc("@deco\ndef f():\n    pass\nprint(1)\n"),
+            "@deco\ndef f():\n    pass\n\nprint(1)\n",
+        )
+
+    def test_lines_inside_a_string_are_left_alone(self):
+        source = 's = """\nabc\ndef\n"""\nprint(s)\n'
+        self.assertEqual(preproc(source), source)
+
+    def test_backslash_continuation_is_left_alone(self):
+        source = "a = 1 + \\\n    2\nprint(a)\n"
+        self.assertEqual(preproc(source), source)

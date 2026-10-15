@@ -483,6 +483,51 @@ class TestCurtsiesPasteEvents(TestCase):
             "a" + "e" * curtsiesrepl.MAX_EVENTS_POSSIBLY_NOT_PASTE,
         )
 
+    def paste(self, source):
+        """Paste source as the key events curtsies would report for it"""
+        p = events.PasteEvent()
+        p.events = [
+            {" ": "<SPACE>", "\t": "<TAB>", "\n": "<Ctrl-j>"}.get(c, c)
+            for c in source
+        ]
+        self.repl.process_event(p)
+        return [
+            line
+            for line, line_type in self.repl.all_logical_lines
+            if line_type == LineType.INPUT
+        ]
+
+    def test_repeated_content_keys_are_not_compressed(self):
+        """A run of spaces is indentation, not a key being held down"""
+        for key in ("<SPACE>", "<TAB>", "<Ctrl-j>"):
+            with self.subTest(key=key):
+                p = events.PasteEvent()
+                p.events = [key] * 10
+                self.assertIsNone(curtsiesrepl.compress_paste_event(p))
+
+    def test_repeated_control_keys_are_still_compressed(self):
+        p = events.PasteEvent()
+        p.events = ["<Ctrl-a>"] * 10
+        self.assertEqual(curtsiesrepl.compress_paste_event(p), "<Ctrl-a>")
+
+    def test_deep_indentation_is_preserved(self):
+        """Indentation long enough to fill a read must survive (#1057)"""
+        self.assertEqual(self.paste(" " * 12 + "x"), [])
+        self.assertEqual(self.repl.current_line, " " * 12 + "x")
+
+    def test_space_indented_paste(self):
+        self.assertEqual(
+            self.paste("for i in (1, 2):\n    x = i\n    y = x\n"),
+            ["for i in (1, 2):", "    x = i", "    y = x"],
+        )
+
+    def test_tab_indented_paste(self):
+        """Tabs carry indentation and must not be dropped (#1057)"""
+        self.assertEqual(
+            self.paste("for i in (1, 2):\n\tx = i\n\ty = x\n"),
+            ["for i in (1, 2):", "    x = i", "    y = x"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
