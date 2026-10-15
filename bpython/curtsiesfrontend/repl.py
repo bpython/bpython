@@ -81,6 +81,21 @@ EDIT_SESSION_HEADER = """### current bpython session - make changes and save to 
 # i.e. control characters like '<Ctrl-a>' will be stripped
 MAX_EVENTS_POSSIBLY_NOT_PASTE = 20
 
+# Keys that insert text instead of performing an action, mapped to the
+# character they stand for. In a paste these carry the content of the pasted
+# code - in particular the whitespace making up its indentation - so unlike
+# keys such as '<Ctrl-a>' they must never be dropped or deduplicated.
+CONTENT_KEYS = {
+    "<Ctrl-j>": "\n",
+    "<Ctrl-m>": "\n",
+    "<PADENTER>": "\n",
+    "\n": "\n",
+    "\r": "\n",
+    "<SPACE>": " ",
+    "<TAB>": "\t",
+    "\t": "\t",
+}
+
 
 class SearchMode(Enum):
     NO_SEARCH = 0
@@ -1081,6 +1096,11 @@ class BaseRepl(Repl):
             pass  # ignore events
         elif e == "<SPACE>":
             self.add_normal_character(" ")
+        elif e in ("<TAB>", "\t"):
+            # add_normal_character ignores control characters, so expand tabs
+            # here rather than losing the indentation they stand for
+            for _ in range(self.config.tab_length):
+                self.add_normal_character(" ")
         else:
             self.add_normal_character(e)
 
@@ -2213,6 +2233,10 @@ def compress_paste_event(paste_event):
     if not all(paste_event.events[0] == e for e in paste_event.events):
         return None
     event = paste_event.events[0]
+    # A run of identical content keys is ordinary pasted text - indentation or
+    # blank lines - rather than a held down key, so it must not be collapsed.
+    if is_simple_event(event):
+        return None
     # basically "is there a special curtsies names for this key?"
     if len(event) > 1:
         return event
@@ -2225,11 +2249,9 @@ def just_simple_events(event_list: Iterable[str | events.Event]) -> list[str]:
     for e in event_list:
         if isinstance(e, events.Event):
             continue  # ignore events
-        # '\n' necessary for pastes
-        elif e in ("<Ctrl-j>", "<Ctrl-m>", "<PADENTER>", "\n", "\r"):
-            simple_events.append("\n")
-        elif e == "<SPACE>":
-            simple_events.append(" ")
+        # content keys carry the text of a paste, including its indentation
+        elif e in CONTENT_KEYS:
+            simple_events.append(CONTENT_KEYS[e])
         elif len(e) > 1:
             continue  # get rid of <Ctrl-a> etc.
         else:
@@ -2240,7 +2262,4 @@ def just_simple_events(event_list: Iterable[str | events.Event]) -> list[str]:
 def is_simple_event(e: str | events.Event) -> bool:
     if isinstance(e, events.Event):
         return False
-    return (
-        e in ("<Ctrl-j>", "<Ctrl-m>", "<PADENTER>", "\n", "\r", "<SPACE>")
-        or len(e) <= 1
-    )
+    return e in CONTENT_KEYS or len(e) <= 1
