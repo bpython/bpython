@@ -192,6 +192,40 @@ class TestAvoidSymbolicLinks(unittest.TestCase):
         self.assertFalse(filepaths)
 
 
+class TestSkiplist(unittest.TestCase):
+    def test_absolute_paths(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            for name in ("first", "second"):
+                (root / name).mkdir()
+                (root / name / "__init__.py").touch()
+                (root / name / "inside.py").touch()
+
+            cases = (
+                ([root], str(root), set()),
+                ([root], str(root / "first"), {"second", "second.inside"}),
+                ([root / "first"], str(root), set()),
+            )
+            for paths, skip, expected in cases:
+                with self.subTest(paths=paths, skip=skip):
+                    gatherer = ModuleGatherer(paths, [skip])
+                    while gatherer.find_coroutine():
+                        pass
+                    self.assertEqual(gatherer.modules, expected)
+
+    def test_relative_name_pattern_remains_supported(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            for name in ("first", "second"):
+                (root / name).mkdir()
+                (root / name / "__init__.py").touch()
+                (root / name / "inside.py").touch()
+            gatherer = ModuleGatherer([root], ["f*"])
+            while gatherer.find_coroutine():
+                pass
+            self.assertEqual(gatherer.modules, {"second", "second.inside"})
+
+
 class TestBugReports(unittest.TestCase):
     def test_issue_847(self):
         with tempfile.TemporaryDirectory() as import_test_folder:

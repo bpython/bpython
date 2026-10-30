@@ -186,7 +186,13 @@ Whether to use Unicode characters to draw boxes (default: True).
 
 import_completion_skiplist
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-A `:`-seperated list of patterns to skip when processing modules for import completion.
+A ``:``-separated list of patterns to skip when processing modules for import
+completion. A name pattern such as ``node_modules`` or ``build*`` matches names
+at any level. On POSIX systems, an absolute path such as ``/home/user/projects``
+skips that directory and its descendants, including when a descendant is itself
+on the module search path. Paths are matched against resolved filesystem paths.
+The colon separator means that Windows drive-letter paths cannot be specified
+in this option.
 
 .. versionadded:: 0.21
 
