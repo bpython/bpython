@@ -162,12 +162,24 @@ class ModuleGatherer:
         else:
             return None
 
+    def _is_skipped(self, path: Path) -> bool:
+        for pattern in self.skiplist:
+            if Path(pattern).is_absolute():
+                if any(
+                    fnmatch.fnmatch(str(parent), pattern)
+                    for parent in (path, *path.parents)
+                ):
+                    return True
+            elif fnmatch.fnmatch(path.name, pattern):
+                return True
+        return False
+
     def find_modules(self, path: Path) -> Generator[str | None, None, None]:
         """Find all modules (and packages) for a given directory."""
         if not path.is_dir():
             # Perhaps a zip file
             return
-        if any(fnmatch.fnmatch(path.name, entry) for entry in self.skiplist):
+        if self._is_skipped(path):
             # Path is on skiplist
             return
 
@@ -177,9 +189,7 @@ class ModuleGatherer:
                 if p.name.startswith(".") or p.name == "__pycache__":
                     # Impossible to import from names starting with . and we can skip __pycache__
                     continue
-                elif any(
-                    fnmatch.fnmatch(p.name, entry) for entry in self.skiplist
-                ):
+                elif self._is_skipped(p):
                     # Path is on skiplist
                     continue
                 elif not any(p.name.endswith(suffix) for suffix in SUFFIXES):
