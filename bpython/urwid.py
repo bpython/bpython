@@ -1006,6 +1006,8 @@ class URWIDRepl(repl.Repl):
                     raise urwid.ExitMainLoop()
                 else:
                     self.main_loop.process_input(["delete"])
+        elif urwid.command_map[event] == "undo":
+            self.undo()
         elif urwid.command_map[event] == "cursor up":
             # "back" from bpython.cli
             self.rl_history.enter(self.edit.get_edit_text())
@@ -1330,6 +1332,7 @@ def main(args=None, locals_=None, banner=None):
 
 
 def load_urwid_command_map(config):
+    urwid.command_map[key_dispatch[config.undo_key]] = "undo"
     urwid.command_map[key_dispatch[config.up_one_line_key]] = "cursor up"
     urwid.command_map[key_dispatch[config.down_one_line_key]] = "cursor down"
     urwid.command_map[key_dispatch["C-a"]] = "cursor max left"
