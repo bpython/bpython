@@ -403,7 +403,9 @@ class BaseRepl(Repl):
 
         # formatted version of lines in the buffer kept around so we can
         # unhighlight parens using self.reprint_line as called by bpython.Repl
-        self.display_buffer: list[FmtStr] = []
+        self.display_buffer: list[tuple[str | FmtStr, FmtStr]] = []
+        # Remember the wrapped span and prefix when an empty prompt is undone.
+        self._empty_prompt_output: dict[int, tuple[int, str | FmtStr]] = {}
 
         # how many times display has been scrolled down
         # because there wasn't room to display everything
@@ -948,9 +950,16 @@ class BaseRepl(Repl):
         if reset_rl_history:
             self.rl_history.reset()
 
-        self.history.append(self.current_line)
-        self.all_logical_lines.append((self.current_line, LineType.INPUT))
+        self._record_input(self.current_line)
         self.push(self.current_line, insert_into_history=new_code)
+
+    def _record_input(self, line):
+        output = self.current_stdouterr_line
+        if output:
+            text = output.s if isinstance(output, FmtStr) else output
+            self.all_logical_lines.append((text, LineType.OUTPUT))
+        self.history.append(line)
+        self.all_logical_lines.append((line, LineType.INPUT))
 
     def on_tab(self, back=False):
         """Do something on tab key
@@ -1267,9 +1276,12 @@ class BaseRepl(Repl):
                 line,
                 display_line,
             )
-            self.display_buffer.append(display_line)
         else:
-            self.display_buffer.append(fmtstr(line))
+            display_line = fmtstr(line)
+
+        output = self.current_stdouterr_line
+        self.display_buffer.append((output, display_line))
+        self.current_stdouterr_line = ""
 
         if insert_into_history:
             self.insert_into_history(line)
@@ -1285,7 +1297,11 @@ class BaseRepl(Repl):
         if c:
             logger.debug("finished - buffer cleared")
             self.cursor_offset = 0
+            start = len(self.display_lines)
             self.display_lines.extend(self.display_buffer_lines)
+            if output and self.buffer == [""]:
+                end = len(self.display_lines)
+                self._empty_prompt_output[end] = start, output
             self.display_buffer = []
             self.buffer = []
 
@@ -1342,17 +1358,17 @@ class BaseRepl(Repl):
             logger.debug("trying to unhighlight a paren on line %r", lineno)
             logger.debug("with these tokens: %r", saved_tokens)
             new = bpythonparse(pygformat(saved_tokens, self.formatter))
-            self.display_buffer[lineno] = self.display_buffer[
-                lineno
-            ].setslice_with_length(
-                0, len(new), new, len(self.display_buffer[lineno])
+            output, line = self.display_buffer[lineno]
+            self.display_buffer[lineno] = (
+                output,
+                line.setslice_with_length(0, len(new), new, len(line)),
             )
 
     def clear_current_block(self, remove_from_history=True):
-        self.display_buffer = []
         if remove_from_history:
-            del self.history[-len(self.buffer) :]
-            del self.all_logical_lines[-len(self.buffer) :]
+            for output, _ in reversed(self.display_buffer):
+                self._rewind_input(output)
+        self.display_buffer = []
         self.buffer = []
         self.cursor_offset = 0
         self.saved_indent = 0
@@ -1454,12 +1470,11 @@ class BaseRepl(Repl):
     def display_buffer_lines(self):
         """The display lines (wrapped, colored, +prompts) of current buffer"""
         lines = []
-        for display_line in self.display_buffer:
+        for output, display_line in self.display_buffer:
             prompt = func_for_letter(self.config.color_scheme["prompt"])
             more = func_for_letter(self.config.color_scheme["prompt_more"])
-            display_line = (
-                more(self.ps2) if lines else prompt(self.ps1)
-            ) + display_line
+            prompt_text = more(self.ps2) if lines else prompt(self.ps1)
+            display_line = output + prompt_text + display_line
             for line in paint.display_linize(display_line, self.width):
                 lines.append(line)
         return lines
@@ -1933,8 +1948,10 @@ class BaseRepl(Repl):
     def reprint_line(self, lineno, tokens):
         logger.debug("calling reprint line with %r %r", lineno, tokens)
         if self.config.syntax:
-            self.display_buffer[lineno] = bpythonparse(
-                pygformat(tokens, self.formatter)
+            output, _ = self.display_buffer[lineno]
+            self.display_buffer[lineno] = (
+                output,
+                bpythonparse(pygformat(tokens, self.formatter)),
             )
 
     def take_back_buffer_line(self):
@@ -1947,16 +1964,24 @@ class BaseRepl(Repl):
             indent = self.predicted_indent(line)
             self._current_line = indent * " "
             self.cursor_offset = len(self.current_line)
-        self.display_buffer.pop()
+        output, _ = self.display_buffer.pop()
         self.buffer.pop()
+        self._rewind_input(output)
+
+    def _rewind_input(self, output):
         self.history.pop()
         self.all_logical_lines.pop()
+        if output:
+            self.all_logical_lines.pop()
+            self.current_stdouterr_line = output + self.current_stdouterr_line
 
     def take_back_empty_line(self):
         assert self.history and not self.history[-1]
-        self.history.pop()
-        self.display_lines.pop()
-        self.all_logical_lines.pop()
+        start, output = self._empty_prompt_output.pop(
+            len(self.display_lines), (len(self.display_lines) - 1, "")
+        )
+        del self.display_lines[start:]
+        self._rewind_input(output)
 
     def prompt_undo(self):
         if self.buffer:
@@ -1974,8 +1999,7 @@ class BaseRepl(Repl):
     def redo(self) -> None:
         if self.redo_stack:
             temp = self.redo_stack.pop()
-            self.history.append(temp)
-            self.all_logical_lines.append((temp, LineType.INPUT))
+            self._record_input(temp)
             self.push(temp)
         else:
             self.status_bar.message("Nothing to redo.")
@@ -1988,6 +2012,8 @@ class BaseRepl(Repl):
         old_display_lines = self.display_lines
         self.history = []
         self.display_lines = []
+        self._empty_prompt_output.clear()
+        self.current_stdouterr_line = ""
         self.all_logical_lines = []
 
         if not self.weak_rewind:

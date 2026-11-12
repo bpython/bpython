@@ -12,6 +12,8 @@ New features:
 
 Fixes:
 
+* #1050: Keep output without a trailing newline with the prompt that
+  follows it.
 
 Changes to dependencies:
 
