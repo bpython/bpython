@@ -129,6 +129,34 @@ class TestCurtsiesPaintingSimple(CurtsiesPaintingTest):
         finally:
             sys.stdout = orig_stdout
 
+    def test_submit_prompt_after_output_without_newline(self):
+        self.repl.send_to_stdouterr("hello")
+        self.repl.on_enter(new_code=False)
+        self.repl.on_enter(new_code=False)
+
+        self.assert_paint_ignoring_formatting(
+            fsarray(["hello>>> ", ">>> ", ">>> "], width=10), (2, 4)
+        )
+
+    def test_undo_empty_prompt_preserves_wrapped_output(self):
+        self.repl.send_to_stdouterr("abcdefgh")
+        self.repl.on_enter(new_code=False)
+        self.repl.prompt_undo()
+
+        self.assert_paint_ignoring_formatting(
+            fsarray(["abcdefgh>>", "> "], width=10), (1, 2)
+        )
+
+    def test_session_keeps_output_without_newline(self):
+        self.repl.send_to_stdouterr(green("hello"))
+        self.repl.current_line = "pass"
+        self.repl.on_enter(new_code=False)
+
+        self.assertEqual(
+            self.repl.get_session_formatted_for_file(),
+            "# OUT: hello\npass\n### ",
+        )
+
     def test_completion(self):
         self.repl.height, self.repl.width = (5, 32)
         self.repl.current_line = "an"
