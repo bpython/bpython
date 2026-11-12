@@ -191,11 +191,8 @@ class Statusbar:
         self.edit.set_caption(("main", s or "?"))
         self.edit.set_edit_text("")
         # hide the text and display the edit widget
-        if self.edit not in self.widget.widget_list:
-            self.widget.widget_list.append(self.edit)
-        if self.text in self.widget.widget_list:
-            self.widget.widget_list.remove(self.text)
-        self.widget.set_focus_column(0)
+        self.widget.contents[:] = [(self.edit, self.widget.options())]
+        self.widget.focus_position = 0
 
     def settext(self, s, permanent=False):
         """Set the text on the status bar to a new value. If permanent is True,
@@ -205,10 +202,7 @@ class Statusbar:
         self._reset_timer()
 
         # hide the edit and display the text widget
-        if self.edit in self.widget.widget_list:
-            self.widget.widget_list.remove(self.edit)
-        if self.text not in self.widget.widget_list:
-            self.widget.widget_list.append(self.text)
+        self.widget.contents[:] = [(self.text, self.widget.options())]
 
         self.text.set_text(("main", s))
         if permanent:
@@ -516,10 +510,10 @@ class URWIDInteraction(repl.Interaction):
 
         self.callback = callback
         self.statusbar.prompt(s, single=single)
-        self.frame.set_focus("footer")
+        self.frame.focus_position = "footer"
 
     def _prompt_result(self, text):
-        self.frame.set_focus("body")
+        self.frame.focus_position = "body"
         if self.callback is not None:
             # The callback might want to start another prompt, so reset it
             # before calling the callback.
@@ -586,7 +580,7 @@ class URWIDRepl(repl.Repl):
             ),
             self.main_loop,
         )
-        self.frame.set_footer(self.statusbar.widget)
+        self.frame.footer = self.statusbar.widget
         self.interact = URWIDInteraction(
             self.config, self.statusbar, self.frame
         )
@@ -847,37 +841,22 @@ class URWIDRepl(repl.Repl):
 
         self.evaluating = True
         self.stdout_hist = ""
-        self.f_string = ""
         self.buffer = []
-        self.scr.erase()
-        # Set cursor position to -1 to prevent paren matching
-        self.cpos = -1
-
-        self.prompt(False)
-
-        self.iy, self.ix = self.scr.getyx()
-        for line in self.history:
-            self.stdout_hist += line + "\n"
-            self.print_line(line)
-            # I decided it was easier to just do this manually
-            # than to make the print_line and history stuff more flexible.
-            self.scr.addstr("\n")
-            more = self.push(line)
-            self.prompt(more)
-            self.iy, self.ix = self.scr.getyx()
-
-        self.cpos = 0
-        indent = repl.next_indentation(self.s, self.config.tab_length)
-        self.s = ""
-        self.scr.refresh()
-
-        if self.buffer:
-            for unused in range(indent):
-                self.tab()
-
-        self.evaluating = False
-        # map(self.push, self.history)
-        # ^-- That's how simple this method was at first :(
+        self.highlighted_paren = None
+        self.edits = []
+        self.listbox.body[:] = []
+        self.edit = None
+        try:
+            self.prompt(False)
+            for line in self.history:
+                self.edit.set_edit_text(line)
+                self.edit.make_readonly()
+                self.edit = None
+                self.stdout_hist += line + "\n"
+                more = self.push(line, insert_into_history=False)
+                self.prompt(more)
+        finally:
+            self.evaluating = False
 
     def write(self, s):
         """For overriding stdout defaults"""
@@ -989,9 +968,18 @@ class URWIDRepl(repl.Repl):
         edit.set_edit_markup(list(format_tokens(tokens)))
 
     def handle_input(self, event):
+        if self._pager_state is not None:
+            if event in ("esc", "q", "enter"):
+                body, footer, focus = self._pager_state
+                self._pager_state = None
+                self.frame.body = body
+                self.frame.footer = footer
+                self.frame.focus_position = focus
+            return
+
         # Since most of the input handling here should be handled in the edit
         # instead, we return here early if the edit doesn't have the focus.
-        if self.frame.get_focus() != "body":
+        if self.frame.focus_position != "body":
             return
 
         if event == "enter":
@@ -1103,7 +1091,7 @@ class URWIDRepl(repl.Repl):
                 self.edit.edit_pos = cursor
                 self.overlay.tooltip_focus = True
                 if self.tooltip.grid:
-                    self.tooltip.grid.set_focus(self.matches_iter.index)
+                    self.tooltip.grid.focus_position = self.matches_iter.index
             return True
         finally:
             self._completion_update_suppressed = False
