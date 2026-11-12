@@ -38,6 +38,7 @@ import time
 import locale
 import signal
 import urwid
+import greenlet
 
 from . import args as bpargs, repl, translations
 from .formatter import theme_map
@@ -113,6 +114,8 @@ class StatusbarEdit(urwid.Edit):
     def keypress(self, size, key):
         if self.single:
             urwid.emit_signal(self, "prompt_enter", self, key)
+        elif key == "esc":
+            urwid.emit_signal(self, "prompt_enter", self, None)
         elif key == "enter":
             urwid.emit_signal(self, "prompt_enter", self, self.get_edit_text())
         else:
@@ -188,11 +191,8 @@ class Statusbar:
         self.edit.set_caption(("main", s or "?"))
         self.edit.set_edit_text("")
         # hide the text and display the edit widget
-        if self.edit not in self.widget.widget_list:
-            self.widget.widget_list.append(self.edit)
-        if self.text in self.widget.widget_list:
-            self.widget.widget_list.remove(self.text)
-        self.widget.set_focus_column(0)
+        self.widget.contents[:] = [(self.edit, self.widget.options())]
+        self.widget.focus_position = 0
 
     def settext(self, s, permanent=False):
         """Set the text on the status bar to a new value. If permanent is True,
@@ -202,10 +202,7 @@ class Statusbar:
         self._reset_timer()
 
         # hide the edit and display the text widget
-        if self.edit in self.widget.widget_list:
-            self.widget.widget_list.remove(self.edit)
-        if self.text not in self.widget.widget_list:
-            self.widget.widget_list.append(self.text)
+        self.widget.contents[:] = [(self.text, self.widget.options())]
 
         self.text.set_text(("main", s))
         if permanent:
@@ -495,13 +492,10 @@ class URWIDInteraction(repl.Interaction):
         urwid.connect_signal(statusbar, "prompt_result", self._prompt_result)
         self.callback = None
 
-    def confirm(self, q, callback):
-        """Ask for yes or no and call callback to return the result"""
-
-        def callback_wrapper(result):
-            callback(result.lower() in (_("y"), _("yes")))
-
-        self.prompt(q, callback_wrapper, single=True)
+    def confirm(self, q):
+        """Ask for yes or no while allowing the event loop to process input."""
+        result = self._prompt_sync(q, single=True)
+        return result is not None and result.lower() in (_("y"), _("yes"))
 
     def notify(self, s, n=10, wait_for_keypress=False):
         return self.statusbar.message(s, n)
@@ -516,10 +510,10 @@ class URWIDInteraction(repl.Interaction):
 
         self.callback = callback
         self.statusbar.prompt(s, single=single)
-        self.frame.set_focus("footer")
+        self.frame.focus_position = "footer"
 
     def _prompt_result(self, text):
-        self.frame.set_focus("body")
+        self.frame.focus_position = "body"
         if self.callback is not None:
             # The callback might want to start another prompt, so reset it
             # before calling the callback.
@@ -528,7 +522,12 @@ class URWIDInteraction(repl.Interaction):
             callback(text)
 
     def file_prompt(self, s: str) -> str | None:
-        raise NotImplementedError
+        return self._prompt_sync(s)
+
+    def _prompt_sync(self, s, single=False):
+        action = greenlet.getcurrent()
+        self.prompt(s, action.switch, single=single)
+        return action.parent.switch()
 
 
 class URWIDRepl(repl.Repl):
@@ -581,7 +580,7 @@ class URWIDRepl(repl.Repl):
             ),
             self.main_loop,
         )
-        self.frame.set_footer(self.statusbar.widget)
+        self.frame.footer = self.statusbar.widget
         self.interact = URWIDInteraction(
             self.config, self.statusbar, self.frame
         )
@@ -590,6 +589,7 @@ class URWIDRepl(repl.Repl):
         self.edit = None
         self.current_output = None
         self._completion_update_suppressed = False
+        self._pager_state = None
 
         # Bulletproof: this is a value extract_exit_value accepts.
         self.exit_value = ()
@@ -841,37 +841,22 @@ class URWIDRepl(repl.Repl):
 
         self.evaluating = True
         self.stdout_hist = ""
-        self.f_string = ""
         self.buffer = []
-        self.scr.erase()
-        # Set cursor position to -1 to prevent paren matching
-        self.cpos = -1
-
-        self.prompt(False)
-
-        self.iy, self.ix = self.scr.getyx()
-        for line in self.history:
-            self.stdout_hist += line + "\n"
-            self.print_line(line)
-            # I decided it was easier to just do this manually
-            # than to make the print_line and history stuff more flexible.
-            self.scr.addstr("\n")
-            more = self.push(line)
-            self.prompt(more)
-            self.iy, self.ix = self.scr.getyx()
-
-        self.cpos = 0
-        indent = repl.next_indentation(self.s, self.config.tab_length)
-        self.s = ""
-        self.scr.refresh()
-
-        if self.buffer:
-            for unused in range(indent):
-                self.tab()
-
-        self.evaluating = False
-        # map(self.push, self.history)
-        # ^-- That's how simple this method was at first :(
+        self.highlighted_paren = None
+        self.edits = []
+        self.listbox.body[:] = []
+        self.edit = None
+        try:
+            self.prompt(False)
+            for line in self.history:
+                self.edit.set_edit_text(line)
+                self.edit.make_readonly()
+                self.edit = None
+                self.stdout_hist += line + "\n"
+                more = self.push(line, insert_into_history=False)
+                self.prompt(more)
+        finally:
+            self.evaluating = False
 
     def write(self, s):
         """For overriding stdout defaults"""
@@ -983,9 +968,18 @@ class URWIDRepl(repl.Repl):
         edit.set_edit_markup(list(format_tokens(tokens)))
 
     def handle_input(self, event):
+        if self._pager_state is not None:
+            if event in ("esc", "q", "enter"):
+                body, footer, focus = self._pager_state
+                self._pager_state = None
+                self.frame.body = body
+                self.frame.footer = footer
+                self.frame.focus_position = focus
+            return
+
         # Since most of the input handling here should be handled in the edit
         # instead, we return here early if the edit doesn't have the focus.
-        if self.frame.get_focus() != "body":
+        if self.frame.focus_position != "body":
             return
 
         if event == "enter":
@@ -1006,6 +1000,23 @@ class URWIDRepl(repl.Repl):
                     raise urwid.ExitMainLoop()
                 else:
                     self.main_loop.process_input(["delete"])
+        elif urwid.command_map[event] == "save":
+            greenlet.greenlet(self.write2file).switch()
+        elif urwid.command_map[event] == "pastebin":
+            greenlet.greenlet(self.pastebin).switch()
+        elif urwid.command_map[event] == "show source":
+            try:
+                source = self.get_source_of_current_name()
+            except repl.SourceNotFound as e:
+                self.interact.notify(str(e))
+            else:
+                self.pager(source)
+        elif urwid.command_map[event] == "last output":
+            self.pager(self.getstdout())
+        elif urwid.command_map[event] == "copy clipboard":
+            self.copy2clipboard()
+        elif urwid.command_map[event] == "undo":
+            self.undo()
         elif urwid.command_map[event] == "cursor up":
             # "back" from bpython.cli
             self.rl_history.enter(self.edit.get_edit_text())
@@ -1022,6 +1033,18 @@ class URWIDRepl(repl.Repl):
             self.tab(True)
         # else:
         #    self.echo(repr(event))
+
+    def pager(self, text):
+        self._pager_state = (
+            self.frame.body,
+            self.frame.footer,
+            self.frame.focus_position,
+        )
+        self.frame.body = urwid.ListBox(
+            urwid.SimpleListWalker([urwid.Text(text)])
+        )
+        self.frame.footer = urwid.Text(_("Esc, q or Enter to close"))
+        self.frame.focus_position = "body"
 
     def tab(self, back=False):
         """Process the tab key being hit.
@@ -1068,7 +1091,7 @@ class URWIDRepl(repl.Repl):
                 self.edit.edit_pos = cursor
                 self.overlay.tooltip_focus = True
                 if self.tooltip.grid:
-                    self.tooltip.grid.set_focus(self.matches_iter.index)
+                    self.tooltip.grid.focus_position = self.matches_iter.index
             return True
         finally:
             self._completion_update_suppressed = False
@@ -1330,11 +1353,23 @@ def main(args=None, locals_=None, banner=None):
 
 
 def load_urwid_command_map(config):
+    if config.save_key:
+        urwid.command_map[key_dispatch[config.save_key]] = "save"
+    if config.pastebin_key:
+        urwid.command_map[key_dispatch[config.pastebin_key]] = "pastebin"
+    if config.show_source_key:
+        urwid.command_map[key_dispatch[config.show_source_key]] = "show source"
+    if config.last_output_key:
+        urwid.command_map[key_dispatch[config.last_output_key]] = "last output"
+    if config.copy_clipboard_key:
+        urwid.command_map[key_dispatch[config.copy_clipboard_key]] = (
+            "copy clipboard"
+        )
+    urwid.command_map[key_dispatch[config.undo_key]] = "undo"
     urwid.command_map[key_dispatch[config.up_one_line_key]] = "cursor up"
     urwid.command_map[key_dispatch[config.down_one_line_key]] = "cursor down"
     urwid.command_map[key_dispatch["C-a"]] = "cursor max left"
     urwid.command_map[key_dispatch["C-e"]] = "cursor max right"
-    urwid.command_map[key_dispatch[config.pastebin_key]] = "pastebin"
     urwid.command_map[key_dispatch["C-f"]] = "cursor right"
     urwid.command_map[key_dispatch["C-b"]] = "cursor left"
     urwid.command_map[key_dispatch["C-d"]] = "delete"
