@@ -3,9 +3,6 @@ name: CI
 on:
   push:
   pull_request:
-  schedule:
-    # run at 7:00 on the first of every month
-    - cron: "0 7 1 * *"
 
 jobs:
   build:
