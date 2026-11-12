@@ -38,6 +38,7 @@ import time
 import locale
 import signal
 import urwid
+import greenlet
 
 from . import args as bpargs, repl, translations
 from .formatter import theme_map
@@ -113,6 +114,8 @@ class StatusbarEdit(urwid.Edit):
     def keypress(self, size, key):
         if self.single:
             urwid.emit_signal(self, "prompt_enter", self, key)
+        elif key == "esc":
+            urwid.emit_signal(self, "prompt_enter", self, None)
         elif key == "enter":
             urwid.emit_signal(self, "prompt_enter", self, self.get_edit_text())
         else:
@@ -495,13 +498,10 @@ class URWIDInteraction(repl.Interaction):
         urwid.connect_signal(statusbar, "prompt_result", self._prompt_result)
         self.callback = None
 
-    def confirm(self, q, callback):
-        """Ask for yes or no and call callback to return the result"""
-
-        def callback_wrapper(result):
-            callback(result.lower() in (_("y"), _("yes")))
-
-        self.prompt(q, callback_wrapper, single=True)
+    def confirm(self, q):
+        """Ask for yes or no while allowing the event loop to process input."""
+        result = self._prompt_sync(q, single=True)
+        return result is not None and result.lower() in (_("y"), _("yes"))
 
     def notify(self, s, n=10, wait_for_keypress=False):
         return self.statusbar.message(s, n)
@@ -528,7 +528,12 @@ class URWIDInteraction(repl.Interaction):
             callback(text)
 
     def file_prompt(self, s: str) -> str | None:
-        raise NotImplementedError
+        return self._prompt_sync(s)
+
+    def _prompt_sync(self, s, single=False):
+        action = greenlet.getcurrent()
+        self.prompt(s, action.switch, single=single)
+        return action.parent.switch()
 
 
 class URWIDRepl(repl.Repl):
@@ -590,6 +595,7 @@ class URWIDRepl(repl.Repl):
         self.edit = None
         self.current_output = None
         self._completion_update_suppressed = False
+        self._pager_state = None
 
         # Bulletproof: this is a value extract_exit_value accepts.
         self.exit_value = ()
@@ -1006,6 +1012,21 @@ class URWIDRepl(repl.Repl):
                     raise urwid.ExitMainLoop()
                 else:
                     self.main_loop.process_input(["delete"])
+        elif urwid.command_map[event] == "save":
+            greenlet.greenlet(self.write2file).switch()
+        elif urwid.command_map[event] == "pastebin":
+            greenlet.greenlet(self.pastebin).switch()
+        elif urwid.command_map[event] == "show source":
+            try:
+                source = self.get_source_of_current_name()
+            except repl.SourceNotFound as e:
+                self.interact.notify(str(e))
+            else:
+                self.pager(source)
+        elif urwid.command_map[event] == "last output":
+            self.pager(self.getstdout())
+        elif urwid.command_map[event] == "copy clipboard":
+            self.copy2clipboard()
         elif urwid.command_map[event] == "undo":
             self.undo()
         elif urwid.command_map[event] == "cursor up":
@@ -1024,6 +1045,18 @@ class URWIDRepl(repl.Repl):
             self.tab(True)
         # else:
         #    self.echo(repr(event))
+
+    def pager(self, text):
+        self._pager_state = (
+            self.frame.body,
+            self.frame.footer,
+            self.frame.focus_position,
+        )
+        self.frame.body = urwid.ListBox(
+            urwid.SimpleListWalker([urwid.Text(text)])
+        )
+        self.frame.footer = urwid.Text(_("Esc, q or Enter to close"))
+        self.frame.focus_position = "body"
 
     def tab(self, back=False):
         """Process the tab key being hit.
@@ -1332,12 +1365,23 @@ def main(args=None, locals_=None, banner=None):
 
 
 def load_urwid_command_map(config):
+    if config.save_key:
+        urwid.command_map[key_dispatch[config.save_key]] = "save"
+    if config.pastebin_key:
+        urwid.command_map[key_dispatch[config.pastebin_key]] = "pastebin"
+    if config.show_source_key:
+        urwid.command_map[key_dispatch[config.show_source_key]] = "show source"
+    if config.last_output_key:
+        urwid.command_map[key_dispatch[config.last_output_key]] = "last output"
+    if config.copy_clipboard_key:
+        urwid.command_map[key_dispatch[config.copy_clipboard_key]] = (
+            "copy clipboard"
+        )
     urwid.command_map[key_dispatch[config.undo_key]] = "undo"
     urwid.command_map[key_dispatch[config.up_one_line_key]] = "cursor up"
     urwid.command_map[key_dispatch[config.down_one_line_key]] = "cursor down"
     urwid.command_map[key_dispatch["C-a"]] = "cursor max left"
     urwid.command_map[key_dispatch["C-e"]] = "cursor max right"
-    urwid.command_map[key_dispatch[config.pastebin_key]] = "pastebin"
     urwid.command_map[key_dispatch["C-f"]] = "cursor right"
     urwid.command_map[key_dispatch["C-b"]] = "cursor left"
     urwid.command_map[key_dispatch["C-d"]] = "delete"
