@@ -114,12 +114,10 @@ class CodeRunner:
             "you shouldn't load code when some is " "already running"
         )
         self.source = source
-        self.code_context = None
 
     def _unload_code(self):
         """Called when done running code"""
         self.source = None
-        self.code_context = None
         self.code_is_waiting = False
 
     def run_code(self, for_code=None):
@@ -158,19 +156,21 @@ class CodeRunner:
                 self.request_refresh()
             return False
         elif isinstance(request, (Done, Unfinished)):
+            self.code_context = None
             self._unload_code()
             if is_main_thread():
                 signal.signal(signal.SIGINT, self.orig_sigint_handler)
             self.orig_sigint_handler = None
             return request
         elif isinstance(request, SystemExitRequest):
+            self.code_context = None
             self._unload_code()
             raise SystemExitFromCodeRunner(request.args)
 
     def sigint_handler(self, *args):
         """SIGINT handler to use while code is running or request being
         fulfilled"""
-        if greenlet.getcurrent() is self.code_context:
+        if self.code_context and greenlet.getcurrent() is self.code_context:
             logger.debug("sigint while running user code!")
             raise KeyboardInterrupt()
         else:
