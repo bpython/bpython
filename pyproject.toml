@@ -1,10 +1,70 @@
 [build-system]
-requires = ["setuptools >= 62.4.0"]
+requires = ["setuptools >= 77.0.0"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "bpython"
+dynamic = ["version"]
+description = "A fancy curses interface to the Python interactive interpreter"
+readme = "README.rst"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Bob Farrell" },
+    { name = "Andreas Stührk" },
+    { name = "Sebastian Ramacher" },
+    { name = "Thomas Ballinger" },
+    { email = "bpython@googlegroups.com" },
+]
+classifiers = ["Programming Language :: Python :: 3"]
+dependencies = [
+    "curtsies >=0.4.0",
+    "cwcwidth",
+    "greenlet",
+    "pygments",
+    "pyxdg",
+    "requests",
+]
+
+[project.urls]
+Homepage = "https://www.bpython-interpreter.org/"
+GitHub = "https://github.com/bpython/bpython"
+Documentation = "https://docs.bpython-interpreter.org"
+
+[project.optional-dependencies]
+clipboard = ["pyperclip"]
+jedi = ["jedi >= 0.16"]
+urwid = ["urwid >=4.0"]
+watch = ["watchdog"]
+
+[project.scripts]
+bpython = "bpython.curtsies:main"
+bpython-urwid = "bpython.urwid:main [urwid]"
+bpdb = "bpdb:main"
+
+[tool.setuptools]
+packages = [
+    "bpython",
+    "bpython.curtsiesfrontend",
+    "bpython.test",
+    "bpython.test.fodder",
+    "bpdb",
+]
+include-package-data = false
+
+[tool.mypy]
+warn_return_any = true
+warn_unused_configs = true
+mypy_path = "stubs"
+files = ["bpython"]
+
+[[tool.mypy.overrides]]
+module = ["jedi", "urwid", "twisted.*"]
+ignore_missing_imports = true
 
 [tool.black]
 line-length = 80
-target_version = ["py311"]
 include = '\.pyi?$'
 exclude = '''
 /(

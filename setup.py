@@ -364,7 +364,13 @@ setup(
         "bpython.test": ["test.config", "test.theme"],
     },
     cmdclass=cmdclass,
-    test_suite="bpython.test",
+    command_options={
+        "build_sphinx_man": {
+            "builder": ("setup.py", "man"),
+            "source_dir": ("setup.py", "doc/sphinx/source"),
+            "build_dir": ("setup.py", "build"),
+        },
+    },
     zip_safe=False,
 )
 
