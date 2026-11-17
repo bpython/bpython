@@ -728,7 +728,7 @@ class Repl(metaclass=abc.ABCMeta):
             if "built-in" in f"{e}":
                 msg = f"Cannot access source of {obj!r}"
             else:
-                msg = "No source code found for {self.current_line}"
+                msg = f"No source code found for {self.current_line}"
         raise SourceNotFound(msg)
 
     def set_docstring(self) -> None:
