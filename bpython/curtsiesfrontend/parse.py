@@ -1,18 +1,19 @@
 import re
+from collections.abc import Callable
 from functools import partial
 from typing import Any
-from collections.abc import Callable
 
-from curtsies.formatstring import fmtstr, FmtStr
+from curtsies.formatstring import FmtStr, fmtstr
 from curtsies.termformatconstants import (
-    FG_COLORS,
     BG_COLORS,
+    FG_COLORS,
+)
+from curtsies.termformatconstants import (
     colors as CURTSIES_COLORS,
 )
 
 from ..config import COLOR_LETTERS
 from ..lazyre import LazyReCompile
-
 
 COLORS = CURTSIES_COLORS + ("default",)
 CNAMES = dict(zip(COLOR_LETTERS, COLORS))

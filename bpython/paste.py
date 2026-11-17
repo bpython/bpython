@@ -22,11 +22,11 @@
 
 import errno
 import subprocess
+import unicodedata
 from typing import Protocol
 from urllib.parse import urljoin, urlparse
 
 import requests
-import unicodedata
 
 from .config import getpreferredencoding
 from .translations import _

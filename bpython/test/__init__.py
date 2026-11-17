@@ -1,6 +1,6 @@
+import os
 import unittest
 import unittest.mock
-import os
 from pathlib import Path
 
 from bpython.translations import init

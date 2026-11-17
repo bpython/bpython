@@ -32,18 +32,20 @@ This steals many things from bpython's "cli" backend.
 This is still *VERY* rough.
 """
 
-import sys
-import os
-import time
 import locale
+import os
 import signal
-import urwid
-import greenlet
+import sys
+import time
 
-from . import args as bpargs, repl, translations
+import greenlet
+import urwid
+
+from . import args as bpargs
+from . import repl, translations
 from .formatter import theme_map
-from .translations import _
 from .keys import urwid_key_dispatch as key_dispatch
+from .translations import _
 
 # Urwid colors are:
 # 'black', 'dark red', 'dark green', 'brown', 'dark blue',

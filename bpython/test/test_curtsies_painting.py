@@ -3,27 +3,28 @@ import os
 import pydoc
 import string
 import sys
-
 from contextlib import contextmanager
 from typing import cast
-from curtsies.formatstringarray import (
-    fsarray,
-    assertFSArraysEqual,
-    assertFSArraysEqualIgnoringFormatting,
-)
-from curtsies.fmtfuncs import cyan, bold, green, yellow, on_magenta, red
-from curtsies.window import CursorAwareWindow
 from unittest import mock, skipIf
 
-from bpython.curtsiesfrontend.events import RefreshRequestEvent
-from bpython import config, inspection
-from bpython.curtsiesfrontend.repl import BaseRepl
-from bpython.curtsiesfrontend import replpainter
-from bpython.curtsiesfrontend.repl import (
-    INCONSISTENT_HISTORY_MSG,
-    CONTIGUITY_BROKEN_MSG,
+from curtsies.fmtfuncs import bold, cyan, green, on_magenta, red, yellow
+from curtsies.formatstringarray import (
+    assertFSArraysEqual,
+    assertFSArraysEqualIgnoringFormatting,
+    fsarray,
 )
-from bpython.test import FixLanguageTestCase as TestCase, TEST_CONFIG
+from curtsies.window import CursorAwareWindow
+
+from bpython import config, inspection
+from bpython.curtsiesfrontend import replpainter
+from bpython.curtsiesfrontend.events import RefreshRequestEvent
+from bpython.curtsiesfrontend.repl import (
+    CONTIGUITY_BROKEN_MSG,
+    INCONSISTENT_HISTORY_MSG,
+    BaseRepl,
+)
+from bpython.test import TEST_CONFIG
+from bpython.test import FixLanguageTestCase as TestCase
 
 
 def setup_config():

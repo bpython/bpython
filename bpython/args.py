@@ -35,13 +35,13 @@ import importlib.util
 import logging
 import os
 import sys
-from pathlib import Path
 from collections.abc import Callable
+from pathlib import Path
 from types import ModuleType
 from typing import Never
 
-from . import __version__, __copyright__
-from .config import default_config_path, Config
+from . import __copyright__, __version__
+from .config import Config, default_config_path
 from .translations import _
 
 logger = logging.getLogger(__name__)

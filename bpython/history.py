@@ -22,14 +22,14 @@
 # THE SOFTWARE.
 
 import os
-from pathlib import Path
 import stat
-from itertools import islice, chain
-from typing import TextIO
 from collections.abc import Iterable
+from itertools import chain, islice
+from pathlib import Path
+from typing import TextIO
 
-from .translations import _
 from .filelock import FileLock
+from .translations import _
 
 
 class History:

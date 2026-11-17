@@ -1,9 +1,9 @@
-import logging
 import itertools
+import logging
 
-from curtsies import fsarray, fmtstr, FSArray
-from curtsies.formatstring import linesplit
+from curtsies import FSArray, fmtstr, fsarray
 from curtsies.fmtfuncs import bold
+from curtsies.formatstring import linesplit
 
 from .parse import func_for_letter
 

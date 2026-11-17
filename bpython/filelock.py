@@ -20,8 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from typing import IO, Literal
 from types import TracebackType
+from typing import IO, Literal
 
 
 class BaseLock:
@@ -56,8 +56,8 @@ class BaseLock:
 
 
 try:
-    import fcntl
     import errno
+    import fcntl
 
     class UnixFileLock(BaseLock):
         """Simple file locking for Unix using fcntl"""

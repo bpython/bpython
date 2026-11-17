@@ -23,7 +23,6 @@
 the methods of bpython.curtsiesrepl.repl.BaseRepl that must be overridden.
 """
 
-
 import time
 import logging
 

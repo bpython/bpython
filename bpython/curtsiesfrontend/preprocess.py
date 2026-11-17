@@ -2,8 +2,8 @@
 etc)"""
 
 from codeop import CommandCompiler
+from itertools import chain, islice, tee
 from re import Match
-from itertools import tee, islice, chain
 
 from ..lazyre import LazyReCompile
 

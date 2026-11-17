@@ -28,22 +28,23 @@
 # mypy: disallow_untyped_calls=True
 
 
+from collections.abc import Iterable, MutableMapping
 from typing import Any, TextIO
-from collections.abc import MutableMapping, Iterable
+
 from pygments.formatter import Formatter
 from pygments.token import (
-    _TokenType,
-    Keyword,
-    Name,
     Comment,
-    String,
     Error,
+    Keyword,
+    Literal,
+    Name,
     Number,
     Operator,
+    Punctuation,
+    String,
     Token,
     Whitespace,
-    Literal,
-    Punctuation,
+    _TokenType,
 )
 
 """These format strings are pretty ugly.

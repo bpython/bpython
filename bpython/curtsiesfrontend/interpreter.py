@@ -1,18 +1,29 @@
 import sys
 from codeop import CommandCompiler
-from typing import Any
 from collections.abc import Iterable
+from typing import Any
 
-from pygments.token import Generic, Token, Keyword, Name, Comment, String
-from pygments.token import Error, Literal, Number, Operator, Punctuation
-from pygments.token import Whitespace, _TokenType
+from curtsies.formatstring import FmtStr
 from pygments.formatter import Formatter
 from pygments.lexers import get_lexer_by_name
-from curtsies.formatstring import FmtStr
+from pygments.token import (
+    Comment,
+    Error,
+    Generic,
+    Keyword,
+    Literal,
+    Name,
+    Number,
+    Operator,
+    Punctuation,
+    String,
+    Token,
+    Whitespace,
+    _TokenType,
+)
 
 from ..curtsiesfrontend.parse import parse
 from ..repl import Interpreter as ReplInterpreter
-
 
 default_colors = {
     Generic.Error: "R",

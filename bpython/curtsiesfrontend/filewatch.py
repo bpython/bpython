@@ -5,8 +5,8 @@ from collections.abc import Callable, Iterable, Sequence
 from .. import importcompletion
 
 try:
+    from watchdog.events import FileSystemEvent, FileSystemEventHandler
     from watchdog.observers import Observer
-    from watchdog.events import FileSystemEventHandler, FileSystemEvent
 except ImportError:
 
     def ModuleChangedEventHandler(*args):

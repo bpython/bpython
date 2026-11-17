@@ -1,8 +1,8 @@
-import unittest
 import sys
+import unittest
 from unittest.mock import Mock
 
-from curtsies.fmtfuncs import bold, green, magenta, cyan, red, plain
+from curtsies.fmtfuncs import bold, cyan, green, magenta, plain, red
 
 from bpython.curtsiesfrontend import interpreter
 

@@ -25,8 +25,8 @@
 # mypy: disallow_untyped_defs=True
 # mypy: disallow_untyped_calls=True
 
-import __main__
 import abc
+import builtins
 import glob
 import itertools
 import keyword
@@ -34,22 +34,21 @@ import logging
 import os
 import re
 import rlcompleter
-import builtins
-
+from collections.abc import Iterator, Sequence
 from enum import Enum
 from typing import (
     Any,
     Optional,
 )
-from collections.abc import Iterator, Sequence
+
+import __main__
 
 from . import inspection
 from . import line as lineparts
-from .line import LinePart
-from .lazyre import LazyReCompile
-from .simpleeval import safe_eval, evaluate_current_expression, EvaluationError
 from .importcompletion import ModuleGatherer
-
+from .lazyre import LazyReCompile
+from .line import LinePart
+from .simpleeval import EvaluationError, evaluate_current_expression, safe_eval
 
 logger = logging.getLogger(__name__)
 

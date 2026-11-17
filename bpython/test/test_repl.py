@@ -1,24 +1,21 @@
 import collections
 import inspect
-import os
 import socket
 import sys
 import tempfile
 import unittest
-
-from typing import List, Tuple
 from itertools import islice
 from pathlib import Path
 from unittest import mock
 
-from bpython import config, repl, autocomplete
+from bpython import autocomplete, config, repl
 from bpython.line import LinePart
 from bpython.test import (
-    MagicIterMock,
-    FixLanguageTestCase as TestCase,
     TEST_CONFIG,
 )
-
+from bpython.test import (
+    FixLanguageTestCase as TestCase,
+)
 
 pypy = "PyPy" in sys.version
 

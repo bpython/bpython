@@ -1,6 +1,7 @@
-from bpython.test import unittest
+from curtsies.fmtfuncs import bold, cyan, green, yellow
+
 from bpython.curtsiesfrontend import parse
-from curtsies.fmtfuncs import yellow, cyan, green, bold
+from bpython.test import unittest
 
 
 class TestExecArgs(unittest.TestCase):

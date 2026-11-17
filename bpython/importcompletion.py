@@ -25,15 +25,15 @@ import fnmatch
 import importlib.machinery
 import sys
 import warnings
+from collections.abc import Generator, Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from collections.abc import Generator, Sequence, Iterable
 
 from .line import (
-    current_word,
-    current_import,
     current_from_import_from,
     current_from_import_import,
+    current_import,
+    current_word,
 )
 
 SUFFIXES = importlib.machinery.all_suffixes()

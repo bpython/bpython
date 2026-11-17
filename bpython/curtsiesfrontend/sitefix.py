@@ -1,5 +1,5 @@
-import sys
 import builtins
+import sys
 
 
 def resetquit(builtins):

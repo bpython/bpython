@@ -2,7 +2,7 @@ import gettext
 import locale
 import os.path
 import sys
-from typing import Optional, cast, List
+from typing import List, Optional, cast
 
 from .. import package_dir
 

@@ -1,12 +1,11 @@
 import ast
 import numbers
-import sys
 import unittest
 
 from bpython.simpleeval import (
-    simple_eval,
-    evaluate_current_expression,
     EvaluationError,
+    evaluate_current_expression,
+    simple_eval,
 )
 
 

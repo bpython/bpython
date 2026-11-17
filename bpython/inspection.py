@@ -25,17 +25,17 @@ import inspect
 import keyword
 import pydoc
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
+from types import MemberDescriptorType, TracebackType
 from typing import (
     Any,
     ContextManager,
     Literal,
 )
-from collections.abc import Callable
-from types import MemberDescriptorType, TracebackType
 
-from pygments.token import Token
 from pygments.lexers import Python3Lexer
+from pygments.token import Token
 
 from .lazyre import LazyReCompile
 

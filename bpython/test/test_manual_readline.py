@@ -1,22 +1,22 @@
 import unittest
 
 from bpython.curtsiesfrontend.manual_readline import (
-    left_arrow,
-    right_arrow,
-    beginning_of_line,
-    forward_word,
+    UnconfiguredEdits,
     back_word,
-    end_of_line,
-    delete,
-    last_word_pos,
     backspace,
+    beginning_of_line,
+    delete,
     delete_from_cursor_back,
     delete_from_cursor_forward,
     delete_rest_of_word,
-    delete_word_to_cursor,
-    transpose_character_before_cursor,
-    UnconfiguredEdits,
     delete_word_from_cursor_back,
+    delete_word_to_cursor,
+    end_of_line,
+    forward_word,
+    last_word_pos,
+    left_arrow,
+    right_arrow,
+    transpose_character_before_cursor,
 )
 
 

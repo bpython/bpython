@@ -7,8 +7,8 @@ import termios
 import textwrap
 import unittest
 
-from bpython.test import TEST_CONFIG
 from bpython.config import getpreferredencoding
+from bpython.test import TEST_CONFIG
 
 try:
     from twisted.internet import reactor

@@ -1,22 +1,21 @@
 import re
-from typing import Optional, Tuple
 import unittest
 
 from bpython.line import (
     LinePart,
-    current_word,
-    current_dict_key,
     current_dict,
-    current_string,
-    current_object,
-    current_object_attribute,
+    current_dict_key,
+    current_dotted_attribute,
+    current_expression_attribute,
     current_from_import_from,
     current_from_import_import,
     current_import,
     current_method_definition_name,
+    current_object,
+    current_object_attribute,
     current_single_word,
-    current_expression_attribute,
-    current_dotted_attribute,
+    current_string,
+    current_word,
 )
 
 

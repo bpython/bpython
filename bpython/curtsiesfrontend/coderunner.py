@@ -11,10 +11,10 @@ makes more sense to you.
 """
 
 import code
-import greenlet
 import logging
 import signal
 
+import greenlet
 from curtsies.input import is_main_thread
 
 logger = logging.getLogger(__name__)
