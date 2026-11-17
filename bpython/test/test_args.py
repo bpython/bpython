@@ -66,14 +66,10 @@ def run_with_tty(command):
 class TestExecArgs(unittest.TestCase):
     def test_exec_dunder_file(self):
         with tempfile.NamedTemporaryFile(mode="w") as f:
-            f.write(
-                dedent(
-                    """\
+            f.write(dedent("""\
                 import sys
                 sys.stderr.write(__file__)
-                sys.stderr.flush()"""
-                )
-            )
+                sys.stderr.flush()"""))
             f.flush()
             _, stderr = run_with_tty(
                 [sys.executable] + ["-m", "bpython.curtsies", f.name]
@@ -82,14 +78,10 @@ class TestExecArgs(unittest.TestCase):
 
     def test_exec_nonascii_file(self):
         with tempfile.NamedTemporaryFile(mode="w") as f:
-            f.write(
-                dedent(
-                    """\
+            f.write(dedent("""\
                 # coding: utf-8
                 "你好 # nonascii"
-                """
-                )
-            )
+                """))
             f.flush()
             _, stderr = run_with_tty(
                 [sys.executable, "-m", "bpython.curtsies", f.name],
@@ -98,13 +90,9 @@ class TestExecArgs(unittest.TestCase):
 
     def test_exec_nonascii_file_linenums(self):
         with tempfile.NamedTemporaryFile(mode="w") as f:
-            f.write(
-                dedent(
-                    """\
+            f.write(dedent("""\
                 1/0
-                """
-                )
-            )
+                """))
             f.flush()
             _, stderr = run_with_tty(
                 [sys.executable, "-m", "bpython.curtsies", f.name],

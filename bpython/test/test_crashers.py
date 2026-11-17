@@ -87,7 +87,7 @@ class CrashersTest:
                     self.delayed_call.cancel()
                 result.callback(self.data)
 
-        (master, slave) = pty.openpty()
+        master, slave = pty.openpty()
         set_win_size(slave, 25, 80)
         reactor.spawnProcess(
             Protocol(),
@@ -109,24 +109,20 @@ class CrashersTest:
         return result
 
     def test_issue108(self):
-        input = textwrap.dedent(
-            """\
+        input = textwrap.dedent("""\
             def spam():
             u"y\\xe4y"
             \b
-            spam("""
-        )
+            spam(""")
         deferred = self.run_bpython(input)
         return deferred.addCallback(self.check_no_traceback)
 
     def test_issue133(self):
-        input = textwrap.dedent(
-            """\
+        input = textwrap.dedent("""\
             def spam(a, (b, c)):
             pass
             \b
-            spam(1"""
-        )
+            spam(1""")
         return self.run_bpython(input).addCallback(self.check_no_traceback)
 
     def check_no_traceback(self, data):
