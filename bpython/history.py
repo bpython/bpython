@@ -29,7 +29,6 @@ from pathlib import Path
 from typing import TextIO
 
 from .filelock import FileLock
-from .translations import _
 
 
 class History:
@@ -249,8 +248,7 @@ class History:
                     self.entries = entries
         except OSError as err:
             raise RuntimeError(
-                _("Error occurred while writing to file %s (%s)")
-                % (filename, err.strerror)
+                f"Error occurred while writing to file {filename} ({err.strerror})"
             )
         else:
             if len(self.entries) == 0:

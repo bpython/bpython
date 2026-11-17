@@ -8,10 +8,10 @@ import sys
 import tempfile
 import unittest
 from textwrap import dedent
+from unittest import TestCase
 
 from bpython import args
 from bpython.config import getpreferredencoding
-from bpython.test import FixLanguageTestCase as TestCase
 
 
 def run_with_tty(command):

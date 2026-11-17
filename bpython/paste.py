@@ -29,7 +29,6 @@ from urllib.parse import urljoin, urlparse
 import requests
 
 from .config import getpreferredencoding
-from .translations import _
 
 
 class PasteFailed(Exception):
@@ -89,20 +88,17 @@ class PasteHelper:
             paste_url = output.split()[0]
         except OSError as e:
             if e.errno == errno.ENOENT:
-                raise PasteFailed(_("Helper program not found."))
+                raise PasteFailed("Helper program not found.")
             else:
-                raise PasteFailed(_("Helper program could not be run."))
+                raise PasteFailed("Helper program could not be run.")
 
         if helper.returncode != 0:
             raise PasteFailed(
-                _(
-                    "Helper program returned non-zero exit status %d."
-                    % (helper.returncode,)
-                )
+                f"Helper program returned non-zero exit status {helper.returncode}."
             )
 
         if not paste_url:
-            raise PasteFailed(_("No output from helper program."))
+            raise PasteFailed("No output from helper program.")
 
         parsed_url = urlparse(paste_url)
         if not parsed_url.scheme or any(

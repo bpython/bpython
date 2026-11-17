@@ -9,13 +9,6 @@ from setuptools import setup, Command
 from setuptools.command.build import build
 
 try:
-    from babel.messages import frontend as babel
-
-    using_translations = True
-except ImportError:
-    using_translations = False
-
-try:
     import sphinx
 
     # Sphinx 1.5 and newer support Python 3.6
@@ -322,23 +315,12 @@ with open(version_file, "w") as vf:
 
 class custom_build(build):
     def run(self):
-        if using_translations:
-            self.run_command("compile_catalog")
         if using_sphinx:
             self.run_command("build_sphinx_man")
 
 
 cmdclass = {"build": custom_build}
 
-
-translations_dir = os.path.join("bpython", "translations")
-
-# localization options
-if using_translations:
-    cmdclass["compile_catalog"] = babel.compile_catalog
-    cmdclass["extract_messages"] = babel.extract_messages
-    cmdclass["update_catalog"] = babel.update_catalog
-    cmdclass["init_catalog"] = babel.init_catalog
 
 if using_sphinx:
     cmdclass["build_sphinx"] = BuildDoc
@@ -373,20 +355,12 @@ data_files = [
 ]
 data_files.extend(man_pages)
 
-# translations
-mo_files = []
-for language in os.listdir(translations_dir):
-    mo_subpath = os.path.join(language, "LC_MESSAGES", "bpython.mo")
-    if os.path.exists(os.path.join(translations_dir, mo_subpath)):
-        mo_files.append(mo_subpath)
-
 
 setup(
     version=version,
     data_files=data_files,
     package_data={
         "bpython": ["sample-config"],
-        "bpython.translations": mo_files,
         "bpython.test": ["test.config", "test.theme"],
     },
     cmdclass=cmdclass,

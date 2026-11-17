@@ -26,7 +26,6 @@ the methods of bpython.curtsiesrepl.repl.BaseRepl that must be overridden.
 import time
 import logging
 
-from bpython import translations
 from bpython.config import Config, default_config_path
 from bpython.curtsiesfrontend import events as bpythonevents
 from bpython.curtsiesfrontend.repl import BaseRepl
@@ -115,7 +114,6 @@ class SimpleRepl(BaseRepl):
 
 
 def main(args=None, locals_=None, banner=None):
-    translations.init()
     config = Config(default_config_path())
     module_gatherer = ModuleGatherer()
     while module_gatherer.find_coroutine():

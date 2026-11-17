@@ -1,12 +1,12 @@
 import os
 from typing import cast
+from unittest import TestCase
 
 from curtsies.window import CursorAwareWindow
 
 from bpython import config
 from bpython.curtsiesfrontend import repl as curtsiesrepl
 from bpython.test import TEST_CONFIG
-from bpython.test import FixLanguageTestCase as TestCase
 
 
 def setup_config(conf):

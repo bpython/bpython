@@ -42,10 +42,8 @@ import greenlet
 import urwid
 
 from . import args as bpargs
-from . import repl, translations
 from .formatter import theme_map
 from .keys import urwid_key_dispatch as key_dispatch
-from .translations import _
 
 # Urwid colors are:
 # 'black', 'dark red', 'dark green', 'brown', 'dark blue',
@@ -497,7 +495,7 @@ class URWIDInteraction(repl.Interaction):
     def confirm(self, q):
         """Ask for yes or no while allowing the event loop to process input."""
         result = self._prompt_sync(q, single=True)
-        return result is not None and result.lower() in (_("y"), _("yes"))
+        return result is not None and result.lower() in ("y", "yes")
 
     def notify(self, s, n=10, wait_for_keypress=False):
         return self.statusbar.message(s, n)
@@ -1045,7 +1043,7 @@ class URWIDRepl(repl.Repl):
         self.frame.body = urwid.ListBox(
             urwid.SimpleListWalker([urwid.Text(text)])
         )
-        self.frame.footer = urwid.Text(_("Esc, q or Enter to close"))
+        self.frame.footer = urwid.Text("Esc, q or Enter to close")
         self.frame.focus_position = "body"
 
     def tab(self, back=False):
@@ -1100,32 +1098,24 @@ class URWIDRepl(repl.Repl):
 
 
 def main(args=None, locals_=None, banner=None):
-    translations.init()
-
     def options_callback(group):
         group.add_argument(
-            "--twisted",
-            "-T",
-            action="store_true",
-            help=_("Run twisted reactor."),
+            "--twisted", "-T", action="store_true", help="Run twisted reactor."
         )
         group.add_argument(
             "--reactor",
             "-r",
-            help=_(
-                "Select specific reactor (see --help-reactors). "
-                "Implies --twisted."
-            ),
+            help="Select specific reactor (see --help-reactors). Implies --twisted.",
         )
         group.add_argument(
             "--help-reactors",
             action="store_true",
-            help=_("List available reactors for -r."),
+            help="List available reactors for -r.",
         )
         group.add_argument(
             "--plugin",
             "-p",
-            help=_(
+            help=(
                 "twistd plugin to run (use twistd for a list). "
                 'Use "--" to pass further options to the plugin.'
             ),
@@ -1134,7 +1124,7 @@ def main(args=None, locals_=None, banner=None):
             "--server",
             "-s",
             type=int,
-            help=_("Port to run an eval server on (forces Twisted)."),
+            help="Port to run an eval server on (forces Twisted).",
         )
 
     # TODO: maybe support displays other than raw_display?

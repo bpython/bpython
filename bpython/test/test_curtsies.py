@@ -2,10 +2,8 @@ import unittest
 
 from collections import namedtuple
 from bpython.curtsies import combined_events
-from bpython.test import FixLanguageTestCase as TestCase
 
 import curtsies.events
-
 
 ScheduledEvent = namedtuple("ScheduledEvent", ["when", "event"])
 
@@ -45,7 +43,7 @@ class EventGenerator:
         return self._current_tick
 
 
-class TestCurtsiesPasteDetection(TestCase):
+class TestCurtsiesPasteDetection(unittest.TestCase):
     def test_paste_threshold(self):
         eg = EventGenerator(list("abc"))
         cb = combined_events(eg, paste_threshold=3)

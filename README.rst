@@ -96,7 +96,6 @@ Dependencies
 * pyxdg
 * requests
 * Sphinx >= 1.5 (optional, for the documentation)
-* babel (optional, for internationalization)
 * jedi (optional, for experimental multiline completion)
 * watchdog (optional, for monitoring imported modules for changes)
 * pyperclip (optional, for copying to the clipboard)

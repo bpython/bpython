@@ -47,7 +47,6 @@ from ..repl import (
     Repl,
     SourceNotFound,
 )
-from ..translations import _
 from . import events as bpythonevents
 from . import replpainter as paint
 from . import sitefix
@@ -711,7 +710,7 @@ class BaseRepl(Repl):
                 self.startup()
             except OSError as err:
                 self.status_bar.message(
-                    _("Executing PYTHONSTARTUP failed: %s") % (err,)
+                    f"Executing PYTHONSTARTUP failed: {err!s}"
                 )
 
         elif isinstance(e, bpythonevents.UndoEvent):
@@ -728,8 +727,9 @@ class BaseRepl(Repl):
             if self.watching_files:
                 self.clear_modules_and_reevaluate()
                 self.status_bar.message(
-                    _("Reloaded at %s because %s modified.")
-                    % (time.strftime("%X"), " & ".join(e.files_modified))
+                    "Reloaded at {} because {} modified.".format(
+                        time.strftime("%X"), " & ".join(e.files_modified)
+                    )
                 )
 
         else:
@@ -1133,7 +1133,7 @@ class BaseRepl(Repl):
         text = self.send_to_external_editor(for_editor)
         if text == for_editor:
             self.status_bar.message(
-                _("Session not reevaluated because it was not edited")
+                "Session not reevaluated because it was not edited"
             )
             return
         lines = text.split("\n")
@@ -1148,7 +1148,7 @@ class BaseRepl(Repl):
         ]
         if all(not line.strip() for line in from_editor):
             self.status_bar.message(
-                _("Session not reevaluated because saved file was blank")
+                "Session not reevaluated because saved file was blank"
             )
             return
 
@@ -1158,7 +1158,7 @@ class BaseRepl(Repl):
         self.reevaluate(new_code=True)
         self.current_line = current_line
         self.cursor_offset = len(self.current_line)
-        self.status_bar.message(_("Session edited and reevaluated"))
+        self.status_bar.message("Session edited and reevaluated")
 
     def clear_modules_and_reevaluate(self):
         if self.watcher:
@@ -1169,18 +1169,18 @@ class BaseRepl(Repl):
         self.reevaluate(new_code=False)
         self.cursor_offset, self.current_line = cursor, line
         self.status_bar.message(
-            _("Reloaded at %s by user.") % (time.strftime("%X"),)
+            "Reloaded at {} by user.".format(time.strftime("%X"))
         )
 
     def toggle_file_watch(self):
         if self.watcher:
             if self.watching_files:
-                msg = _("Auto-reloading deactivated.")
+                msg = "Auto-reloading deactivated."
                 self.status_bar.message(msg)
                 self.watcher.deactivate()
                 self.watching_files = False
             else:
-                msg = _("Auto-reloading active, watching for file changes...")
+                msg = "Auto-reloading active, watching for file changes..."
                 self.status_bar.message(msg)
                 self.watching_files = True
                 self.watcher.activate()
@@ -2136,8 +2136,7 @@ class BaseRepl(Repl):
         return self.version_help_text() + "\n" + self.key_help_text()
 
     def version_help_text(self) -> str:
-        help_message = _(
-            """
+        help_message = """
 Thanks for using bpython!
 
 See http://bpython-interpreter.org/ for more information and http://docs.bpython-interpreter.org/ for docs.
@@ -2157,8 +2156,7 @@ A config file at {config.config_path} customizes keys and behavior of bpython.
 You can also set which pastebin helper and which external editor to use.
 See {example_config_url} for an example config file.
 Press {config.edit_config_key} to edit this config file.
-"""
-        ).format(example_config_url=EXAMPLE_CONFIG_URL, config=self.config)
+""".format(example_config_url=EXAMPLE_CONFIG_URL, config=self.config)
 
         return f"bpython-curtsies version {__version__} using curtsies version {curtsies_version}\n{help_message}"
 

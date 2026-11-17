@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from functools import partial
 from importlib import invalidate_caches
 from typing import cast
-from unittest import mock
+from unittest import mock, TestCase
 
 from curtsies import events
 from curtsies.window import CursorAwareWindow
@@ -21,9 +21,6 @@ from bpython.curtsiesfrontend.repl import LineType
 from bpython.test import (
     TEST_CONFIG,
     MagicIterMock,
-)
-from bpython.test import (
-    FixLanguageTestCase as TestCase,
 )
 
 

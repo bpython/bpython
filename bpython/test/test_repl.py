@@ -6,15 +6,12 @@ import tempfile
 import unittest
 from itertools import islice
 from pathlib import Path
-from unittest import mock
+from unittest import mock, TestCase
 
 from bpython import autocomplete, config, repl
 from bpython.line import LinePart
 from bpython.test import (
     TEST_CONFIG,
-)
-from bpython.test import (
-    FixLanguageTestCase as TestCase,
 )
 
 pypy = "PyPy" in sys.version

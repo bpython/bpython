@@ -1,15 +1,6 @@
-import os
 import unittest
 import unittest.mock
 from pathlib import Path
-
-from bpython.translations import init
-
-
-class FixLanguageTestCase(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        init(languages=["en"])
 
 
 class MagicIterMock(unittest.mock.MagicMock):

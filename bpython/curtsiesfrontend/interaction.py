@@ -6,7 +6,6 @@ from curtsies import events
 from ..curtsiesfrontend.events import RefreshRequestEvent
 from ..curtsiesfrontend.manual_readline import edit_keys
 from ..repl import Interaction
-from ..translations import _
 
 
 class StatusBar(Interaction):
@@ -105,7 +104,7 @@ class StatusBar(Interaction):
             self.escape()
             self.request_context.switch(line)
         elif self.in_confirm:
-            if e.lower() == _("y"):
+            if e.lower() == "y":
                 self.request_context.switch(True)
             else:
                 self.request_context.switch(False)

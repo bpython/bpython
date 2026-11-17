@@ -64,7 +64,6 @@ from .importcompletion import ModuleGatherer
 from .lazyre import LazyReCompile
 from .paste import PasteFailed, PasteHelper, PastePinnwand
 from .patch_linecache import filename_for_console_input
-from .translations import _, ngettext
 
 
 class RuntimeTimer:
@@ -716,20 +715,20 @@ class Repl(metaclass=abc.ABCMeta):
             if obj is None:
                 line = self.current_line
                 if not line.strip():
-                    raise SourceNotFound(_("Nothing to get source of"))
+                    raise SourceNotFound("Nothing to get source of")
                 if inspection.is_eval_safe_name(line):
                     obj = self.get_object(line)
             # Ignoring the next mypy error because we want this to fail if obj is None
-            return inspect.getsource(obj)  # type:ignore[arg-type]
+            return inspect.getsource(obj)  # type: ignore[arg-type]
         except (AttributeError, NameError) as e:
-            msg = _("Cannot get source: %s") % (e,)
+            msg = f"Cannot get source: {e!s}"
         except OSError as e:
             msg = f"{e}"
         except TypeError as e:
             if "built-in" in f"{e}":
-                msg = _("Cannot access source of %r") % (obj,)
+                msg = f"Cannot access source of {obj!r}"
             else:
-                msg = _("No source code found for %s") % (self.current_line,)
+                msg = "No source code found for {self.current_line}"
         raise SourceNotFound(msg)
 
     def set_docstring(self) -> None:
@@ -879,12 +878,12 @@ class Repl(metaclass=abc.ABCMeta):
         buffer to disk."""
 
         try:
-            fn = self.interact.file_prompt(_("Save to file (Esc to cancel): "))
+            fn = self.interact.file_prompt("Save to file (Esc to cancel): ")
             if not fn:
-                self.interact.notify(_("Save cancelled."))
+                self.interact.notify("Save cancelled.")
                 return
         except ValueError:
-            self.interact.notify(_("Save cancelled."))
+            self.interact.notify("Save cancelled.")
             return
 
         path = Path(fn).expanduser()
@@ -900,12 +899,12 @@ class Repl(metaclass=abc.ABCMeta):
                 )
                 % (path,)
             )
-            if new_mode in ("o", "overwrite", _("overwrite")):
+            if new_mode in ("o", "overwrite"):
                 mode = "w"
-            elif new_mode in ("a", "append", _("append")):
+            elif new_mode in ("a", "append"):
                 mode = "a"
             else:
-                self.interact.notify(_("Save cancelled."))
+                self.interact.notify("Save cancelled.")
                 return
 
         stdout_text = self.get_session_formatted_for_file()
@@ -914,24 +913,24 @@ class Repl(metaclass=abc.ABCMeta):
             with open(path, mode) as f:
                 f.write(stdout_text)
         except OSError as e:
-            self.interact.notify(_("Error writing file '%s': %s") % (path, e))
+            self.interact.notify(f"Error writing file '{path}': {e!s}")
         else:
-            self.interact.notify(_("Saved to %s.") % (path,))
+            self.interact.notify("Saved to {path}.")
 
     def copy2clipboard(self) -> None:
         """Copy current content to clipboard."""
 
         if not have_pyperclip:
-            self.interact.notify(_("No clipboard available."))
+            self.interact.notify("No clipboard available.")
             return
 
         content = self.get_session_formatted_for_file()
         try:
             pyperclip.copy(content)
         except pyperclip.PyperclipException:
-            self.interact.notify(_("Could not copy to clipboard."))
+            self.interact.notify("Could not copy to clipboard.")
         else:
-            self.interact.notify(_("Copied content to clipboard."))
+            self.interact.notify("Copied content to clipboard.")
 
     def pastebin(self, s: str | None = None) -> str | None:
         """Upload to a pastebin and display the URL in the status bar."""
@@ -940,9 +939,9 @@ class Repl(metaclass=abc.ABCMeta):
             s = self.getstdout()
 
         if self.config.pastebin_confirm and not self.interact.confirm(
-            _("Pastebin buffer? (y/N) ")
+            "Pastebin buffer? (y/N) "
         ):
-            self.interact.notify(_("Pastebin aborted."))
+            self.interact.notify("Pastebin aborted.")
             return None
         else:
             return self.do_pastebin(s)
@@ -951,17 +950,16 @@ class Repl(metaclass=abc.ABCMeta):
         """Actually perform the upload."""
         if s == self.prev_pastebin_content:
             self.interact.notify(
-                _("Duplicate pastebin. Previous URL: %s. " "Removal URL: %s")
-                % (self.prev_pastebin_url, self.prev_removal_url),
+                f"Duplicate pastebin. Previous URL: {self.prev_pastebin_url}. Removal URL: {self.prev_removal_url}",
                 10,
             )
             return self.prev_pastebin_url
 
-        self.interact.notify(_("Posting data to pastebin..."))
+        self.interact.notify("Posting data to pastebin...")
         try:
             paste_url, removal_url = self.paster.paste(s)
         except PasteFailed as e:
-            self.interact.notify(_("Upload failed: %s") % e)
+            self.interact.notify(f"Upload failed: {e}")
             return None
 
         self.prev_pastebin_content = s
@@ -970,12 +968,11 @@ class Repl(metaclass=abc.ABCMeta):
 
         if removal_url is not None:
             self.interact.notify(
-                _("Pastebin URL: %s - Removal URL: %s")
-                % (paste_url, removal_url),
+                f"Pastebin URL: {paste_url} - Removal URL: {removal_url}",
                 10,
             )
         else:
-            self.interact.notify(_("Pastebin URL: %s") % (paste_url,), 10)
+            self.interact.notify(f"Pastebin URL: {paste_url}", 10)
 
         return paste_url
 
@@ -1013,11 +1010,11 @@ class Repl(metaclass=abc.ABCMeta):
             return 1
         est = self.interp.timer.estimate()
         m = self.interact.file_prompt(
-            _("Undo how many lines? (Undo will take up to ~%.1f seconds) [1]")
+            "Undo how many lines? (Undo will take up to ~%.1f seconds) [1]"
             % (est,)
         )
         if m is None:
-            self.interact.notify(_("Undo canceled"), 0.1)
+            self.interact.notify("Undo canceled", 0.1)
             return 0
 
         try:
@@ -1025,18 +1022,14 @@ class Repl(metaclass=abc.ABCMeta):
                 m = "1"
             n = int(m)
         except ValueError:
-            self.interact.notify(_("Undo canceled"), 0.1)
+            self.interact.notify("Undo canceled", 0.1)
             return 0
         else:
             if n == 0:
-                self.interact.notify(_("Undo canceled"), 0.1)
+                self.interact.notify("Undo canceled", 0.1)
                 return 0
             else:
-                message = ngettext(
-                    "Undoing %d line... (est. %.1f seconds)",
-                    "Undoing %d lines... (est. %.1f seconds)",
-                    n,
-                )
+                message = ("Undoing %d line(s)... (est. %.1f seconds)",)
                 self.interact.notify(message % (n, est), 0.1)
             return n
 
@@ -1162,7 +1155,7 @@ class Repl(metaclass=abc.ABCMeta):
                             # here instead of the Parenthesis.UnderCursor
                             # token.
                             line_tokens[-1] = (Parenthesis, value)
-                        (lineno, i, tokens, opening) = opening
+                        lineno, i, tokens, opening = opening
                         if lineno == len(self.buffer):
                             highlighted_paren = (lineno, saved_tokens)
                             line_tokens[i] = (Parenthesis, opening)
@@ -1207,12 +1200,12 @@ class Repl(metaclass=abc.ABCMeta):
 
     def edit_config(self):
         if self.config.config_path is None:
-            self.interact.notify(_("No config file specified."))
+            self.interact.notify("No config file specified.")
             return
 
         if not self.config.config_path.is_file():
             if self.interact.confirm(
-                _("Config file does not exist - create new from default? (y/N)")
+                "Config file does not exist - create new from default? (y/N)"
             ):
                 try:
                     default_config = pkgutil.get_data(
@@ -1227,8 +1220,7 @@ class Repl(metaclass=abc.ABCMeta):
                         f.write(default_config)
                 except OSError as e:
                     self.interact.notify(
-                        _("Error writing file '%s': %s")
-                        % (self.config.config_path, e)
+                        f"Error writing file '{self.config.config_path}': {e}"
                     )
                     return False
             else:
@@ -1242,7 +1234,7 @@ class Repl(metaclass=abc.ABCMeta):
                     )
                 )
         except OSError as e:
-            self.interact.notify(_("Error editing config file: %s") % e)
+            self.interact.notify(f"Error editing config file: {e}")
 
 
 def next_indentation(line, tab_length) -> int:

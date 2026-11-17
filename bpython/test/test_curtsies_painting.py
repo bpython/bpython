@@ -5,7 +5,7 @@ import string
 import sys
 from contextlib import contextmanager
 from typing import cast
-from unittest import mock, skipIf
+from unittest import mock, skipIf, TestCase
 
 from curtsies.fmtfuncs import bold, cyan, green, on_magenta, red, yellow
 from curtsies.formatstringarray import (
@@ -24,7 +24,6 @@ from bpython.curtsiesfrontend.repl import (
     BaseRepl,
 )
 from bpython.test import TEST_CONFIG
-from bpython.test import FixLanguageTestCase as TestCase
 
 
 def setup_config():

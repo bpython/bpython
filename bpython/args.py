@@ -42,7 +42,6 @@ from typing import Never
 
 from . import __copyright__, __version__
 from .config import Config, default_config_path
-from .translations import _
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +56,7 @@ class RaisingArgumentParser(argparse.ArgumentParser):
 
 
 def version_banner(base: str = "bpython") -> str:
-    return _("{} version {} on top of Python {} {}").format(
+    return "{} version {} on top of Python {} {}".format(
         base,
         __version__,
         sys.version.split()[0],
@@ -66,7 +65,7 @@ def version_banner(base: str = "bpython") -> str:
 
 
 def copyright_banner() -> str:
-    return _("{} See AUTHORS.rst for details.").format(__copyright__)
+    return f"{__copyright__} See AUTHORS.rst for details."
 
 
 def log_version(module: ModuleType, name: str) -> None:
@@ -114,7 +113,7 @@ def parse(
         args = sys.argv[1:]
 
     parser = RaisingArgumentParser(
-        usage=_(
+        usage=(
             "Usage: %(prog)s [options] [file [args]]\n"
             "NOTE: If bpython sees an argument it does "
             "not know, execution falls back to the "
@@ -125,37 +124,37 @@ def parse(
         "--config",
         default=default_config_path(),
         type=Path,
-        help=_("Use CONFIG instead of default config file."),
+        help="Use CONFIG instead of default config file.",
     )
     parser.add_argument(
         "--interactive",
         "-i",
         action="store_true",
-        help=_("Drop to bpython shell after running file instead of exiting."),
+        help="Drop to bpython shell after running file instead of exiting.",
     )
     parser.add_argument(
         "--quiet",
         "-q",
         action="store_true",
-        help=_("Don't print version banner."),
+        help="Don't print version banner.",
     )
     parser.add_argument(
         "--version",
         "-V",
         action="store_true",
-        help=_("Print version and exit."),
+        help="Print version and exit.",
     )
     parser.add_argument(
         "--log-level",
         "-l",
         choices=("debug", "info", "warning", "error", "critical"),
         default="error",
-        help=_("Set log level for logging"),
+        help="Set log level for logging",
     )
     parser.add_argument(
         "--log-output",
         "-L",
-        help=_("Log output file"),
+        help="Log output file",
     )
 
     if extras is not None:
@@ -166,9 +165,7 @@ def parse(
     parser.add_argument(
         "args",
         nargs=argparse.REMAINDER,
-        help=_(
-            "File to execute and additional arguments passed on to the executed script."
-        ),
+        help="File to execute and additional arguments passed on to the executed script.",
     )
 
     try:

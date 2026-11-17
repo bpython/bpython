@@ -18,14 +18,13 @@ import curtsies.input
 import curtsies.window
 
 from . import args as bpargs
-from . import inspection, translations
+from . import inspection
 from .config import Config
 from .curtsiesfrontend import events
 from .curtsiesfrontend.coderunner import SystemExitFromCodeRunner
 from .curtsiesfrontend.interpreter import Interp
 from .curtsiesfrontend.repl import BaseRepl
 from .repl import extract_exit_value
-from .translations import _
 
 logger = logging.getLogger(__name__)
 
@@ -181,21 +180,20 @@ def main(
     banner is displayed directly after the version information.
     welcome_message is passed on to Repl and displayed in the statusbar.
     """
-    translations.init()
 
     def curtsies_arguments(parser: argparse._ArgumentGroup) -> None:
         parser.add_argument(
             "--paste",
             "-p",
             action="store_true",
-            help=_("start by pasting lines of a file into session"),
+            help="start by pasting lines of a file into session",
         )
 
     config, options, exec_args = bpargs.parse(
         args,
         (
-            _("curtsies arguments"),
-            _("Additional arguments specific to the curtsies-based REPL."),
+            "curtsies arguments",
+            "Additional arguments specific to the curtsies-based REPL.",
             curtsies_arguments,
         ),
     )
@@ -230,9 +228,7 @@ def main(
         print(banner)
     if welcome_message is None and not options.quiet and config.help_key:
         welcome_message = (
-            _("Welcome to bpython!")
-            + " "
-            + _("Press <%s> for help.") % config.help_key
+            f"Welcome to bpython! Press <{config.help_key}> for help."
         )
 
     repl = FullCurtsiesRepl(config, locals_, welcome_message, interp)
