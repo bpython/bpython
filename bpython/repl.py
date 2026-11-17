@@ -894,10 +894,7 @@ class Repl(metaclass=abc.ABCMeta):
         mode = "w"
         if path.exists():
             new_mode = self.interact.file_prompt(
-                _(
-                    "%s already exists. Do you want to (c)ancel, (o)verwrite or (a)ppend? "
-                )
-                % (path,)
+                f"{path} already exists. Do you want to (c)ancel, (o)verwrite or (a)ppend? "
             )
             if new_mode in ("o", "overwrite"):
                 mode = "w"
@@ -1229,9 +1226,7 @@ class Repl(metaclass=abc.ABCMeta):
         try:
             if self.open_in_external_editor(self.config.config_path):
                 self.interact.notify(
-                    _(
-                        "bpython config file edited. Restart bpython for changes to take effect."
-                    )
+                    "bpython config file edited. Restart bpython for changes to take effect."
                 )
         except OSError as e:
             self.interact.notify(f"Error editing config file: {e}")

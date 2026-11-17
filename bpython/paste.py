@@ -105,10 +105,7 @@ class PasteHelper:
             unicodedata.category(c) == "Cc" for c in paste_url
         ):
             raise PasteFailed(
-                _(
-                    "Failed to recognize the helper "
-                    "program's output as an URL."
-                )
+                "Failed to recognize the helper program's output as an URL."
             )
 
         return paste_url, None

@@ -1186,10 +1186,7 @@ class BaseRepl(Repl):
                 self.watcher.activate()
         else:
             self.status_bar.message(
-                _(
-                    "Auto-reloading not available because "
-                    "watchdog not installed."
-                )
+                "Auto-reloading not available because watchdog not installed."
             )
 
     # Handler Helpers

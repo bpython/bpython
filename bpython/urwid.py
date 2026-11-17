@@ -567,10 +567,8 @@ class URWIDRepl(repl.Repl):
         # String is straight from bpython.cli
         self.statusbar = Statusbar(
             config,
-            _(
-                " <%s> Rewind  <%s> Save  <%s> Pastebin "
-                " <%s> Pager  <%s> Show Source "
-            )
+            " <%s> Rewind  <%s> Save  <%s> Pastebin "
+            " <%s> Pager  <%s> Show Source "
             % (
                 config.undo_key,
                 config.save_key,
@@ -1318,9 +1316,7 @@ def main(args=None, locals_=None, banner=None):
 
         # XXX these deprecation warnings need to go at some point
         myrepl.write(
-            _(
-                "WARNING: You are using `bpython-urwid`, the urwid backend for `bpython`. This backend has been deprecated in version 0.19 and might disappear in a future version."
-            )
+            "WARNING: You are using `bpython-urwid`, the urwid backend for `bpython`. This backend has been deprecated in version 0.19 and might disappear in a future version."
         )
         myrepl.write("\n")
 
