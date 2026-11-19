@@ -248,7 +248,7 @@ def _combined_events(
 ) -> Generator[str | curtsies.events.Event | None, float | None, None]:
     """Combines consecutive keypress events into paste events."""
     timeout = yield "nonsense_event"  # so send can be used immediately
-    queue: collections.deque = collections.deque()
+    queue: collections.deque[str] = collections.deque()
     while True:
         e = event_provider.send(timeout)
         if isinstance(e, curtsies.events.Event):
@@ -282,4 +282,4 @@ def combined_events(
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())
