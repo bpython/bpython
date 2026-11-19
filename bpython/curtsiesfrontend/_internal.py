@@ -22,13 +22,16 @@
 
 import pydoc
 from types import TracebackType
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from .. import _internal
 
+if TYPE_CHECKING:
+    from .repl import BaseRepl
+
 
 class NopPydocPager:
-    def __enter__(self):
+    def __enter__(self) -> None:
         self._orig_pager = pydoc.pager
         pydoc.pager = self
 
@@ -41,26 +44,26 @@ class NopPydocPager:
         pydoc.pager = self._orig_pager
         return False
 
-    def __call__(self, text):
+    def __call__(self, text: str, title: str = "") -> None:
         return None
 
 
 class _Helper(_internal._Helper):
-    def __init__(self, repl=None):
+    def __init__(self, repl: "BaseRepl") -> None:
         self._repl = repl
         pydoc.pager = self.pager
 
         super().__init__()
 
-    def pager(self, output, title=""):
-        self._repl.pager(output, title)
+    def pager(self, text: str, title: str = "") -> None:
+        self._repl.pager(text, title)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, request: object | None = None) -> None:
         if self._repl.reevaluating:
             with NopPydocPager():
-                return super().__call__(*args, **kwargs)
+                return super().__call__(request)
         else:
-            return super().__call__(*args, **kwargs)
+            return super().__call__(request)
 
 
 # vim: sw=4 ts=4 sts=4 ai et

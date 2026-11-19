@@ -37,7 +37,11 @@ __version__ = version
 package_dir = os.path.abspath(os.path.dirname(__file__))
 
 
-def embed(locals_=None, args=None, banner=None) -> Any:
+def embed(
+    locals_: dict[str, Any] | None = None,
+    args: list[str] | None = None,
+    banner: str | None = None,
+) -> Any:
     if args is None:
         args = ["-i", "-q"]
 
