@@ -24,14 +24,11 @@
 # Pygments really kicks ass, it made it really easy to
 # get the exact behaviour I wanted, thanks Pygments.:)
 
-# mypy: disallow_untyped_defs=True
-# mypy: disallow_untyped_calls=True
-
-
-from collections.abc import Iterable, MutableMapping
-from typing import Any, TextIO
+from collections.abc import Iterable, Mapping
+from typing import TextIO, TypedDict, Unpack
 
 from pygments.formatter import Formatter
+from pygments.style import Style
 from pygments.token import (
     Comment,
     Error,
@@ -91,7 +88,15 @@ theme_map = {
 }
 
 
-class BPythonFormatter(Formatter):
+class FormatterOptions(TypedDict, total=False):
+    encoding: None
+    outencoding: None
+    style: str | type[Style]
+    full: bool
+    title: str
+
+
+class BPythonFormatter(Formatter[str]):
     """This is the custom formatter for bpython.
     Its format() method receives the tokensource
     and outfile params passed to it from the
@@ -104,7 +109,9 @@ class BPythonFormatter(Formatter):
     straightforward."""
 
     def __init__(
-        self, color_scheme: MutableMapping[str, str], **options: Any
+        self,
+        color_scheme: Mapping[str, str],
+        **options: Unpack[FormatterOptions],
     ) -> None:
         self.f_strings = {}
         for k, v in theme_map.items():
@@ -117,7 +124,7 @@ class BPythonFormatter(Formatter):
 
     def format(
         self,
-        tokensource: Iterable[MutableMapping[_TokenType, str]],
+        tokensource: Iterable[tuple[_TokenType, str]],
         outfile: TextIO,
     ) -> None:
         o: str = ""
