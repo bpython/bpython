@@ -1026,7 +1026,7 @@ class Repl(metaclass=abc.ABCMeta):
                 self.interact.notify("Undo canceled", 0.1)
                 return 0
             else:
-                message = ("Undoing %d line(s)... (est. %.1f seconds)",)
+                message = "Undoing %d line(s)... (est. %.1f seconds)"
                 self.interact.notify(message % (n, est), 0.1)
             return n
 
