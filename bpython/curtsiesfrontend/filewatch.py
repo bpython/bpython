@@ -1,15 +1,29 @@
 import os
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Sequence
+from typing import Protocol
 
 from .. import importcompletion
+
+
+class ModuleWatcher(Protocol):
+    dirs: dict[str, set[str]]
+    activated: bool
+
+    def track_module(self, path: str) -> None: ...
+    def reset(self) -> None: ...
+    def activate(self) -> None: ...
+    def deactivate(self) -> None: ...
+
 
 try:
     from watchdog.events import FileSystemEvent, FileSystemEventHandler
     from watchdog.observers import Observer
 except ImportError:
 
-    def ModuleChangedEventHandler(*args):
+    def ModuleChangedEventHandler(
+        paths: Iterable[str], on_change: Callable[[Sequence[str]], None]
+    ) -> ModuleWatcher | None:
         return None
 
 else:
@@ -80,8 +94,7 @@ else:
             self.activated = False
 
         def on_any_event(self, event: FileSystemEvent) -> None:
-            dirpath = os.path.dirname(event.src_path)
-            if any(
-                event.src_path == f"{path}.py" for path in self.dirs[dirpath]
-            ):
-                self.on_change((event.src_path,))
+            src_path = os.fsdecode(event.src_path)
+            dirpath = os.path.dirname(src_path)
+            if any(src_path == f"{path}.py" for path in self.dirs[dirpath]):
+                self.on_change((src_path,))
