@@ -39,6 +39,8 @@ from enum import Enum
 from typing import (
     Any,
     Optional,
+    TypedDict,
+    Unpack,
 )
 
 import __main__
@@ -217,6 +219,14 @@ _MODES_MAP = {
 }
 
 
+class CompletionOptions(TypedDict, total=False):
+    locals_: dict[str, Any] | None
+    funcprops: inspection.FuncProps | None
+    history: list[str] | None
+    current_block: str | None
+    complete_magic_methods: bool | None
+
+
 class BaseCompletionType:
     """Describes different completion types"""
 
@@ -230,7 +240,7 @@ class BaseCompletionType:
 
     @abc.abstractmethod
     def matches(
-        self, cursor_offset: int, line: str, **kwargs: Any
+        self, cursor_offset: int, line: str, **kwargs: Unpack[CompletionOptions]
     ) -> set[str] | None:
         """Returns a list of possible matches given a line and cursor, or None
         if this completion type isn't applicable.
@@ -305,7 +315,7 @@ class CumulativeCompleter(BaseCompletionType):
         return self._completers[0].format(word)
 
     def matches(
-        self, cursor_offset: int, line: str, **kwargs: Any
+        self, cursor_offset: int, line: str, **kwargs: Unpack[CompletionOptions]
     ) -> set[str] | None:
         return_value = None
         all_matches = set()
@@ -325,12 +335,12 @@ class ImportCompletion(BaseCompletionType):
         self,
         module_gatherer: ModuleGatherer,
         mode: AutocompleteModes = AutocompleteModes.SIMPLE,
-    ):
+    ) -> None:
         super().__init__(False, mode)
         self.module_gatherer = module_gatherer
 
     def matches(
-        self, cursor_offset: int, line: str, **kwargs: Any
+        self, cursor_offset: int, line: str, **kwargs: Unpack[CompletionOptions]
     ) -> set[str] | None:
         return self.module_gatherer.complete(cursor_offset, line)
 
@@ -346,11 +356,13 @@ def _safe_glob(pathname: str) -> Iterator[str]:
 
 
 class FilenameCompletion(BaseCompletionType):
-    def __init__(self, mode: AutocompleteModes = AutocompleteModes.SIMPLE):
+    def __init__(
+        self, mode: AutocompleteModes = AutocompleteModes.SIMPLE
+    ) -> None:
         super().__init__(False, mode)
 
     def matches(
-        self, cursor_offset: int, line: str, **kwargs: Any
+        self, cursor_offset: int, line: str, **kwargs: Unpack[CompletionOptions]
     ) -> set[str] | None:
         cs = lineparts.current_string(cursor_offset, line)
         if cs is None:
@@ -642,7 +654,10 @@ except ImportError:
 
     class MultilineJediCompletion(BaseCompletionType):  # type: ignore [no-redef]
         def matches(
-            self, cursor_offset: int, line: str, **kwargs: Any
+            self,
+            cursor_offset: int,
+            line: str,
+            **kwargs: Unpack[CompletionOptions],
         ) -> set[str] | None:
             return None
 
@@ -802,7 +817,7 @@ def get_default_completer(
     )
 
 
-def _callable_postfix(value: Any, word: str) -> str:
+def _callable_postfix(value: object, word: str) -> str:
     """rlcompleter's _callable_postfix done right."""
     if callable(value):
         word += "("
