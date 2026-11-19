@@ -62,7 +62,7 @@ try:
     class UnixFileLock(BaseLock):
         """Simple file locking for Unix using fcntl"""
 
-        def __init__(self, fileobj, mode: int = 0) -> None:
+        def __init__(self, fileobj: IO[str] | IO[bytes], mode: int = 0) -> None:
             super().__init__()
             self.fileobj = fileobj
             self.mode = mode | fcntl.LOCK_EX
@@ -124,7 +124,7 @@ except ImportError:
 
 
 def FileLock(
-    fileobj: IO, mode: int = 0, filename: str | None = None
+    fileobj: IO[str] | IO[bytes], mode: int = 0, filename: str | None = None
 ) -> BaseLock:
     if has_fcntl:
         return UnixFileLock(fileobj, mode)
