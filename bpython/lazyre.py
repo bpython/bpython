@@ -21,7 +21,8 @@
 # THE SOFTWARE.
 
 import re
-from collections.abc import Iterator
+import sys
+from collections.abc import Callable, Iterator
 from functools import cached_property
 from re import Match, Pattern
 
@@ -40,14 +41,25 @@ class LazyReCompile:
     def compiled(self) -> Pattern[str]:
         return re.compile(self.regex, self.flags)
 
-    def finditer(self, *args, **kwargs) -> Iterator[Match[str]]:
-        return self.compiled.finditer(*args, **kwargs)
+    def finditer(
+        self, string: str, pos: int = 0, endpos: int = sys.maxsize
+    ) -> Iterator[Match[str]]:
+        return self.compiled.finditer(string, pos, endpos)
 
-    def search(self, *args, **kwargs) -> Match[str] | None:
-        return self.compiled.search(*args, **kwargs)
+    def search(
+        self, string: str, pos: int = 0, endpos: int = sys.maxsize
+    ) -> Match[str] | None:
+        return self.compiled.search(string, pos, endpos)
 
-    def match(self, *args, **kwargs) -> Match[str] | None:
-        return self.compiled.match(*args, **kwargs)
+    def match(
+        self, string: str, pos: int = 0, endpos: int = sys.maxsize
+    ) -> Match[str] | None:
+        return self.compiled.match(string, pos, endpos)
 
-    def sub(self, *args, **kwargs) -> str:
-        return self.compiled.sub(*args, **kwargs)
+    def sub(
+        self,
+        repl: str | Callable[[Match[str]], str],
+        string: str,
+        count: int = 0,
+    ) -> str:
+        return self.compiled.sub(repl, string, count)
