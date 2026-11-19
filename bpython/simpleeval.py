@@ -27,10 +27,16 @@ In order to provide fancy completion, some code can be executed safely.
 
 import ast
 import builtins
-from typing import Any
+from collections.abc import Iterator, Mapping
+from typing import Any, SupportsIndex, TypeVar, cast, overload
 
 from . import line as line_properties
 from .inspection import getattr_safe
+
+T = TypeVar("T")
+K = TypeVar("K")
+V = TypeVar("V")
+
 
 _numeric_types = (int, float, complex)
 
@@ -59,7 +65,9 @@ def safe_eval(expr: str, namespace: dict[str, Any]) -> Any:
 # * looks up names from namespace
 # * indexing syntax is allowed
 # * evaluates tuple() and list()
-def simple_eval(node_or_string, namespace=None):
+def simple_eval(
+    node_or_string: ast.AST | str, namespace: Mapping[str, Any] | None = None
+) -> Any:
     """
     Safely evaluate an expression node or a string containing a Python
     expression without triggering any user code.
@@ -82,7 +90,7 @@ def simple_eval(node_or_string, namespace=None):
     if isinstance(node_or_string, ast.Expression):
         node_or_string = node_or_string.body
 
-    def _convert(node):
+    def _convert(node: ast.AST | None) -> Any:
         if isinstance(node, ast.Constant):
             return node.value
         elif isinstance(node, ast.Tuple):
@@ -178,7 +186,39 @@ def simple_eval(node_or_string, namespace=None):
     return _convert(node_or_string)
 
 
-def safe_getitem(obj, index):
+@overload
+def safe_getitem(obj: list[T], index: slice) -> list[T]: ...
+
+
+@overload
+def safe_getitem(obj: tuple[T, ...], index: slice) -> tuple[T, ...]: ...
+
+
+@overload
+def safe_getitem(obj: list[T] | tuple[T, ...], index: SupportsIndex) -> T: ...
+
+
+@overload
+def safe_getitem(obj: str, index: SupportsIndex | slice) -> str: ...
+
+
+@overload
+def safe_getitem(obj: bytes, index: slice) -> bytes: ...
+
+
+@overload
+def safe_getitem(obj: bytes, index: SupportsIndex) -> int: ...
+
+
+@overload
+def safe_getitem(obj: dict[K, V], index: K) -> V: ...
+
+
+@overload
+def safe_getitem(obj: Any, index: Any) -> Any: ...
+
+
+def safe_getitem(obj: Any, index: Any) -> Any:
     """Safely tries to access obj[index]"""
     if type(obj) in (list, tuple, dict, bytes, str):
         try:
@@ -188,17 +228,17 @@ def safe_getitem(obj, index):
     raise ValueError(f"unsafe to lookup on object of type {type(obj)}")
 
 
-def find_attribute_with_name(node, name):
+def find_attribute_with_name(node: ast.AST, name: str) -> ast.Attribute | None:
     if isinstance(node, ast.Attribute) and node.attr == name:
         return node
     for item in ast.iter_child_nodes(node):
-        r = find_attribute_with_name(item, name)
-        if r:
+        if r := find_attribute_with_name(item, name):
             return r
+    return None
 
 
 def evaluate_current_expression(
-    cursor_offset: int, line: str, namespace: dict[str, Any] | None = None
+    cursor_offset: int, line: str, namespace: Mapping[str, Any] | None = None
 ) -> Any:
     """
     Return evaluated expression to the right of the dot of current attribute.
@@ -219,7 +259,7 @@ def evaluate_current_expression(
         raise EvaluationError("No current attribute")
     attr_before_cursor = temp_line[temp_attribute.start : temp_cursor]
 
-    def parse_trees(cursor_offset, line):
+    def parse_trees(cursor_offset: int, line: str) -> Iterator[ast.Module]:
         for i in range(cursor_offset - 1, -1, -1):
             try:
                 tree = ast.parse(line[i:cursor_offset])
@@ -243,7 +283,9 @@ def evaluate_current_expression(
         raise EvaluationError("Could not safely evaluate")
 
 
-def evaluate_current_attribute(cursor_offset, line, namespace=None):
+def evaluate_current_attribute(
+    cursor_offset: int, line: str, namespace: Mapping[str, Any] | None = None
+) -> Any:
     """Safely evaluates the expression having an attributed accessed"""
     # this function runs user code in case of custom descriptors,
     # so could fail in any way
