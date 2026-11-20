@@ -11,6 +11,7 @@ makes more sense to you.
 """
 
 import code
+import contextvars
 import logging
 import signal
 
@@ -92,6 +93,7 @@ class CodeRunner:
         code asks for a refresh - to, for example, update the screen.
         """
         self.interp = interp or code.InteractiveInterpreter()
+        self.context = contextvars.copy_context()
         self.source = None
         self.main_context = greenlet.getcurrent()
         self.code_context = None
@@ -129,7 +131,7 @@ class CodeRunner:
         """
         if self.code_context is None:
             assert self.source is not None
-            self.code_context = greenlet.greenlet(self._blocking_run_code)
+            self.code_context = greenlet.greenlet(self._run_code_in_context)
             if is_main_thread():
                 self.orig_sigint_handler = signal.getsignal(signal.SIGINT)
                 signal.signal(signal.SIGINT, self.sigint_handler)
@@ -186,6 +188,9 @@ class CodeRunner:
         except SystemExit as e:
             return SystemExitRequest(*e.args)
         return Unfinished() if unfinished else Done()
+
+    def _run_code_in_context(self):
+        return self.context.run(self._blocking_run_code)
 
     def request_from_main_context(self, force_refresh=False):
         """Return the argument passed in to .run_code(for_code)
