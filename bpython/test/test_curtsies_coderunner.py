@@ -1,8 +1,9 @@
+import code
 import sys
 import unittest
 from unittest import mock
 
-from bpython.curtsiesfrontend.coderunner import CodeRunner, FakeOutput
+from bpython.curtsiesfrontend.coderunner import CodeRunner, Done, FakeOutput
 
 
 class TestCodeRunner(unittest.TestCase):
@@ -43,6 +44,21 @@ class TestCodeRunner(unittest.TestCase):
         sys.stderr = stderr
         c.load_code("1 + 1")
         c.run_code()
+
+    def test_context_is_preserved_between_commands(self):
+        interp = code.InteractiveInterpreter(locals={})
+        c = CodeRunner(interp=interp)
+
+        c.load_code("import decimal")
+        self.assertIsInstance(c.run_code(), Done)
+
+        c.load_code("decimal.getcontext().rounding = decimal.ROUND_HALF_UP")
+        c.run_code()
+
+        c.load_code("rounding = decimal.getcontext().rounding")
+        c.run_code()
+
+        self.assertEqual(interp.locals["rounding"], "ROUND_HALF_UP")
 
 
 class TestFakeOutput(unittest.TestCase):
